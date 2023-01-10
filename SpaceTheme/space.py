@@ -20,7 +20,7 @@ timerColor = [255,255,255] # Default = [255,255,255]
 timerDelay = 1000 # Default = 1000
 levelColor = [255,255,255] # Default = [255,255,255] / Level indicator color
 levelSize = 25 # Default = 25 / Level indicator size
-showHitboxes = True # Default = False
+showHitboxes = False # Default = False
 
 # PLAYER
 playerColor = [255,255,255] # Default = [255,255,255]
