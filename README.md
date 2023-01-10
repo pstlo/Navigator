@@ -8,14 +8,18 @@ Themed version in /SpaceTheme - pixel art by @guetta.rt on instagram
 
 
 -Issues:
- -takes a second to start occasionally when using multiple monitors
+
+-takes a second to start occasionally when using multiple monitors
+ 
  -dodge.py works better, space.py looks better
     
 
 
 /SpaceTheme/space.py:
-    -obstacles are not aligned properly
-    -game ends when meteor textures are exhausted
+    
+   -obstacles are not aligned properly
+    
+   -game ends when meteor textures are exhausted
 
   
         
