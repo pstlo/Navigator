@@ -27,7 +27,7 @@ playerSpeed = 5 # Default = 5
 
 # OBSTACLES
 obstacleSpeed = 3  # Default = 3           
-obstacleSize = 6    # Default = 6
+obstacleSize = 10  # Default = 6
 obstacleColor = [255,0,0] # Default = [255,0,0]
 maxObstacles = 12  # Default = 12
 obstacleBoundaries = "KILL" # Default = "KILL" (Can be updated by level)
@@ -45,17 +45,22 @@ levelSeven = [False,"BOUNCE",7]
 levelEight =[False,"KILL",8]
 
 # ASSET LOADING
+curDir = str(os.getcwd())
 
 # SPACESHIP
 spaceShip = pygame.image.load('spaceShip.png')
 spaceShip.convert()
 
 # BACKGROUND
-background = pygame.image.load('bg.png')
-background.convert()
-
+bgList = []
+bDir = os.path.join(curDir, 'Backgrounds')
+for bg in os.listdir(bDir):
+    if bg.endswith('.png'):
+        path = os.path.join(bDir, bg)
+        key = bg[:-4]
+        bgList.append( pygame.image.load(path).convert_alpha() )
 # METEORS
-curDir = str(os.getcwd())
+
 mDir = os.path.join(curDir, 'Meteors')
 meteorDict = {}
 meteorList = []
@@ -121,7 +126,6 @@ def main():
             self.movement = getMovement()
             self.pos = [self.movement[0][0], self.movement[0][1]]
             self.direction = self.movement[1]
-            self.level = currentLevel
             self.image = meteorList[currentLevel-1]
                
     # PLAYER 
@@ -181,16 +185,16 @@ def main():
     # DRAW OBSTACLES
     def drawObstacles():
         for obs in obstacles:
-            mScale =  ( ( obs.size * 6 ) / 2 ) 
-            mSize = (obs.size * 6, obs.size * 6)
-            screen.blit( pygame.transform.scale(obs.image, (mSize) ),(obs.pos[0] - mScale, obs.pos[1] - mScale ) ) # DRAW METEOR WITH ATTRIBUTES GRABBED FROM FUNCTION CALL
-            #pygame.draw.circle(screen, (obs.color), obs.pos, obs.size) # HITBOX TEST
+            obs.image = pygame.transform.scale(obs.image, (obs.size * 4, obs.size * 4))
+            height = (obs.image.get_height())
+            width = (obs.image.get_height())
+            blitPos = (obs.pos[0] - width/2, obs.pos[1] - height/2)
+            pygame.draw.circle(screen, (obs.color), obs.pos, obs.size) # HITBOX TEST (CIRCLE)
+            screen.blit(obs.image,blitPos)
             
-                
     # MOVE OBSTACLES            
     def obstacleMove():
         for obs in obstacles:
-            position = obs.pos
             
             if "N" in obs.direction:
                 obs.pos[1] -= obs.speed
@@ -340,6 +344,7 @@ def main():
                         
     def update():
         screen.blit(spaceShip, (player.pos[0] - 16,player.pos[1] - 16))
+        #pygame.draw.circle(screen, (player.color), player.pos, player.size) # HITBOX TEST (CIRCLE)
         timerRect = timerDisplay.get_rect(topright = screen.get_rect().topright)
         levelRect = levelDisplay.get_rect(topleft = screen.get_rect().topleft)
         screen.blit(timerDisplay, timerRect)
@@ -355,7 +360,11 @@ def main():
     # GAME LOOP
     while running:
         
-        screen.blit(background,(0,0))
+        try:
+            screen.blit(bgList[round(currentLevel / 2)],(0,0))
+        except:
+            screen.blit(bgList[random.randint(0,len(bgList) - 1)],(0,0))
+        
         for event in pygame.event.get():
             # EXIT
             if (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE) or event.type == pygame.QUIT:
