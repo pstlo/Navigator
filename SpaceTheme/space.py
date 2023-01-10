@@ -4,12 +4,12 @@ import sys
 import os
 from os import environ
 
-environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1' # HIDES PYGAME WELCOME MESSAGE
 import pygame
 pygame.init()
 
 # GAME CONSTANTS
-    
+
 # SCREEN
 screenSize = [800,800] # Default = [800,800]
 screenColor = [0,0,0] # Default = [0,0,0]
@@ -20,14 +20,16 @@ timerColor = [255,255,255] # Default = [255,255,255]
 timerDelay = 1000 # Default = 1000
 levelColor = [255,255,255] # Default = [255,255,255] / Level indicator color
 levelSize = 25 # Default = 25 / Level indicator size
+showHitboxes = True # Default = False
+
 # PLAYER
 playerColor = [255,255,255] # Default = [255,255,255]
-playerSize = 14 # Default = 10            
+playerSize = 14 # Default = 14            
 playerSpeed = 5 # Default = 5
 
 # OBSTACLES
 obstacleSpeed = 3  # Default = 3           
-obstacleSize = 10  # Default = 6
+obstacleSize = 10  # Default = 10
 obstacleColor = [255,0,0] # Default = [255,0,0]
 maxObstacles = 12  # Default = 12
 obstacleBoundaries = "KILL" # Default = "KILL" (Can be updated by level)
@@ -47,10 +49,6 @@ levelEight =[False,"KILL",8]
 # ASSET LOADING
 curDir = str(os.getcwd())
 
-# SPACESHIP
-spaceShip = pygame.image.load('spaceShip.png')
-spaceShip.convert()
-
 # BACKGROUND
 bgList = []
 bDir = os.path.join(curDir, 'Backgrounds')
@@ -59,8 +57,10 @@ for bg in os.listdir(bDir):
         path = os.path.join(bDir, bg)
         key = bg[:-4]
         bgList.append( pygame.image.load(path).convert_alpha() )
-# METEORS
+        
+randomBackground = bgList[random.randint(0,len(bgList) - 1)]
 
+# METEORS
 mDir = os.path.join(curDir, 'Meteors')
 meteorDict = {}
 meteorList = []
@@ -115,7 +115,8 @@ def main():
             self.color = playerColor 
             self.size = playerSize        
             self.pos = [screenSize[0] / 2 , screenSize[1] / 2]
-            self.speed = playerSpeed                         
+            self.speed = playerSpeed
+            self.image = pygame.image.load('spaceShip.png').convert_alpha()
             
     class Obstacle(pygame.sprite.Sprite):
         def __init__(self):
@@ -126,7 +127,10 @@ def main():
             self.movement = getMovement()
             self.pos = [self.movement[0][0], self.movement[0][1]]
             self.direction = self.movement[1]
-            self.image = meteorList[currentLevel-1]
+            try:
+                self.image = meteorList[currentLevel-1]
+            except:
+                self.image = meteorList[random.randint(len(meteorList)-1)]
                
     # PLAYER 
     player = Player()
@@ -143,7 +147,6 @@ def main():
     timerDisplay = timerFont.render(str(gameClock), True, timerColor)
     timerEvent = pygame.USEREVENT + 1
     pygame.time.set_timer(timerEvent, timerDelay)
-    
     
     # PLAYER MOVEMENT
     def movement():
@@ -189,7 +192,10 @@ def main():
             height = (obs.image.get_height())
             width = (obs.image.get_height())
             blitPos = (obs.pos[0] - width/2, obs.pos[1] - height/2)
-            pygame.draw.circle(screen, (obs.color), obs.pos, obs.size) # HITBOX TEST (CIRCLE)
+            
+            if showHitboxes == True:
+                pygame.draw.circle(screen, (obs.color), obs.pos, obs.size) # HITBOX TEST (CIRCLE)
+                
             screen.blit(obs.image,blitPos)
             
     # MOVE OBSTACLES            
@@ -221,24 +227,18 @@ def main():
                 obs.kill()
                 obstacles.remove(obs)
     
+    # REVERSE OBSTACLE MOVEMENT 
     def movementReverse(direction):
-        if direction == "N":
-            return "S"
-        elif direction == "S":
-            return "N"          
-        elif direction == "E":
-            return "W"
-        elif direction == "W":
-            return "E"
-        elif direction == "NW":
-            return "SE"
-        elif direction == "NE":
-            return "SW"
-        elif direction == "SE":
-            return "NW"
-        elif direction == "SW":
-            return "NE"
+        if direction == "N": return "S"    
+        elif direction == "S": return "N"               
+        elif direction == "E": return "W"      
+        elif direction == "W": return "E"         
+        elif direction == "NW": return "SE"         
+        elif direction == "NE": return "SW"       
+        elif direction == "SE": return "NW"       
+        elif direction == "SW": return "NE"
             
+    # USES PREVIOUS FUNCTION TO BOUNCE OBSTACLES 
     def bounceObstacle():
         for obs in obstacles:
             direction = obs.direction
@@ -255,7 +255,7 @@ def main():
             if obs.pos[0] < 0:
                 obs.direction = movementReverse(direction)
                 
-
+    # WRAP OBSTACLES AROUND SCREEN
     def wrapObstacle():
         for obs in obstacles:
             
@@ -271,10 +271,10 @@ def main():
             if obs.pos[0] < 0:
                 obs.pos[0] = screenSize[0]
     
-    
+    # UPDATE GAME CONSTANTS PER LEVEL
     def levels():
         # Variables that get updated by levels are declared globally below
-        global obstacleBoundaries,maxObstacles,obstacleSize,obstacleColor,obstacleSpeed
+        global obstacleBoundaries,maxObstacles,obstacleSize,obstacleSpeed
         
         # Level start initialized globally below
         global currentLevel,levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight
@@ -284,7 +284,6 @@ def main():
         # LEVEL 2
         if gameClock == 15 and levelTwo[0] == False:
             maxObstacles *= 1.5
-            obstacleColor = [255,255,0]
             obstacleBoundaries = levelTwo[1]
             currentLevel +=1
             levelTwo[0] = True
@@ -292,7 +291,6 @@ def main():
         # LEVEL 3
         elif gameClock == 30 and levelThree[0] == False:
             obstacleSize *= 1.5
-            obstacleColor = [0,0,255]
             currentLevel +=1
             obstacleBoundaries = levelThree[1]
             levelThree[0] = True
@@ -300,7 +298,6 @@ def main():
         # LEVEL 4
         elif gameClock == 45 and not levelFour[0]:
             obstacleSize *= 1.5
-            obstacleColor = [0,255,0]
             currentLevel +=1
             obstacleBoundaries = levelFour[1]
             levelFour[0] = True
@@ -308,7 +305,6 @@ def main():
         # LEVEL 5
         elif gameClock == 60 and not levelFive[0]:
             obstacleSpeed *= 1.25
-            obstacleColor = [0,255,255]
             currentLevel +=1
             obstacleBoundaries = levelFive[1]
             levelFive[0] = True
@@ -318,7 +314,6 @@ def main():
             obstacleSize *= 10
             obstacleSpeed /= 2
             maxObstacles /= 10
-            obstacleColor = [255,0,255]
             currentLevel +=1
             obstacleBoundaries = levelSix[1]
             levelSix[0] = True
@@ -328,7 +323,6 @@ def main():
             obstacleSize /= 10
             maxObstacles *= 1.5
             obstacleSpeed *= 1.25
-            obstacleColor = [100, 0, 50]
             currentLevel +=1
             obstacleBoundaries = levelSeven[1]
             levelSeven[0] = True
@@ -336,19 +330,27 @@ def main():
         # LEVEL 8
         elif gameClock == 105 and not levelEight[0]:
             obstacleSize *= 1.5
-            obstacleColor = [0,150,0]
             currentLevel +=1
             obstacleBoundaries = levelEight[1]
             levelEight[0] = True
         
-                        
+    
+    # UPDATE THE SCREEN
     def update():
-        screen.blit(spaceShip, (player.pos[0] - 16,player.pos[1] - 16))
-        #pygame.draw.circle(screen, (player.color), player.pos, player.size) # HITBOX TEST (CIRCLE)
+        
+        # DRAW PLAYER
+        if showHitboxes == True:
+            pygame.draw.circle(screen, (player.color), player.pos, player.size) # HITBOX TEST (CIRCLE)
+        screen.blit(player.image, (player.pos[0] - 16,player.pos[1] - 16))
+        
+        # DRAW TIMER
         timerRect = timerDisplay.get_rect(topright = screen.get_rect().topright)
-        levelRect = levelDisplay.get_rect(topleft = screen.get_rect().topleft)
         screen.blit(timerDisplay, timerRect)
+        
+        # DRAW LEVEL COUNTER
+        levelRect = levelDisplay.get_rect(topleft = screen.get_rect().topleft)
         screen.blit(levelDisplay, levelRect)
+        
         pygame.display.flip()
         screen.fill(screenColor)
         clk.tick(fps)
@@ -357,19 +359,20 @@ def main():
     global running
     running = True  
     
-    # GAME LOOP
+  
     while running:
         
         try:
-            screen.blit(bgList[round(currentLevel / 2)],(0,0))
+            screen.blit(randomBackground,(0,0))
         except:
-            screen.blit(bgList[random.randint(0,len(bgList) - 1)],(0,0))
+            screen.blit(bgList[random],(0,0))
         
         for event in pygame.event.get():
             # EXIT
             if (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE) or event.type == pygame.QUIT:
                 running = False
             
+            # UPDATE GAME CLOCK
             elif event.type == timerEvent:
                 gameClock +=1
                 timerDisplay = timerFont.render(str(gameClock), True, (255,255,255))
@@ -393,6 +396,7 @@ def main():
         spawner()
         obstacleMove()
         
+        # HANDLE OFF SCREEN OBSTACLES
         if obstacleBoundaries == "KILL":
             obstacleRemove()
         
