@@ -7,7 +7,6 @@ Themed version in /SpaceTheme - pixel art by @guetta.rt on instagram
 
 -Issues:
 
-/dodge.py:
     -dodge.py works better, space.py looks better
     
 /SpaceTheme/space.py:
