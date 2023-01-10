@@ -7,7 +7,7 @@ Themed version in /SpaceTheme - pixel art by @guetta.rt on instagram
 
 -Issues:
 
-    -dodge.py works better, space.py looks better
+ -dodge.py works better, space.py looks better
     
 /SpaceTheme/space.py:
     -obstacles are not aligned properly
