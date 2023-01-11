@@ -35,14 +35,17 @@ obstacleBoundaries = "KILL" # Default = "KILL" (Can be updated by level)
 
 # LEVELS:   [ False , TIME, BOUNDS, SPEED, SIZE, NUMBER, COLOR ] , then add to levelSettingsList
 levelTwo = [ False, 15, "KILL", 1, 1, 1.5, [255,255,0] ] # Default = [ False, 15, "KILL", 1, 1, 1.5, [255,255,0] ]
-levelThree = [False, 30, "KILL", 1, 1.5, 1, [0,0,255] ] # Default = [False, 30, "KILL", 1, 1.5, 1, [0,0,255] ]
-levelFour = [False, 45, "KILL", 1, 1.5, 1, [0,255,0] ] # Default = [False, 45, "KILL", 1, 1.5, 1, [0,255,0] ]
-levelFive = [False, 60, "KILL", 1.25, 1, 1, [0,255,255] ] # Default = [False, 60, "KILL", 1.25, 1, 1, [0,255,255] ]
-levelSix = [False, 75, "WRAP", 0.5, 10, 0.1, [255,0,255] ] # Default = [False, 75, "WRAP", 0.5, 10, 0.1, [255,0,255] ]
-levelSeven = [False, 90, "KILL", 2, 0.1, 10, [100,0,50] ] # Default = [False, 90, "KILL", 2, 0.1, 10, [100,0,50] ]
-levelEight = [False, 105, "BOUNCE", 1.25, 1.25, 1.0, [0,150,50] ] # Default = [False, 105, "BOUNCE", 1.25, 1.25, 1.0, [0,150,50] ]
-levelSettingsList = [levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight]
-#----------------------------------------------------------------------------------------------------------------------------------
+levelThree = [ False, 30, "KILL", 1, 1.5, 1, [0,0,255] ] # Default = [False, 30, "KILL", 1, 1.5, 1, [0,0,255] ]
+levelFour = [ False, 45, "KILL", 1, 1.5, 1, [0,255,0] ] # Default = [False, 45, "KILL", 1, 1.5, 1, [0,255,0] ]
+levelFive = [ False, 60, "KILL", 1.25, 1, 1, [0,255,255] ] # Default = [False, 60, "KILL", 1.25, 1, 1, [0,255,255] ]
+levelSix = [ False, 75, "WRAP", 0.5, 10, 0.1, [255,0,255] ] # Default = [False, 75, "WRAP", 0.5, 10, 0.1, [255,0,255] ]
+levelSeven = [ False, 90, "KILL", 2, 0.1, 10, [100,0,50] ] # Default = [False, 90, "KILL", 2, 0.1, 10, [100,0,50] ]
+levelEight = [ False, 105, "BOUNCE", 1.25, 1.25, 1.0, [0,150,50] ] # Default = [False, 105, "BOUNCE", 1.25, 1.25, 1.0, [0,150,50] ]
+levelNine = [ False, 120, "KILL", 1.25, 1.25, 1.25, [255,255,0] ] # Default = [ False, 120, "KILL", 1.25, 1.25, 1.25, [255,255,0] ]
+levelTen = [ False, 135, "WRAP", 1, 1, 1, [255,255,255] ] # Default = [ False, 135, "WRAP", 1, 1, 1, [255,255,255] ]
+overTime = [ False, 150, "KILL", 1.1, 1.1, 1.1, [255,0,0] ] # Default = [ False, 150, "KILL", 1.1, 1.1, 1.1, [255,0,0] ]
+levelSettingsList = [levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight,levelNine,levelTen,overTime]
+#---------------------------------------------------------------------------------------------------------------------------------
 class Player(pygame.sprite.Sprite):
         def __init__(self):
             pygame.sprite.Sprite.__init__(self)
@@ -139,8 +142,6 @@ def movementReverse(direction):
               
 def main():
     
-    # GAME LOGIC
-    
     global gameClock
     
     # TIMER DISPLAY
@@ -150,7 +151,29 @@ def main():
     pygame.time.set_timer(timerEvent, timerDelay)
     
     running = True
+
+    def levelDictSelector(levelDictList):
+            for levelDict in levelDictList:
+                if levelDict["TIME"] == gameClock:
+                    return levelDict
+
+    def levelUpdater(levelDict):   # PASS THE CORRESPONDING DICT TO THIS FUNCTION
+        global obstacleBoundaries, obstacleSpeed, obstacleColor, maxObstacles, obstacleSize, currentLevel
     
+        try:
+            if not levelDict["START"] and levelDict["TIME"] == gameClock:
+                    obstacleBoundaries = levelDict["bound"]
+                    obstacleSpeed *= levelDict["speedMult"]
+                    obstacleColor = levelDict["COLOR"]
+                    maxObstacles *= levelDict["maxObsMult"]
+                    obstacleSize *= levelDict["obsSizeMult"]
+                    currentLevel += 1
+                    levelDict["START"] = True
+        except:
+            pass
+
+
+
     def movement():
         
         key = pygame.key.get_pressed()
@@ -255,25 +278,7 @@ def main():
                 obs.pos[0] = screenSize[0]
     
     
-    def levelDictSelector(levelDictList):
-        for levelDict in levelDictList:
-            if levelDict["TIME"] == gameClock:
-                return levelDict
-
-    def levelUpdater(levelDict):   # PASS THE CORRESPONDING DICT TO THIS FUNCTION
-        global obstacleBoundaries, obstacleSpeed, obstacleColor, maxObstacles, obstacleSize, currentLevel
     
-        try:
-            if not levelDict["START"] and levelDict["TIME"] == gameClock:
-                    obstacleBoundaries = levelDict["bound"]
-                    obstacleSpeed *= levelDict["speedMult"]
-                    obstacleColor = levelDict["COLOR"]
-                    maxObstacles *= levelDict["maxObsMult"]
-                    obstacleSize *= levelDict["obsSizeMult"]
-                    currentLevel += 1
-                    levelDict["START"] = True
-        except:
-            pass
 
     # GAME LOOP
     while running:
