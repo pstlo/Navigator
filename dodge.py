@@ -41,8 +41,8 @@ levelFive = [False, 60, "KILL", 1.25, 1, 1, [0,255,255] ] # Default = [False, 60
 levelSix = [False, 75, "WRAP", 0.5, 10, 0.1, [255,0,255] ] # Default = [False, 75, "WRAP", 0.5, 10, 0.1, [255,0,255] ]
 levelSeven = [False, 90, "KILL", 2, 0.1, 10, [100,0,50] ] # Default = [False, 90, "KILL", 2, 0.1, 10, [100,0,50] ]
 levelEight = [False, 105, "BOUNCE", 1.25, 1.25, 1.0, [0,150,50] ] # Default = [False, 105, "BOUNCE", 1.25, 1.25, 1.0, [0,150,50] ]
-levelSettingsList = [levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight] # Defaults = [levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight]
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+levelSettingsList = [levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight]
+#----------------------------------------------------------------------------------------------------------------------------------
 class Player(pygame.sprite.Sprite):
         def __init__(self):
             pygame.sprite.Sprite.__init__(self)
