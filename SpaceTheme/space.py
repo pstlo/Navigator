@@ -21,6 +21,7 @@ timerDelay = 1000 # Default = 1000
 levelColor = [255,255,255] # Default = [255,255,255] / Level indicator color
 levelSize = 25 # Default = 25 / Level indicator size
 showHitboxes = False # Default = False
+bgFrameDelay = 50 # Default = 500
 
 # PLAYER
 playerColor = [255,255,255] # Default = [255,255,255]
@@ -51,14 +52,15 @@ curDir = str(os.getcwd())
 
 # BACKGROUND
 bgList = []
+bgDict = {}
+
 bDir = os.path.join(curDir, 'Backgrounds')
 for bg in os.listdir(bDir):
     if bg.endswith('.png'):
         path = os.path.join(bDir, bg)
         key = bg[:-4]
-        bgList.append( pygame.image.load(path).convert_alpha() )
-        
-randomBackground = bgList[random.randint(0,len(bgList) - 1)]
+        bgDict[key] = pygame.image.load(path).convert_alpha()
+        bgList.append(bgDict[key])
 
 # METEORS
 mDir = os.path.join(curDir, 'Meteors')
@@ -145,8 +147,13 @@ def main():
     # TIMER DISPLAY
     timerFont = pygame.font.SysFont(None, timerSize)
     timerDisplay = timerFont.render(str(gameClock), True, timerColor)
-    timerEvent = pygame.USEREVENT + 1
+    timerEvent = pygame.USEREVENT
     pygame.time.set_timer(timerEvent, timerDelay)
+    
+    
+    # BACKGROUND FRAMES
+    bgFrameEvent = pygame.USEREVENT+1
+    pygame.time.set_timer(bgFrameEvent,bgFrameDelay)
     
     # PLAYER MOVEMENT
     def movement():
@@ -274,7 +281,7 @@ def main():
     # UPDATE GAME CONSTANTS PER LEVEL
     def levels():
         # Variables that get updated by levels are declared globally below
-        global obstacleBoundaries,maxObstacles,obstacleSize,obstacleSpeed
+        global obstacleBoundaries,maxObstacles,obstacleSize,obstacleSpeed, bgFrameDelay
         
         # Level start initialized globally below
         global currentLevel,levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight
@@ -286,6 +293,7 @@ def main():
             maxObstacles *= 1.5
             obstacleBoundaries = levelTwo[1]
             currentLevel +=1
+            bgFrameDelay *= 0.9
             levelTwo[0] = True
         
         # LEVEL 3
@@ -293,6 +301,7 @@ def main():
             obstacleSize *= 1.5
             currentLevel +=1
             obstacleBoundaries = levelThree[1]
+            bgFrameDelay *= 0.9
             levelThree[0] = True
         
         # LEVEL 4
@@ -300,6 +309,7 @@ def main():
             obstacleSize *= 1.5
             currentLevel +=1
             obstacleBoundaries = levelFour[1]
+            bgFrameDelay *= 0.9
             levelFour[0] = True
         
         # LEVEL 5
@@ -307,6 +317,7 @@ def main():
             obstacleSpeed *= 1.25
             currentLevel +=1
             obstacleBoundaries = levelFive[1]
+            bgFrameDelay *= 0.9
             levelFive[0] = True
         
         # LEVEL 6
@@ -316,6 +327,7 @@ def main():
             maxObstacles /= 10
             currentLevel +=1
             obstacleBoundaries = levelSix[1]
+            bgFrameDelay *= 0.9
             levelSix[0] = True
         
         # LEVEL 7
@@ -325,6 +337,7 @@ def main():
             obstacleSpeed *= 1.25
             currentLevel +=1
             obstacleBoundaries = levelSeven[1]
+            bgFrameDelay *= 0.9
             levelSeven[0] = True
             
         # LEVEL 8
@@ -332,6 +345,7 @@ def main():
             obstacleSize *= 1.5
             currentLevel +=1
             obstacleBoundaries = levelEight[1]
+            bgFrameDelay *= 0.9
             levelEight[0] = True
         
     
@@ -359,24 +373,30 @@ def main():
     global running
     running = True  
     
-  
+    bgCount = 0    
+    frames = len(bgList) - 1
+    
     while running:
-        
-        try:
-            screen.blit(randomBackground,(0,0))
-        except:
-            screen.blit(bgList[random],(0,0))
-        
+
         for event in pygame.event.get():
             # EXIT
             if (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE) or event.type == pygame.QUIT:
                 running = False
             
+            if event.type == bgFrameEvent:
+                if bgCount >= frames:
+                    bgCount = 0
+                else:
+                    bgCount += 1   
+                
             # UPDATE GAME CLOCK
-            elif event.type == timerEvent:
+            if event.type == timerEvent:
                 gameClock +=1
                 timerDisplay = timerFont.render(str(gameClock), True, (255,255,255))
-                
+            
+            
+        screen.blit(bgList[bgCount],(0,0))
+        
         # LEVEL DISPLAY
         levelNum = "Level " + str(currentLevel)
         levelFont = pygame.font.SysFont(None, levelSize)
