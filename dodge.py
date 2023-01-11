@@ -277,6 +277,9 @@ def main():
             if obs.pos[0] < 0:
                 obs.pos[0] = screenSize[0]
     
+    
+    
+
     # GAME LOOP
     while running:
         
