@@ -347,7 +347,6 @@ def main():
             
             elif event.type == timerEvent:
                 gameClock +=1
-                print(player.angle)
                 timerDisplay = timerFont.render(str(gameClock), True, (255,255,255))
         
         # BACKGROUND ANIMATION
