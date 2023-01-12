@@ -153,7 +153,16 @@ class Player(pygame.sprite.Sprite):
                 self.angle = 120
             
             if (key[pygame.K_d] or key[pygame.K_RIGHT]) and ( key[pygame.K_a] or key[pygame.K_LEFT]): 
-                self.angle = 0   
+                self.angle = 0
+
+            if (key[pygame.K_d] or key[pygame.K_RIGHT]) and ( key[pygame.K_a] or key[pygame.K_LEFT]) and (key[pygame.K_s] or key[pygame.K_DOWN]): 
+                self.angle = 180
+            
+            if (key[pygame.K_d] or key[pygame.K_RIGHT]) and ( key[pygame.K_w] or key[pygame.K_UP]) and (key[pygame.K_s] or key[pygame.K_DOWN]): 
+                self.angle = -90
+            
+            if (key[pygame.K_a] or key[pygame.K_LEFT]) and ( key[pygame.K_w] or key[pygame.K_UP]) and (key[pygame.K_s] or key[pygame.K_DOWN]): 
+                self.angle = 90
  
         def wrapping(self):
             if self.rect.centery  > screenSize[1]: self.rect.centery = 0
@@ -428,10 +437,11 @@ def main():
         
         # BACKGROUND ANIMATION
         screen.blit(bg,(0,0))
-        if cloudPos < screenSize[1]: cloudPos += cloudSpeed  
-        else: cloudPos = cloudStart      
         screen.blit(cloud,(0,cloudPos))
-        
+            
+        if cloudPos < screenSize[1]: cloudPos += cloudSpeed  
+        else: cloudPos = cloudStart   
+            
         # LEVEL DISPLAY
         levelNum = "Level " + str(currentLevel)
         levelFont = pygame.font.Font(gameFont, levelSize)
