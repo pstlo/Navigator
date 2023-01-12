@@ -196,7 +196,7 @@ def levelUpdater(levelDictList,gameClock):
 
     for levelDict in levelDictList:
         if levelDict["TIME"] == gameClock:
-           if not levelDict["START"] and levelDict["TIME"] == gameClock:
+           if not levelDict["START"]:
                 levelDict["START"] = True
                 obstacleBoundaries = levelDict["bound"]
                 obstacleSpeed *= levelDict["speedMult"]
@@ -288,7 +288,6 @@ def gameOver(gameClock,running,player,obstacles):
                 player.kill()
                 killAllObjects(obstacles)
                 resetAllLevels(levelDictList)
-                resetGameConstants()
                 attemptNumber += 1
                 main()
     
@@ -297,6 +296,7 @@ attemptNumber = 1
 clk = pygame.time.Clock()
 
 def main():
+    resetGameConstants()
     global attemptNumber
     player = Player()
     obstacles = pygame.sprite.Group()
