@@ -326,7 +326,7 @@ def gameOver(gameClock,running,player,obstacles):
         gameOverRect = gameOverDisplay.get_rect(center = screen.get_rect().center)
         
         exitFont = pygame.font.Font('8bitFont.ttf', helpSize)
-        exitDisplay = exitFont.render("Press escape to quit or space to restart", True, helpColor)
+        exitDisplay = exitFont.render("Press SPACE to restart or ESCAPE to quit", True, helpColor)
         exitRect = exitDisplay.get_rect()
         exitRect.center = (screenSize[0]/2, screenSize[1] - screenSize[1]/6)
         
