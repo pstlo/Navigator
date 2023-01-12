@@ -27,7 +27,7 @@ cloudSpeedMult = 1.5
 gameOverColor = [255,0,0]
 gameOverSize = 100
 finalScoreSize = 35
-finalScoreColor = [255,0,0]
+finalScoreColor = [0,255,0]
 
 # PLAYER
 playerSize = 10 # Default = 10            
@@ -44,16 +44,17 @@ levelTwo = [ False, 15, "KILL", 1, 1, 1.5 ]
 levelThree = [ False, 30, "KILL", 1, 1.5, 1 ] 
 levelFour = [ False, 45, "KILL", 1, 1.5, 1 ] 
 levelFive = [ False, 60, "KILL", 1.25, 1, 1 ] 
-levelSix = [ False, 75, "WRAP", 0.5, 10, 0.1 ] 
-levelSeven = [ False, 90, "KILL", 2, 0.1, 10 ] 
+levelSix = [ False, 75, "WRAP", 1, 1.5, 1 ] 
+levelSeven = [ False, 90, "KILL", 1, 1, 10 ] 
 levelEight = [ False, 105, "BOUNCE", 1.25, 1.25, 1.0 ] 
-levelNine = [ False, 120, "KILL", 1.25, 1.25, 1.25 ]
-levelTen = [ False, 135, "WRAP", 1, 1, 1 ] 
+levelNine = [ False, 120, "KILL", 1.1, 1.1, 1.1 ]
+levelTen = [ False, 135, "WRAP", 1.1, 1.1, 1.1 ] 
 overTime = [ False, 150, "KILL", 1.1, 1.1, 1.1 ] 
 levelSettingsList = [levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight,levelNine,levelTen,overTime]
 #---------------------------------------------------------------------------------------------------------------------------------
 
-savedConstants = {"obstacleSpeed" : obstacleSpeed, 
+savedConstants = {
+                "obstacleSpeed" : obstacleSpeed, 
                 "obstacleSize" : obstacleSize, 
                 "maxObstacles" : maxObstacles, 
                 "obstacleBoundaries" : obstacleBoundaries,
@@ -278,14 +279,16 @@ def gameOver(gameClock,running,player,obstacles):
         
         exitFontSize = round(gameOverSize / 3)
         exitFont = pygame.font.Font('8bitFont.ttf', exitFontSize)
-        exitDisplay = exitFont.render("Press escape to quit or space to restart", True, gameOverColor)
-        exitRect = exitDisplay.get_rect(midbottom = screen.get_rect().midbottom)
+        exitDisplay = exitFont.render("Press escape to quit or space to restart", True, finalScoreColor)
+        exitRect = exitDisplay.get_rect()
+        exitRect.center = (screenSize[0]/2, screenSize[1] - screenSize[1]/6)
         
         statLineFontSize = round(finalScoreSize * 0.75)
         statLine = "Attempt " + str(attemptNumber) + " You survived for " + str(gameClock) + " seconds and died at level " + str(currentLevel)
         statFont = pygame.font.Font('8bitFont.ttf', statLineFontSize)
         statDisplay = statFont.render(statLine, True, finalScoreColor)
-        statRect = statDisplay.get_rect(midtop = screen.get_rect().midtop)
+        statRect = statDisplay.get_rect()
+        statRect.center = (screenSize[0]/2, screenSize[1] - screenSize[1]/3)
         
         screen.blit(bg,(0,0))
         screen.blit(gameOverDisplay,gameOverRect)
