@@ -170,7 +170,7 @@ def resetAllLevels(levelDictList):
         
 def resetGameConstants():
     global savedConstants, obstacleSpeed, obstacleSize, maxObstacles, obstacleBoundaries, cloudSpeed
-    obstaclespeed = savedConstants["obstacleSpeed"]
+    obstacleSpeed = savedConstants["obstacleSpeed"]
     obstacleSize = savedConstants["obstacleSize"]
     maxObstacles = savedConstants["maxObstacles"]
     obstacleBoundaries = savedConstants["obstacleBoundaries"]
