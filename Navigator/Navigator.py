@@ -59,7 +59,8 @@ savedConstants = {"obstacleSpeed" : obstacleSpeed,
                 "obstacleBoundaries" : obstacleBoundaries,
                 "cloudSpeed" : cloudSpeed
                 }
-
+                
+currentLevel = 1
 screen = pygame.display.set_mode(screenSize)
 
 # ASSETS
@@ -92,16 +93,16 @@ class Player(pygame.sprite.Sprite):
         
         def movement(self): 
             key = pygame.key.get_pressed()
-            if key[pygame.K_w] or key[pygame.K_UP]: player.rect.centery -= player.speed   
-            if key[pygame.K_s] or key[pygame.K_DOWN]: player.rect.centery += player.speed  
-            if key[pygame.K_a] or key[pygame.K_LEFT]: player.rect.centerx -= player.speed
-            if key[pygame.K_d] or key[pygame.K_RIGHT]: player.rect.centerx += player.speed    
+            if key[pygame.K_w] or key[pygame.K_UP]: self.rect.centery -= self.speed   
+            if key[pygame.K_s] or key[pygame.K_DOWN]: self.rect.centery += self.speed  
+            if key[pygame.K_a] or key[pygame.K_LEFT]: self.rect.centerx -= self.speed
+            if key[pygame.K_d] or key[pygame.K_RIGHT]: self.rect.centerx += self.speed    
         
         def wrapping(self):
-            if player.rect.centery  > screenSize[1]: player.rect.centery = 0
-            if player.rect.centery < 0: player.rect.centery = screenSize[1]
-            if player.rect.centerx > screenSize[0]: player.rect.centerx = 0
-            if player.rect.centerx < 0: player.rect.centerx = screenSize[0]
+            if self.rect.centery  > screenSize[1]: self.rect.centery = 0
+            if self.rect.centery < 0: self.rect.centery = screenSize[1]
+            if self.rect.centerx > screenSize[0]: self.rect.centerx = 0
+            if self.rect.centerx < 0: self.rect.centerx = screenSize[0]
                 
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self):
@@ -127,32 +128,6 @@ def movementReverse(direction):
         elif direction == "SE": return "NW"
         elif direction == "SW": return "NE"
               
-currentLevel = 1    
-attemptNumber = 1
-player = Player()
-obstacles = pygame.sprite.Group()
-sprites = pygame.sprite.Group()
-sprites.add(player)
-
-clk = pygame.time.Clock()
-gameClock = 0        
-
-def levelDictSetter(levelSettingsList):
-    levelDictList = []
-    for settings in levelSettingsList:
-        levelDict = {
-                        "START" : settings[0], 
-                        "TIME" : settings[1],
-                        "bound" : settings[2],  
-                        "speedMult" : settings[3],
-                        "obsSizeMult" : settings[4],
-                        "maxObsMult" : settings[5],                    
-                    }              
-        levelDictList.append(levelDict)   
-    return levelDictList
-
-levelDictList = levelDictSetter(levelSettingsList)
-
 def getMovement():
         X = random.randint(0, screenSize[0])
         Y = random.randint(0, screenSize[1])
@@ -193,28 +168,48 @@ def resetAllLevels(levelDictList):
     for levelDict in levelDictList:
         levelDict["START"] = False
         
-def resetGameConstants(savedConstants):
-    global obstacleSpeed, obstacleSize, maxObstacles, obstacleBoundaries, cloudSpeed
+def resetGameConstants():
+    global savedConstants, obstacleSpeed, obstacleSize, maxObstacles, obstacleBoundaries, cloudSpeed
     obstaclespeed = savedConstants["obstacleSpeed"]
     obstacleSize = savedConstants["obstacleSize"]
     maxObstacles = savedConstants["maxObstacles"]
     obstacleBoundaries = savedConstants["obstacleBoundaries"]
     cloudSpeed = savedConstants["cloudSpeed"]  
 
-def levelUpdater(levelDict):   # PASS THE CORRESPONDING DICT TO THIS FUNCTION
-        global obstacleBoundaries, obstacleSpeed, obstacleColor, maxObstacles, obstacleSize, currentLevel
-        
-        try:
-            if not levelDict["START"] and levelDict["TIME"] == gameClock:
-                    levelDict["START"] = True
-                    obstacleBoundaries = levelDict["bound"]
-                    obstacleSpeed *= levelDict["speedMult"]
-                    maxObstacles *= levelDict["maxObsMult"]
-                    obstacleSize *= levelDict["obsSizeMult"]
-                    currentLevel += 1
-                    cloudSpeed *= cloudSpeedMult            
-        except:
-            pass
+def levelDictSetter():
+    global levelSettingsList
+    levelDictList = []
+    for settings in levelSettingsList:
+        levelDict = {
+                        "START" : settings[0], 
+                        "TIME" : settings[1],
+                        "bound" : settings[2],  
+                        "speedMult" : settings[3],
+                        "obsSizeMult" : settings[4],
+                        "maxObsMult" : settings[5],                    
+                    }              
+        levelDictList.append(levelDict)   
+    return levelDictList   
+    
+def levelUpdater(levelDictList,gameClock):
+    global obstacleBoundaries, obstacleSpeed, obstacleColor, maxObstacles, obstacleSize, cloudSpeedMult,cloudSpeed, currentLevel
+
+    for levelDict in levelDictList:
+        if levelDict["TIME"] == gameClock:
+           if not levelDict["START"] and levelDict["TIME"] == gameClock:
+                levelDict["START"] = True
+                obstacleBoundaries = levelDict["bound"]
+                obstacleSpeed *= levelDict["speedMult"]
+                maxObstacles *= levelDict["maxObsMult"]
+                obstacleSize *= levelDict["obsSizeMult"]
+                cloudSpeed *= cloudSpeedMult
+                currentLevel += 1 
+            
+def spawner(sprites,obstacles,maxObstacles):
+        if len(obstacles) < maxObstacles:
+            obstacle = Obstacle()
+            obstacles.add(obstacle)
+            sprites.add(obstacle) 
             
 def obstacleMove(obstacles):
     for obs in obstacles:
@@ -250,40 +245,74 @@ def wrapObstacle(obstacles):
         if obs.rect.centerx > screenSize[0]: obs.rect.centerx = 0      
         if obs.rect.centerx < 0: obs.rect.centerx = screenSize[0]
             
-def levelDictSelector(levelDictList,gameClock):
-    for levelDict in levelDictList:
-        if levelDict["TIME"] == gameClock:
-            return levelDict
-        else:
-            continue 
+def gameOver(gameClock,running,player,obstacles):
+    global attemptNumber,currentLevel
+    gameOver = True
+    
+    while gameOver:
+        
+        gameOverFont = pygame.font.Font('8bitFont.ttf', gameOverSize)
+        gameOverDisplay = gameOverFont.render("Game Over", True, gameOverColor)
+        gameOverRect = gameOverDisplay.get_rect(center = screen.get_rect().center)
+        
+        exitFontSize = round(gameOverSize / 3)
+        exitFont = pygame.font.Font('8bitFont.ttf', exitFontSize)
+        exitDisplay = exitFont.render("Press escape to quit or space to restart", True, gameOverColor)
+        exitRect = exitDisplay.get_rect(midbottom = screen.get_rect().midbottom)
+        
+        statLineFontSize = round(finalScoreSize * 0.75)
+        statLine = "Attempt " + str(attemptNumber) + " You survived for " + str(gameClock) + " seconds and died at level " + str(currentLevel)
+        statFont = pygame.font.Font('8bitFont.ttf', statLineFontSize)
+        statDisplay = statFont.render(statLine, True, finalScoreColor)
+        statRect = statDisplay.get_rect(midtop = screen.get_rect().midtop)
+        
+        screen.blit(bg,(0,0))
+        screen.blit(gameOverDisplay,gameOverRect)
+        screen.blit(exitDisplay,exitRect)
+        screen.blit(statDisplay,statRect)
+        pygame.display.flip()
+        for event in pygame.event.get():
+            
+            # EXIT
+            if (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE) or event.type == pygame.QUIT:
+                stopRunning = True
+                pygame.quit()
+                sys.exit()
 
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                running = True
+                
+                # SET DEFAULTS AND RESTART GAME
+                gameClock = 0
+                currentLevel = 1
+                player.kill()
+                killAllObjects(obstacles)
+                resetAllLevels(levelDictList)
+                resetGameConstants()
+                attemptNumber += 1
+                main()
+    
+levelDictList = levelDictSetter()
+attemptNumber = 1
+clk = pygame.time.Clock()
 
 def main():
-    
-    global gameClock
+    global attemptNumber
+    player = Player()
+    obstacles = pygame.sprite.Group()
+    sprites = pygame.sprite.Group()
+    sprites.add(player)
+    gameClock = 0
     
     # TIMER DISPLAY
     timerFont = pygame.font.Font('8bitFont.ttf', timerSize)
     timerDisplay = timerFont.render(str(gameClock), True, timerColor)
     timerEvent = pygame.USEREVENT + 1
-    pygame.time.set_timer(timerEvent, timerDelay)
-    
-    running = True
-
-    
-              
-    def spawner():
-        if len(obstacles) < maxObstacles:
-            obstacle = Obstacle()
-            obstacles.add(obstacle)
-            sprites.add(obstacle)      
-    
+    pygame.time.set_timer(timerEvent, timerDelay) 
+ 
     cloudPos = cloudStart
-    stopRunning = False # Skip game over screen
-    
-    global currentLevel
-    global attemptNumber
-    
+    running = True
+   
     # GAME LOOP
     while running:
         
@@ -291,7 +320,6 @@ def main():
             # EXIT
             if (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE) or event.type == pygame.QUIT:
                 running = False
-                stopRunning = True
                 pygame.quit()
                 sys.exit()
                 break
@@ -313,20 +341,19 @@ def main():
         
         # COLLISION DETECTION
         if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask):
-            running = False
+            gameOver(gameClock,running,player,obstacles)
                     
         player.movement()
         player.wrapping()
-        spawner()
+        spawner(sprites,obstacles,maxObstacles)
         obstacleMove(obstacles)
         
         if obstacleBoundaries == "KILL": obstacleRemove(obstacles)
         if obstacleBoundaries == "BOUNCE": bounceObstacle(obstacles)
         if obstacleBoundaries == "WRAP": wrapObstacle(obstacles)
                
-        levelDict = levelDictSelector(levelDictList,gameClock)
-        levelUpdater(levelDict)    
-                   
+        levelUpdater(levelDictList,gameClock)        
+        
         sprites.draw(screen) # Draws all sprites
         
         timerRect = timerDisplay.get_rect(topright = screen.get_rect().topright)
@@ -339,48 +366,6 @@ def main():
         screen.fill(screenColor)
         clk.tick(fps)
     
-    # GAME OVER SCREEN   
-    gameOverFont = pygame.font.Font('8bitFont.ttf', gameOverSize)
-    gameOverDisplay = gameOverFont.render("Game Over", True, gameOverColor)
-    gameOverRect = gameOverDisplay.get_rect(center = screen.get_rect().center)
-    
-    exitFontSize = round(gameOverSize / 3)
-    exitFont = pygame.font.Font('8bitFont.ttf', exitFontSize)
-    exitDisplay = exitFont.render("Press escape to quit or space to restart", True, gameOverColor)
-    exitRect = exitDisplay.get_rect(midbottom = screen.get_rect().midbottom)
-    
-    statLineFontSize = round(finalScoreSize * 0.75)
-    statLine = "Attempt " + str(attemptNumber) + " You survived for " + str(gameClock) + " seconds and died at level " + str(currentLevel)
-    statFont = pygame.font.Font('8bitFont.ttf', statLineFontSize)
-    statDisplay = statFont.render(statLine, True, finalScoreColor)
-    statRect = statDisplay.get_rect(midtop = screen.get_rect().midtop)
-    
-    while not stopRunning:
-        screen.blit(bg,(0,0))
-        screen.blit(gameOverDisplay,gameOverRect)
-        screen.blit(exitDisplay,exitRect)
-        screen.blit(statDisplay,statRect)
-        pygame.display.flip()
-        for event in pygame.event.get():
-            
-            # EXIT
-            if (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE) or event.type == pygame.QUIT:
-                stopRunning = True
-                pygame.quit()
-                sys.exit()
-
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                running = True
-                
-                # SET DEFAULTS AND RESTART GAME
-                gameClock = 0
-                currentLevel = 1
-                killAllObjects(obstacles)
-                resetAllLevels(levelDictList)
-                resetGameConstants(savedConstants)
-                attemptNumber += 1
-                main()
-        
 if __name__ == '__main__': main()
     
     
