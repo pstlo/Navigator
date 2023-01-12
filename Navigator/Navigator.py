@@ -34,7 +34,7 @@ playerSize = 10 # Default = 10
 playerSpeed = 5 # Default = 5
 
 # OBSTACLES
-obstacleSpeed = 4  # Default = 3           
+obstacleSpeed = 4  # Default = 4           
 obstacleSize = 30    # Default = 30
 maxObstacles = 12  # Default = 12
 obstacleBoundaries = "KILL" # Default = "KILL" (Can be updated by level)
@@ -111,6 +111,18 @@ class Player(pygame.sprite.Sprite):
             if key[pygame.K_d] or key[pygame.K_RIGHT]:
                 self.rect.centerx += self.speed
                 self.angle = -90
+            
+            if (key[pygame.K_a] or key[pygame.K_LEFT]) and (key[pygame.K_w] or key[pygame.K_UP]):
+                self.angle = 45
+            
+            if (key[pygame.K_d] or key[pygame.K_RIGHT]) and (key[pygame.K_w] or key[pygame.K_UP]):
+                self.angle = -45
+            
+            if (key[pygame.K_d] or key[pygame.K_RIGHT]) and (key[pygame.K_s] or key[pygame.K_DOWN]):
+                self.angle = -120
+                
+            if (key[pygame.K_a] or key[pygame.K_LEFT]) and (key[pygame.K_s] or key[pygame.K_DOWN]):
+                self.angle = 120
             
             if (key[pygame.K_d] or key[pygame.K_RIGHT]) and ( key[pygame.K_a] or key[pygame.K_LEFT]): 
                 self.angle = 0   
