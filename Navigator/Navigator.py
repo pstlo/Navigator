@@ -90,14 +90,30 @@ class Player(pygame.sprite.Sprite):
             self.image = pygame.image.load('spaceShip.png').convert_alpha()
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
+            self.angle = 0
         
-        def movement(self): 
+        def movement(self):
             key = pygame.key.get_pressed()
-            if key[pygame.K_w] or key[pygame.K_UP]: self.rect.centery -= self.speed   
-            if key[pygame.K_s] or key[pygame.K_DOWN]: self.rect.centery += self.speed  
-            if key[pygame.K_a] or key[pygame.K_LEFT]: self.rect.centerx -= self.speed
-            if key[pygame.K_d] or key[pygame.K_RIGHT]: self.rect.centerx += self.speed    
-        
+            
+            if key[pygame.K_w] or key[pygame.K_UP]: 
+                self.rect.centery -= self.speed
+                self.angle = 0
+                
+            if key[pygame.K_s] or key[pygame.K_DOWN]: 
+                self.rect.centery += self.speed
+                self.angle = 180
+            
+            if key[pygame.K_a] or key[pygame.K_LEFT]: 
+                self.rect.centerx -= self.speed
+                self.angle = 90
+            
+            if key[pygame.K_d] or key[pygame.K_RIGHT]:
+                self.rect.centerx += self.speed
+                self.angle = -90
+            
+            if key[pygame.K_d] or key[pygame.K_RIGHT] and ( key[pygame.K_a] or key[pygame.K_LEFT]): 
+                self.angle = 0   
+ 
         def wrapping(self):
             if self.rect.centery  > screenSize[1]: self.rect.centery = 0
             if self.rect.centery < 0: self.rect.centery = screenSize[1]
@@ -117,7 +133,12 @@ class Obstacle(pygame.sprite.Sprite):
             self.image = meteorList[random.randint(0,len(meteorList)-1)]
         self.image = pygame.transform.scale(self.image, (self.size, self.size))
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
-
+        
+def rot_center(image, rect, angle):
+    rot_image = pygame.transform.rotate(image, angle)
+    rot_rect = rot_image.get_rect(center=rect.center)
+    return rot_image,rot_rect
+    
 def movementReverse(direction):
         if direction == "N": return "S"           
         elif direction == "S": return "N"                     
@@ -326,6 +347,7 @@ def main():
             
             elif event.type == timerEvent:
                 gameClock +=1
+                print(player.angle)
                 timerDisplay = timerFont.render(str(gameClock), True, (255,255,255))
         
         # BACKGROUND ANIMATION
@@ -354,17 +376,20 @@ def main():
                
         levelUpdater(levelDictList,gameClock)        
         
-        sprites.draw(screen) # Draws all sprites
+        newBlit = rot_center(player.image,player.rect,player.angle)
+        screen.blit(newBlit[0],newBlit[1])
+        obstacles.draw(screen) # Draws all sprites
         
         timerRect = timerDisplay.get_rect(topright = screen.get_rect().topright)
         levelRect = levelDisplay.get_rect(topleft = screen.get_rect().topleft)
         
         screen.blit(timerDisplay, timerRect)
         screen.blit(levelDisplay, levelRect)
-        
+        player.angle = 0
         pygame.display.flip()
         screen.fill(screenColor)
         clk.tick(fps)
+        
     
 if __name__ == '__main__': main()
     
