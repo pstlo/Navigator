@@ -111,7 +111,7 @@ class Player(pygame.sprite.Sprite):
                 self.rect.centerx += self.speed
                 self.angle = -90
             
-            if key[pygame.K_d] or key[pygame.K_RIGHT] and ( key[pygame.K_a] or key[pygame.K_LEFT]): 
+            if (key[pygame.K_d] or key[pygame.K_RIGHT]) and ( key[pygame.K_a] or key[pygame.K_LEFT]): 
                 self.angle = 0   
  
         def wrapping(self):
