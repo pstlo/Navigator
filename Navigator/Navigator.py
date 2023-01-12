@@ -57,6 +57,7 @@ overTime = [ False, 150, "KILL", 1.1, 1.1, 1.1 ]
 levelSettingsList = [levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight,levelNine,levelTen,overTime]
 #---------------------------------------------------------------------------------------------------------------------------------
 
+# SAVE LEVEL 1 DEFAULTS
 savedConstants = {
                 "obstacleSpeed" : obstacleSpeed, 
                 "obstacleSize" : obstacleSize, 
@@ -70,13 +71,20 @@ mainMenu = True
 screen = pygame.display.set_mode(screenSize)
 
 # ASSETS
-curDir = str(os.getcwd())
-
-# METEORS
+baseDir = str(os.getcwd())
+curDir = os.path.join(baseDir, 'Assets')
 mDir = os.path.join(curDir, 'Meteors')
+
+# FONT
+gameFont = ''
+for filename in os.listdir(curDir):
+    if filename.endswith('.ttf'):
+        path = os.path.join(curDir, filename)
+        gameFont = path
+            
+# METEORS
 meteorDict = {}
 meteorList = []
-
 for filename in os.listdir(mDir):
     if filename.endswith('.png'):
         path = os.path.join(mDir, filename)
@@ -85,15 +93,30 @@ for filename in os.listdir(mDir):
         meteorList.append(meteorDict[key])
 
 # BACKGROUND
-bg = pygame.image.load('Background.png').convert_alpha()
-cloud = pygame.image.load('Cloud.png').convert_alpha()
-
+bg = ''
+cloud = ''
+for filename in os.listdir(curDir):
+    if filename == 'Background.png':
+        path = os.path.join(curDir, filename)
+        bg = pygame.image.load(path).convert_alpha()
+    
+    elif filename == 'Cloud.png':
+        path = os.path.join(curDir, filename)
+        cloud = pygame.image.load(path).convert_alpha()
+        
+# SPACESHIP
+spaceShip = ''
+for filename in os.listdir(curDir):
+    if filename == 'spaceShip.png':
+        path = os.path.join(curDir, filename)
+        spaceShip = pygame.image.load(path).convert_alpha()
+        
 class Player(pygame.sprite.Sprite):
         def __init__(self):
             super().__init__() 
             self.size = playerSize        
             self.speed = playerSpeed
-            self.image = pygame.image.load('spaceShip.png').convert_alpha()
+            self.image = spaceShip
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
             self.angle = 0
@@ -289,11 +312,11 @@ def startMenu():
     if mainMenu:
         while True:
             
-            startFont = pygame.font.Font('8bitFont.ttf', startSize)
+            startFont = pygame.font.Font(gameFont, startSize)
             startDisplay = startFont.render("NAVIGATOR", True, startColor)
             startRect = startDisplay.get_rect(center = screen.get_rect().center)
             
-            startHelpFont = pygame.font.Font('8bitFont.ttf', helpSize)
+            startHelpFont = pygame.font.Font(gameFont, helpSize)
             startHelpDisplay = startHelpFont.render("Press SPACE to start or ESCAPE to quit", True, helpColor)
             startHelpRect = startHelpDisplay.get_rect()
             startHelpRect.center = (screenSize[0]/2,screenSize[1]-screenSize[1]/3)
@@ -321,18 +344,18 @@ def gameOver(gameClock,running,player,obstacles):
     
     while gameOver:
         
-        gameOverFont = pygame.font.Font('8bitFont.ttf', gameOverSize)
+        gameOverFont = pygame.font.Font(gameFont, gameOverSize)
         gameOverDisplay = gameOverFont.render("Game Over", True, gameOverColor)
         gameOverRect = gameOverDisplay.get_rect(center = screen.get_rect().center)
         
-        exitFont = pygame.font.Font('8bitFont.ttf', helpSize)
+        exitFont = pygame.font.Font(gameFont, helpSize)
         exitDisplay = exitFont.render("Press SPACE to restart or ESCAPE to quit", True, helpColor)
         exitRect = exitDisplay.get_rect()
         exitRect.center = (screenSize[0]/2, screenSize[1] - screenSize[1]/6)
         
         statLineFontSize = round(finalScoreSize * 0.75)
         statLine = "Attempt " + str(attemptNumber) + " You survived for " + str(gameClock) + " seconds and died at level " + str(currentLevel)
-        statFont = pygame.font.Font('8bitFont.ttf', statLineFontSize)
+        statFont = pygame.font.Font(gameFont, statLineFontSize)
         statDisplay = statFont.render(statLine, True, finalScoreColor)
         statRect = statDisplay.get_rect()
         statRect.center = (screenSize[0]/2, screenSize[1] - screenSize[1]/3)
@@ -365,8 +388,6 @@ levelDictList = levelDictSetter()
 attemptNumber = 1
 clk = pygame.time.Clock()
 
-
-
 def main():
     resetGameConstants()
     global attemptNumber
@@ -382,7 +403,7 @@ def main():
     gameClock = 0
     
     # TIMER DISPLAY
-    timerFont = pygame.font.Font('8bitFont.ttf', timerSize)
+    timerFont = pygame.font.Font(gameFont, timerSize)
     timerDisplay = timerFont.render(str(gameClock), True, timerColor)
     timerEvent = pygame.USEREVENT + 1
     pygame.time.set_timer(timerEvent, timerDelay) 
@@ -413,7 +434,7 @@ def main():
         
         # LEVEL DISPLAY
         levelNum = "Level " + str(currentLevel)
-        levelFont = pygame.font.Font('8bitFont.ttf', levelSize)
+        levelFont = pygame.font.Font(gameFont, levelSize)
         levelDisplay = levelFont.render( str(levelNum), True, levelColor )
         
         # COLLISION DETECTION
@@ -445,7 +466,6 @@ def main():
         screen.fill(screenColor)
         clk.tick(fps)
         
-    
 if __name__ == '__main__': main()
     
     
