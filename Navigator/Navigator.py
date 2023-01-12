@@ -33,8 +33,7 @@ helpColor = [0,255,0]
 finalScoreSize = 35
 finalScoreColor = [0,255,0]
 
-# PLAYER
-playerSize = 10 # Default = 10            
+# PLAYER           
 playerSpeed = 5 # Default = 5
 
 # OBSTACLES
@@ -113,8 +112,7 @@ for filename in os.listdir(curDir):
         
 class Player(pygame.sprite.Sprite):
         def __init__(self):
-            super().__init__() 
-            self.size = playerSize        
+            super().__init__()         
             self.speed = playerSpeed
             self.image = spaceShip
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
