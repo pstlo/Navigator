@@ -24,8 +24,12 @@ levelColor = [255,255,255] # Default = [255,255,255]
 cloudSpeed = 1
 cloudStart = -1000
 cloudSpeedMult = 1.5
+startSize = 150
+startColor = [0,255,0]
 gameOverColor = [255,0,0]
 gameOverSize = 100
+helpSize = 30
+helpColor = [0,255,0]
 finalScoreSize = 35
 finalScoreColor = [0,255,0]
 
@@ -62,6 +66,7 @@ savedConstants = {
                 }
                 
 currentLevel = 1
+mainMenu = True
 screen = pygame.display.set_mode(screenSize)
 
 # ASSETS
@@ -278,7 +283,38 @@ def wrapObstacle(obstacles):
         if obs.rect.centery < 0: obs.rect.centery = screenSize[1]                      
         if obs.rect.centerx > screenSize[0]: obs.rect.centerx = 0      
         if obs.rect.centerx < 0: obs.rect.centerx = screenSize[0]
+
+def startMenu():
+    global mainMenu
+    if mainMenu:
+        while True:
             
+            startFont = pygame.font.Font('8bitFont.ttf', startSize)
+            startDisplay = startFont.render("NAVIGATOR", True, startColor)
+            startRect = startDisplay.get_rect(center = screen.get_rect().center)
+            
+            startHelpFont = pygame.font.Font('8bitFont.ttf', helpSize)
+            startHelpDisplay = startHelpFont.render("Press SPACE to start or ESCAPE to quit", True, helpColor)
+            startHelpRect = startHelpDisplay.get_rect()
+            startHelpRect.center = (screenSize[0]/2,screenSize[1]-screenSize[1]/3)
+            
+            for event in pygame.event.get():
+                # START
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                    mainMenu = False
+                    return
+                
+                elif event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and  event.key == pygame.K_ESCAPE):
+                    pygame.quit()
+                    sys.exit()
+                
+                else:
+                    screen.fill([0,0,0])
+                    screen.blit(bg,(0,0))
+                    screen.blit(startDisplay,startRect)
+                    screen.blit(startHelpDisplay, startHelpRect)
+                    pygame.display.update()
+           
 def gameOver(gameClock,running,player,obstacles):
     global attemptNumber,currentLevel
     gameOver = True
@@ -289,9 +325,8 @@ def gameOver(gameClock,running,player,obstacles):
         gameOverDisplay = gameOverFont.render("Game Over", True, gameOverColor)
         gameOverRect = gameOverDisplay.get_rect(center = screen.get_rect().center)
         
-        exitFontSize = round(gameOverSize / 3)
-        exitFont = pygame.font.Font('8bitFont.ttf', exitFontSize)
-        exitDisplay = exitFont.render("Press escape to quit or space to restart", True, finalScoreColor)
+        exitFont = pygame.font.Font('8bitFont.ttf', helpSize)
+        exitDisplay = exitFont.render("Press escape to quit or space to restart", True, helpColor)
         exitRect = exitDisplay.get_rect()
         exitRect.center = (screenSize[0]/2, screenSize[1] - screenSize[1]/6)
         
@@ -311,7 +346,6 @@ def gameOver(gameClock,running,player,obstacles):
             
             # EXIT
             if (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE) or event.type == pygame.QUIT:
-                stopRunning = True
                 pygame.quit()
                 sys.exit()
 
@@ -331,9 +365,16 @@ levelDictList = levelDictSetter()
 attemptNumber = 1
 clk = pygame.time.Clock()
 
+
+
 def main():
     resetGameConstants()
     global attemptNumber
+    global mainMenu
+    
+    if mainMenu:
+        startMenu()
+        
     player = Player()
     obstacles = pygame.sprite.Group()
     sprites = pygame.sprite.Group()
