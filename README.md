@@ -1,6 +1,6 @@
 # Navigator
 
-Simple, poorly written but semi fun arcade game, written in Python using PyGame
+Simple, poorly written but semi fun arcade game, written in Python with PyGame
 
 pixel art by @guetta.rt on instagram
 
