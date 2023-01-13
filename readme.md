@@ -6,8 +6,9 @@ To get started:
 1. Install python
 2. Install pygame with
 ```pip install pygame```
-or on newer python versions:
+or
 ```pip install pygame --pre```
+for python 3.11
  
 
 
