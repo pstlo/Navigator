@@ -1,1 +1,0 @@
-python Navigator2X.py
