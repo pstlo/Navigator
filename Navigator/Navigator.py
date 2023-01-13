@@ -218,10 +218,10 @@ class Obstacle(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
         
 
-def rot_center(image, rect, angle):
-    rot_image = pygame.transform.rotate(image, angle)
-    rot_rect = rot_image.get_rect(center=rect.center)
-    return rot_image,rot_rect
+def rotateImage(image, rect, angle):
+    rotated = pygame.transform.rotate(image, angle)
+    rotatedRect = rotated.get_rect(center=rect.center)
+    return rotated,rotatedRect
     
 
 def movementReverse(direction):
@@ -612,7 +612,7 @@ def main():
         levelUpdater(gameConstants,gameClock)       
         
         # DRAW SPRITES
-        newBlit = rot_center(player.image,player.rect,player.angle) # Player rotation
+        newBlit = rotateImage(player.image,player.rect,player.angle) # Player rotation
         screen.blit(newBlit[0],newBlit[1]) # Draw player
         obstacles.draw(screen) # Draw obstacles
         
