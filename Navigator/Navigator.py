@@ -1,4 +1,4 @@
-
+# CREDITS VERSION
 # NAVIGATOR
 
 import random
@@ -35,7 +35,8 @@ helpSize = 30 # Default = 30
 helpColor = [0,255,0] # Default = [0,255,0]
 finalScoreSize = 35 # Default = 35
 finalScoreColor = [0,255,0] # Default = [0,255,0]
-
+creditsFontSize = 75
+creditsColor = [255,255,255]
 
 # PLAYER           
 playerSpeed = 5 # Default = 5
@@ -393,6 +394,10 @@ def startMenu():
                     mainMenu = False
                     return
                 
+                # CREDITS
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_c:
+                    creditScreen()
+                
                 elif event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and  event.key == pygame.K_ESCAPE):
                     pygame.quit()
                     sys.exit()
@@ -457,6 +462,42 @@ def gameOver(gameClock,running,player,obstacles):
                 attemptNumber += 1
                 main()
                 
+
+def creditScreen():
+    rollCredits = True 
+    creditsX = screenSize[0]/2
+    creditsY = screenSize[1]/2
+    creditsFont = pygame.font.Font(gameFont, creditsFontSize)
+    createdByLine = "Created by"
+    creditsLine = "Mike Pistolesi"
+    createdByDisplay = creditsFont.render(createdByLine, True, creditsColor)
+    creditsDisplay = creditsFont.render(creditsLine, True, creditsColor)
+    creditsRect = creditsDisplay.get_rect()
+    createdByRect = createdByDisplay.get_rect()
+    
+    while rollCredits:
+        
+        creditsRect.center = (creditsX,creditsY)
+        createdByRect.center = (creditsX, creditsY - screenSize[1]/10)
+        screen.blit(bgList[currentStage - 1][0],(0,0))
+        screen.blit(createdByDisplay,createdByRect)
+        screen.blit(creditsDisplay,creditsRect)
+        pygame.display.flip()
+        
+        for event in pygame.event.get():
+            # EXIT
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+                
+            # RETURN TO GAME
+            elif event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_c): 
+                rollCredits = False
+                
+                
+        
+        
+        
 
 gameConstants = gameConstantsSetter(stageList)
 attemptNumber = 1
