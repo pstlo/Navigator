@@ -1,3 +1,6 @@
+
+# (UPDATED)
+
 import random
 import math
 import sys
@@ -21,17 +24,18 @@ timerColor = [255,255,255] # Default = [255,255,255]
 timerDelay = 1000 # Default = 1000
 levelSize = 50 # Default = 50                                                                                                                                                                   
 levelColor = [255,255,255] # Default = [255,255,255]                                                                                                                                            
-cloudSpeed = 1
-cloudStart = -1000
-cloudSpeedMult = 1.5
-startSize = 150
-startColor = [0,255,0]
-gameOverColor = [255,0,0]
-gameOverSize = 100
-helpSize = 30
-helpColor = [0,255,0]
-finalScoreSize = 35
-finalScoreColor = [0,255,0]
+cloudSpeed = 1 # Default = 1
+cloudStart = -1000 # Default = -1000
+cloudSpeedMult = 1.5 # Default = 1.5
+startSize = 150 # Default = 150
+startColor = [0,255,0] # Default = [0,255,0]
+gameOverColor = [255,0,0] # Default = [255,0,0]
+gameOverSize = 100 # Default = 100
+helpSize = 30 # Default = 30 
+helpColor = [0,255,0] # Default = [0,255,0]
+finalScoreSize = 35 # Default = 35
+finalScoreColor = [0,255,0] # Default = [0,255,0]
+
 
 # PLAYER           
 playerSpeed = 5 # Default = 5
@@ -42,21 +46,30 @@ obstacleSize = 30    # Default = 30
 maxObstacles = 12  # Default = 12
 obstacleBoundaries = "KILL" # Default = "KILL" (Can be updated by level)
 
-# LEVELS:   [ False , TIME, BOUNDS, SPEED, SIZE, NUMBER ] , then add to levelSettingsList
-levelTwo = [ False, 15, "KILL", 1, 1, 1.5 ] 
-levelThree = [ False, 30, "KILL", 1, 1.5, 1 ] 
-levelFour = [ False, 45, "KILL", 1, 1.5, 1 ] 
-levelFive = [ False, 60, "KILL", 1.25, 1, 1 ] 
-levelSix = [ False, 75, "WRAP", 1, 1.5, 1 ] 
-levelSeven = [ False, 90, "KILL", 1, 1, 10 ] 
-levelEight = [ False, 105, "BOUNCE", 1.25, 1.25, 1.0 ] 
-levelNine = [ False, 120, "KILL", 1.1, 1.1, 1.1 ]
-levelTen = [ False, 135, "WRAP", 1.1, 1.1, 1.1 ] 
-overTime = [ False, 150, "KILL", 1.1, 1.1, 1.1 ] 
-levelSettingsList = [levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight,levelNine,levelTen,overTime]
+# LEVELS  
+levelTimer = 15 # Default = 15 / Time between levels
+
+# [ False , (levelNumber - 1) * levelTimer , BOUNDS, SPEED, SIZE, NUMBER ]
+levelTwo = [ False, levelTimer, "KILL", 1, 1, 1.5 ] 
+levelThree = [ False, 2 * levelTimer, "KILL", 1, 1.5, 1 ] 
+levelFour = [ False, 3 * levelTimer, "KILL", 1, 1.5, 1 ] 
+levelFive = [ False, 4 * levelTimer, "KILL", 1.25, 1, 1 ] 
+levelSix = [ False, 5 * levelTimer, "WRAP", 1, 1.5, 1 ] 
+levelSeven = [ False, 6 * levelTimer, "KILL", 1, 1, 10 ] 
+levelEight = [ False, 7 * levelTimer, "BOUNCE", 1.25, 1.25, 1.0 ] 
+levelNine = [ False, 8 * levelTimer, "KILL", 1.1, 1.1, 1.1 ]
+levelTen = [ False, 9 * levelTimer, "WRAP", 1.1, 1.1, 1.1 ]
+overTime = [ False, 10 * levelTimer, "KILL", 1.1, 1.1, 1.1 ]
+
+# DIVIDE INTO STAGES
+stageOneLevels = [levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight,levelNine,levelTen,overTime] # Stage 1
+overTimeLevels = [overTime]
+
+# STORE IN LIST
+stageList = [stageOneLevels, overTimeLevels] # List of stages
 #---------------------------------------------------------------------------------------------------------------------------------
 
-# SAVE LEVEL 1 DEFAULTS
+# STORE LEVEL DEFAULTS
 savedConstants = {
                 "obstacleSpeed" : obstacleSpeed, 
                 "obstacleSize" : obstacleSize, 
@@ -64,10 +77,15 @@ savedConstants = {
                 "obstacleBoundaries" : obstacleBoundaries,
                 "cloudSpeed" : cloudSpeed
                 }
-                
-currentLevel = 1
+
+# LOAD GAME CONSTANTS
+gameConstants = []
+
+# GAME STATE
+currentLevel = 1 
 currentStage = 1
-mainMenu = True
+
+mainMenu = True # Assures start menu only runs once
 screen = pygame.display.set_mode(screenSize)
 
 # ASSETS
@@ -98,22 +116,17 @@ for filename in os.listdir(mDir):
 # BACKGROUNDS
 bgList = []
 for filename in os.listdir(bDir):
-    bgPath = os.path.join(filename,bDir)
+    bgPath = os.path.join(bDir,filename)
     for nextBg in os.listdir(bgPath):
-        nextBgDir = os.path.join(bgPath,nextBg)
-        for newBg in os.listdir(nextBgDir):
-            bg = ''
-            cloud = ''
-            if newBg == 'Background.png':
-                path = os.path.join(nextBgDir, newBg)
-                bg = pygame.image.load(path).convert_alpha()
-            
-            elif newBg == 'Cloud.png':
-                path = os.path.join(nextBgDir, newBg)
-                cloud = pygame.image.load(path).convert_alpha()
-            
-            bgList.append([bg,cloud])
         
+        stageBgPath = os.path.join(bgPath,'Background.png')
+        stageCloudPath = os.path.join(bgPath,'Cloud.png')
+
+        bg = pygame.image.load(stageBgPath).convert_alpha()
+        cloud = pygame.image.load(stageCloudPath).convert_alpha()
+        
+        bgList.append([bg,cloud])
+
 # SPACESHIP
 spaceShipList = []
 for filename in os.listdir(sDir):
@@ -121,6 +134,7 @@ for filename in os.listdir(sDir):
         path = os.path.join(sDir, filename)
         spaceShipList.append(pygame.image.load(path).convert_alpha())
         
+
 class Player(pygame.sprite.Sprite):
         def __init__(self):
             super().__init__()
@@ -131,6 +145,7 @@ class Player(pygame.sprite.Sprite):
             self.mask = pygame.mask.from_surface(self.image)
             self.angle = 0
             
+        
         def movement(self):
             key = pygame.key.get_pressed()
             
@@ -174,12 +189,14 @@ class Player(pygame.sprite.Sprite):
             if (key[pygame.K_a] or key[pygame.K_LEFT]) and ( key[pygame.K_w] or key[pygame.K_UP]) and (key[pygame.K_s] or key[pygame.K_DOWN]) and (key[pygame.K_d] or key[pygame.K_RIGHT]): 
                 self.angle = 0
  
+        
         def wrapping(self):
             if self.rect.centery  > screenSize[1]: self.rect.centery = 0
             if self.rect.centery < 0: self.rect.centery = screenSize[1]
             if self.rect.centerx > screenSize[0]: self.rect.centerx = 0
             if self.rect.centerx < 0: self.rect.centerx = screenSize[0]
                 
+        
         def nextSpaceShip(self):
             self.image = spaceShipList[self.currentImageNum + 1]
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
@@ -200,11 +217,13 @@ class Obstacle(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (self.size, self.size))
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
         
+
 def rot_center(image, rect, angle):
     rot_image = pygame.transform.rotate(image, angle)
     rot_rect = rot_image.get_rect(center=rect.center)
     return rot_image,rot_rect
     
+
 def movementReverse(direction):
         if direction == "N": return "S"           
         elif direction == "S": return "N"                     
@@ -215,6 +234,7 @@ def movementReverse(direction):
         elif direction == "SE": return "NW"
         elif direction == "SW": return "NE"
               
+
 def getMovement():
         X = random.randint(0, screenSize[0])
         Y = random.randint(0, screenSize[1])
@@ -247,14 +267,18 @@ def getMovement():
         move = [position,direction]
         return move 
 
+
 def killAllObjects(obstacles):
     for obstacle in obstacles:
         obstacle.kill()
         
-def resetAllLevels(levelDictList):
-    for levelDict in levelDictList:
-        levelDict["START"] = False
+
+def resetAllLevels(gameConstants):
+    for stage in gameConstants:
+        for levels in stage:
+            levels["START"] = False
         
+
 def resetGameConstants():
     global savedConstants, obstacleSpeed, obstacleSize, maxObstacles, obstacleBoundaries, cloudSpeed
     obstacleSpeed = savedConstants["obstacleSpeed"]
@@ -263,25 +287,36 @@ def resetGameConstants():
     obstacleBoundaries = savedConstants["obstacleBoundaries"]
     cloudSpeed = savedConstants["cloudSpeed"]  
 
-def levelDictSetter():
-    global levelSettingsList
-    levelDictList = []
-    for settings in levelSettingsList:
-        levelDict = {
-                        "START" : settings[0], 
-                        "TIME" : settings[1],
-                        "bound" : settings[2],  
-                        "speedMult" : settings[3],
-                        "obsSizeMult" : settings[4],
-                        "maxObsMult" : settings[5],                    
-                    }              
-        levelDictList.append(levelDict)   
-    return levelDictList   
-    
-def levelUpdater(levelDictList,gameClock):
-    global obstacleBoundaries, obstacleSpeed, obstacleColor, maxObstacles, obstacleSize, cloudSpeedMult,cloudSpeed, currentLevel
 
-    for levelDict in levelDictList:
+def gameConstantsSetter(stageList):
+    returnList = []
+    for stage in stageList:
+        stageConstants = []
+        for settings in stage:
+            levelDict = {
+                            "START" : settings[0], 
+                            "TIME" : settings[1],
+                            "bound" : settings[2],  
+                            "speedMult" : settings[3],
+                            "obsSizeMult" : settings[4],
+                            "maxObsMult" : settings[5],                    
+                }
+                
+            stageConstants.append(levelDict)
+        returnList.append(stageConstants)
+    return returnList   
+    
+
+def levelUpdater(gameConstants,gameClock):
+    global obstacleBoundaries,obstacleSpeed,obstacleColor,maxObstacles,obstacleSize,cloudSpeedMult,cloudSpeed,currentLevel,currentStage
+    
+    if currentStage <= len(gameConstants) - 1:
+        if gameConstants[currentStage][0]["TIME"] == gameClock and not gameConstants[currentStage][0]["START"]:
+            gameConstants[currentStage][0]["START"] = True
+            currentStage += 1
+            currentLevel = 1
+        
+    for levelDict in gameConstants[currentStage-1]:
         if levelDict["TIME"] == gameClock:
            if not levelDict["START"]:
                 levelDict["START"] = True
@@ -291,6 +326,7 @@ def levelUpdater(levelDictList,gameClock):
                 obstacleSize *= levelDict["obsSizeMult"]
                 cloudSpeed *= cloudSpeedMult
                 currentLevel += 1 
+
             
 def spawner(sprites,obstacles,maxObstacles):
         if len(obstacles) < maxObstacles:
@@ -298,6 +334,7 @@ def spawner(sprites,obstacles,maxObstacles):
             obstacles.add(obstacle)
             sprites.add(obstacle) 
             
+
 def obstacleMove(obstacles):
     for obs in obstacles:
         position = obs.rect.center 
@@ -306,6 +343,7 @@ def obstacleMove(obstacles):
         if "E" in obs.direction: obs.rect.centerx += obs.speed 
         if "W" in obs.direction: obs.rect.centerx -= obs.speed
          
+
 def obstacleRemove(obstacles):
     for obs in obstacles:
    
@@ -317,6 +355,7 @@ def obstacleRemove(obstacles):
             obs.kill()
             obstacles.remove(obs)
             
+
 def bounceObstacle(obstacles):
     for obs in obstacles:
         direction = obs.direction
@@ -325,12 +364,14 @@ def bounceObstacle(obstacles):
         if obs.rect.centerx > screenSize[0]: obs.direction = movementReverse(direction)   
         if obs.rect.centerx < 0: obs.direction = movementReverse(direction)
            
+
 def wrapObstacle(obstacles):
     for obs in obstacles:
         if obs.rect.centery  > screenSize[1]: obs.rect.centery = 0  
         if obs.rect.centery < 0: obs.rect.centery = screenSize[1]                      
         if obs.rect.centerx > screenSize[0]: obs.rect.centerx = 0      
         if obs.rect.centerx < 0: obs.rect.centerx = screenSize[0]
+
 
 def startMenu():
     global mainMenu,currentStage
@@ -362,13 +403,16 @@ def startMenu():
                     screen.blit(startDisplay,startRect)
                     screen.blit(startHelpDisplay, startHelpRect)
                     pygame.display.update()
-           
+ 
+
+# GAME OVER SCREEN 
 def gameOver(gameClock,running,player,obstacles):
     global attemptNumber,currentLevel, currentStage
     gameOver = True
     
     while gameOver:
         
+        # "GAME OVER" text
         gameOverFont = pygame.font.Font(gameFont, gameOverSize)
         gameOverDisplay = gameOverFont.render("Game Over", True, gameOverColor)
         gameOverRect = gameOverDisplay.get_rect(center = screen.get_rect().center)
@@ -378,6 +422,7 @@ def gameOver(gameClock,running,player,obstacles):
         exitRect = exitDisplay.get_rect()
         exitRect.center = (screenSize[0]/2, screenSize[1] - screenSize[1]/6)
         
+        # Stats display
         statLineFontSize = round(finalScoreSize * 0.75)
         statLine = "Attempt " + str(attemptNumber) + " You survived for " + str(gameClock) + " seconds and died at level " + str(currentLevel)
         statFont = pygame.font.Font(gameFont, statLineFontSize)
@@ -385,6 +430,7 @@ def gameOver(gameClock,running,player,obstacles):
         statRect = statDisplay.get_rect()
         statRect.center = (screenSize[0]/2, screenSize[1] - screenSize[1]/3)
         
+        # Background
         screen.blit(bgList[currentStage - 1][0],(0,0))
         screen.blit(gameOverDisplay,gameOverRect)
         screen.blit(exitDisplay,exitRect)
@@ -407,13 +453,15 @@ def gameOver(gameClock,running,player,obstacles):
                 currentStage = 1
                 player.kill()
                 killAllObjects(obstacles)
-                resetAllLevels(levelDictList)
+                resetAllLevels(gameConstants)
                 attemptNumber += 1
                 main()
-    
-levelDictList = levelDictSetter()
+                
+
+gameConstants = gameConstantsSetter(stageList)
 attemptNumber = 1
 clk = pygame.time.Clock()
+
 
 def main():
     resetGameConstants()
@@ -455,8 +503,8 @@ def main():
                 timerDisplay = timerFont.render(str(gameClock), True, (255,255,255))
         
         # BACKGROUND ANIMATION
-        screen.blit(bgList[currentStage - 1][0],(0,0))
-        screen.blit(cloud,(0,cloudPos))
+        screen.blit(bgList[currentStage - 1][0], (0,0) )
+        screen.blit(bgList[currentStage - 1][1], (0,cloudPos) )
             
         if cloudPos < screenSize[1]: cloudPos += cloudSpeed  
         else: cloudPos = cloudStart   
@@ -468,29 +516,34 @@ def main():
         
         # COLLISION DETECTION
         if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask):
-            gameOver(gameClock,running,player,obstacles)
+            #gameOver(gameClock,running,player,obstacles)
+            print("DEAD (TEST)")
                     
         player.movement()
         player.wrapping()
         spawner(sprites,obstacles,maxObstacles)
         obstacleMove(obstacles)
         
+        # OBSTACLE HANDLING
         if obstacleBoundaries == "KILL": obstacleRemove(obstacles)
         if obstacleBoundaries == "BOUNCE": bounceObstacle(obstacles)
         if obstacleBoundaries == "WRAP": wrapObstacle(obstacles)
                
-        levelUpdater(levelDictList,gameClock)        
+        levelUpdater(gameConstants,gameClock)       
         
-        newBlit = rot_center(player.image,player.rect,player.angle)
-        screen.blit(newBlit[0],newBlit[1])
-        obstacles.draw(screen) # Draws all sprites
+        # DRAW SPRITES
+        newBlit = rot_center(player.image,player.rect,player.angle) # Player rotation
+        screen.blit(newBlit[0],newBlit[1]) # Draw player
+        obstacles.draw(screen) # Draw obstacles
         
+        # HUD
         timerRect = timerDisplay.get_rect(topright = screen.get_rect().topright)
-        levelRect = levelDisplay.get_rect(topleft = screen.get_rect().topleft)
-        
+        levelRect = levelDisplay.get_rect(topleft = screen.get_rect().topleft)   
         screen.blit(timerDisplay, timerRect)
         screen.blit(levelDisplay, levelRect)
-        player.angle = 0
+        
+        # UPDATE SCREEN
+        player.angle = 0 # Reset player orientation
         pygame.display.flip()
         screen.fill(screenColor)
         clk.tick(fps)
