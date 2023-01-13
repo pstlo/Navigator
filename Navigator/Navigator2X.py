@@ -1,5 +1,4 @@
-
-# NAVIGATOR Widescreen - Experimental
+# NAVIGATOR
 
 import random
 import math
@@ -35,7 +34,8 @@ helpSize = 30 # Default = 30
 helpColor = [0,255,0] # Default = [0,255,0]
 finalScoreSize = 35 # Default = 35
 finalScoreColor = [0,255,0] # Default = [0,255,0]
-
+creditsFontSize = 75
+creditsColor = [255,255,255]
 
 # PLAYER           
 playerSpeed = 5 # Default = 5
@@ -393,16 +393,17 @@ def startMenu():
                     mainMenu = False
                     return
                 
+                # CREDITS
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_c:
+                    creditScreen()
+                
                 elif event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and  event.key == pygame.K_ESCAPE):
                     pygame.quit()
                     sys.exit()
                 
                 else:
                     screen.fill([0,0,0])
-                    
-                    if screenSize == [1600,800]: # FOR DOUBLE WIDTH SCREEN
-                        screen.blit(bgList[currentStage - 1][0],(800,0))
-                        
+                    if screenSize == [1600,800]: screen.blit(bgList[currentStage - 1][0],(800,0)) # FOR DOUBLE WIDTH SCREEN
                     screen.blit(bgList[currentStage - 1][0],(0,0))
                     screen.blit(startDisplay,startRect)
                     screen.blit(startHelpDisplay, startHelpRect)
@@ -435,8 +436,7 @@ def gameOver(gameClock,running,player,obstacles):
         statRect.center = (screenSize[0]/2, screenSize[1] - screenSize[1]/3)
         
         # Background
-        if screenSize == [1600,800]: # FOR DOUBLE WIDTH SCREEN
-            screen.blit(bgList[currentStage - 1][0],(800,0))
+        if screenSize == [1600,800]: screen.blit(bgList[currentStage - 1][0],(800,0)) # FOR DOUBLE WIDTH SCREEN
         screen.blit(bgList[currentStage - 1][0],(0,0))
         screen.blit(gameOverDisplay,gameOverRect)
         screen.blit(exitDisplay,exitRect)
@@ -449,6 +449,9 @@ def gameOver(gameClock,running,player,obstacles):
             if (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE) or event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_c:
+                creditScreen()
 
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 running = True
@@ -464,6 +467,80 @@ def gameOver(gameClock,running,player,obstacles):
                 main()
                 
 
+def creditScreen():
+    
+    rollCredits = True 
+    posX = screenSize[0]/2
+    posY = screenSize[1]/2
+    creditsFont = pygame.font.Font(gameFont, creditsFontSize)
+    
+    createdByLine = "Created by"
+    creditsLine = "Mike Pistolesi"
+    
+    createdByDisplay = creditsFont.render(createdByLine, True, creditsColor)
+    creditsDisplay = creditsFont.render(creditsLine, True, creditsColor)
+    
+    creditsRect = creditsDisplay.get_rect()
+    createdByRect = createdByDisplay.get_rect()
+    
+    creditsRect.center = (posX,posY)
+    createdByRect.center = (posX, posY - screenSize[1]/15) 
+    
+    bounceCount = 0
+    
+    directions = ["N","S","E","W","NW","SW","NE","SE"]
+    direction = directions[random.randint(0, len(directions)-1)]
+    
+    topDir = ["S", "E", "W", "SE", "SW"]
+    leftDir = ["E", "S", "N", "NE", "SE"]
+    bottomDir = ["N", "W", "E", "NE", "NW"]
+    rightDir = ["W", "N", "S", "NW", "SW"]
+    
+    while rollCredits:
+        
+        for event in pygame.event.get():
+            # EXIT
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+                
+            # RETURN TO GAME
+            elif event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_c or event.key == pygame.K_SPACE): 
+                rollCredits = False
+                
+        if screenSize == [1600,800]: screen.blit(bgList[currentStage - 1][0],(800,0)) # FOR DOUBLE WIDTH SCREEN        
+        screen.blit(bgList[currentStage - 1][0],(0,0))
+        screen.blit(createdByDisplay,createdByRect)
+        screen.blit(creditsDisplay,creditsRect)
+        pygame.display.flip()
+
+        # BOUNCE OFF EDGES
+        if creditsRect.right > screenSize[0]: direction = rightDir[random.randint(0, len(rightDir) - 1)]
+        if creditsRect.left < 0: direction = leftDir[random.randint(0, len(leftDir) - 1)]  
+        if creditsRect.bottom > screenSize[1]: direction = bottomDir[random.randint(0, len(bottomDir) - 1)]
+        if createdByRect.top < 0 : direction = topDir[random.randint(0, len(topDir) - 1)]
+                        
+        if bounceCount == 0:
+            if "N" in direction:
+                creditsRect.centery-= 1
+                createdByRect.centery-= 1
+                
+            if "S" in direction: 
+                creditsRect.centery+= 1
+                createdByRect.centery+= 1
+                
+            if "E" in direction:
+                creditsRect.centerx+= 1
+                createdByRect.centerx+= 1
+                
+            if "W" in direction:
+                creditsRect.centerx-= 1
+                createdByRect.centerx-= 1
+                
+        bounceCount +=1
+        if bounceCount >= 10: bounceCount = 0
+            
+      
 gameConstants = gameConstantsSetter(stageList)
 attemptNumber = 1
 clk = pygame.time.Clock()
@@ -509,8 +586,7 @@ def main():
                 timerDisplay = timerFont.render(str(gameClock), True, (255,255,255))
         
         # BACKGROUND ANIMATION
-        if screenSize == [1600,800]: # FOR DOUBLE WIDTH SCREEN
-            screen.blit(bgList[currentStage - 1][0],(800,0))
+        if screenSize == [1600,800]: screen.blit(bgList[currentStage - 1][0],(800,0)) # FOR DOUBLE WIDTH SCREEN
         screen.blit(bgList[currentStage - 1][0], (0,0) )
         screen.blit(bgList[currentStage - 1][1], (0,cloudPos) )
             
