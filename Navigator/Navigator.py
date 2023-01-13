@@ -448,6 +448,9 @@ def gameOver(gameClock,running,player,obstacles):
             if (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE) or event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_c:
+                creditScreen()
 
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 running = True
@@ -478,7 +481,7 @@ def creditScreen():
     while rollCredits:
         
         creditsRect.center = (creditsX,creditsY)
-        createdByRect.center = (creditsX, creditsY - screenSize[1]/10)
+        createdByRect.center = (creditsX, creditsY - screenSize[1]/15)
         screen.blit(bgList[currentStage - 1][0],(0,0))
         screen.blit(createdByDisplay,createdByRect)
         screen.blit(creditsDisplay,creditsRect)
@@ -491,7 +494,7 @@ def creditScreen():
                 sys.exit()
                 
             # RETURN TO GAME
-            elif event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_c): 
+            elif event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_c or event.key == pygame.K_SPACE): 
                 rollCredits = False
                 
                 
