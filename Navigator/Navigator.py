@@ -49,9 +49,9 @@ obstacleBoundaries = "KILL" # Default = "KILL" (Can be updated by level)
 # LEVELS  
 levelTimer = 15 # Default = 15 / Time between levels
 
-speedIncrement = 0.3 # Default = 0.3
-sizeIncrement = 4 # Default = 4
-numIncrement = 3 # Default = 3
+speedIncrement = obstacleSpeed / 15 # Default = obstacleSpeed / 15
+sizeIncrement = round(obstacleSize/7) # Default = round(obstacleSize/7)
+numIncrement = maxObstacles / 4 # Default = maxObstacles / 4
 
 # [ False , (levelNumber - 1) * levelTimer , BOUNDS, SPEED, SIZE, NUMBER ]
 levelTwo = [ False, levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ] 
@@ -63,7 +63,7 @@ levelSeven = [ False, 6 * levelTimer, "KILL", speedIncrement, sizeIncrement, num
 levelEight = [ False, 7 * levelTimer, "BOUNCE", speedIncrement, sizeIncrement, numIncrement ] 
 levelNine = [ False, 8 * levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ]
 levelTen = [ False, 9 * levelTimer, "WRAP", speedIncrement, sizeIncrement, numIncrement ]
-overTime = [ False, 10 * levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ]
+overTime = [ False, 10 * levelTimer, "KILL", speedIncrement * 2, sizeIncrement * 2, numIncrement * 2 ]
 
 # DIVIDE INTO STAGES
 stageOneLevels = [levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight,levelNine,levelTen,overTime] # Stage 1
