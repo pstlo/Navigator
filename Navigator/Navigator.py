@@ -1,5 +1,5 @@
 
-# (UPDATED)
+# NAVIGATOR
 
 import random
 import math
