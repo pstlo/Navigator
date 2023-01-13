@@ -587,7 +587,15 @@ def main():
         screen.blit(bgList[currentStage - 1][1], (0,cloudPos) )
             
         if cloudPos < screenSize[1]: cloudPos += cloudSpeed  
-        else: cloudPos = cloudStart   
+        else: cloudPos = cloudStart 
+            
+        # STAGE DISPLAY
+        stageNum = "Stage " + str(currentStage)
+        stageFont = pygame.font.Font(gameFont, levelSize)
+        stageDisplay = stageFont.render( str(stageNum), True, levelColor )
+        
+        dashFont = pygame.font.SysFont(None, levelSize)
+        dashDisplay = dashFont.render( "-", True, levelColor )
             
         # LEVEL DISPLAY
         levelNum = "Level " + str(currentLevel)
@@ -617,9 +625,17 @@ def main():
         obstacles.draw(screen) # Draw obstacles
         
         # HUD
-        timerRect = timerDisplay.get_rect(topright = screen.get_rect().topright)
-        levelRect = levelDisplay.get_rect(topleft = screen.get_rect().topleft)   
+        timerRect = timerDisplay.get_rect(topright = screen.get_rect().topright) 
+        stageRect = stageDisplay.get_rect(topleft = screen.get_rect().topleft)
+        dashRect = dashDisplay.get_rect()
+        levelRect = levelDisplay.get_rect() 
+        
+        dashRect.center = (stageRect.right + dashRect.width, stageRect.centery + dashRect.height/5)
+        levelRect.center = (stageRect.right + levelRect.width*0.65, stageRect.centery)
+        
         screen.blit(timerDisplay, timerRect)
+        screen.blit(stageDisplay, stageRect)
+        screen.blit(dashDisplay, dashRect)
         screen.blit(levelDisplay, levelRect)
         
         # UPDATE SCREEN
