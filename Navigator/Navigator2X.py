@@ -43,7 +43,7 @@ playerSpeed = 5 # Default = 5
 # OBSTACLES
 obstacleSpeed = 4  # Default = 4           
 obstacleSize = 30    # Default = 30
-maxObstacles = 12  # Default = 12
+maxObstacles = 24  # Default = 12
 obstacleBoundaries = "KILL" # Default = "KILL" (Can be updated by level)
 
 # LEVELS  
