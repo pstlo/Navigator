@@ -1,4 +1,3 @@
-# CREDITS VERSION
 # NAVIGATOR
 
 import random
