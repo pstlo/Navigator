@@ -516,7 +516,7 @@ def main():
         
         # COLLISION DETECTION
         if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask):
-            #gameOver(gameClock,running,player,obstacles)
+            gameOver(gameClock,running,player,obstacles)
             print("DEAD (TEST)")
                     
         player.movement()
