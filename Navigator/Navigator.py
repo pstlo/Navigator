@@ -34,8 +34,6 @@ helpSize = 30 # Default = 30
 helpColor = [0,255,0] # Default = [0,255,0]
 finalScoreSize = 35 # Default = 35
 finalScoreColor = [0,255,0] # Default = [0,255,0]
-creditsFontSize = 55
-creditsColor = [255,255,255]
 
 # PLAYER           
 playerSpeed = 5 # Default = 5
@@ -90,7 +88,12 @@ currentLevel = 1
 currentStage = 1
 
 mainMenu = True # Assures start menu only runs once
+staticMenu = True # Work in progress, placeholder image 
 screen = pygame.display.set_mode(screenSize)
+
+
+creditsFontSize = 55
+creditsColor = [255,255,255]
 
 # ASSET LOADING
 baseDir = str(os.getcwd()) # Game directory
@@ -138,6 +141,12 @@ for filename in os.listdir(sDir):
         path = os.path.join(sDir, filename)
         spaceShipList.append(pygame.image.load(path).convert_alpha())
         
+# MAIN MENU
+mainMenuImage = ''
+for filename in os.listdir(curDir):
+    if filename == 'MainMenu.png':
+        path = os.path.join(curDir, filename)
+        mainMenuImage = pygame.image.load(path).convert_alpha()
 
 class Player(pygame.sprite.Sprite):
         def __init__(self):
@@ -393,18 +402,18 @@ def wrapObstacle(obstacles):
 # START MENU
 def startMenu():
     global mainMenu,currentStage
+    
+    startFont = pygame.font.Font(gameFont, startSize)
+    startDisplay = startFont.render("NAVIGATOR", True, startColor)
+    startRect = startDisplay.get_rect(center = screen.get_rect().center)
+    
+    startHelpFont = pygame.font.Font(gameFont, helpSize)
+    startHelpDisplay = startHelpFont.render("Press SPACE to start or ESCAPE to quit", True, helpColor)
+    startHelpRect = startHelpDisplay.get_rect()
+    startHelpRect.center = (screenSize[0]/2,screenSize[1]-screenSize[1]/3)
+    
     if mainMenu:
         while True:
-            
-            startFont = pygame.font.Font(gameFont, startSize)
-            startDisplay = startFont.render("NAVIGATOR", True, startColor)
-            startRect = startDisplay.get_rect(center = screen.get_rect().center)
-            
-            startHelpFont = pygame.font.Font(gameFont, helpSize)
-            startHelpDisplay = startHelpFont.render("Press SPACE to start or ESCAPE to quit", True, helpColor)
-            startHelpRect = startHelpDisplay.get_rect()
-            startHelpRect.center = (screenSize[0]/2,screenSize[1]-screenSize[1]/3)
-            
             for event in pygame.event.get():
                 # START
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
@@ -421,9 +430,13 @@ def startMenu():
                 
                 else:
                     screen.fill([0,0,0])
-                    screen.blit(bgList[currentStage - 1][0],(0,0))
-                    screen.blit(startDisplay,startRect)
-                    screen.blit(startHelpDisplay, startHelpRect)
+                    if staticMenu:
+                        screen.blit(mainMenuImage,(0,0))
+                    else:
+                        screen.blit(bgList[currentStage - 1][0],(0,0))
+                        screen.blit(startDisplay,startRect)
+                        screen.blit(startHelpDisplay, startHelpRect)
+
                     pygame.display.update()
  
 
