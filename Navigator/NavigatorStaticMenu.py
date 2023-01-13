@@ -1,4 +1,4 @@
-# NAVIGATOR
+# NAVIGATOR - VERSION WITH STATIC MAIN MENU SCREEN
 
 import random
 import math
