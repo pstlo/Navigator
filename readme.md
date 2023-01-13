@@ -9,6 +9,10 @@ To get started:
 or
 ```pip install pygame --pre```
 for python 3.11
+3. Clone this repository and extract
+4. Navigate to directory and start game with
+```python Navigator.py```
+or use the provided batch file
  
 
 
