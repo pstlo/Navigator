@@ -1,4 +1,4 @@
-# NAVIGATOR
+# NAVIGATOR - VERSION WITH DOUBLE SCREEN WIDTH
 
 import random
 import math
