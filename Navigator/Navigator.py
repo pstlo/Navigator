@@ -473,7 +473,7 @@ def creditScreen():
     creditsFont = pygame.font.Font(gameFont, creditsFontSize)
     
     createdByLine = "Created by"
-    creditsLine = "Mike"
+    creditsLine = "Mike Pistolesi"
     
     createdByDisplay = creditsFont.render(createdByLine, True, creditsColor)
     creditsDisplay = creditsFont.render(creditsLine, True, creditsColor)
