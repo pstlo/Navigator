@@ -66,13 +66,16 @@ savedConstants = {
                 }
                 
 currentLevel = 1
+currentStage = 1
 mainMenu = True
 screen = pygame.display.set_mode(screenSize)
 
 # ASSETS
-baseDir = str(os.getcwd())
-curDir = os.path.join(baseDir, 'Assets')
-mDir = os.path.join(curDir, 'Meteors')
+baseDir = str(os.getcwd()) # Game directory
+curDir = os.path.join(baseDir, 'Assets') # Asset directory
+mDir = os.path.join(curDir, 'Meteors') # Meteor asset directory
+sDir = os.path.join(curDir, 'Spaceships') # Spaceship asset directory
+bDir = os.path.join(curDir, 'Backgrounds') # Background asset directory
 
 # FONT
 gameFont = ''
@@ -80,6 +83,7 @@ for filename in os.listdir(curDir):
     if filename.endswith('.ttf'):
         path = os.path.join(curDir, filename)
         gameFont = path
+        break
             
 # METEORS
 meteorDict = {}
@@ -91,34 +95,42 @@ for filename in os.listdir(mDir):
         meteorDict[key] = pygame.image.load(path).convert_alpha()
         meteorList.append(meteorDict[key])
 
-# BACKGROUND
-bg = ''
-cloud = ''
-for filename in os.listdir(curDir):
-    if filename == 'Background.png':
-        path = os.path.join(curDir, filename)
-        bg = pygame.image.load(path).convert_alpha()
-    
-    elif filename == 'Cloud.png':
-        path = os.path.join(curDir, filename)
-        cloud = pygame.image.load(path).convert_alpha()
+# BACKGROUNDS
+bgList = []
+for filename in os.listdir(bDir):
+    bgPath = os.path.join(filename,bDir)
+    for nextBg in os.listdir(bgPath):
+        nextBgDir = os.path.join(bgPath,nextBg)
+        for newBg in os.listdir(nextBgDir):
+            bg = ''
+            cloud = ''
+            if newBg == 'Background.png':
+                path = os.path.join(nextBgDir, newBg)
+                bg = pygame.image.load(path).convert_alpha()
+            
+            elif newBg == 'Cloud.png':
+                path = os.path.join(nextBgDir, newBg)
+                cloud = pygame.image.load(path).convert_alpha()
+            
+            bgList.append([bg,cloud])
         
 # SPACESHIP
-spaceShip = ''
-for filename in os.listdir(curDir):
-    if filename == 'spaceShip.png':
-        path = os.path.join(curDir, filename)
-        spaceShip = pygame.image.load(path).convert_alpha()
+spaceShipList = []
+for filename in os.listdir(sDir):
+    if filename.endswith('.png'):
+        path = os.path.join(sDir, filename)
+        spaceShipList.append(pygame.image.load(path).convert_alpha())
         
 class Player(pygame.sprite.Sprite):
         def __init__(self):
-            super().__init__()         
+            super().__init__()
+            self.currentImageNum = 0         
             self.speed = playerSpeed
-            self.image = spaceShip
+            self.image = spaceShipList[self.currentImageNum]
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
             self.angle = 0
-        
+            
         def movement(self):
             key = pygame.key.get_pressed()
             
@@ -167,6 +179,12 @@ class Player(pygame.sprite.Sprite):
             if self.rect.centery < 0: self.rect.centery = screenSize[1]
             if self.rect.centerx > screenSize[0]: self.rect.centerx = 0
             if self.rect.centerx < 0: self.rect.centerx = screenSize[0]
+                
+        def nextSpaceShip(self):
+            self.image = spaceShipList[self.currentImageNum + 1]
+            self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
+            self.mask = pygame.mask.from_surface(self.image)
+            
                 
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self):
@@ -315,7 +333,7 @@ def wrapObstacle(obstacles):
         if obs.rect.centerx < 0: obs.rect.centerx = screenSize[0]
 
 def startMenu():
-    global mainMenu
+    global mainMenu,currentStage
     if mainMenu:
         while True:
             
@@ -340,13 +358,13 @@ def startMenu():
                 
                 else:
                     screen.fill([0,0,0])
-                    screen.blit(bg,(0,0))
+                    screen.blit(bgList[currentStage - 1][0],(0,0))
                     screen.blit(startDisplay,startRect)
                     screen.blit(startHelpDisplay, startHelpRect)
                     pygame.display.update()
            
 def gameOver(gameClock,running,player,obstacles):
-    global attemptNumber,currentLevel
+    global attemptNumber,currentLevel, currentStage
     gameOver = True
     
     while gameOver:
@@ -367,11 +385,12 @@ def gameOver(gameClock,running,player,obstacles):
         statRect = statDisplay.get_rect()
         statRect.center = (screenSize[0]/2, screenSize[1] - screenSize[1]/3)
         
-        screen.blit(bg,(0,0))
+        screen.blit(bgList[currentStage - 1][0],(0,0))
         screen.blit(gameOverDisplay,gameOverRect)
         screen.blit(exitDisplay,exitRect)
         screen.blit(statDisplay,statRect)
         pygame.display.flip()
+       
         for event in pygame.event.get():
             
             # EXIT
@@ -385,6 +404,7 @@ def gameOver(gameClock,running,player,obstacles):
                 # SET DEFAULTS AND RESTART GAME
                 gameClock = 0
                 currentLevel = 1
+                currentStage = 1
                 player.kill()
                 killAllObjects(obstacles)
                 resetAllLevels(levelDictList)
@@ -399,6 +419,7 @@ def main():
     resetGameConstants()
     global attemptNumber
     global mainMenu
+    global currentStage
     
     if mainMenu:
         startMenu()
@@ -434,7 +455,7 @@ def main():
                 timerDisplay = timerFont.render(str(gameClock), True, (255,255,255))
         
         # BACKGROUND ANIMATION
-        screen.blit(bg,(0,0))
+        screen.blit(bgList[currentStage - 1][0],(0,0))
         screen.blit(cloud,(0,cloudPos))
             
         if cloudPos < screenSize[1]: cloudPos += cloudSpeed  
