@@ -88,7 +88,7 @@ currentStage = 1
 mainMenu = True # Assures start menu only runs once
 screen = pygame.display.set_mode(screenSize)
 
-# ASSETS
+# ASSET LOADING
 baseDir = str(os.getcwd()) # Game directory
 curDir = os.path.join(baseDir, 'Assets') # Asset directory
 mDir = os.path.join(curDir, 'Meteors') # Meteor asset directory
@@ -103,7 +103,7 @@ for filename in os.listdir(curDir):
         gameFont = path
         break
             
-# METEORS
+# METEOR ASSETS
 meteorDict = {}
 meteorList = []
 for filename in os.listdir(mDir):
@@ -113,7 +113,7 @@ for filename in os.listdir(mDir):
         meteorDict[key] = pygame.image.load(path).convert_alpha()
         meteorList.append(meteorDict[key])
 
-# BACKGROUNDS
+# BACKGROUND ASSETS
 bgList = []
 for filename in os.listdir(bDir):
     bgPath = os.path.join(bDir,filename)
@@ -127,7 +127,7 @@ for filename in os.listdir(bDir):
         
         bgList.append([bg,cloud])
 
-# SPACESHIP
+# SPACESHIP ASSETS
 spaceShipList = []
 for filename in os.listdir(sDir):
     if filename.endswith('.png'):
@@ -145,7 +145,7 @@ class Player(pygame.sprite.Sprite):
             self.mask = pygame.mask.from_surface(self.image)
             self.angle = 0
             
-        
+        # PLAYER MOVEMENT
         def movement(self):
             key = pygame.key.get_pressed()
             
@@ -189,14 +189,14 @@ class Player(pygame.sprite.Sprite):
             if (key[pygame.K_a] or key[pygame.K_LEFT]) and ( key[pygame.K_w] or key[pygame.K_UP]) and (key[pygame.K_s] or key[pygame.K_DOWN]) and (key[pygame.K_d] or key[pygame.K_RIGHT]): 
                 self.angle = 0
  
-        
+        # WRAP AROUND SCREEN
         def wrapping(self):
             if self.rect.centery  > screenSize[1]: self.rect.centery = 0
             if self.rect.centery < 0: self.rect.centery = screenSize[1]
             if self.rect.centerx > screenSize[0]: self.rect.centerx = 0
             if self.rect.centerx < 0: self.rect.centerx = screenSize[0]
                 
-        
+        # GET NEXT SPACESHIP IMAGE
         def nextSpaceShip(self):
             self.image = spaceShipList[self.currentImageNum + 1]
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
@@ -218,12 +218,14 @@ class Obstacle(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
         
 
+# ROTATE IMAGE
 def rotateImage(image, rect, angle):
     rotated = pygame.transform.rotate(image, angle)
     rotatedRect = rotated.get_rect(center=rect.center)
     return rotated,rotatedRect
     
 
+# REVERSE OBSTACLE MOVEMENT DIRECTION
 def movementReverse(direction):
         if direction == "N": return "S"           
         elif direction == "S": return "N"                     
@@ -235,6 +237,7 @@ def movementReverse(direction):
         elif direction == "SW": return "NE"
               
 
+# OBSTACLE POSITION GENERATION
 def getMovement():
         X = random.randint(0, screenSize[0])
         Y = random.randint(0, screenSize[1])
@@ -268,17 +271,20 @@ def getMovement():
         return move 
 
 
+# REMOVE ALL OBSTACLES
 def killAllObjects(obstacles):
     for obstacle in obstacles:
         obstacle.kill()
         
 
+# RESET LEVEL PROGRESS
 def resetAllLevels(gameConstants):
     for stage in gameConstants:
         for levels in stage:
             levels["START"] = False
-        
 
+
+# SET GAME CONSTANTS TO DEFAULT
 def resetGameConstants():
     global savedConstants, obstacleSpeed, obstacleSize, maxObstacles, obstacleBoundaries, cloudSpeed
     obstacleSpeed = savedConstants["obstacleSpeed"]
@@ -288,6 +294,7 @@ def resetGameConstants():
     cloudSpeed = savedConstants["cloudSpeed"]  
 
 
+# LOAD GAME CONSTANTS
 def gameConstantsSetter(stageList):
     returnList = []
     for stage in stageList:
@@ -307,6 +314,7 @@ def gameConstantsSetter(stageList):
     return returnList   
     
 
+# UPDATE GAME CONSTANTS
 def levelUpdater(gameConstants,gameClock):
     global obstacleBoundaries,obstacleSpeed,obstacleColor,maxObstacles,obstacleSize,cloudSpeedMult,cloudSpeed,currentLevel,currentStage
     
@@ -327,7 +335,8 @@ def levelUpdater(gameConstants,gameClock):
                 cloudSpeed *= cloudSpeedMult
                 currentLevel += 1 
 
-            
+
+# SPAWN OBSTACLES
 def spawner(sprites,obstacles,maxObstacles):
         if len(obstacles) < maxObstacles:
             obstacle = Obstacle()
@@ -335,6 +344,7 @@ def spawner(sprites,obstacles,maxObstacles):
             sprites.add(obstacle) 
             
 
+# OBSTACLE MOVEMENT
 def obstacleMove(obstacles):
     for obs in obstacles:
         position = obs.rect.center 
@@ -342,8 +352,9 @@ def obstacleMove(obstacles):
         if "S" in obs.direction: obs.rect.centery += obs.speed      
         if "E" in obs.direction: obs.rect.centerx += obs.speed 
         if "W" in obs.direction: obs.rect.centerx -= obs.speed
-         
 
+
+# OFF SCREEN OBSTACLE REMOVAL
 def obstacleRemove(obstacles):
     for obs in obstacles:
    
@@ -356,6 +367,7 @@ def obstacleRemove(obstacles):
             obstacles.remove(obs)
             
 
+# OBSTACLE BOUNCING
 def bounceObstacle(obstacles):
     for obs in obstacles:
         direction = obs.direction
@@ -363,8 +375,9 @@ def bounceObstacle(obstacles):
         if obs.rect.centery < 0: obs.direction = movementReverse(direction) 
         if obs.rect.centerx > screenSize[0]: obs.direction = movementReverse(direction)   
         if obs.rect.centerx < 0: obs.direction = movementReverse(direction)
-           
-
+ 
+ 
+# OBSTACLE WRAPPING
 def wrapObstacle(obstacles):
     for obs in obstacles:
         if obs.rect.centery  > screenSize[1]: obs.rect.centery = 0  
@@ -373,6 +386,7 @@ def wrapObstacle(obstacles):
         if obs.rect.centerx < 0: obs.rect.centerx = screenSize[0]
 
 
+# START MENU
 def startMenu():
     global mainMenu,currentStage
     if mainMenu:
