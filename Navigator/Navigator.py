@@ -49,17 +49,21 @@ obstacleBoundaries = "KILL" # Default = "KILL" (Can be updated by level)
 # LEVELS  
 levelTimer = 15 # Default = 15 / Time between levels
 
+speedIncrement = 0.3 # Default = 0.3
+sizeIncrement = 4 # Default = 4
+numIncrement = 3 # Default = 3
+
 # [ False , (levelNumber - 1) * levelTimer , BOUNDS, SPEED, SIZE, NUMBER ]
-levelTwo = [ False, levelTimer, "KILL", 1, 1, 1.5 ] 
-levelThree = [ False, 2 * levelTimer, "KILL", 1, 1.5, 1 ] 
-levelFour = [ False, 3 * levelTimer, "KILL", 1, 1.5, 1 ] 
-levelFive = [ False, 4 * levelTimer, "KILL", 1.25, 1, 1 ] 
-levelSix = [ False, 5 * levelTimer, "WRAP", 1, 1.5, 1 ] 
-levelSeven = [ False, 6 * levelTimer, "KILL", 1, 1, 10 ] 
-levelEight = [ False, 7 * levelTimer, "BOUNCE", 1.25, 1.25, 1.0 ] 
-levelNine = [ False, 8 * levelTimer, "KILL", 1.1, 1.1, 1.1 ]
-levelTen = [ False, 9 * levelTimer, "WRAP", 1.1, 1.1, 1.1 ]
-overTime = [ False, 10 * levelTimer, "KILL", 1.1, 1.1, 1.1 ]
+levelTwo = [ False, levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ] 
+levelThree = [ False, 2 * levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ] 
+levelFour = [ False, 3 * levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ] 
+levelFive = [ False, 4 * levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ] 
+levelSix = [ False, 5 * levelTimer, "WRAP", speedIncrement, sizeIncrement, numIncrement ] 
+levelSeven = [ False, 6 * levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ] 
+levelEight = [ False, 7 * levelTimer, "BOUNCE", speedIncrement, sizeIncrement, numIncrement ] 
+levelNine = [ False, 8 * levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ]
+levelTen = [ False, 9 * levelTimer, "WRAP", speedIncrement, sizeIncrement, numIncrement ]
+overTime = [ False, 10 * levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ]
 
 # DIVIDE INTO STAGES
 stageOneLevels = [levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight,levelNine,levelTen,overTime] # Stage 1
@@ -329,9 +333,9 @@ def levelUpdater(gameConstants,gameClock):
            if not levelDict["START"]:
                 levelDict["START"] = True
                 obstacleBoundaries = levelDict["bound"]
-                obstacleSpeed *= levelDict["speedMult"]
-                maxObstacles *= levelDict["maxObsMult"]
-                obstacleSize *= levelDict["obsSizeMult"]
+                obstacleSpeed += levelDict["speedMult"]
+                maxObstacles += levelDict["maxObsMult"]
+                obstacleSize += levelDict["obsSizeMult"]
                 cloudSpeed *= cloudSpeedMult
                 currentLevel += 1 
 
@@ -425,7 +429,7 @@ def startMenu():
 
 # GAME OVER SCREEN 
 def gameOver(gameClock,running,player,obstacles):
-    global attemptNumber,currentLevel, currentStage
+    global attemptNumber, currentLevel, currentStage
     gameOver = True
     
     while gameOver:
