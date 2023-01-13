@@ -34,7 +34,7 @@ helpSize = 30 # Default = 30
 helpColor = [0,255,0] # Default = [0,255,0]
 finalScoreSize = 35 # Default = 35
 finalScoreColor = [0,255,0] # Default = [0,255,0]
-creditsFontSize = 75
+creditsFontSize = 55
 creditsColor = [255,255,255]
 
 # PLAYER           
@@ -486,8 +486,8 @@ def creditScreen():
     posY = screenSize[1]/2
     creditsFont = pygame.font.Font(gameFont, creditsFontSize)
     
-    createdByLine = "Created by"
-    creditsLine = "Mike Pistolesi"
+    createdByLine = "Created by Mike Pistolesi"
+    creditsLine = "visuals by Collin Guetta"
     
     createdByDisplay = creditsFont.render(createdByLine, True, creditsColor)
     creditsDisplay = creditsFont.render(creditsLine, True, creditsColor)
