@@ -519,9 +519,9 @@ def startMenu():
                 
                 
                     if iconPositions[menuIndex-5][0][1] > screenSize[1] * 2: iconPositions[menuIndex-5] = getMovement()
-                    if iconPositions[menuIndex-5][0][1] < -screenSize[1] : iconPositions[menuIndex-5][1] = getMovement()
-                    if iconPositions[menuIndex-5][0][0] > screenSize[0] * 2: iconPositions[menuIndex-5][1] = getMovement()
-                    if iconPositions[menuIndex-5][0][0] < -screenSize[0] : iconPositions[menuIndex-5][1] = getMovement()
+                    if iconPositions[menuIndex-5][0][1] < -screenSize[1] : iconPositions[menuIndex-5] = getMovement()
+                    if iconPositions[menuIndex-5][0][0] > screenSize[0] * 2: iconPositions[menuIndex-5] = getMovement()
+                    if iconPositions[menuIndex-5][0][0] < -screenSize[0] : iconPositions[menuIndex-5] = getMovement()
                 
              
             
@@ -533,7 +533,7 @@ def startMenu():
             
             # UFO icons
             screen.blit(menuList[2],(menuList[2].get_width() + 32 ,screenSize[1]/6)) # Big icon
-            screen.blit(menuList[3],(screenSize[0]/8,screenSize[1]/8)) # Left UFO
+            screen.blit(menuList[3],(screenSize[0]/20,screenSize[1]/8)) # Left UFO
             screen.blit(menuList[4],(screenSize[0] - screenSize[0]/4 , screenSize[1]/8)) # Right UFO
             
             
