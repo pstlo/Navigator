@@ -20,4 +20,4 @@ or use the provided batch file
  
  
 Created by Mike Pistolesi <br />
-visuals by Collin Guetta
+art by Collin Guetta
