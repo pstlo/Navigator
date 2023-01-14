@@ -339,26 +339,21 @@ def gameConstantsSetter(stageList):
 # UPDATE GAME CONSTANTS
 def levelUpdater(gameConstants,gameClock):
     global obstacleBoundaries,obstacleSpeed,obstacleColor,maxObstacles,obstacleSize,cloudSpeedMult,cloudSpeed,currentLevel,currentStage
-    levelUp = False
     if currentStage < len(gameConstants):
         if gameConstants[currentStage][0]["TIME"] == gameClock and not gameConstants[currentStage][0]["START"]:
             gameConstants[currentStage][0]["START"] = True
             currentStage += 1
             currentLevel = 1
-            levelUp = True
         
     for levelDict in gameConstants[currentStage-1]:
         if levelDict["TIME"] == gameClock:
-            if not levelDict["START"] or levelUp:
+            if not levelDict["START"]:
                 levelDict["START"] = True
                 obstacleBoundaries = levelDict["bound"]
                 obstacleSpeed += levelDict["speedMult"]
                 maxObstacles += levelDict["maxObsMult"]
                 obstacleSize += levelDict["obsSizeMult"]
                 cloudSpeed *= cloudSpeedMult
-            
-            if levelUp: 
-                levelUp = False
                 currentLevel += 1
 
 
