@@ -98,7 +98,9 @@ creditsColor = [255,255,255]
 # ASSET LOADING
 baseDir = str(os.getcwd()) # Game directory
 curDir = os.path.join(baseDir, 'Assets') # Asset directory
-mDir = os.path.join(curDir, 'Meteors') # Meteor asset directory
+obsDir = os.path.join(curDir, 'Obstacles') # Obstacle asset directory
+mDir = os.path.join(obsDir, 'Meteors') # Meteor asset directory
+uDir = os.path.join(obsDir, 'UFOs') # UFO asset directory
 sDir = os.path.join(curDir, 'Spaceships') # Spaceship asset directory
 bDir = os.path.join(curDir, 'Backgrounds') # Background asset directory
 
@@ -111,14 +113,21 @@ for filename in os.listdir(curDir):
         break
             
 # METEOR ASSETS
-meteorDict = {}
 meteorList = []
 for filename in os.listdir(mDir):
     if filename.endswith('.png'):
         path = os.path.join(mDir, filename)
-        key = filename[:-4]
-        meteorDict[key] = pygame.image.load(path).convert_alpha()
-        meteorList.append(meteorDict[key])
+        meteorList.append(pygame.image.load(path).convert_alpha())
+        
+        
+# UFO ASSETS
+ufoList = []
+for filename in os.listdir(uDir):
+    if filename.endswith('.png'):
+        path = os.path.join(uDir, filename)
+        ufoList.append(pygame.image.load(path).convert_alpha())
+
+print(ufoList)
 
 # BACKGROUND ASSETS
 bgList = []
@@ -133,6 +142,7 @@ for filename in os.listdir(bDir):
         cloud = pygame.image.load(stageCloudPath).convert_alpha()
         
         bgList.append([bg,cloud])
+        
 
 # SPACESHIP ASSETS
 spaceShipList = []
