@@ -91,7 +91,6 @@ currentLevel = 1
 currentStage = 1
 
 mainMenu = True # Assures start menu only runs once
-staticMenu = True # Work in progress, placeholder image 
 screen = pygame.display.set_mode(screenSize)
 
 
@@ -106,6 +105,8 @@ mDir = os.path.join(obsDir, 'Meteors') # Meteor asset directory
 uDir = os.path.join(obsDir, 'UFOs') # UFO asset directory
 sDir = os.path.join(curDir, 'Spaceships') # Spaceship asset directory
 bDir = os.path.join(curDir, 'Backgrounds') # Background asset directory
+menuDir = os.path.join(curDir, 'MainMenu') # Start menu asset directory
+
 
 # FONT
 gameFont = ''
@@ -154,12 +155,61 @@ for filename in os.listdir(sDir):
 # ALL OBSTACLE ASSETS
 obstacleImages = [meteorList,ufoList]
         
-# MAIN MENU
-mainMenuImage = ''
-for filename in os.listdir(curDir):
-    if filename == 'MainMenu.png':
-        path = os.path.join(curDir, filename)
-        mainMenuImage = pygame.image.load(path).convert_alpha()
+# MAIN MENU ASSETS
+menuList = []
+for filename in os.listdir(menuDir):
+    
+    APath = os.path.join(menuDir,'A.png')
+    OPath = os.path.join(menuDir,'O.png')
+    bigIconPath = os.path.join(menuDir,'big.png')
+    leftIconPath = os.path.join(menuDir,'left.png')
+    rightIconPath = os.path.join(menuDir,'right.png')
+    dBluePath = os.path.join(menuDir,'dblue.png')
+    lBluePath = os.path.join(menuDir,'lblue.png')
+    lGreenPath = os.path.join(menuDir,'lgreen.png')
+    dGreenPath = os.path.join(menuDir,'dgreen.png')
+    orangePath = os.path.join(menuDir,'orange.png')
+    redPath = os.path.join(menuDir,'red.png')
+    whitePath = os.path.join(menuDir,'white.png')
+    yellowPath = os.path.join(menuDir,'yellow.png')
+
+
+    A = pygame.image.load(APath).convert_alpha()
+    O = pygame.image.load(OPath).convert_alpha()
+    bigIcon = pygame.image.load(bigIconPath).convert_alpha()
+    leftIcon = pygame.image.load(leftIconPath).convert_alpha()
+    rightIcon = pygame.image.load(rightIconPath).convert_alpha()
+    dBlue = pygame.image.load(dBluePath).convert_alpha()
+    lBlue = pygame.image.load(lBluePath).convert_alpha()
+    lGreen = pygame.image.load(lGreenPath).convert_alpha()
+    dGreen = pygame.image.load(dGreenPath).convert_alpha()
+    orange = pygame.image.load(orangePath).convert_alpha()
+    red = pygame.image.load(redPath).convert_alpha()
+    white = pygame.image.load(whitePath).convert_alpha()
+    yellow = pygame.image.load(yellowPath).convert_alpha()
+    
+    menuList.append(A)
+    menuList.append(O)
+    menuList.append(bigIcon)
+    menuList.append(leftIcon)
+    menuList.append(rightIcon)
+    menuList.append(dBlue)
+    menuList.append(lBlue)
+    menuList.append(lGreen)
+    menuList.append(dGreen)
+    menuList.append(orange)
+    menuList.append(red)
+    menuList.append(white)
+    menuList.append(yellow)
+    
+    break
+
+        
+# FOR RANDOM MOVEMENT    
+topDir = ["S", "E", "W", "SE", "SW"]
+leftDir = ["E", "S", "N", "NE", "SE"]
+bottomDir = ["N", "W", "E", "NE", "NW"]
+rightDir = ["W", "N", "S", "NW", "SW"]    
 
 class Player(pygame.sprite.Sprite):
         def __init__(self):
@@ -263,6 +313,12 @@ def movementReverse(direction):
         elif direction == "SW": return "NE"
               
 
+def randomEightDirection():
+    directions = ["N","S","E","W","NW","SW","NE","SE"]
+    direction = directions[random.randint(0, len(directions)-1)]
+    return direction
+    
+    
 # OBSTACLE POSITION GENERATION
 def getMovement():
         X = random.randint(0, screenSize[0])
@@ -272,11 +328,6 @@ def getMovement():
         upperX =  random.randint(screenSize[0] * 0.95, screenSize[0])
         lowerY  = random.randint(0, screenSize[1] * 0.05)
         upperY = random.randint(screenSize[1] * 0.95, screenSize[1])
-        
-        topDir = ["S", "E", "W", "SE", "SW"]
-        leftDir = ["E", "S", "N", "NE", "SE"]
-        bottomDir = ["N", "W", "E", "NE", "NW"]
-        rightDir = ["W", "N", "S", "NW", "SW"]
         
         topDirection = topDir[random.randint(0, len(topDir) - 1)]
         leftDirection = leftDir[random.randint(0, len(leftDir) - 1)]
@@ -415,8 +466,12 @@ def wrapObstacle(obstacles):
 def startMenu():
     global mainMenu,currentStage
     
+    iconPositions = [] # List parallel with menuList[2:]
+    for menuIcons in range(5,len(menuList)):
+        iconPositions.append(getMovement())
+    
     startFont = pygame.font.Font(gameFont, startSize)
-    startDisplay = startFont.render("NAVIGATOR", True, startColor)
+    startDisplay = startFont.render("N VIGAT R", True, startColor)
     startRect = startDisplay.get_rect(center = screen.get_rect().center)
     
     startHelpFont = pygame.font.Font(gameFont, helpSize)
@@ -424,8 +479,17 @@ def startMenu():
     startHelpRect = startHelpDisplay.get_rect()
     startHelpRect.center = (screenSize[0]/2,screenSize[1]-screenSize[1]/3)
     
+    bounceDelay = 10
+    bounceCount = 0
+    
     if mainMenu:
         while True:
+            
+            bounceFrame = bounceCount >= bounceDelay
+            if bounceFrame: bounceCount = 0
+            else:
+                bounceFrame +=1
+            
             for event in pygame.event.get():
                 # START
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
@@ -440,16 +504,40 @@ def startMenu():
                     pygame.quit()
                     sys.exit()
                 
-                else:
-                    screen.fill([0,0,0])
-                    if staticMenu:
-                        screen.blit(mainMenuImage,(0,0))
-                    else:
-                        screen.blit(bgList[currentStage - 1][0],(0,0))
-                        screen.blit(startDisplay,startRect)
-                        screen.blit(startHelpDisplay, startHelpRect)
-
-                    pygame.display.update()
+                
+            screen.fill([0,0,0])
+            screen.blit(bgList[currentStage - 1][0],(0,0))
+            
+            for menuIndex in range(5, len(menuList)):
+                if bounceFrame:
+                    screen.blit(menuList[menuIndex], ( iconPositions[menuIndex-5][0][0] , iconPositions[menuIndex-5][0][1] ) )
+                    
+                    if "N" in iconPositions[menuIndex-5][1]: iconPositions[menuIndex-5][0][1] -= 1    
+                    if "S" in iconPositions[menuIndex-5][1]: iconPositions[menuIndex-5][0][1] += 1     
+                    if "E" in iconPositions[menuIndex-5][1]: iconPositions[menuIndex-5][0][0] += 1
+                    if "W" in iconPositions[menuIndex-5][1]: iconPositions[menuIndex-5][0][0] -= 1
+                
+                
+                    if iconPositions[menuIndex-5][0][1] > screenSize[1] * 2: iconPositions[menuIndex-5] = getMovement()
+                    if iconPositions[menuIndex-5][0][1] < -screenSize[1] : iconPositions[menuIndex-5][1] = getMovement()
+                    if iconPositions[menuIndex-5][0][0] > screenSize[0] * 2: iconPositions[menuIndex-5][1] = getMovement()
+                    if iconPositions[menuIndex-5][0][0] < -screenSize[0] : iconPositions[menuIndex-5][1] = getMovement()
+                
+             
+            
+            screen.blit(startDisplay,startRect)
+            screen.blit(startHelpDisplay, startHelpRect)
+            
+            screen.blit(menuList[0],(screenSize[0]/4 - 32,screenSize[1]/2 - 16)) # "A" symbol
+            screen.blit(menuList[1],(screenSize[0] - screenSize[0]/3 + 16,screenSize[1]/2 - 16)) # "O" symbol
+            
+            # UFO icons
+            screen.blit(menuList[2],(menuList[2].get_width() + 32 ,screenSize[1]/6)) # Big icon
+            screen.blit(menuList[3],(screenSize[0]/8,screenSize[1]/8)) # Left UFO
+            screen.blit(menuList[4],(screenSize[0] - screenSize[0]/4 , screenSize[1]/8)) # Right UFO
+            
+            
+            pygame.display.update()
  
 
 # GAME OVER SCREEN 
@@ -529,13 +617,7 @@ def creditScreen():
     
     bounceCount = 0
     
-    directions = ["N","S","E","W","NW","SW","NE","SE"]
-    direction = directions[random.randint(0, len(directions)-1)]
-    
-    topDir = ["S", "E", "W", "SE", "SW"]
-    leftDir = ["E", "S", "N", "NE", "SE"]
-    bottomDir = ["N", "W", "E", "NE", "NW"]
-    rightDir = ["W", "N", "S", "NW", "SW"]
+    direction = randomEightDirection()
     
     while rollCredits:
         
@@ -646,10 +728,9 @@ def main():
         levelDisplay = levelFont.render( str(levelNum), True, levelColor )
         
         # COLLISION DETECTION
-        if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask):
-            gameOver(gameClock,running,player,obstacles)
+        if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask): gameOver(gameClock,running,player,obstacles)
             
-                    
+                       
         player.movement()
         player.wrapping()
         spawner(sprites,obstacles,maxObstacles)
