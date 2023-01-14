@@ -633,9 +633,11 @@ def creditScreen():
                 sys.exit()
                 
             # RETURN TO GAME
-            elif event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_c or event.key == pygame.K_SPACE): 
+            elif event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_c or event.key == pygame.K_SPACE):
+                screen.fill(screenColor)
                 rollCredits = False
-                
+        
+        screen.fill(screenColor)
         screen.blit(bgList[currentStage - 1][0],(0,0))
         screen.blit(createdByDisplay,createdByRect)
         screen.blit(creditsDisplay,creditsRect)
