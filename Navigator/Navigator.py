@@ -8,7 +8,10 @@ from os import environ
 
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
-pygame.init()
+
+pygame.display.init()
+pygame.font.init()
+
 pygame.mouse.set_visible(False)
 
 # GAME CONSTANTS
@@ -540,10 +543,9 @@ def startMenu():
             screen.blit(menuList[1],(screenSize[0] - screenSize[0]/3 + 16,screenSize[1]/2 - 16)) # "O" symbol
             
             # UFO icons
-            screen.blit(menuList[2],(menuList[2].get_width() + 32 ,screenSize[1]/6)) # Big icon
+            screen.blit(menuList[2],(screenSize[0]/2 - menuList[2].get_width()/2,screenSize[1]/6)) # Big icon
             screen.blit(menuList[3],(screenSize[0]/20,screenSize[1]/8)) # Left UFO
             screen.blit(menuList[4],(screenSize[0] - screenSize[0]/4 , screenSize[1]/8)) # Right UFO
-            
             
             pygame.display.update()
  
