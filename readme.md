@@ -5,7 +5,7 @@
 To get started, either download and run the executable from latest release\
 https://github.com/pstlo/Navigator/releases/download/v0.1.0/Navigator.zip
 \
-or, to run with python:
+or, to run the newest version:
 1. Install python, check "ADD TO PATH"
 2. Install pygame with
 ```pip install pygame```
