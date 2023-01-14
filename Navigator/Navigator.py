@@ -492,6 +492,10 @@ def startMenu():
     startHelpRect = startHelpDisplay.get_rect()
     startHelpRect.center = (screenSize[0]/2,screenSize[1]-screenSize[1]/3)
     
+    leftRect = menuList[3].get_rect(center = (screenSize[0] * 0.2 , screenSize[1]/3) )
+    rightRect = menuList[4].get_rect(center = (screenSize[0] * 0.8 , screenSize[1]/3) )
+    
+    
     bounceDelay = 5
     bounceCount = 0
     
@@ -539,8 +543,8 @@ def startMenu():
             
             # UFO icons
             screen.blit(menuList[2],(screenSize[0]/2 - menuList[2].get_width()/2,screenSize[1]/6)) # Big icon
-            screen.blit(menuList[3],(screenSize[0]/20,screenSize[1]/8)) # Left UFO
-            screen.blit(menuList[4],(screenSize[0] - screenSize[0]/4 , screenSize[1]/8)) # Right UFO
+            screen.blit(menuList[3],leftRect) # Left UFO
+            screen.blit(menuList[4],rightRect) # Right UFO
             
             pygame.display.update()
  
