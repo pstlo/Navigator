@@ -61,7 +61,7 @@ levelSeven = [ False, 6 * levelTimer, "KILL", speedIncrement, sizeIncrement, num
 levelEight = [ False, 7 * levelTimer, "BOUNCE", speedIncrement, sizeIncrement, numIncrement ] 
 levelNine = [ False, 8 * levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ]
 levelTen = [ False, 9 * levelTimer, "WRAP", speedIncrement, sizeIncrement, numIncrement ]
-overTime = [ False, 10 * levelTimer, "KILL", speedIncrement * 2, sizeIncrement * 2, numIncrement * 2 ]
+overTime = [ False, 10 * levelTimer, "KILL", speedIncrement, sizeIncrement * 2, - numIncrement/2 ]
 
 # DIVIDE INTO STAGES
 stageOneLevels = [levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight,levelNine,levelTen,overTime] # Stage 1
@@ -140,7 +140,6 @@ for filename in os.listdir(bDir):
         
         bgList.append([bg,cloud])
         
-
 # SPACESHIP ASSETS
 spaceShipList = []
 for filename in os.listdir(sDir):
@@ -340,23 +339,27 @@ def gameConstantsSetter(stageList):
 # UPDATE GAME CONSTANTS
 def levelUpdater(gameConstants,gameClock):
     global obstacleBoundaries,obstacleSpeed,obstacleColor,maxObstacles,obstacleSize,cloudSpeedMult,cloudSpeed,currentLevel,currentStage
-    
-    if currentStage <= len(gameConstants) - 1:
+    levelUp = False
+    if currentStage < len(gameConstants):
         if gameConstants[currentStage][0]["TIME"] == gameClock and not gameConstants[currentStage][0]["START"]:
             gameConstants[currentStage][0]["START"] = True
             currentStage += 1
             currentLevel = 1
+            levelUp = True
         
     for levelDict in gameConstants[currentStage-1]:
         if levelDict["TIME"] == gameClock:
-           if not levelDict["START"]:
+            if not levelDict["START"] or levelUp:
                 levelDict["START"] = True
                 obstacleBoundaries = levelDict["bound"]
                 obstacleSpeed += levelDict["speedMult"]
                 maxObstacles += levelDict["maxObsMult"]
                 obstacleSize += levelDict["obsSizeMult"]
                 cloudSpeed *= cloudSpeedMult
-                currentLevel += 1 
+            
+            if levelUp: 
+                levelUp = False
+                currentLevel += 1
 
 
 # SPAWN OBSTACLES
