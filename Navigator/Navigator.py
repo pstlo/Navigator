@@ -471,7 +471,7 @@ def gameOver(gameClock,running,player,obstacles):
         
         # Stats display
         statLineFontSize = round(finalScoreSize * 0.75)
-        statLine = "Attempt " + str(attemptNumber) + " You survived for " + str(gameClock) + " seconds and died at level " + str(currentLevel)
+        statLine = "Attempt " + str(attemptNumber) + " You survived for " + str(gameClock) + " seconds and died at stage " + str(currentStage) + " level " + str(currentLevel)
         statFont = pygame.font.Font(gameFont, statLineFontSize)
         statDisplay = statFont.render(statLine, True, finalScoreColor)
         statRect = statDisplay.get_rect()
