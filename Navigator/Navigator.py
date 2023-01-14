@@ -118,8 +118,7 @@ for filename in os.listdir(mDir):
     if filename.endswith('.png'):
         path = os.path.join(mDir, filename)
         meteorList.append(pygame.image.load(path).convert_alpha())
-        
-        
+               
 # UFO ASSETS
 ufoList = []
 for filename in os.listdir(uDir):
@@ -148,6 +147,9 @@ for filename in os.listdir(sDir):
     if filename.endswith('.png'):
         path = os.path.join(sDir, filename)
         spaceShipList.append(pygame.image.load(path).convert_alpha())
+
+# ALL OBSTACLE ASSETS
+obstacleImages = [meteorList,ufoList]
         
 # MAIN MENU
 mainMenuImage = ''
@@ -232,7 +234,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.movement = getMovement()
         self.direction = self.movement[1]
         try:
-            self.image = meteorList[currentLevel - 1].convert_alpha()
+            self.image = obstacleImages[currentStage - 1][currentLevel-1].convert_alpha()
         except:
             self.image = meteorList[random.randint(0,len(meteorList)-1)]
         self.image = pygame.transform.scale(self.image, (self.size, self.size))
