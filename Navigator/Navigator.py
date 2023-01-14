@@ -127,8 +127,6 @@ for filename in os.listdir(uDir):
         path = os.path.join(uDir, filename)
         ufoList.append(pygame.image.load(path).convert_alpha())
 
-print(ufoList)
-
 # BACKGROUND ASSETS
 bgList = []
 for filename in os.listdir(bDir):
