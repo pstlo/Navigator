@@ -18,6 +18,6 @@ for python 3.11
 ```python Navigator.py```
 or use the provided batch file
  
-
-
-        
+ 
+Created by Mike Pistolesi <br />
+visuals by Collin Guetta
