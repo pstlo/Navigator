@@ -1,11 +1,10 @@
 ![graphic](https://user-images.githubusercontent.com/119834037/212317412-42b3c5b4-9509-4c4a-9f4d-bb221923e88e.png)
 
 ### Simple arcade game written in Python with PyGame ###
-
-To get started: \
-Either download and run the executable from latest release \
-or \
-run with python:
+\
+To get started, either download and run the executable from latest release\
+\
+or, to run with python:
 1. Install python, check "ADD TO PATH"
 2. Install pygame with
 ```pip install pygame```
