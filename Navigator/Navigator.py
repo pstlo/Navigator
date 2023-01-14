@@ -666,8 +666,8 @@ def creditScreen():
         pygame.display.flip()
 
         # BOUNCE OFF EDGES
-        if creditsRect.right > screenSize[0]: direction = rightDir[random.randint(0, len(rightDir) - 1)]
-        if creditsRect.left < 0: direction = leftDir[random.randint(0, len(leftDir) - 1)]  
+        if createdByRect.right > screenSize[0]: direction = rightDir[random.randint(0, len(rightDir) - 1)]
+        if createdByRect.left < 0: direction = leftDir[random.randint(0, len(leftDir) - 1)]  
         if creditsRect.bottom > screenSize[1]: direction = bottomDir[random.randint(0, len(bottomDir) - 1)]
         if createdByRect.top < 0 : direction = topDir[random.randint(0, len(topDir) - 1)]
                         
