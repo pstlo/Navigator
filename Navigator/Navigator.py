@@ -515,8 +515,7 @@ def startMenu():
                 elif event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and  event.key == pygame.K_ESCAPE):
                     pygame.quit()
                     sys.exit()
-                
-                
+                  
             screen.fill([0,0,0])
             screen.blit(bgList[currentStage - 1][0],(0,0))
             
@@ -528,19 +527,15 @@ def startMenu():
                     if "E" in iconPositions[menuIndex-5][1]: iconPositions[menuIndex-5][0][0] += 1
                     if "W" in iconPositions[menuIndex-5][1]: iconPositions[menuIndex-5][0][0] -= 1
                 
-                
                     if iconPositions[menuIndex-5][0][1] > screenSize[1] * 2: iconPositions[menuIndex-5] = getMovement(False)
                     if iconPositions[menuIndex-5][0][1] < -screenSize[1] : iconPositions[menuIndex-5] = getMovement(False)
                     if iconPositions[menuIndex-5][0][0] > screenSize[0] * 2: iconPositions[menuIndex-5] = getMovement(False)
                     if iconPositions[menuIndex-5][0][0] < -screenSize[0] : iconPositions[menuIndex-5] = getMovement(False)
-                
-             
             
             screen.blit(startDisplay,startRect)
             screen.blit(startHelpDisplay, startHelpRect)
-            
-            screen.blit(menuList[0],(screenSize[0]/4 - 32,screenSize[1]/2 - 16)) # "A" symbol
-            screen.blit(menuList[1],(screenSize[0] - screenSize[0]/3 + 16,screenSize[1]/2 - 16)) # "O" symbol
+            screen.blit(menuList[0],(startRect.left + menuList[0].get_width() - menuList[0].get_width()/8,screenSize[1]/2 - 16)) # "A" symbol
+            screen.blit(menuList[1],(screenSize[0] - startRect.centerx + menuList[1].get_width() * 2,screenSize[1]/2 - 16)) # "O" symbol
             
             # UFO icons
             screen.blit(menuList[2],(screenSize[0]/2 - menuList[2].get_width()/2,screenSize[1]/6)) # Big icon
