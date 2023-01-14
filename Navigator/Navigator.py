@@ -575,6 +575,7 @@ def gameOver(gameClock,running,player,obstacles):
         statRect.center = (screenSize[0]/2, screenSize[1] - screenSize[1]/3)
         
         # Background
+        screen.fill(screenColor)
         screen.blit(bgList[currentStage - 1][0],(0,0))
         screen.blit(gameOverDisplay,gameOverRect)
         screen.blit(exitDisplay,exitRect)
