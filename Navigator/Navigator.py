@@ -18,8 +18,7 @@ pygame.mouse.set_visible(False)
 #------------------------------------------------------------------------------------------------------------------
 
 # SCREEN                                                                                                                            
-screenSize = [800,800] # Default = [800,800]                                  
-screenColor = [0,0,0] # Default = [0,0,0]                                                                
+screenSize = [800,800] # Default = [800,800]                                                        
 fps = 60 # Default = 60                                    
 timerSize = 75 # Default = 100                             
 timerColor = [255,255,255] # Default = [255,255,255] 
@@ -96,7 +95,7 @@ currentStage = 1
 mainMenu = True # Assures start menu only runs once
 screen = pygame.display.set_mode(screenSize)
 
-
+screenColor = [0,0,0] 
 creditsFontSize = 55
 creditsColor = [255,255,255]
 
@@ -110,7 +109,6 @@ sDir = os.path.join(curDir, 'Spaceships') # Spaceship asset directory
 bDir = os.path.join(curDir, 'Backgrounds') # Background asset directory
 menuDir = os.path.join(curDir, 'MainMenu') # Start menu asset directory
 
-
 # FONT
 gameFont = ''
 for filename in os.listdir(curDir):
@@ -118,14 +116,14 @@ for filename in os.listdir(curDir):
         path = os.path.join(curDir, filename)
         gameFont = path
         break
-            
+
 # METEOR ASSETS
 meteorList = []
 for filename in os.listdir(mDir):
     if filename.endswith('.png'):
         path = os.path.join(mDir, filename)
         meteorList.append(pygame.image.load(path).convert_alpha())
-               
+
 # UFO ASSETS
 ufoList = []
 for filename in os.listdir(uDir):
@@ -175,7 +173,6 @@ for filename in os.listdir(menuDir):
     redPath = os.path.join(menuDir,'red.png')
     whitePath = os.path.join(menuDir,'white.png')
     yellowPath = os.path.join(menuDir,'yellow.png')
-
 
     A = pygame.image.load(APath).convert_alpha()
     O = pygame.image.load(OPath).convert_alpha()
@@ -286,8 +283,8 @@ class Player(pygame.sprite.Sprite):
             self.image = spaceShipList[self.currentImageNum + 1]
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
-            
-                
+
+
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -301,7 +298,7 @@ class Obstacle(pygame.sprite.Sprite):
             self.image = meteorList[random.randint(0,len(meteorList)-1)]
         self.image = pygame.transform.scale(self.image, (self.size, self.size))
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
-        
+
 
 # ROTATE IMAGE
 def rotateImage(image, rect, angle):
@@ -365,7 +362,7 @@ def getMovement(eightDirections):
 def killAllObjects(obstacles):
     for obstacle in obstacles:
         obstacle.kill()
-        
+
 
 # RESET LEVEL PROGRESS
 def resetAllLevels(gameConstants):
@@ -495,7 +492,6 @@ def startMenu():
     leftRect = menuList[3].get_rect(center = (screenSize[0] * 0.2 , screenSize[1]/3) )
     rightRect = menuList[4].get_rect(center = (screenSize[0] * 0.8 , screenSize[1]/3) )
     
-    
     bounceDelay = 5
     bounceCount = 0
     
@@ -553,33 +549,55 @@ def startMenu():
 def gameOver(gameClock,running,player,obstacles):
     global attemptNumber, currentLevel, currentStage
     gameOver = True
+    statsSpacingY = screenSize[1]/12
+    
+    # "GAME OVER" text
+    gameOverFont = pygame.font.Font(gameFont, gameOverSize)
+    gameOverDisplay = gameOverFont.render("Game Over", True, gameOverColor)
+    gameOverRect = gameOverDisplay.get_rect()
+    gameOverRect.center = (screenSize[0]/2, screenSize[1]/3)
+    
+    # Stats display
+    
+    statLineFontSize = round(finalScoreSize * 0.75)
+    statFont = pygame.font.Font(gameFont, statLineFontSize)
+    exitFont = pygame.font.Font(gameFont, helpSize)
+    
+    attemptLine = "Attempt " + str(attemptNumber)
+    survivedLine = " You survived for " + str(gameClock) + " seconds"
+    levelLine = "Died at stage " + str(currentStage) + " level " + str(currentLevel)
+    highScoreLine = "Your high score is " + str(sessionhighScore) + " seconds"
+    
+    attemptDisplay = statFont.render(attemptLine, True, finalScoreColor)
+    survivedDisplay = statFont.render(survivedLine, True, finalScoreColor)
+    levelDisplay = statFont.render(levelLine, True, finalScoreColor)
+    highScoreDisplay = statFont.render(highScoreLine, True, finalScoreColor)
+    exitDisplay = exitFont.render("Press SPACE to restart or ESCAPE to quit", True, helpColor)
+    
+    attemptRect = attemptDisplay.get_rect()
+    survivedRect = survivedDisplay.get_rect()
+    levelRect = levelDisplay.get_rect()
+    highScoreRect = highScoreDisplay.get_rect()
+    exitRect = exitDisplay.get_rect()
+    
+    attemptRect.center = (screenSize[0]/2, screenSize[1] - statsSpacingY * 6)
+    survivedRect.center = (screenSize[0]/2, screenSize[1] - statsSpacingY * 5)
+    levelRect.center = (screenSize[0]/2, screenSize[1] - statsSpacingY * 4)
+    highScoreRect.center = (screenSize[0]/2, screenSize[1] - statsSpacingY * 3)
+    exitRect.center = (screenSize[0]/2, screenSize[1] - statsSpacingY * 2)
+    
     
     while gameOver:
-        
-        # "GAME OVER" text
-        gameOverFont = pygame.font.Font(gameFont, gameOverSize)
-        gameOverDisplay = gameOverFont.render("Game Over", True, gameOverColor)
-        gameOverRect = gameOverDisplay.get_rect(center = screen.get_rect().center)
-        
-        exitFont = pygame.font.Font(gameFont, helpSize)
-        exitDisplay = exitFont.render("Press SPACE to restart or ESCAPE to quit", True, helpColor)
-        exitRect = exitDisplay.get_rect()
-        exitRect.center = (screenSize[0]/2, screenSize[1] - screenSize[1]/6)
-        
-        # Stats display
-        statLineFontSize = round(finalScoreSize * 0.75)
-        statLine = "Attempt " + str(attemptNumber) + " You survived for " + str(gameClock) + " seconds and died at stage " + str(currentStage) + " level " + str(currentLevel)
-        statFont = pygame.font.Font(gameFont, statLineFontSize)
-        statDisplay = statFont.render(statLine, True, finalScoreColor)
-        statRect = statDisplay.get_rect()
-        statRect.center = (screenSize[0]/2, screenSize[1] - screenSize[1]/3)
         
         # Background
         screen.fill(screenColor)
         screen.blit(bgList[currentStage - 1][0],(0,0))
         screen.blit(gameOverDisplay,gameOverRect)
+        screen.blit(attemptDisplay,attemptRect)
+        screen.blit(survivedDisplay,survivedRect)
+        screen.blit(levelDisplay,levelRect)
+        screen.blit(highScoreDisplay,highScoreRect)
         screen.blit(exitDisplay,exitRect)
-        screen.blit(statDisplay,statRect)
         pygame.display.flip()
        
         for event in pygame.event.get():
@@ -594,7 +612,7 @@ def gameOver(gameClock,running,player,obstacles):
 
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 running = True
-                
+
                 # SET DEFAULTS AND RESTART GAME
                 gameClock = 0
                 currentLevel = 1
@@ -604,7 +622,7 @@ def gameOver(gameClock,running,player,obstacles):
                 resetAllLevels(gameConstants)
                 attemptNumber += 1
                 main()
-                
+
 
 def creditScreen():
     
@@ -626,7 +644,6 @@ def creditScreen():
     createdByRect.center = (posX, posY - screenSize[1]/15) 
     
     bounceCount = 0
-    
     direction = randomEightDirection()
     
     while rollCredits:
@@ -636,7 +653,7 @@ def creditScreen():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-                
+
             # RETURN TO GAME
             elif event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_c or event.key == pygame.K_SPACE):
                 screen.fill(screenColor)
@@ -673,22 +690,24 @@ def creditScreen():
                 
         bounceCount +=1
         if bounceCount >= 10: bounceCount = 0
-            
-      
+
+
 gameConstants = gameConstantsSetter(stageList)
 attemptNumber = 1
+sessionhighScore = 0
+
 clk = pygame.time.Clock()
 
 
 def main():
     resetGameConstants()
     global attemptNumber
+    global sessionhighScore
     global mainMenu
     global currentStage
     
-    if mainMenu:
-        startMenu()
-        
+    if mainMenu: startMenu()
+
     player = Player()
     obstacles = pygame.sprite.Group()
     sprites = pygame.sprite.Group()
@@ -718,14 +737,14 @@ def main():
             elif event.type == timerEvent:
                 gameClock +=1
                 timerDisplay = timerFont.render(str(gameClock), True, (255,255,255))
-        
+
         # BACKGROUND ANIMATION
         screen.blit(bgList[currentStage - 1][0], (0,0) )
         screen.blit(bgList[currentStage - 1][1], (0,cloudPos) )
-            
+
         if cloudPos < screenSize[1]: cloudPos += cloudSpeed  
         else: cloudPos = cloudStart 
-            
+
         # STAGE DISPLAY
         stageNum = "Stage " + str(currentStage)
         stageFont = pygame.font.Font(gameFont, levelSize)
@@ -733,7 +752,7 @@ def main():
         
         dashFont = pygame.font.SysFont(None, levelSize)
         dashDisplay = dashFont.render( "-", True, levelColor )
-            
+        
         # LEVEL DISPLAY
         levelNum = "Level " + str(currentLevel)
         levelFont = pygame.font.Font(gameFont, levelSize)
@@ -741,18 +760,20 @@ def main():
         
         # COLLISION DETECTION
         if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask): gameOver(gameClock,running,player,obstacles)
-            
-                       
+
         player.movement()
         player.wrapping()
         spawner(sprites,obstacles,maxObstacles)
         obstacleMove(obstacles)
         
+        # UPDATE HIGH SCORE
+        if gameClock > sessionhighScore: sessionhighScore = gameClock
+        
         # OBSTACLE HANDLING
         if obstacleBoundaries == "KILL": obstacleRemove(obstacles)
         if obstacleBoundaries == "BOUNCE": bounceObstacle(obstacles)
         if obstacleBoundaries == "WRAP": wrapObstacle(obstacles)
-               
+
         levelUpdater(gameConstants,gameClock)       
         
         # DRAW SPRITES
