@@ -329,8 +329,8 @@ def randomEightDirection():
 def getMovement(eightDirections):
     top,bottom,left,right = [],[],[],[]
     
-    if eightDirections: top,bottom,left,right = topDir, bottomDir, leftDir, rightDir
-    else: top,bottom,left,right, = restrictedTopDir, restrictedBottomDir, restrictedLeftDir, restrictedRightDir
+    if eightDirections: top, bottom, left, right = topDir, bottomDir, leftDir, rightDir
+    else: top, bottom, left, right, = restrictedTopDir, restrictedBottomDir, restrictedLeftDir, restrictedRightDir
     X = random.randint(0, screenSize[0])
     Y = random.randint(0, screenSize[1])
     
@@ -339,10 +339,10 @@ def getMovement(eightDirections):
     lowerY  = random.randint(0, screenSize[1] * 0.05)
     upperY = random.randint(screenSize[1] * 0.95, screenSize[1])
     
-    topDirection = topDir[random.randint(0, len(topDir) - 1)]
-    leftDirection = leftDir[random.randint(0, len(leftDir) - 1)]
-    bottomDirection = bottomDir[random.randint(0, len(bottomDir) - 1)]
-    rightDirection = rightDir[random.randint(0, len(rightDir) - 1)]
+    topDirection = top[random.randint(0, len(top) - 1)]
+    leftDirection = left[random.randint(0, len(left) - 1)]
+    bottomDirection = bottom[random.randint(0, len(bottom) - 1)]
+    rightDirection = right[random.randint(0, len(right) - 1)]
     
     topBound = [X, lowerY, topDirection]
     leftBound = [lowerX, Y, leftDirection]
