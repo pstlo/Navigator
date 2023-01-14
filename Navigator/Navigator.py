@@ -139,6 +139,7 @@ for filename in os.listdir(bDir):
         cloud = pygame.image.load(stageCloudPath).convert_alpha()
         
         bgList.append([bg,cloud])
+        break
         
 # SPACESHIP ASSETS
 spaceShipList = []
