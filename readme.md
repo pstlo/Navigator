@@ -3,6 +3,7 @@
 ### Simple arcade game written in Python with PyGame ###
 \
 To get started, either download and run the executable from latest release\
+https://github.com/pstlo/Navigator/releases/download/v0.1.0/Navigator.zip
 \
 or, to run with python:
 1. Install python, check "ADD TO PATH"
