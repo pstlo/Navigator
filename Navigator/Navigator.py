@@ -209,7 +209,13 @@ for filename in os.listdir(menuDir):
 topDir = ["S", "E", "W", "SE", "SW"]
 leftDir = ["E", "S", "N", "NE", "SE"]
 bottomDir = ["N", "W", "E", "NE", "NW"]
-rightDir = ["W", "N", "S", "NW", "SW"]    
+rightDir = ["W", "N", "S", "NW", "SW"]
+
+restrictedTopDir = ["SE", "SW", "S"]
+restrictedLeftDir = ["E", "NE", "SE"]
+restrictedBottomDir = ["N", "NE", "NW"]
+restrictedRightDir = ["NW", "SW", "W"]
+
 
 class Player(pygame.sprite.Sprite):
         def __init__(self):
@@ -284,7 +290,7 @@ class Obstacle(pygame.sprite.Sprite):
         super().__init__()
         self.speed = obstacleSpeed
         self.size = obstacleSize
-        self.movement = getMovement()
+        self.movement = getMovement(True)
         self.direction = self.movement[1]
         try:
             self.image = obstacleImages[currentStage - 1][currentLevel-1].convert_alpha()
@@ -303,14 +309,14 @@ def rotateImage(image, rect, angle):
 
 # REVERSE OBSTACLE MOVEMENT DIRECTION
 def movementReverse(direction):
-        if direction == "N": return "S"           
-        elif direction == "S": return "N"                     
-        elif direction == "E": return "W"           
-        elif direction == "W": return "E"          
-        elif direction == "NW": return "SE"         
-        elif direction == "NE": return "SW"          
-        elif direction == "SE": return "NW"
-        elif direction == "SW": return "NE"
+    if direction == "N": return "S"           
+    elif direction == "S": return "N"                     
+    elif direction == "E": return "W"           
+    elif direction == "W": return "E"          
+    elif direction == "NW": return "SE"         
+    elif direction == "NE": return "SW"          
+    elif direction == "SE": return "NW"
+    elif direction == "SW": return "NE"
               
 
 def randomEightDirection():
@@ -320,32 +326,36 @@ def randomEightDirection():
     
     
 # OBSTACLE POSITION GENERATION
-def getMovement():
-        X = random.randint(0, screenSize[0])
-        Y = random.randint(0, screenSize[1])
-
-        lowerX = random.randint(0, screenSize[0] * 0.05)
-        upperX =  random.randint(screenSize[0] * 0.95, screenSize[0])
-        lowerY  = random.randint(0, screenSize[1] * 0.05)
-        upperY = random.randint(screenSize[1] * 0.95, screenSize[1])
-        
-        topDirection = topDir[random.randint(0, len(topDir) - 1)]
-        leftDirection = leftDir[random.randint(0, len(leftDir) - 1)]
-        bottomDirection = bottomDir[random.randint(0, len(bottomDir) - 1)]
-        rightDirection = rightDir[random.randint(0, len(rightDir) - 1)]
-        
-        topBound = [X, lowerY, topDirection]
-        leftBound = [lowerX, Y, leftDirection]
-        bottomBound = [X, upperY, bottomDirection]
-        rightBound = [upperX, Y, rightDirection]
-     
-        possible = [topBound, leftBound, rightBound, bottomBound]
-        movement = possible[ random.randint(0, len(possible) - 1) ]
-        
-        position = [movement[0], movement[1]]
-        direction = movement[2]
-        move = [position,direction]
-        return move 
+def getMovement(eightDirections):
+    top,bottom,left,right = [],[],[],[]
+    
+    if eightDirections: top,bottom,left,right = topDir, bottomDir, leftDir, rightDir
+    else: top,bottom,left,right, = restrictedTopDir, restrictedBottomDir, restrictedLeftDir, restrictedRightDir
+    X = random.randint(0, screenSize[0])
+    Y = random.randint(0, screenSize[1])
+    
+    lowerX = random.randint(0, screenSize[0] * 0.05)
+    upperX =  random.randint(screenSize[0] * 0.95, screenSize[0])
+    lowerY  = random.randint(0, screenSize[1] * 0.05)
+    upperY = random.randint(screenSize[1] * 0.95, screenSize[1])
+    
+    topDirection = topDir[random.randint(0, len(topDir) - 1)]
+    leftDirection = leftDir[random.randint(0, len(leftDir) - 1)]
+    bottomDirection = bottomDir[random.randint(0, len(bottomDir) - 1)]
+    rightDirection = rightDir[random.randint(0, len(rightDir) - 1)]
+    
+    topBound = [X, lowerY, topDirection]
+    leftBound = [lowerX, Y, leftDirection]
+    bottomBound = [X, upperY, bottomDirection]
+    rightBound = [upperX, Y, rightDirection]
+ 
+    possible = [topBound, leftBound, rightBound, bottomBound]
+    movement = possible[ random.randint(0, len(possible) - 1) ]
+    
+    position = [movement[0], movement[1]]
+    direction = movement[2]
+    move = [position,direction]
+    return move 
 
 
 # REMOVE ALL OBSTACLES
@@ -468,7 +478,7 @@ def startMenu():
     
     iconPositions = [] # List parallel with menuList[2:]
     for menuIcons in range(5,len(menuList)):
-        iconPositions.append(getMovement())
+        iconPositions.append(getMovement(True))
     
     startFont = pygame.font.Font(gameFont, startSize)
     startDisplay = startFont.render("N VIGAT R", True, startColor)
@@ -479,16 +489,15 @@ def startMenu():
     startHelpRect = startHelpDisplay.get_rect()
     startHelpRect.center = (screenSize[0]/2,screenSize[1]-screenSize[1]/3)
     
-    bounceDelay = 10
+    bounceDelay = 5
     bounceCount = 0
     
     if mainMenu:
         while True:
             
-            bounceFrame = bounceCount >= bounceDelay
-            if bounceFrame: bounceCount = 0
+            if bounceCount >= bounceDelay: bounceCount = 0
             else:
-                bounceFrame +=1
+                bounceCount +=1
             
             for event in pygame.event.get():
                 # START
@@ -509,19 +518,18 @@ def startMenu():
             screen.blit(bgList[currentStage - 1][0],(0,0))
             
             for menuIndex in range(5, len(menuList)):
-                if bounceFrame:
-                    screen.blit(menuList[menuIndex], ( iconPositions[menuIndex-5][0][0] , iconPositions[menuIndex-5][0][1] ) )
-                    
+                screen.blit(menuList[menuIndex], ( iconPositions[menuIndex-5][0][0] , iconPositions[menuIndex-5][0][1] ) )
+                if bounceCount == bounceDelay:               
                     if "N" in iconPositions[menuIndex-5][1]: iconPositions[menuIndex-5][0][1] -= 1    
                     if "S" in iconPositions[menuIndex-5][1]: iconPositions[menuIndex-5][0][1] += 1     
                     if "E" in iconPositions[menuIndex-5][1]: iconPositions[menuIndex-5][0][0] += 1
                     if "W" in iconPositions[menuIndex-5][1]: iconPositions[menuIndex-5][0][0] -= 1
                 
                 
-                    if iconPositions[menuIndex-5][0][1] > screenSize[1] * 2: iconPositions[menuIndex-5] = getMovement()
-                    if iconPositions[menuIndex-5][0][1] < -screenSize[1] : iconPositions[menuIndex-5] = getMovement()
-                    if iconPositions[menuIndex-5][0][0] > screenSize[0] * 2: iconPositions[menuIndex-5] = getMovement()
-                    if iconPositions[menuIndex-5][0][0] < -screenSize[0] : iconPositions[menuIndex-5] = getMovement()
+                    if iconPositions[menuIndex-5][0][1] > screenSize[1] * 2: iconPositions[menuIndex-5] = getMovement(False)
+                    if iconPositions[menuIndex-5][0][1] < -screenSize[1] : iconPositions[menuIndex-5] = getMovement(False)
+                    if iconPositions[menuIndex-5][0][0] > screenSize[0] * 2: iconPositions[menuIndex-5] = getMovement(False)
+                    if iconPositions[menuIndex-5][0][0] < -screenSize[0] : iconPositions[menuIndex-5] = getMovement(False)
                 
              
             
