@@ -37,6 +37,7 @@ finalScoreSize = 40 # Default = 40
 finalScoreColor = [0,255,0] # Default = [0,255,0]
 pausedSize = 100 # Default = 100
 pausedColor = [255,255,255] # Default = [255,255,255]
+pauseMax = 6
 
 # PLAYER           
 playerSpeed = 5 # Default = 5
@@ -493,7 +494,6 @@ def wrapObstacle(obstacles):
 # HUD
 def showHUD(gameClock,currentStage,currentLevel):
     
-      
     # TIMER DISPLAY
     timerDisplay = timerFont.render(str(gameClock), True, timerColor)
     
@@ -514,14 +514,14 @@ def showHUD(gameClock,currentStage,currentLevel):
     levelDisplay = levelFont.render( str(levelNum), True, levelColor )
     levelRect = levelDisplay.get_rect() 
     levelRect.center = (stageRect.right + levelRect.width*0.65, stageRect.centery)
-    
+
     timerRect = timerDisplay.get_rect(topright = screen.get_rect().topright) 
     
     screen.blit(timerDisplay, timerRect)
     screen.blit(stageDisplay, stageRect)
     screen.blit(dashDisplay, dashRect)
     screen.blit(levelDisplay, levelRect)
-    
+
 
 # START MENU
 def startMenu():
@@ -594,7 +594,7 @@ def startMenu():
             pygame.display.update()
 
 
-def pauseMenu(player,obstacles,currentStage,lastAngle,cloudPos,gameClock,currentLevel):
+def pauseMenu(player,obstacles,currentStage,lastAngle,cloudPos,gameClock,currentLevel,pauseCount):
     
     playerBlit = rotateImage(player.image,player.rect,lastAngle)
     paused = True
@@ -603,6 +603,19 @@ def pauseMenu(player,obstacles,currentStage,lastAngle,cloudPos,gameClock,current
     pausedRect = pausedDisplay.get_rect()
     pausedRect.center = (screenSize[0]/2, screenSize[1]/2)
     
+    # REMAINING PAUSES
+    pauseCountSize = 40
+    pauseNum = str(pauseMax - pauseCount) + " Pauses Remaining"
+    
+    if pauseCount >= pauseMax:
+        pauseNum = "Out of pauses"
+        pauseCountSize = 15
+        
+    pauseCountFont = pygame.font.Font(gameFont,pauseCountSize)
+    pauseDisplay = pauseCountFont.render( pauseNum , True, levelColor )
+    pauseRect = pauseDisplay.get_rect() 
+    pauseRect.center = (screenSize[0] * .5 , screenSize[1] -16)
+    
     while paused:
         screen.fill(screenColor)
         screen.blit(bgList[currentStage-1][0],(0,0))
@@ -610,6 +623,7 @@ def pauseMenu(player,obstacles,currentStage,lastAngle,cloudPos,gameClock,current
         screen.blit(cloud,(0,cloudPos))
         screen.blit(playerBlit[0],playerBlit[1])
         obstacles.draw(screen) # Draw obstacles
+        screen.blit(pauseDisplay, pauseRect)
         screen.blit(pausedDisplay,pausedRect)
         pygame.display.flip()
         for event in pygame.event.get():
@@ -798,6 +812,8 @@ def main():
     global mainMenu
     global currentStage
     
+    pauseCount = 0
+
     if mainMenu: startMenu()
 
     player = Player()
@@ -842,7 +858,9 @@ def main():
                 timerDisplay = timerFont.render(str(gameClock), True, (255,255,255))
             
             # PAUSE GAME
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE: pauseMenu(player,obstacles,currentStage,lastAngle,cloudPos,gameClock,currentLevel)
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and pauseCount < pauseMax :
+                pauseCount += 1
+                pauseMenu(player,obstacles,currentStage,lastAngle,cloudPos,gameClock,currentLevel,pauseCount)
                 
         # BACKGROUND ANIMATION
         screen.blit(bgList[currentStage - 1][0], (0,0) )
