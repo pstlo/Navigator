@@ -102,19 +102,15 @@ screenColor = [0,0,0]
 creditsFontSize = 55
 creditsColor = [255,255,255]
 
-def resource_path(relative_path):
-    try: base_path = sys._MEIPASS    
-    except Exception: base_path = os.path.abspath(".")
-    return os.path.join(base_path, relative_path)
-
 # ASSET LOADING
-curDir = resource_path('Assets')
+curDir = os.path.join(os.getcwd(),'Assets')
 obsDir = os.path.join(curDir, 'Obstacles') # Obstacle asset directory
 mDir = os.path.join(obsDir, 'Meteors') # Meteor asset directory
 uDir = os.path.join(obsDir, 'UFOs') # UFO asset directory
 sDir = os.path.join(curDir, 'Spaceships') # Spaceship asset directory
 bDir = os.path.join(curDir, 'Backgrounds') # Background asset directory
 menuDir = os.path.join(curDir, 'MainMenu') # Start menu asset directory
+rDir = os.path.join(curDir, 'Records') # Game records directory
 
 # FONT
 gameFont = ''
@@ -129,14 +125,14 @@ meteorList = []
 for filename in os.listdir(mDir):
     if filename.endswith('.png'):
         path = os.path.join(mDir, filename)
-        meteorList.append(pygame.image.load(resource_path(path)).convert_alpha())
+        meteorList.append(pygame.image.load(path).convert_alpha())
 
 # UFO ASSETS
 ufoList = []
 for filename in os.listdir(uDir):
     if filename.endswith('.png'):
         path = os.path.join(uDir, filename)
-        ufoList.append(pygame.image.load(resource_path(path)).convert_alpha())
+        ufoList.append(pygame.image.load(path).convert_alpha())
 
 # BACKGROUND ASSETS
 bgList = []
@@ -147,23 +143,23 @@ for filename in os.listdir(bDir):
         stageBgPath = os.path.join(bgPath,'Background.png')
         stageCloudPath = os.path.join(bgPath,'Cloud.png')
 
-        bg = pygame.image.load(resource_path(stageBgPath)).convert_alpha()
-        cloud = pygame.image.load(resource_path(stageCloudPath)).convert_alpha()
+        bg = pygame.image.load(stageBgPath).convert_alpha()
+        cloud = pygame.image.load(stageCloudPath).convert_alpha()
         
         bgList.append([bg,cloud])
         break
         
 # SPACESHIP ASSETS
 spaceShipList = []
-spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'spaceShip.png'))).convert_alpha())
-spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'yellowShip.png'))).convert_alpha())
-spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'blackAndGoldShip.png'))).convert_alpha())
-spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'blackAndRedShip.png'))).convert_alpha())
-spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'blueShip.png'))).convert_alpha())
-spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'purpleShip.png'))).convert_alpha())
-spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'taxiShip.png'))).convert_alpha())
-spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'rastaShip.png'))).convert_alpha())
-spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'greyAndRedShip.png'))).convert_alpha())
+spaceShipList.append(pygame.image.load(os.path.join(sDir, 'spaceShip.png')).convert_alpha())
+spaceShipList.append(pygame.image.load(os.path.join(sDir, 'yellowShip.png')).convert_alpha())
+spaceShipList.append(pygame.image.load(os.path.join(sDir, 'blackAndGoldShip.png')).convert_alpha())
+spaceShipList.append(pygame.image.load(os.path.join(sDir, 'blackAndRedShip.png')).convert_alpha())
+spaceShipList.append(pygame.image.load(os.path.join(sDir, 'blueShip.png')).convert_alpha())
+spaceShipList.append(pygame.image.load(os.path.join(sDir, 'purpleShip.png')).convert_alpha())
+spaceShipList.append(pygame.image.load(os.path.join(sDir, 'taxiShip.png')).convert_alpha())
+spaceShipList.append(pygame.image.load(os.path.join(sDir, 'rastaShip.png')).convert_alpha())
+spaceShipList.append(pygame.image.load(os.path.join(sDir, 'greyAndRedShip.png')).convert_alpha())
 
 # ALL OBSTACLE ASSETS
 obstacleImages = [meteorList,ufoList]
@@ -185,25 +181,46 @@ redPath = os.path.join(menuDir,'red.png')
 whitePath = os.path.join(menuDir,'white.png')
 yellowPath = os.path.join(menuDir,'yellow.png')
 
-menuList.append(pygame.image.load(resource_path(APath)).convert_alpha())
-menuList.append(pygame.image.load(resource_path(OPath)).convert_alpha())
-menuList.append(pygame.image.load(resource_path(bigIconPath)).convert_alpha()) 
-menuList.append(pygame.image.load(resource_path(leftIconPath)).convert_alpha())
-menuList.append(pygame.image.load(resource_path(rightIconPath)).convert_alpha())
-menuList.append(pygame.image.load(resource_path(dBluePath)).convert_alpha())
-menuList.append(pygame.image.load(resource_path(lBluePath)).convert_alpha())
-menuList.append(pygame.image.load(resource_path(lGreenPath)).convert_alpha())
-menuList.append(pygame.image.load(resource_path(dGreenPath)).convert_alpha())
-menuList.append(pygame.image.load(resource_path(orangePath)).convert_alpha())
-menuList.append(pygame.image.load(resource_path(redPath)).convert_alpha())
-menuList.append(pygame.image.load(resource_path(whitePath)).convert_alpha())
-menuList.append(pygame.image.load(resource_path(yellowPath)).convert_alpha())
-
-highScore = 0
+menuList.append(pygame.image.load(APath).convert_alpha())
+menuList.append(pygame.image.load(OPath).convert_alpha())
+menuList.append(pygame.image.load(bigIconPath).convert_alpha()) 
+menuList.append(pygame.image.load(leftIconPath).convert_alpha())
+menuList.append(pygame.image.load(rightIconPath).convert_alpha())
+menuList.append(pygame.image.load(dBluePath).convert_alpha())
+menuList.append(pygame.image.load(lBluePath).convert_alpha())
+menuList.append(pygame.image.load(lGreenPath).convert_alpha())
+menuList.append(pygame.image.load(dGreenPath).convert_alpha())
+menuList.append(pygame.image.load(orangePath).convert_alpha())
+menuList.append(pygame.image.load(redPath).convert_alpha())
+menuList.append(pygame.image.load(whitePath).convert_alpha())
+menuList.append(pygame.image.load(yellowPath).convert_alpha())
 
 # WINDOW
 pygame.display.set_caption('Navigator')
 pygame.display.set_icon(menuList[0])
+
+# LOAD GAME RECORDS
+overallHighScorePath = os.path.join(rDir,'OverallHighScore.txt')
+totalAttemptsPath = os.path.join(rDir,'TotalAttempts.txt')
+
+if not os.path.exists(overallHighScorePath):
+    newFile = open(overallHighScorePath,'w')
+    newFile.write('0')
+    newFile.close()
+    
+if not os.path.exists(totalAttemptsPath):
+    newFile = open(totalAttemptsPath,'w')
+    newFile.write('1')
+    newFile.close()    
+
+highScoreFile = open(overallHighScorePath,'r') # Open saved high score
+attemptFile = open(totalAttemptsPath,'r')  # Open saved attempts count
+
+savedOverallHighScore = int( highScoreFile.readline() ) # Loads high score
+savedTotalAttempts = int ( attemptFile.readline() ) # Loads number of game attempts
+
+highScoreFile.close()
+attemptFile.close()
 
 timerFont = pygame.font.Font(gameFont, timerSize)
 
@@ -620,14 +637,17 @@ def pauseMenu(player,obstacles,currentStage,lastAngle,cloudPos,gameClock,current
 
 # GAME OVER SCREEN 
 def gameOver(gameClock,running,player,obstacles):
-    global attemptNumber, currentLevel, currentStage, highScore
+    global attemptNumber, currentLevel, currentStage, savedTotalAttempts
     gameOver = True
     newHighScore = False
     
-    if gameClock > highScore:
-        highScore = gameClock
+    if sessionHighScore > savedOverallHighScore:
+        updatedHighScoreFile = open(overallHighScorePath,'w')
+        updatedHighScoreFile.write(str(sessionHighScore))
+        updatedHighScoreFile.close()
         newHighScore = True
         
+    savedTotalAttempts += 1
     statsSpacingY = screenSize[1]/16
     
     # "GAME OVER" text
@@ -641,11 +661,11 @@ def gameOver(gameClock,running,player,obstacles):
     statFont = pygame.font.Font(gameFont, statLineFontSize)
     exitFont = pygame.font.Font(gameFont, helpSize)
     
-    attemptLine = str(attemptNumber) + " attempts"
+    attemptLine = str(attemptNumber) + " attempts this session and " + str(savedTotalAttempts) + " attempts overall"
     survivedLine = " You survived for " + str(gameClock) + " seconds"
     levelLine = "Died at stage " + str(currentStage) + " level " + str(currentLevel)
-    overallHighScoreLine = "Your high score is " + str(highScore) + " seconds"
-    newHighScoreLine = "New high score"
+    overallHighScoreLine = "Your high score is " + str(savedOverallHighScore) + " seconds"
+    newHighScoreLine = "New high score " + str(sessionHighScore) + " seconds"
     
     recordDisplay = statFont.render(overallHighScoreLine, True, finalScoreColor)
     attemptDisplay = statFont.render(attemptLine, True, finalScoreColor)
@@ -659,22 +679,24 @@ def gameOver(gameClock,running,player,obstacles):
     levelRect = levelDisplay.get_rect()
     recordRect = recordDisplay.get_rect()
     exitRect = exitDisplay.get_rect()
-    newHighScoreRect = newHighScoreDisplay.get_rect()
-    survivedRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 3)
     
-    newHighScoreRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 4)
+    survivedRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 3)
     recordRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 4)
     levelRect.center = (screenSize[0]/2, screenSize[1]/3 +statsSpacingY * 5)
     attemptRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 6)
     exitRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 7)
     
+    updatedAttemptFile = open(totalAttemptsPath,'w')
+    updatedAttemptFile.write(str(savedTotalAttempts))
+    updatedAttemptFile.close()
+    updatedRecords = True
     
     while gameOver:
         
         # Background
         screen.fill(screenColor)
         screen.blit(bgList[currentStage - 1][0],(0,0))
-        if newHighScore: screen.blit(newHighScoreDisplay,newHighScoreRect)   
+        if newHighScore: screen.blit(newHighScoreDisplay,recordRect)   
         else: screen.blit(recordDisplay,recordRect)
         screen.blit(gameOverDisplay,gameOverRect)
         screen.blit(attemptDisplay,attemptRect)
@@ -778,14 +800,17 @@ def creditScreen():
 
 gameConstants = gameConstantsSetter(stageList)
 attemptNumber = 1
-
+sessionHighScore = 0
 
 clk = pygame.time.Clock()
 
 
 def main():
     resetGameConstants()
-    global attemptNumber,highScore,mainMenu,currentStage
+    global attemptNumber
+    global sessionHighScore
+    global mainMenu
+    global currentStage
     
     pauseCount = 0
 
@@ -794,13 +819,13 @@ def main():
     player = Player()
     
     # SHIP UNLOCKS
-    if highScore >= 30: player.nextSpaceShip()
-    if highScore >= 60: player.nextSpaceShip()
-    if highScore >= 90: player.nextSpaceShip()
-    if highScore >= 120: player.nextSpaceShip()
-    if highScore >= 150: player.nextSpaceShip()
-    if highScore >= 180: player.nextSpaceShip()
-    if highScore >= 210: player.nextSpaceShip()
+    if savedOverallHighScore >= 30: player.nextSpaceShip()
+    if savedOverallHighScore >= 60: player.nextSpaceShip()
+    if savedOverallHighScore >= 90: player.nextSpaceShip()
+    if savedOverallHighScore >= 120: player.nextSpaceShip()
+    if savedOverallHighScore >= 150: player.nextSpaceShip()
+    if savedOverallHighScore >= 180: player.nextSpaceShip()
+    if savedOverallHighScore >= 210: player.nextSpaceShip()
         
     obstacles = pygame.sprite.Group()
     sprites = pygame.sprite.Group()
@@ -854,6 +879,9 @@ def main():
         player.wrapping()
         spawner(sprites,obstacles,maxObstacles)
         obstacleMove(obstacles)
+        
+        # UPDATE HIGH SCORE
+        if gameClock > sessionHighScore: sessionHighScore = gameClock
         
         # OBSTACLE HANDLING
         if obstacleBoundaries == "KILL": obstacleRemove(obstacles)
