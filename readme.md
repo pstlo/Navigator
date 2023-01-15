@@ -1,7 +1,7 @@
 ![image](https://user-images.githubusercontent.com/119834037/212464165-a6cd0f35-04a0-43ab-ada8-2a160d63b93d.png)
 
 
-### Simple arcade game written in Python with PyGame ###
+### Simple and addictive arcade game written in Python with PyGame ###
 \
 To get started either download, extract, and run the executable from latest release:\
 https://github.com/pstlo/Navigator/releases/download/v0.2.4/Navigator.zip
