@@ -301,6 +301,7 @@ class Player(pygame.sprite.Sprite):
             self.image = spaceShipList[self.currentImageNum + 1]
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
+            self.currentImageNum+=1
         
         
 class Obstacle(pygame.sprite.Sprite):
