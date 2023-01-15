@@ -615,11 +615,12 @@ def gameOver(gameClock,running,player,obstacles):
     recordRect = recordDisplay.get_rect()
     exitRect = exitDisplay.get_rect()
     
-    survivedRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 7)
-    recordRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 6)
-    levelRect.center = (screenSize[0]/2, screenSize[1]/3 +statsSpacingY * 5)
-    attemptRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 4)
-    exitRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 3)
+    exitRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 7)
+    survivedRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 6)
+    recordRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 5)
+    levelRect.center = (screenSize[0]/2, screenSize[1]/3 +statsSpacingY * 4)
+    attemptRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 3)
+    
     
     updatedAttemptFile = open(totalAttemptsPath,'w')
     updatedAttemptFile.write(str(savedTotalAttempts))
