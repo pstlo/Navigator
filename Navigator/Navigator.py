@@ -308,6 +308,9 @@ class Player(pygame.sprite.Sprite):
             self.image = spaceShipList[self.currentImageNum + 1]
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
+        
+        
+        
 
 
 class Obstacle(pygame.sprite.Sprite):
@@ -615,15 +618,11 @@ def gameOver(gameClock,running,player,obstacles):
     recordRect = recordDisplay.get_rect()
     exitRect = exitDisplay.get_rect()
     
-    
-    
-    
     survivedRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 3)
     recordRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 4)
     levelRect.center = (screenSize[0]/2, screenSize[1]/3 +statsSpacingY * 5)
     attemptRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 6)
     exitRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 7)
-    
     
     updatedAttemptFile = open(totalAttemptsPath,'w')
     updatedAttemptFile.write(str(savedTotalAttempts))
@@ -754,6 +753,7 @@ def main():
     if mainMenu: startMenu()
 
     player = Player()
+    if savedOverallHighScore >= 100: player.nextSpaceShip()
     obstacles = pygame.sprite.Group()
     sprites = pygame.sprite.Group()
     sprites.add(player)
