@@ -220,7 +220,6 @@ if not os.path.exists(totalAttemptsPath):
     newFile.close()    
     
 
-
 highScoreFile = open(overallHighScorePath,'r') # Open saved high score
 attemptFile = open(totalAttemptsPath,'r')  # Open saved attempts count
 
@@ -600,7 +599,7 @@ def gameOver(gameClock,running,player,obstacles):
     attemptLine = str(attemptNumber) + " attempts this session and " + str(savedTotalAttempts) + " attempts overall"
     survivedLine = " You survived for " + str(gameClock) + " seconds"
     levelLine = "Died at stage " + str(currentStage) + " level " + str(currentLevel)
-    overallHighScoreLine = "Your high score " + str(savedOverallHighScore) + " seconds"
+    overallHighScoreLine = "Your high score is " + str(savedOverallHighScore) + " seconds"
     newHighScoreLine = "New high score " + str(sessionHighScore) + " seconds"
     
     recordDisplay = statFont.render(overallHighScoreLine, True, finalScoreColor)
