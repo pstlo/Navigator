@@ -583,7 +583,7 @@ def gameOver(gameClock,running,player,obstacles):
         newHighScore = True
         
     savedTotalAttempts += 1
-    statsSpacingY = screenSize[1]/12
+    statsSpacingY = screenSize[1]/16
     
     # "GAME OVER" text
     gameOverFont = pygame.font.Font(gameFont, gameOverSize)
@@ -615,11 +615,11 @@ def gameOver(gameClock,running,player,obstacles):
     recordRect = recordDisplay.get_rect()
     exitRect = exitDisplay.get_rect()
     
-    survivedRect.center = (screenSize[0]/2, screenSize[1] - statsSpacingY * 7)
-    recordRect.center = (screenSize[0]/2, screenSize[1] - statsSpacingY * 6)
-    levelRect.center = (screenSize[0]/2, screenSize[1] - statsSpacingY * 5)
-    attemptRect.center = (screenSize[0]/2, screenSize[1] - statsSpacingY * 4)
-    exitRect.center = (screenSize[0]/2, screenSize[1] - statsSpacingY * 3)
+    survivedRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 7)
+    recordRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 6)
+    levelRect.center = (screenSize[0]/2, screenSize[1]/3 +statsSpacingY * 5)
+    attemptRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 4)
+    exitRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 3)
     
     updatedAttemptFile = open(totalAttemptsPath,'w')
     updatedAttemptFile.write(str(savedTotalAttempts))
