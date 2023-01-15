@@ -2,5 +2,7 @@
 
 ### Single file executable version of Navigator ###
 
+High score and attempt count reset after closing the game
+
 Created by Mike Pistolesi <br />
 art by Collin Guetta / @guetta.rt on instagram
