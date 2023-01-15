@@ -76,8 +76,6 @@ overTimeLevels = [overTimeOne,overTimeTwo,overTimeThree]
 # STORE IN LIST
 stageList = [stageOneLevels, overTimeLevels] # List of stages
 
-
-
 #---------------------------------------------------------------------------------------------------------------------------------
 
 # STORE LEVEL DEFAULTS
@@ -224,7 +222,6 @@ highScoreFile.close()
 attemptFile.close()
 
 
-
 # FOR RANDOM MOVEMENT    
 topDir = ["S", "E", "W", "SE", "SW"]
 leftDir = ["E", "S", "N", "NE", "SE"]
@@ -305,9 +302,6 @@ class Player(pygame.sprite.Sprite):
             self.mask = pygame.mask.from_surface(self.image)
         
         
-        
-
-
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -568,7 +562,7 @@ def startMenu():
             pygame.display.update()
 
 
-def pauseMenu(player,obstacles,currentStage,lastAngle):
+def pauseMenu(player,obstacles,currentStage,lastAngle,cloudPos):
     playerBlit = rotateImage(player.image,player.rect,lastAngle)
     paused = True
     pausedFont = pygame.font.Font(gameFont, pausedSize)
@@ -578,6 +572,7 @@ def pauseMenu(player,obstacles,currentStage,lastAngle):
     while paused:
         screen.fill(screenColor)
         screen.blit(bgList[currentStage-1][0],(0,0))
+        screen.blit(cloud,(0,cloudPos))
         screen.blit(playerBlit[0],playerBlit[1])
         obstacles.draw(screen) # Draw obstacles
         screen.blit(pausedDisplay,pausedRect)
@@ -804,7 +799,7 @@ def main():
                 timerDisplay = timerFont.render(str(gameClock), True, (255,255,255))
                 
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                pauseMenu(player,obstacles,currentStage,lastAngle)
+                pauseMenu(player,obstacles,currentStage,lastAngle,cloudPos)
 
         # BACKGROUND ANIMATION
         screen.blit(bgList[currentStage - 1][0], (0,0) )
