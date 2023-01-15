@@ -862,7 +862,6 @@ def main():
         lastAngle = player.angle
         player.angle = 0 # Reset player orientation
         pygame.display.flip()
-        screen.fill(screenColor)
         clk.tick(fps)
         
 if __name__ == '__main__': main()
