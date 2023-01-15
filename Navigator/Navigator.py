@@ -613,7 +613,7 @@ def pauseMenu(player,obstacles,currentStage,lastAngle,cloudPos,gameClock,current
     pauseCountSize = 40
     pauseNum = str(pauseMax - pauseCount) + " Pauses Remaining"
     
-    if pauseCount = pauseMax:
+    if pauseCount >= pauseMax:
         pauseNum = "Out of pauses"
         
     pauseCountFont = pygame.font.Font(gameFont,pauseCountSize)
