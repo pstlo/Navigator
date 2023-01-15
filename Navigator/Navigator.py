@@ -78,6 +78,9 @@ overTimeLevels = [overTimeOne,overTimeTwo,overTimeThree]
 
 # STORE IN LIST
 stageList = [stageOneLevels, overTimeLevels] # List of stages
+
+
+
 #---------------------------------------------------------------------------------------------------------------------------------
 
 # STORE LEVEL DEFAULTS
@@ -152,64 +155,55 @@ for filename in os.listdir(bDir):
         
 # SPACESHIP ASSETS
 spaceShipList = []
-for filename in os.listdir(sDir):
-    if filename.endswith('.png'):
-        path = os.path.join(sDir, filename)
-        spaceShipList.append(pygame.image.load(resource_path(path)).convert_alpha())
+spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'spaceShip.png'))).convert_alpha())
+spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'yellowShip.png'))).convert_alpha())
+spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'blackAndGoldShip.png'))).convert_alpha())
+spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'blackAndRedShip.png'))).convert_alpha())
+spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'blueShip.png'))).convert_alpha())
+spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'purpleShip.png'))).convert_alpha())
+spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'taxiShip.png'))).convert_alpha())
+spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'rastaShip.png'))).convert_alpha())
+spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'greyAndRedShip.png'))).convert_alpha())
 
 # ALL OBSTACLE ASSETS
 obstacleImages = [meteorList,ufoList]
         
 # MAIN MENU ASSETS
 menuList = []
-for filename in os.listdir(menuDir):
     
-    APath = os.path.join(menuDir,'A.png')
-    OPath = os.path.join(menuDir,'O.png')
-    bigIconPath = os.path.join(menuDir,'big.png')
-    leftIconPath = os.path.join(menuDir,'left.png')
-    rightIconPath = os.path.join(menuDir,'right.png')
-    dBluePath = os.path.join(menuDir,'dblue.png')
-    lBluePath = os.path.join(menuDir,'lblue.png')
-    lGreenPath = os.path.join(menuDir,'lgreen.png')
-    dGreenPath = os.path.join(menuDir,'dgreen.png')
-    orangePath = os.path.join(menuDir,'orange.png')
-    redPath = os.path.join(menuDir,'red.png')
-    whitePath = os.path.join(menuDir,'white.png')
-    yellowPath = os.path.join(menuDir,'yellow.png')
+APath = os.path.join(menuDir,'A.png')
+OPath = os.path.join(menuDir,'O.png')
+bigIconPath = os.path.join(menuDir,'big.png')
+leftIconPath = os.path.join(menuDir,'left.png')
+rightIconPath = os.path.join(menuDir,'right.png')
+dBluePath = os.path.join(menuDir,'dblue.png')
+lBluePath = os.path.join(menuDir,'lblue.png')
+lGreenPath = os.path.join(menuDir,'lgreen.png')
+dGreenPath = os.path.join(menuDir,'dgreen.png')
+orangePath = os.path.join(menuDir,'orange.png')
+redPath = os.path.join(menuDir,'red.png')
+whitePath = os.path.join(menuDir,'white.png')
+yellowPath = os.path.join(menuDir,'yellow.png')
 
-    A = pygame.image.load(resource_path(APath)).convert_alpha()
-    O = pygame.image.load(resource_path(OPath)).convert_alpha()
-    bigIcon = pygame.image.load(resource_path(bigIconPath)).convert_alpha()
-    leftIcon = pygame.image.load(resource_path(leftIconPath)).convert_alpha()
-    rightIcon = pygame.image.load(resource_path(rightIconPath)).convert_alpha()
-    dBlue = pygame.image.load(resource_path(dBluePath)).convert_alpha()
-    lBlue = pygame.image.load(resource_path(lBluePath)).convert_alpha()
-    lGreen = pygame.image.load(resource_path(lGreenPath)).convert_alpha()
-    dGreen = pygame.image.load(resource_path(dGreenPath)).convert_alpha()
-    orange = pygame.image.load(resource_path(orangePath)).convert_alpha()
-    red = pygame.image.load(resource_path(redPath)).convert_alpha()
-    white = pygame.image.load(resource_path(whitePath)).convert_alpha()
-    yellow = pygame.image.load(resource_path(yellowPath)).convert_alpha()
-    
-    menuList.append(A)
-    menuList.append(O)
-    menuList.append(bigIcon)
-    menuList.append(leftIcon)
-    menuList.append(rightIcon)
-    menuList.append(dBlue)
-    menuList.append(lBlue)
-    menuList.append(lGreen)
-    menuList.append(dGreen)
-    menuList.append(orange)
-    menuList.append(red)
-    menuList.append(white)
-    menuList.append(yellow)
-    
-    break
+menuList.append(pygame.image.load(resource_path(APath)).convert_alpha())
+menuList.append(pygame.image.load(resource_path(OPath)).convert_alpha())
+menuList.append(pygame.image.load(resource_path(bigIconPath)).convert_alpha()) 
+menuList.append(pygame.image.load(resource_path(leftIconPath)).convert_alpha())
+menuList.append(pygame.image.load(resource_path(rightIconPath)).convert_alpha())
+menuList.append(pygame.image.load(resource_path(dBluePath)).convert_alpha())
+menuList.append(pygame.image.load(resource_path(lBluePath)).convert_alpha())
+menuList.append(pygame.image.load(resource_path(lGreenPath)).convert_alpha())
+menuList.append(pygame.image.load(resource_path(dGreenPath)).convert_alpha())
+menuList.append(pygame.image.load(resource_path(orangePath)).convert_alpha())
+menuList.append(pygame.image.load(resource_path(redPath)).convert_alpha())
+menuList.append(pygame.image.load(resource_path(whitePath)).convert_alpha())
+menuList.append(pygame.image.load(resource_path(yellowPath)).convert_alpha())
+
+# WINDOW
+pygame.display.set_caption('Navigator')
+pygame.display.set_icon(menuList[0])
 
 # LOAD GAME RECORDS
-
 overallHighScorePath = os.path.join(rDir,'OverallHighScore.txt')
 totalAttemptsPath = os.path.join(rDir,'TotalAttempts.txt')
 
@@ -222,7 +216,6 @@ if not os.path.exists(totalAttemptsPath):
     newFile = open(totalAttemptsPath,'w')
     newFile.write('1')
     newFile.close()    
-    
 
 highScoreFile = open(overallHighScorePath,'r') # Open saved high score
 attemptFile = open(totalAttemptsPath,'r')  # Open saved attempts count
@@ -233,7 +226,8 @@ savedTotalAttempts = int ( attemptFile.readline() ) # Loads number of game attem
 highScoreFile.close()
 attemptFile.close()
 
- 
+
+
 # FOR RANDOM MOVEMENT    
 topDir = ["S", "E", "W", "SE", "SW"]
 leftDir = ["E", "S", "N", "NE", "SE"]
