@@ -1,5 +1,4 @@
 # NAVIGATOR
-
 import random
 import math
 import sys
@@ -34,7 +33,7 @@ gameOverColor = [255,0,0] # Default = [255,0,0]
 gameOverSize = 100 # Default = 100
 helpSize = 30 # Default = 30 
 helpColor = [0,255,0] # Default = [0,255,0]
-finalScoreSize = 35 # Default = 35
+finalScoreSize = 40 # Default = 40
 finalScoreColor = [0,255,0] # Default = [0,255,0]
 
 # PLAYER           
@@ -108,6 +107,7 @@ uDir = os.path.join(obsDir, 'UFOs') # UFO asset directory
 sDir = os.path.join(curDir, 'Spaceships') # Spaceship asset directory
 bDir = os.path.join(curDir, 'Backgrounds') # Background asset directory
 menuDir = os.path.join(curDir, 'MainMenu') # Start menu asset directory
+rDir = os.path.join(curDir, 'Records') # Game records directory
 
 # FONT
 gameFont = ''
@@ -204,7 +204,33 @@ for filename in os.listdir(menuDir):
     
     break
 
-        
+# LOAD GAME RECORDS
+
+overallHighScorePath = os.path.join(rDir,'OverallHighScore.txt')
+totalAttemptsPath = os.path.join(rDir,'TotalAttempts.txt')
+
+if not os.path.exists(overallHighScorePath):
+    newFile = open(overallHighScorePath,'w')
+    newFile.write('0')
+    newFile.close()
+    
+if not os.path.exists(totalAttemptsPath):
+    newFile = open(totalAttemptsPath,'w')
+    newFile.write('1')
+    newFile.close()    
+    
+
+
+highScoreFile = open(overallHighScorePath,'r') # Open saved high score
+attemptFile = open(totalAttemptsPath,'r')  # Open saved attempts count
+
+savedOverallHighScore = int( highScoreFile.readline() ) # Loads high score
+savedTotalAttempts = int ( attemptFile.readline() ) # Loads number of game attempts
+
+highScoreFile.close()
+attemptFile.close()
+
+ 
 # FOR RANDOM MOVEMENT    
 topDir = ["S", "E", "W", "SE", "SW"]
 leftDir = ["E", "S", "N", "NE", "SE"]
@@ -547,8 +573,17 @@ def startMenu():
 
 # GAME OVER SCREEN 
 def gameOver(gameClock,running,player,obstacles):
-    global attemptNumber, currentLevel, currentStage
+    global attemptNumber, currentLevel, currentStage, savedTotalAttempts
     gameOver = True
+    newHighScore = False
+    
+    if sessionHighScore > savedOverallHighScore:
+        updatedHighScoreFile = open(overallHighScorePath,'w')
+        updatedHighScoreFile.write(str(sessionHighScore))
+        updatedHighScoreFile.close()
+        newHighScore = True
+        
+    savedTotalAttempts += 1
     statsSpacingY = screenSize[1]/12
     
     # "GAME OVER" text
@@ -558,45 +593,51 @@ def gameOver(gameClock,running,player,obstacles):
     gameOverRect.center = (screenSize[0]/2, screenSize[1]/3)
     
     # Stats display
-    
     statLineFontSize = round(finalScoreSize * 0.75)
     statFont = pygame.font.Font(gameFont, statLineFontSize)
     exitFont = pygame.font.Font(gameFont, helpSize)
     
-    attemptLine = "Attempt " + str(attemptNumber)
+    attemptLine = str(attemptNumber) + " attempts this session and " + str(savedTotalAttempts) + " attempts overall"
     survivedLine = " You survived for " + str(gameClock) + " seconds"
     levelLine = "Died at stage " + str(currentStage) + " level " + str(currentLevel)
-    highScoreLine = "Your high score is " + str(sessionhighScore) + " seconds"
+    overallHighScoreLine = "Your high score " + str(savedOverallHighScore) + " seconds"
+    newHighScoreLine = "New high score " + str(sessionHighScore) + " seconds"
     
+    recordDisplay = statFont.render(overallHighScoreLine, True, finalScoreColor)
     attemptDisplay = statFont.render(attemptLine, True, finalScoreColor)
     survivedDisplay = statFont.render(survivedLine, True, finalScoreColor)
     levelDisplay = statFont.render(levelLine, True, finalScoreColor)
-    highScoreDisplay = statFont.render(highScoreLine, True, finalScoreColor)
+    newHighScoreDisplay = statFont.render(newHighScoreLine, True, finalScoreColor)
     exitDisplay = exitFont.render("Press SPACE to restart or ESCAPE to quit", True, helpColor)
     
     attemptRect = attemptDisplay.get_rect()
     survivedRect = survivedDisplay.get_rect()
     levelRect = levelDisplay.get_rect()
-    highScoreRect = highScoreDisplay.get_rect()
+    recordRect = recordDisplay.get_rect()
     exitRect = exitDisplay.get_rect()
     
-    attemptRect.center = (screenSize[0]/2, screenSize[1] - statsSpacingY * 6)
-    survivedRect.center = (screenSize[0]/2, screenSize[1] - statsSpacingY * 5)
-    levelRect.center = (screenSize[0]/2, screenSize[1] - statsSpacingY * 4)
-    highScoreRect.center = (screenSize[0]/2, screenSize[1] - statsSpacingY * 3)
-    exitRect.center = (screenSize[0]/2, screenSize[1] - statsSpacingY * 2)
+    survivedRect.center = (screenSize[0]/2, screenSize[1] - statsSpacingY * 7)
+    recordRect.center = (screenSize[0]/2, screenSize[1] - statsSpacingY * 6)
+    levelRect.center = (screenSize[0]/2, screenSize[1] - statsSpacingY * 5)
+    attemptRect.center = (screenSize[0]/2, screenSize[1] - statsSpacingY * 4)
+    exitRect.center = (screenSize[0]/2, screenSize[1] - statsSpacingY * 3)
     
+    updatedAttemptFile = open(totalAttemptsPath,'w')
+    updatedAttemptFile.write(str(savedTotalAttempts))
+    updatedAttemptFile.close()
+    updatedRecords = True
     
     while gameOver:
         
         # Background
         screen.fill(screenColor)
         screen.blit(bgList[currentStage - 1][0],(0,0))
+        if newHighScore: screen.blit(newHighScoreDisplay,recordRect)   
+        else: screen.blit(recordDisplay,recordRect)
         screen.blit(gameOverDisplay,gameOverRect)
         screen.blit(attemptDisplay,attemptRect)
         screen.blit(survivedDisplay,survivedRect)
         screen.blit(levelDisplay,levelRect)
-        screen.blit(highScoreDisplay,highScoreRect)
         screen.blit(exitDisplay,exitRect)
         pygame.display.flip()
        
@@ -621,6 +662,7 @@ def gameOver(gameClock,running,player,obstacles):
                 killAllObjects(obstacles)
                 resetAllLevels(gameConstants)
                 attemptNumber += 1
+                
                 main()
 
 
@@ -694,7 +736,7 @@ def creditScreen():
 
 gameConstants = gameConstantsSetter(stageList)
 attemptNumber = 1
-sessionhighScore = 0
+sessionHighScore = 0
 
 clk = pygame.time.Clock()
 
@@ -702,7 +744,7 @@ clk = pygame.time.Clock()
 def main():
     resetGameConstants()
     global attemptNumber
-    global sessionhighScore
+    global sessionHighScore
     global mainMenu
     global currentStage
     
@@ -767,7 +809,7 @@ def main():
         obstacleMove(obstacles)
         
         # UPDATE HIGH SCORE
-        if gameClock > sessionhighScore: sessionhighScore = gameClock
+        if gameClock > sessionHighScore: sessionHighScore = gameClock
         
         # OBSTACLE HANDLING
         if obstacleBoundaries == "KILL": obstacleRemove(obstacles)
