@@ -40,6 +40,8 @@ helpSize = 30 # Default = 30
 helpColor = [0,255,0] # Default = [0,255,0]
 finalScoreSize = 40 # Default = 40
 finalScoreColor = [0,255,0] # Default = [0,255,0]
+pausedSize = 100 # Default = 100
+pausedColor = [255,255,255] # Default = [255,255,255]
 
 # PLAYER           
 playerSpeed = 5 # Default = 5
@@ -569,7 +571,30 @@ def startMenu():
             screen.blit(menuList[4],rightRect) # Right UFO
             
             pygame.display.update()
- 
+
+
+def pauseMenu(player,obstacles,currentStage,lastAngle):
+    playerBlit = rotateImage(player.image,player.rect,lastAngle)
+    paused = True
+    pausedFont = pygame.font.Font(gameFont, pausedSize)
+    pausedDisplay = pausedFont.render("Paused", True, pausedColor)
+    pausedRect = pausedDisplay.get_rect()
+    pausedRect.center = (screenSize[0]/2, screenSize[1]/2)
+    while paused:
+        screen.fill(screenColor)
+        screen.blit(bgList[currentStage-1][0],(0,0))
+        screen.blit(playerBlit[0],playerBlit[1])
+        obstacles.draw(screen) # Draw obstacles
+        screen.blit(pausedDisplay,pausedRect)
+        pygame.display.flip()
+        for event in pygame.event.get():
+            # EXIT
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            
+            elif event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_SPACE): paused = False
+                
 
 # GAME OVER SCREEN 
 def gameOver(gameClock,running,player,obstacles):
@@ -762,10 +787,12 @@ def main():
     timerDisplay = timerFont.render(str(gameClock), True, timerColor)
     timerEvent = pygame.USEREVENT + 1
     pygame.time.set_timer(timerEvent, timerDelay) 
- 
+    
     cloudPos = cloudStart
     running = True
-   
+    
+    lastAngle = 0
+    
     # GAME LOOP
     while running:
         
@@ -780,6 +807,9 @@ def main():
             elif event.type == timerEvent:
                 gameClock +=1
                 timerDisplay = timerFont.render(str(gameClock), True, (255,255,255))
+                
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                pauseMenu(player,obstacles,currentStage,lastAngle)
 
         # BACKGROUND ANIMATION
         screen.blit(bgList[currentStage - 1][0], (0,0) )
@@ -839,6 +869,7 @@ def main():
         screen.blit(levelDisplay, levelRect)
         
         # UPDATE SCREEN
+        lastAngle = player.angle
         player.angle = 0 # Reset player orientation
         pygame.display.flip()
         screen.fill(screenColor)
