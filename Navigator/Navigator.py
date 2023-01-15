@@ -8,6 +8,16 @@ from os import environ
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
 
+import os
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
+
 pygame.display.init()
 pygame.font.init()
 
@@ -99,8 +109,7 @@ creditsFontSize = 55
 creditsColor = [255,255,255]
 
 # ASSET LOADING
-baseDir = str(os.getcwd()) # Game directory
-curDir = os.path.join(baseDir, 'Assets') # Asset directory
+curDir = resource_path('Assets')
 obsDir = os.path.join(curDir, 'Obstacles') # Obstacle asset directory
 mDir = os.path.join(obsDir, 'Meteors') # Meteor asset directory
 uDir = os.path.join(obsDir, 'UFOs') # UFO asset directory
@@ -122,14 +131,14 @@ meteorList = []
 for filename in os.listdir(mDir):
     if filename.endswith('.png'):
         path = os.path.join(mDir, filename)
-        meteorList.append(pygame.image.load(path).convert_alpha())
+        meteorList.append(pygame.image.load(resource_path(path)).convert_alpha())
 
 # UFO ASSETS
 ufoList = []
 for filename in os.listdir(uDir):
     if filename.endswith('.png'):
         path = os.path.join(uDir, filename)
-        ufoList.append(pygame.image.load(path).convert_alpha())
+        ufoList.append(pygame.image.load(resource_path(path)).convert_alpha())
 
 # BACKGROUND ASSETS
 bgList = []
@@ -140,8 +149,8 @@ for filename in os.listdir(bDir):
         stageBgPath = os.path.join(bgPath,'Background.png')
         stageCloudPath = os.path.join(bgPath,'Cloud.png')
 
-        bg = pygame.image.load(stageBgPath).convert_alpha()
-        cloud = pygame.image.load(stageCloudPath).convert_alpha()
+        bg = pygame.image.load(resource_path(stageBgPath)).convert_alpha()
+        cloud = pygame.image.load(resource_path(stageCloudPath)).convert_alpha()
         
         bgList.append([bg,cloud])
         break
@@ -151,7 +160,7 @@ spaceShipList = []
 for filename in os.listdir(sDir):
     if filename.endswith('.png'):
         path = os.path.join(sDir, filename)
-        spaceShipList.append(pygame.image.load(path).convert_alpha())
+        spaceShipList.append(pygame.image.load(resource_path(path)).convert_alpha())
 
 # ALL OBSTACLE ASSETS
 obstacleImages = [meteorList,ufoList]
@@ -174,19 +183,19 @@ for filename in os.listdir(menuDir):
     whitePath = os.path.join(menuDir,'white.png')
     yellowPath = os.path.join(menuDir,'yellow.png')
 
-    A = pygame.image.load(APath).convert_alpha()
-    O = pygame.image.load(OPath).convert_alpha()
-    bigIcon = pygame.image.load(bigIconPath).convert_alpha()
-    leftIcon = pygame.image.load(leftIconPath).convert_alpha()
-    rightIcon = pygame.image.load(rightIconPath).convert_alpha()
-    dBlue = pygame.image.load(dBluePath).convert_alpha()
-    lBlue = pygame.image.load(lBluePath).convert_alpha()
-    lGreen = pygame.image.load(lGreenPath).convert_alpha()
-    dGreen = pygame.image.load(dGreenPath).convert_alpha()
-    orange = pygame.image.load(orangePath).convert_alpha()
-    red = pygame.image.load(redPath).convert_alpha()
-    white = pygame.image.load(whitePath).convert_alpha()
-    yellow = pygame.image.load(yellowPath).convert_alpha()
+    A = pygame.image.load(resource_path(APath)).convert_alpha()
+    O = pygame.image.load(resource_path(OPath)).convert_alpha()
+    bigIcon = pygame.image.load(resource_path(bigIconPath)).convert_alpha()
+    leftIcon = pygame.image.load(resource_path(leftIconPath)).convert_alpha()
+    rightIcon = pygame.image.load(resource_path(rightIconPath)).convert_alpha()
+    dBlue = pygame.image.load(resource_path(dBluePath)).convert_alpha()
+    lBlue = pygame.image.load(resource_path(lBluePath)).convert_alpha()
+    lGreen = pygame.image.load(resource_path(lGreenPath)).convert_alpha()
+    dGreen = pygame.image.load(resource_path(dGreenPath)).convert_alpha()
+    orange = pygame.image.load(resource_path(orangePath)).convert_alpha()
+    red = pygame.image.load(resource_path(redPath)).convert_alpha()
+    white = pygame.image.load(resource_path(whitePath)).convert_alpha()
+    yellow = pygame.image.load(resource_path(yellowPath)).convert_alpha()
     
     menuList.append(A)
     menuList.append(O)
