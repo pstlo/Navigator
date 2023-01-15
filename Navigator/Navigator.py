@@ -221,6 +221,7 @@ savedTotalAttempts = int ( attemptFile.readline() ) # Loads number of game attem
 highScoreFile.close()
 attemptFile.close()
 
+timerFont = pygame.font.Font(gameFont, timerSize)
 
 # FOR RANDOM MOVEMENT    
 topDir = ["S", "E", "W", "SE", "SW"]
@@ -488,6 +489,38 @@ def wrapObstacle(obstacles):
         if obs.rect.centerx > screenSize[0]: obs.rect.centerx = 0      
         if obs.rect.centerx < 0: obs.rect.centerx = screenSize[0]
 
+# HUD
+def showHUD(gameClock,currentStage,currentLevel):
+    
+      
+    # TIMER DISPLAY
+    timerDisplay = timerFont.render(str(gameClock), True, timerColor)
+    
+    # STAGE DISPLAY
+    stageNum = "Stage " + str(currentStage)
+    stageFont = pygame.font.Font(gameFont, levelSize)
+    stageDisplay = stageFont.render( str(stageNum), True, levelColor )
+    stageRect = stageDisplay.get_rect(topleft = screen.get_rect().topleft)
+    
+    dashFont = pygame.font.SysFont(None, levelSize)
+    dashDisplay = dashFont.render( "-", True, levelColor )
+    dashRect = dashDisplay.get_rect()
+    dashRect.center = (stageRect.right + dashRect.width, stageRect.centery + dashRect.height/5)
+
+    # LEVEL DISPLAY
+    levelNum = "Level " + str(currentLevel)
+    levelFont = pygame.font.Font(gameFont, levelSize)
+    levelDisplay = levelFont.render( str(levelNum), True, levelColor )
+    levelRect = levelDisplay.get_rect() 
+    levelRect.center = (stageRect.right + levelRect.width*0.65, stageRect.centery)
+    
+    timerRect = timerDisplay.get_rect(topright = screen.get_rect().topright) 
+    
+    screen.blit(timerDisplay, timerRect)
+    screen.blit(stageDisplay, stageRect)
+    screen.blit(dashDisplay, dashRect)
+    screen.blit(levelDisplay, levelRect)
+    
 
 # START MENU
 def startMenu():
@@ -516,9 +549,8 @@ def startMenu():
         while True:
             
             if bounceCount >= bounceDelay: bounceCount = 0
-            else:
-                bounceCount +=1
-            
+            else:bounceCount +=1
+                
             for event in pygame.event.get():
                 # START
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
@@ -526,9 +558,8 @@ def startMenu():
                     return
                 
                 # CREDITS
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_c:
-                    creditScreen()
-                
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_c: creditScreen()
+                    
                 elif event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and  event.key == pygame.K_ESCAPE):
                     pygame.quit()
                     sys.exit()
@@ -562,16 +593,19 @@ def startMenu():
             pygame.display.update()
 
 
-def pauseMenu(player,obstacles,currentStage,lastAngle,cloudPos):
+def pauseMenu(player,obstacles,currentStage,lastAngle,cloudPos,gameClock,currentLevel):
+    
     playerBlit = rotateImage(player.image,player.rect,lastAngle)
     paused = True
     pausedFont = pygame.font.Font(gameFont, pausedSize)
     pausedDisplay = pausedFont.render("Paused", True, pausedColor)
     pausedRect = pausedDisplay.get_rect()
     pausedRect.center = (screenSize[0]/2, screenSize[1]/2)
+    
     while paused:
         screen.fill(screenColor)
         screen.blit(bgList[currentStage-1][0],(0,0))
+        showHUD(gameClock,currentStage,currentLevel)
         screen.blit(cloud,(0,cloudPos))
         screen.blit(playerBlit[0],playerBlit[1])
         obstacles.draw(screen) # Draw obstacles
@@ -766,27 +800,34 @@ def main():
     if mainMenu: startMenu()
 
     player = Player()
-    if savedOverallHighScore >= 100: player.nextSpaceShip()
+    
+    # SHIP UNLOCKS
+    if savedOverallHighScore >= 30: player.nextSpaceShip()
+    if savedOverallHighScore >= 60: player.nextSpaceShip()
+    if savedOverallHighScore >= 90: player.nextSpaceShip()
+    if savedOverallHighScore >= 120: player.nextSpaceShip()
+    if savedOverallHighScore >= 150: player.nextSpaceShip()
+    if savedOverallHighScore >= 180: player.nextSpaceShip()
+    if savedOverallHighScore >= 210: player.nextSpaceShip()
+        
     obstacles = pygame.sprite.Group()
     sprites = pygame.sprite.Group()
     sprites.add(player)
     gameClock = 0
     
-    # TIMER DISPLAY
-    timerFont = pygame.font.Font(gameFont, timerSize)
-    timerDisplay = timerFont.render(str(gameClock), True, timerColor)
     timerEvent = pygame.USEREVENT + 1
     pygame.time.set_timer(timerEvent, timerDelay) 
     
     cloudPos = cloudStart
-    running = True
-    
     lastAngle = 0
+    
+    running = True
     
     # GAME LOOP
     while running:
         
         for event in pygame.event.get():
+            
             # EXIT
             if (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE) or event.type == pygame.QUIT:
                 running = False
@@ -794,36 +835,27 @@ def main():
                 sys.exit()
                 break
             
+            # INCREMENT TIMER
             elif event.type == timerEvent:
                 gameClock +=1
                 timerDisplay = timerFont.render(str(gameClock), True, (255,255,255))
+            
+            # PAUSE GAME
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE: pauseMenu(player,obstacles,currentStage,lastAngle,cloudPos,gameClock,currentLevel)
                 
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                pauseMenu(player,obstacles,currentStage,lastAngle,cloudPos)
-
         # BACKGROUND ANIMATION
         screen.blit(bgList[currentStage - 1][0], (0,0) )
         screen.blit(bgList[currentStage - 1][1], (0,cloudPos) )
-
         if cloudPos < screenSize[1]: cloudPos += cloudSpeed  
         else: cloudPos = cloudStart 
-
-        # STAGE DISPLAY
-        stageNum = "Stage " + str(currentStage)
-        stageFont = pygame.font.Font(gameFont, levelSize)
-        stageDisplay = stageFont.render( str(stageNum), True, levelColor )
         
-        dashFont = pygame.font.SysFont(None, levelSize)
-        dashDisplay = dashFont.render( "-", True, levelColor )
-        
-        # LEVEL DISPLAY
-        levelNum = "Level " + str(currentLevel)
-        levelFont = pygame.font.Font(gameFont, levelSize)
-        levelDisplay = levelFont.render( str(levelNum), True, levelColor )
+        # HUD
+        showHUD(gameClock,currentStage,currentLevel)
         
         # COLLISION DETECTION
         if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask): gameOver(gameClock,running,player,obstacles)
-
+        
+        # DRAW AND MOVE SPRITES
         player.movement()
         player.wrapping()
         spawner(sprites,obstacles,maxObstacles)
@@ -836,27 +868,14 @@ def main():
         if obstacleBoundaries == "KILL": obstacleRemove(obstacles)
         if obstacleBoundaries == "BOUNCE": bounceObstacle(obstacles)
         if obstacleBoundaries == "WRAP": wrapObstacle(obstacles)
-
-        levelUpdater(gameConstants,gameClock)       
+        
+        # LEVEL UP 
+        levelUpdater(gameConstants,gameClock)   
         
         # DRAW SPRITES
         newBlit = rotateImage(player.image,player.rect,player.angle) # Player rotation
         screen.blit(newBlit[0],newBlit[1]) # Draw player
         obstacles.draw(screen) # Draw obstacles
-        
-        # HUD
-        timerRect = timerDisplay.get_rect(topright = screen.get_rect().topright) 
-        stageRect = stageDisplay.get_rect(topleft = screen.get_rect().topleft)
-        dashRect = dashDisplay.get_rect()
-        levelRect = levelDisplay.get_rect() 
-        
-        dashRect.center = (stageRect.right + dashRect.width, stageRect.centery + dashRect.height/5)
-        levelRect.center = (stageRect.right + levelRect.width*0.65, stageRect.centery)
-        
-        screen.blit(timerDisplay, timerRect)
-        screen.blit(stageDisplay, stageRect)
-        screen.blit(dashDisplay, dashRect)
-        screen.blit(levelDisplay, levelRect)
         
         # UPDATE SCREEN
         lastAngle = player.angle
