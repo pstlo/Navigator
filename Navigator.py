@@ -166,8 +166,10 @@ spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'blackAn
 spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'blueShip.png'))).convert_alpha())
 spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'purpleShip.png'))).convert_alpha())
 spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'taxiShip.png'))).convert_alpha())
-spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'rastaShip.png'))).convert_alpha())
 spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'greyAndRedShip.png'))).convert_alpha())
+spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'greenShip.png'))).convert_alpha())
+spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'orangeShip.png'))).convert_alpha())
+spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'rastaShip.png'))).convert_alpha())
 
 # ALL OBSTACLE ASSETS
 obstacleImages = [meteorList,ufoList]
@@ -555,14 +557,18 @@ def startMenu(player):
     unlockNumber = 0
     
     # SHIP UNLOCKS   
-    if savedOverallHighScore >= 240: unlockNumber = len(spaceShipList)
-    elif savedOverallHighScore >= 210: unlockNumber = len(spaceShipList) - 1
-    elif savedOverallHighScore >= 180: unlockNumber = len(spaceShipList) - 2
-    elif savedOverallHighScore >= 150: unlockNumber = len(spaceShipList) - 3    
-    elif savedOverallHighScore >= 120: unlockNumber = len(spaceShipList) - 4 
-    elif savedOverallHighScore >= 90: unlockNumber = len(spaceShipList) - 5    
-    elif savedOverallHighScore >= 60: unlockNumber = len(spaceShipList) - 6    
-    elif savedOverallHighScore >= 30: unlockNumber = len(spaceShipList) - 7 
+    
+    if savedOverallHighScore >= 300: unlockNumber = len(spaceShipList)
+    elif savedOverallHighScore >= 270: unlockNumber = len(spaceShipList) - 1
+    elif savedOverallHighScore >= 240: unlockNumber = len(spaceShipList) - 2
+    elif savedOverallHighScore >= 210: unlockNumber = len(spaceShipList) - 3
+    elif savedOverallHighScore >= 180: unlockNumber = len(spaceShipList) - 4
+    elif savedOverallHighScore >= 150: unlockNumber = len(spaceShipList) - 5    
+    elif savedOverallHighScore >= 120: unlockNumber = len(spaceShipList) - 6 
+    elif savedOverallHighScore >= 90: unlockNumber = len(spaceShipList) - 7   
+    elif savedOverallHighScore >= 60: unlockNumber = len(spaceShipList) - 8    
+    elif savedOverallHighScore >= 30: unlockNumber = len(spaceShipList) - 9
+    
     
 
     for imageNum in range(unlockNumber-1):
