@@ -897,6 +897,10 @@ def main():
 
     player = Player()    
     if mainMenu: startMenu(player)
+    else:
+        for i in range(savedShipNum):
+            player.nextSpaceShip()
+            
         
     obstacles = pygame.sprite.Group()
     sprites = pygame.sprite.Group()
