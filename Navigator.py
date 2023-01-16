@@ -543,7 +543,7 @@ def showHUD(gameClock,currentStage,currentLevel):
 
 # START MENU
 def startMenu(player):
-    global mainMenu,currentStage
+    global currentStage,mainMenu
     
     iconPositions = [] # List parallel with menuList[2:]
     for menuIcons in range(5,len(menuList)):
@@ -581,7 +581,6 @@ def startMenu(player):
     iconPosition, startDelayCounter = startOffset, 0
     
     if mainMenu:
-         
         while True:
             
             if bounceCount >= bounceDelay: bounceCount = 0
@@ -613,9 +612,7 @@ def startMenu(player):
                         pygame.display.update()
                         
                         if startDelayCounter >= startDelay: iconPosition-=1
-                        
-                            
-                    mainMenu = False
+                    mainMenu = False    
                     return
                 
                 elif event.type == pygame.KEYDOWN and (event.key == pygame.K_d or event.key == pygame.K_RIGHT):
@@ -704,7 +701,7 @@ def pauseMenu(player,obstacles,currentStage,lastAngle,cloudPos,gameClock,current
 
 # GAME OVER SCREEN 
 def gameOver(gameClock,running,player,obstacles):
-    global attemptNumber, currentLevel, currentStage, savedTotalAttempts
+    global attemptNumber, currentLevel, currentStage, savedTotalAttempts, mainMenu
     gameOver = True
     newHighScore = False
     
@@ -773,18 +770,28 @@ def gameOver(gameClock,running,player,obstacles):
         pygame.display.flip()
        
         for event in pygame.event.get():
+            key = pygame.key.get_pressed()
             
             # EXIT
-            if (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE) or event.type == pygame.QUIT:
+            if key[pygame.K_ESCAPE] or event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_c:
-                creditScreen()
-
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                running = True
-
+            elif key[pygame.K_c]: creditScreen()
+                
+            elif key[pygame.K_TAB]: 
+                # SET DEFAULTS AND GO BACK TO MENU
+                gameClock = 0
+                currentLevel = 1
+                currentStage = 1
+                player.kill()
+                killAllObjects(obstacles)
+                resetAllLevels(gameConstants)
+                attemptNumber += 1
+                mainMenu = True
+                main()
+                
+            elif key[pygame.K_SPACE]:
                 # SET DEFAULTS AND RESTART GAME
                 gameClock = 0
                 currentLevel = 1
@@ -793,8 +800,10 @@ def gameOver(gameClock,running,player,obstacles):
                 killAllObjects(obstacles)
                 resetAllLevels(gameConstants)
                 attemptNumber += 1
-                
+                running = True
                 main()
+                
+            
 
 
 def creditScreen():
@@ -871,13 +880,12 @@ sessionHighScore = 0
 
 clk = pygame.time.Clock()
 
-
 def main():
     resetGameConstants()
     global attemptNumber
     global sessionHighScore
-    global mainMenu
     global currentStage
+    global mainMenu
     
     pauseCount = 0
 
