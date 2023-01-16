@@ -701,7 +701,7 @@ def pauseMenu(player,obstacles,currentStage,lastAngle,cloudPos,gameClock,current
 
 # GAME OVER SCREEN 
 def gameOver(gameClock,running,player,obstacles):
-    global attemptNumber, currentLevel, currentStage, savedTotalAttempts, mainMenu
+    global attemptNumber, currentLevel, currentStage, savedTotalAttempts, mainMenu, savedOverallHighScore
     gameOver = True
     newHighScore = False
     
@@ -709,6 +709,7 @@ def gameOver(gameClock,running,player,obstacles):
         updatedHighScoreFile = open(overallHighScorePath,'w')
         updatedHighScoreFile.write(str(sessionHighScore))
         updatedHighScoreFile.close()
+        savedOverallHighScore = sessionHighScore
         newHighScore = True
         
     savedTotalAttempts += 1
