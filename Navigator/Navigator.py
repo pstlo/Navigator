@@ -578,8 +578,9 @@ def startMenu(player):
      
    
     currentShip = savedShipNum
-    
+    startOffset = 100
     if mainMenu:
+         
         while True:
             
             if bounceCount >= bounceDelay: bounceCount = 0
@@ -588,6 +589,23 @@ def startMenu(player):
             for event in pygame.event.get():
                 # START
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                    
+                    for iconPosition in reversed(range(startOffset)):
+                        screen.fill([0,0,0])
+                        screen.blit(bgList[currentStage - 1][0],(0,0))
+                        screen.blit(startDisplay,startRect)
+                        screen.blit(startHelpDisplay, startHelpRect)
+                        screen.blit(player.image, (player.rect.x,player.rect.y + iconPosition)) # Current spaceship
+                        screen.blit(menuList[0],(startRect.left + menuList[0].get_width() - menuList[0].get_width()/8,screenSize[1]/2 - 16)) # "A" symbol
+                        screen.blit(menuList[1],(screenSize[0] - startRect.centerx + menuList[1].get_width() * 2,screenSize[1]/2 - 16)) # "O" symbol
+                        
+                        # UFO icons
+                        screen.blit(menuList[2],(screenSize[0]/2 - menuList[2].get_width()/2,screenSize[1]/6)) # Big icon
+                        screen.blit(menuList[3],leftRect) # Left UFO
+                        screen.blit(menuList[4],rightRect) # Right UFO
+                        
+                        pygame.display.update()
+                        
                     mainMenu = False
                     return
                 
@@ -623,6 +641,7 @@ def startMenu(player):
             
             screen.blit(startDisplay,startRect)
             screen.blit(startHelpDisplay, startHelpRect)
+            screen.blit(player.image, (player.rect.x,player.rect.y + startOffset)) # Current spaceship
             screen.blit(menuList[0],(startRect.left + menuList[0].get_width() - menuList[0].get_width()/8,screenSize[1]/2 - 16)) # "A" symbol
             screen.blit(menuList[1],(screenSize[0] - startRect.centerx + menuList[1].get_width() * 2,screenSize[1]/2 - 16)) # "O" symbol
             
