@@ -508,6 +508,7 @@ def wrapObstacle(obstacles):
         if obs.rect.centerx > screenSize[0]: obs.rect.centerx = 0      
         if obs.rect.centerx < 0: obs.rect.centerx = screenSize[0]
 
+
 # HUD
 def showHUD(gameClock,currentStage,currentLevel):
     
@@ -566,14 +567,15 @@ def startMenu(player):
     unlockNumber = 0
     
     # SHIP UNLOCKS   
-    if savedOverallHighScore >= 210: unlockNumber = len(spaceShipList) - 1 
-    elif savedOverallHighScore >= 180: unlockNumber = len(spaceShipList) - 2 
+    if savedOverallHighScore >= 240: unlockNumber = len(spaceShipList)
+    elif savedOverallHighScore >= 210: unlockNumber = len(spaceShipList) - 1
+    elif savedOverallHighScore >= 180: unlockNumber = len(spaceShipList) - 2
     elif savedOverallHighScore >= 150: unlockNumber = len(spaceShipList) - 3    
     elif savedOverallHighScore >= 120: unlockNumber = len(spaceShipList) - 4 
     elif savedOverallHighScore >= 90: unlockNumber = len(spaceShipList) - 5    
     elif savedOverallHighScore >= 60: unlockNumber = len(spaceShipList) - 6    
     elif savedOverallHighScore >= 30: unlockNumber = len(spaceShipList) - 7 
-     
+    print(unlockNumber) 
     currentShip = savedShipNum
     startOffset = 100
     startDelay = 1
