@@ -319,6 +319,10 @@ class Obstacle(pygame.sprite.Sprite):
             self.image = meteorList[random.randint(0,len(meteorList)-1)]
         self.image = pygame.transform.scale(self.image, (self.size, self.size))
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
+        self.angle = 0
+        
+        spins = [-1,1]
+        self.spinDirection = spins[random.randint(0,len(spins)-1)]
 
 
 # ROTATE IMAGE
@@ -885,7 +889,7 @@ def main():
     else:
         for i in range(savedShipNum):
             player.nextSpaceShip()
-
+    
     obstacles = pygame.sprite.Group()
     sprites = pygame.sprite.Group()
     sprites.add(player)
@@ -952,7 +956,12 @@ def main():
         # DRAW SPRITES
         newBlit = rotateImage(player.image,player.rect,player.angle) # Player rotation
         screen.blit(newBlit[0],newBlit[1]) # Draw player
-        obstacles.draw(screen) # Draw obstacles
+        
+        # DRAW OBSTACLES
+        for obs in obstacles:
+            newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
+            screen.blit(newBlit[0],newBlit[1])
+            obs.angle += (currentLevel * currentStage * obs.spinDirection) # Update angle 
         
         # UPDATE SCREEN
         lastAngle = player.angle
