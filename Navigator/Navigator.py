@@ -565,9 +565,7 @@ def startMenu(player):
     
     unlockNumber = 0
     
-    
-        # SHIP UNLOCKS
-        
+    # SHIP UNLOCKS   
     if savedOverallHighScore >= 210: unlockNumber = len(spaceShipList) - 1 
     elif savedOverallHighScore >= 180: unlockNumber = len(spaceShipList) - 2 
     elif savedOverallHighScore >= 150: unlockNumber = len(spaceShipList) - 3    
@@ -576,9 +574,11 @@ def startMenu(player):
     elif savedOverallHighScore >= 60: unlockNumber = len(spaceShipList) - 6    
     elif savedOverallHighScore >= 30: unlockNumber = len(spaceShipList) - 7 
      
-   
     currentShip = savedShipNum
     startOffset = 100
+    startDelay = 1
+    iconPosition, startDelayCounter = startOffset, 0
+    
     if mainMenu:
          
         while True:
@@ -588,9 +588,14 @@ def startMenu(player):
                 
             for event in pygame.event.get():
                 # START
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE: 
                     
-                    for iconPosition in reversed(range(startOffset)):
+                    while iconPosition > 0:
+                        
+                        if startDelayCounter >= startDelay:  startDelayCounter = 0
+                        else: startDelayCounter +=1
+                             
+                        # Start animation
                         screen.fill([0,0,0])
                         screen.blit(bgList[currentStage - 1][0],(0,0))
                         screen.blit(startDisplay,startRect)
@@ -606,6 +611,9 @@ def startMenu(player):
                         
                         pygame.display.update()
                         
+                        if startDelayCounter >= startDelay: iconPosition-=1
+                        
+                            
                     mainMenu = False
                     return
                 
