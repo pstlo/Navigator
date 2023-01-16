@@ -575,7 +575,6 @@ def startMenu(player):
     elif savedOverallHighScore >= 90: unlockNumber = len(spaceShipList) - 5    
     elif savedOverallHighScore >= 60: unlockNumber = len(spaceShipList) - 6    
     elif savedOverallHighScore >= 30: unlockNumber = len(spaceShipList) - 7 
-    print(unlockNumber) 
     currentShip = savedShipNum
     startOffset = 100
     startDelay = 1
