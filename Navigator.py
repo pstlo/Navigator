@@ -732,12 +732,14 @@ def gameOver(gameClock,running,player,obstacles):
     statFont = pygame.font.Font(gameFont, statLineFontSize)
     exitFont = pygame.font.Font(gameFont, helpSize)
     
+    # Text
     attemptLine = str(attemptNumber) + " attempts this session and " + str(savedTotalAttempts) + " attempts overall"
     survivedLine = " You survived for " + str(gameClock) + " seconds"
     levelLine = "Died at stage " + str(currentStage) + " level " + str(currentLevel)
     overallHighScoreLine = "Your high score is " + str(savedOverallHighScore) + " seconds"
     newHighScoreLine = "New high score " + str(sessionHighScore) + " seconds"
     
+    # Display
     recordDisplay = statFont.render(overallHighScoreLine, True, finalScoreColor)
     attemptDisplay = statFont.render(attemptLine, True, finalScoreColor)
     survivedDisplay = statFont.render(survivedLine, True, finalScoreColor)
@@ -745,18 +747,21 @@ def gameOver(gameClock,running,player,obstacles):
     newHighScoreDisplay = statFont.render(newHighScoreLine, True, finalScoreColor)
     exitDisplay = exitFont.render("Press SPACE to restart or ESCAPE to quit", True, helpColor)
     
+    # Rects
     attemptRect = attemptDisplay.get_rect()
     survivedRect = survivedDisplay.get_rect()
     levelRect = levelDisplay.get_rect()
     recordRect = recordDisplay.get_rect()
     exitRect = exitDisplay.get_rect()
     
+    # Rect position
     survivedRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 3)
     recordRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 4)
     levelRect.center = (screenSize[0]/2, screenSize[1]/3 +statsSpacingY * 5)
     attemptRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 6)
     exitRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 7)
     
+    # Updated game records
     updatedAttemptFile = open(totalAttemptsPath,'w')
     updatedAttemptFile.write(str(savedTotalAttempts))
     updatedAttemptFile.close()
@@ -886,13 +891,9 @@ sessionHighScore = 0
 clk = pygame.time.Clock()
 
 def main():
+    
     resetGameConstants()
-    global attemptNumber
-    global sessionHighScore
-    global currentStage
-    global mainMenu
-    global savedShipNum
-   
+    global attemptNumber,sessionHighScore,currentStage,mainMenu,savedShipNum
     pauseCount = 0
 
     player = Player()    
@@ -901,7 +902,6 @@ def main():
         for i in range(savedShipNum):
             player.nextSpaceShip()
             
-        
     obstacles = pygame.sprite.Group()
     sprites = pygame.sprite.Group()
     sprites.add(player)
@@ -930,7 +930,6 @@ def main():
             # INCREMENT TIMER
             elif event.type == timerEvent:
                 gameClock +=1
-                timerDisplay = timerFont.render(str(gameClock), True, (255,255,255))
             
             # PAUSE GAME
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and pauseCount < pauseMax :
