@@ -41,6 +41,7 @@ pauseMax = 6
 
 # PLAYER           
 playerSpeed = 5 # Default = 5
+savedShipNum = 0
 
 # OBSTACLES
 obstacleSpeed = 4  # Default = 4           
@@ -305,10 +306,20 @@ class Player(pygame.sprite.Sprite):
                 
         # GET NEXT SPACESHIP IMAGE
         def nextSpaceShip(self):
-            self.image = spaceShipList[self.currentImageNum + 1]
-            self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
-            self.mask = pygame.mask.from_surface(self.image)
-            self.currentImageNum+=1
+            if self.currentImageNum < len(spaceShipList)-1:
+                self.image = spaceShipList[self.currentImageNum + 1]
+                self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
+                self.mask = pygame.mask.from_surface(self.image)
+                self.currentImageNum+=1
+            
+        # GET NEXT SPACESHIP IMAGE
+        def lastSpaceShip(self):
+            if self.currentImageNum >= 1: 
+                self.image = spaceShipList[self.currentImageNum - 1]
+                self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
+                self.mask = pygame.mask.from_surface(self.image)
+                self.currentImageNum-=1
+                
         
         
 class Obstacle(pygame.sprite.Sprite):
@@ -530,7 +541,7 @@ def showHUD(gameClock,currentStage,currentLevel):
 
 
 # START MENU
-def startMenu():
+def startMenu(player):
     global mainMenu,currentStage
     
     iconPositions = [] # List parallel with menuList[2:]
@@ -552,6 +563,22 @@ def startMenu():
     bounceDelay = 5
     bounceCount = 0
     
+    unlockNumber = 0
+    
+    
+        # SHIP UNLOCKS
+        
+    if savedOverallHighScore >= 210: unlockNumber = len(spaceShipList) - 1 
+    elif savedOverallHighScore >= 180: unlockNumber = len(spaceShipList) - 2 
+    elif savedOverallHighScore >= 150: unlockNumber = len(spaceShipList) - 3    
+    elif savedOverallHighScore >= 120: unlockNumber = len(spaceShipList) - 4 
+    elif savedOverallHighScore >= 90: unlockNumber = len(spaceShipList) - 5    
+    elif savedOverallHighScore >= 60: unlockNumber = len(spaceShipList) - 6    
+    elif savedOverallHighScore >= 30: unlockNumber = len(spaceShipList) - 7 
+     
+   
+    currentShip = savedShipNum
+    
     if mainMenu:
         while True:
             
@@ -564,9 +591,16 @@ def startMenu():
                     mainMenu = False
                     return
                 
-                # CREDITS
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_c: creditScreen()
+                elif event.type == pygame.KEYDOWN and (event.key == pygame.K_d or event.key == pygame.K_RIGHT):
+                    if unlockNumber > player.currentImageNum + 1: player.nextSpaceShip()
                     
+                elif event.type == pygame.KEYDOWN and (event.key == pygame.K_a or event.key == pygame.K_LEFT):
+                    player.lastSpaceShip()
+                
+                # CREDITS
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_c: creditScreen()
+                
+                # QUIT
                 elif event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and  event.key == pygame.K_ESCAPE):
                     pygame.quit()
                     sys.exit()
@@ -819,18 +853,8 @@ def main():
     
     pauseCount = 0
 
-    if mainMenu: startMenu()
-
     player = Player()
-    
-    # SHIP UNLOCKS
-    if savedOverallHighScore >= 30: player.nextSpaceShip()
-    if savedOverallHighScore >= 60: player.nextSpaceShip()
-    if savedOverallHighScore >= 90: player.nextSpaceShip()
-    if savedOverallHighScore >= 120: player.nextSpaceShip()
-    if savedOverallHighScore >= 150: player.nextSpaceShip()
-    if savedOverallHighScore >= 180: player.nextSpaceShip()
-    if savedOverallHighScore >= 210: player.nextSpaceShip()
+    if mainMenu: startMenu(player)
         
     obstacles = pygame.sprite.Group()
     sprites = pygame.sprite.Group()
