@@ -78,9 +78,6 @@ overTimeLevels = [overTimeOne,overTimeTwo,overTimeThree]
 # STORE IN LIST
 stageList = [stageOneLevels, overTimeLevels] # List of stages
 
-allUnlocked = 240 # Default = 240 / Number of seconds it taked to get all unlockables
-unlockMultiplier = 2 # Default = 2 / Number of levels for a new ship unlock
-
 #---------------------------------------------------------------------------------------------------------------------------------
 
 # STORE LEVEL DEFAULTS
