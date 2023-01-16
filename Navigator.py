@@ -252,7 +252,7 @@ class Player(pygame.sprite.Sprite):
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
             self.angle = 0
-            
+ 
         # PLAYER MOVEMENT
         def movement(self):
             key = pygame.key.get_pressed()
@@ -319,9 +319,8 @@ class Player(pygame.sprite.Sprite):
                 self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
                 self.mask = pygame.mask.from_surface(self.image)
                 self.currentImageNum-=1
-                
-        
-        
+  
+
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -354,7 +353,7 @@ def movementReverse(direction):
     elif direction == "NE": return "SW"          
     elif direction == "SE": return "NW"
     elif direction == "SW": return "NE"
-              
+
 
 def randomEightDirection():
     directions = ["N","S","E","W","NW","SW","NE","SE"]
@@ -488,7 +487,7 @@ def obstacleRemove(obstacles):
         elif obs.rect.centery > screenSize[1] or obs.rect.centery < 0:
             obs.kill()
             obstacles.remove(obs)
-            
+
 
 # OBSTACLE BOUNCING
 def bounceObstacle(obstacles):
@@ -680,7 +679,7 @@ def pauseMenu(player,obstacles,currentStage,lastAngle,cloudPos,gameClock,current
     
     if pauseCount >= pauseMax:
         pauseNum = "Out of pauses"
-        
+
     pauseCountFont = pygame.font.Font(gameFont,pauseCountSize)
     pauseDisplay = pauseCountFont.render( pauseNum , True, levelColor )
     pauseRect = pauseDisplay.get_rect() 
@@ -703,7 +702,7 @@ def pauseMenu(player,obstacles,currentStage,lastAngle,cloudPos,gameClock,current
                 sys.exit()
             
             elif event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_SPACE): paused = False
-                
+ 
 
 # GAME OVER SCREEN 
 def gameOver(gameClock,running,player,obstacles):
@@ -717,7 +716,7 @@ def gameOver(gameClock,running,player,obstacles):
         updatedHighScoreFile.close()
         savedOverallHighScore = sessionHighScore
         newHighScore = True
-        
+
     savedTotalAttempts += 1
     statsSpacingY = screenSize[1]/16
     
@@ -788,9 +787,7 @@ def gameOver(gameClock,running,player,obstacles):
             if key[pygame.K_ESCAPE] or event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            
-            elif key[pygame.K_c]: creditScreen()
-                
+
             elif key[pygame.K_TAB]: 
                 # SET DEFAULTS AND GO BACK TO MENU
                 gameClock = 0
@@ -802,7 +799,7 @@ def gameOver(gameClock,running,player,obstacles):
                 attemptNumber += 1
                 mainMenu = True
                 main()
-                
+
             elif key[pygame.K_SPACE]:
                 # SET DEFAULTS AND RESTART GAME
                 gameClock = 0
@@ -814,8 +811,8 @@ def gameOver(gameClock,running,player,obstacles):
                 attemptNumber += 1
                 running = True
                 main()
-                
-            
+
+
 def creditScreen():
     
     rollCredits = True 
@@ -848,7 +845,7 @@ def creditScreen():
 
             # RETURN TO GAME
             elif event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_c or event.key == pygame.K_SPACE):
-                screen.fill(screenColor)
+                #screen.fill(screenColor)
                 rollCredits = False
         
         screen.fill(screenColor)
@@ -862,7 +859,7 @@ def creditScreen():
         if createdByRect.left < 0: direction = leftDir[random.randint(0, len(leftDir) - 1)]  
         if creditsRect.bottom > screenSize[1]: direction = bottomDir[random.randint(0, len(bottomDir) - 1)]
         if createdByRect.top < 0 : direction = topDir[random.randint(0, len(topDir) - 1)]
-                        
+
         if bounceCount == 0:
             if "N" in direction:
                 creditsRect.centery-= 1
@@ -879,7 +876,7 @@ def creditScreen():
             if "W" in direction:
                 creditsRect.centerx-= 1
                 createdByRect.centerx-= 1
-                
+
         bounceCount +=1
         if bounceCount >= 10: bounceCount = 0
 
@@ -901,7 +898,7 @@ def main():
     else:
         for i in range(savedShipNum):
             player.nextSpaceShip()
-            
+
     obstacles = pygame.sprite.Group()
     sprites = pygame.sprite.Group()
     sprites.add(player)
@@ -935,7 +932,7 @@ def main():
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and pauseCount < pauseMax :
                 pauseCount += 1
                 pauseMenu(player,obstacles,currentStage,lastAngle,cloudPos,gameClock,currentLevel,pauseCount)
-                
+
         # BACKGROUND ANIMATION
         screen.blit(bgList[currentStage - 1][0], (0,0) )
         screen.blit(bgList[currentStage - 1][1], (0,cloudPos) )
@@ -953,7 +950,7 @@ def main():
         player.wrapping()
         spawner(sprites,obstacles,maxObstacles)
         obstacleMove(obstacles)
-        
+
         # UPDATE HIGH SCORE
         if gameClock > sessionHighScore: sessionHighScore = gameClock
         
@@ -975,7 +972,7 @@ def main():
         player.angle = 0 # Reset player orientation
         pygame.display.flip()
         clk.tick(fps)
-        
+
 if __name__ == '__main__': main()
     
     
