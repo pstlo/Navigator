@@ -781,14 +781,16 @@ def gameOver(gameClock,running,player,obstacles):
         pygame.display.flip()
        
         for event in pygame.event.get():
-            key = pygame.key.get_pressed()
             
             # EXIT
-            if key[pygame.K_ESCAPE] or event.type == pygame.QUIT:
+            if (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE) or event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-
-            elif key[pygame.K_TAB]: 
+            
+            # CREDITS
+            elif (event.type == pygame.KEYDOWN and event.key == pygame.K_c): creditScreen()
+                
+            elif (event.type == pygame.KEYDOWN and event.key == pygame.K_TAB): 
                 # SET DEFAULTS AND GO BACK TO MENU
                 gameClock = 0
                 currentLevel = 1
@@ -799,8 +801,8 @@ def gameOver(gameClock,running,player,obstacles):
                 attemptNumber += 1
                 mainMenu = True
                 main()
-
-            elif key[pygame.K_SPACE]:
+                
+            elif (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE):
                 # SET DEFAULTS AND RESTART GAME
                 gameClock = 0
                 currentLevel = 1
