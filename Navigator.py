@@ -97,10 +97,10 @@ currentLevel = 1
 currentStage = 1
 
 mainMenu = True # Assures start menu only runs once
-screen = pygame.display.set_mode(screenSize)
+screen = pygame.display.set_mode(screenSize) # Initialize screen
 
-screenColor = [0,0,0] 
-creditsFontSize = 55
+screenColor = [0,0,0] # Screen fill color 
+creditsFontSize = 55 
 creditsColor = [255,255,255]
 
 
@@ -174,34 +174,19 @@ obstacleImages = [meteorList,ufoList]
         
 # MAIN MENU ASSETS
 menuList = []
-    
-APath = os.path.join(menuDir,'A.png')
-OPath = os.path.join(menuDir,'O.png')
-bigIconPath = os.path.join(menuDir,'big.png')
-leftIconPath = os.path.join(menuDir,'left.png')
-rightIconPath = os.path.join(menuDir,'right.png')
-dBluePath = os.path.join(menuDir,'dblue.png')
-lBluePath = os.path.join(menuDir,'lblue.png')
-lGreenPath = os.path.join(menuDir,'lgreen.png')
-dGreenPath = os.path.join(menuDir,'dgreen.png')
-orangePath = os.path.join(menuDir,'orange.png')
-redPath = os.path.join(menuDir,'red.png')
-whitePath = os.path.join(menuDir,'white.png')
-yellowPath = os.path.join(menuDir,'yellow.png')
-
-menuList.append(pygame.image.load(resource_path(APath)).convert_alpha())
-menuList.append(pygame.image.load(resource_path(OPath)).convert_alpha())
-menuList.append(pygame.image.load(resource_path(bigIconPath)).convert_alpha()) 
-menuList.append(pygame.image.load(resource_path(leftIconPath)).convert_alpha())
-menuList.append(pygame.image.load(resource_path(rightIconPath)).convert_alpha())
-menuList.append(pygame.image.load(resource_path(dBluePath)).convert_alpha())
-menuList.append(pygame.image.load(resource_path(lBluePath)).convert_alpha())
-menuList.append(pygame.image.load(resource_path(lGreenPath)).convert_alpha())
-menuList.append(pygame.image.load(resource_path(dGreenPath)).convert_alpha())
-menuList.append(pygame.image.load(resource_path(orangePath)).convert_alpha())
-menuList.append(pygame.image.load(resource_path(redPath)).convert_alpha())
-menuList.append(pygame.image.load(resource_path(whitePath)).convert_alpha())
-menuList.append(pygame.image.load(resource_path(yellowPath)).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'A.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'O.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'big.png'))).convert_alpha()) 
+menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'left.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'right.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'dblue.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'lblue.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'lgreen.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'dgreen.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'orange.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'red.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'white.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'yellow.png'))).convert_alpha())
 
 # WINDOW
 pygame.display.set_caption('Navigator')
