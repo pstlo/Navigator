@@ -78,6 +78,9 @@ overTimeLevels = [overTimeOne,overTimeTwo,overTimeThree]
 # STORE IN LIST
 stageList = [stageOneLevels, overTimeLevels] # List of stages
 
+allUnlocked = 240 # Default = 240 / Number of seconds it taked to get all unlockables
+unlockMultiplier = 2 # Default = 2 / Number of levels for a new ship unlock
+
 #---------------------------------------------------------------------------------------------------------------------------------
 
 # STORE LEVEL DEFAULTS
@@ -543,7 +546,7 @@ def showHUD(gameClock,currentStage,currentLevel):
 
 # START MENU
 def startMenu(player):
-    global currentStage,mainMenu
+    global currentStage, mainMenu, savedShipNum
     
     iconPositions = [] # List parallel with menuList[2:]
     for menuIcons in range(5,len(menuList)):
@@ -575,7 +578,11 @@ def startMenu(player):
     elif savedOverallHighScore >= 90: unlockNumber = len(spaceShipList) - 5    
     elif savedOverallHighScore >= 60: unlockNumber = len(spaceShipList) - 6    
     elif savedOverallHighScore >= 30: unlockNumber = len(spaceShipList) - 7 
-    currentShip = savedShipNum
+    
+
+    for imageNum in range(unlockNumber-1):
+        player.nextSpaceShip()
+    
     startOffset = 100
     startDelay = 1
     iconPosition, startDelayCounter = startOffset, 0
@@ -584,11 +591,13 @@ def startMenu(player):
         while True:
             
             if bounceCount >= bounceDelay: bounceCount = 0
-            else:bounceCount +=1
+            else: bounceCount +=1
                 
             for event in pygame.event.get():
                 # START
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE: 
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                    
+                    savedShipNum = player.currentImageNum
                     
                     while iconPosition > 0:
                         
@@ -805,8 +814,6 @@ def gameOver(gameClock,running,player,obstacles):
                 main()
                 
             
-
-
 def creditScreen():
     
     rollCredits = True 
@@ -887,10 +894,11 @@ def main():
     global sessionHighScore
     global currentStage
     global mainMenu
-    
+    global savedShipNum
+   
     pauseCount = 0
 
-    player = Player()
+    player = Player()    
     if mainMenu: startMenu(player)
         
     obstacles = pygame.sprite.Group()
