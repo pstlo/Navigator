@@ -595,7 +595,7 @@ def startMenu(player):
     startRect.center = (screenSize[0]/2,screenSize[1]/2)
     
     startHelpFont = pygame.font.Font(gameFont, helpSize)
-    startHelpDisplay = startHelpFont.render("Press SPACE to start or ESCAPE to quit", True, helpColor)
+    startHelpDisplay = startHelpFont.render("ESCAPE = QUIT     SPACE = START     C = CREDITS", True, helpColor)
     startHelpRect = startHelpDisplay.get_rect()
     startHelpRect.center = (screenSize[0]/2,screenSize[1]-screenSize[1]/3)
     
@@ -762,11 +762,11 @@ def gameOver(gameClock,running,player,obstacles):
     exitFont = pygame.font.Font(gameFont, helpSize)
     
     # Text
-    attemptLine = str(attemptNumber) + " attempts this session and " + str(savedTotalAttempts) + " attempts overall"
-    survivedLine = " You survived for " + str(gameClock) + " seconds"
-    levelLine = "Died at stage " + str(currentStage) + " level " + str(currentLevel)
-    overallHighScoreLine = "Your high score is " + str(savedOverallHighScore) + " seconds"
-    newHighScoreLine = "New high score " + str(sessionHighScore) + " seconds"
+    attemptLine = str(attemptNumber) + " attempts this session, " + str(savedTotalAttempts) + " overall"
+    survivedLine = "Survived for " + str(gameClock) + " seconds"
+    levelLine = "Died at stage " + str(currentStage) + "  -  level " + str(currentLevel)
+    overallHighScoreLine = "High score  =  " + str(savedOverallHighScore) + " seconds"
+    newHighScoreLine = "New high score! " + str(sessionHighScore) + " seconds"
     
     # Display
     recordDisplay = statFont.render(overallHighScoreLine, True, finalScoreColor)
@@ -774,7 +774,7 @@ def gameOver(gameClock,running,player,obstacles):
     survivedDisplay = statFont.render(survivedLine, True, finalScoreColor)
     levelDisplay = statFont.render(levelLine, True, finalScoreColor)
     newHighScoreDisplay = statFont.render(newHighScoreLine, True, finalScoreColor)
-    exitDisplay = exitFont.render("Press SPACE to restart or ESCAPE to quit", True, helpColor)
+    exitDisplay = exitFont.render("TAB = MENU     SPACE = RESTART    ESCAPE = QUIT", True, helpColor)
     
     # Rects
     attemptRect = attemptDisplay.get_rect()
@@ -788,7 +788,7 @@ def gameOver(gameClock,running,player,obstacles):
     recordRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 4)
     levelRect.center = (screenSize[0]/2, screenSize[1]/3 +statsSpacingY * 5)
     attemptRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 6)
-    exitRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 7)
+    exitRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 8)
     
     # Updated game records
     updatedAttemptFile = open(totalAttemptsPath,'w')
