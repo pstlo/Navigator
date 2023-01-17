@@ -52,6 +52,12 @@ startColor = [0,255,0] # Default = [0,255,0]
 minIconSize = 30 # Default = 30
 maxIconSize = 100 # Default = 100
 
+# STAGE UP
+stageUpColor = [0,255,0]
+stageUpSize = 75
+stageUpCloudStartPos = -10
+stageUpCloudSpeed = 5
+
 # PLAYER           
 playerSpeed = 5 # Default = 5
 savedShipNum = 0 # Default = 0
@@ -493,6 +499,7 @@ def levelUpdater(gameConstants,gameClock):
             gameConstants[currentStage][0]["START"] = True
             currentStage += 1
             currentLevel = 1
+            stageUpScreen(currentStage)
         
     for levelDict in gameConstants[currentStage-1]:
         if levelDict["TIME"] == gameClock:
@@ -692,6 +699,28 @@ def startMenu(player):
             screen.blit(menuList[4],rightRect) # Right UFO
             
             pygame.display.update()
+
+
+def stageUpScreen(currentStage):
+    
+    stageUpCloud = bgList[currentStage-1][1]
+    stageUpFont = pygame.font.Font(gameFont, stageUpSize)
+    stageUpDisplay = stageUpFont.render("STAGE UP!", True, stageUpColor)
+    stageUpRect = stageUpCloud.get_rect()
+    stageUpRect.center = (screenSize[0]/2, stageUpCloudStartPos)
+    
+    stageUp = True
+    while stageUp:
+        screen.fill(screenColor)
+        screen.blit(bgList[currentStage-1][0],(0,0))
+        screen.blit(stageUpCloud,stageUpRect)
+        screen.blit(stageUpDisplay,stageUpRect.center)
+        pygame.display.flip()
+
+        stageUpRect.centery += stageUpCloudSpeed
+        clk.tick(fps)
+        
+        if stageUpRect.centery >= screenSize[1]: stageUp = False
 
 
 def pauseMenu(player,obstacles,currentStage,lastAngle,cloudPos,gameClock,currentLevel,pauseCount):
