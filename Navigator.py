@@ -443,7 +443,7 @@ def getMovement(eightDirections):
 
 
 # REMOVE ALL OBSTACLES
-def killAllObjects(obstacles):
+def killAllObstacles(obstacles):
     for obstacle in obstacles:
         obstacle.kill()
 
@@ -512,7 +512,7 @@ def spawner(sprites,obstacles,maxObstacles):
             obstacle = Obstacle()
             obstacles.add(obstacle)
             sprites.add(obstacle) 
-            
+
 
 # OBSTACLE MOVEMENT
 def obstacleMove(obstacles):
@@ -831,7 +831,7 @@ def gameOver(gameClock,running,player,obstacles):
                 currentLevel = 1
                 currentStage = 1
                 player.kill()
-                killAllObjects(obstacles)
+                killAllObstacles(obstacles)
                 resetAllLevels(gameConstants)
                 attemptNumber += 1
                 mainMenu = True
@@ -843,7 +843,7 @@ def gameOver(gameClock,running,player,obstacles):
                 currentLevel = 1
                 currentStage = 1
                 player.kill()
-                killAllObjects(obstacles)
+                killAllObstacles(obstacles)
                 resetAllLevels(gameConstants)
                 attemptNumber += 1
                 running = True
@@ -882,7 +882,6 @@ def creditScreen():
 
             # RETURN TO GAME
             elif event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_c or event.key == pygame.K_SPACE):
-                #screen.fill(screenColor)
                 rollCredits = False
         
         screen.fill(screenColor)
