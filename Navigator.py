@@ -595,9 +595,13 @@ def startMenu(player):
     startRect.center = (screenSize[0]/2,screenSize[1]/2)
     
     startHelpFont = pygame.font.Font(gameFont, helpSize)
-    startHelpDisplay = startHelpFont.render("ESCAPE = QUIT     SPACE = START     C = CREDITS", True, helpColor)
+    startHelpDisplay = startHelpFont.render("ESCAPE = QUIT     SPACE = START     C = CREDITS", True, helpColor)   
     startHelpRect = startHelpDisplay.get_rect()
-    startHelpRect.center = (screenSize[0]/2,screenSize[1]-screenSize[1]/3)
+    startHelpRect.center = (screenSize[0]/2,screenSize[1]-screenSize[1]/7)
+    
+    shipHelpFont = pygame.font.Font(gameFont, round(helpSize * .8))
+    shipHelpDisplay = shipHelpFont.render("A/LEFT = PREV SHIP     D/RIGHT = NEXT SHIP", True, helpColor)
+    shipHelpRect = shipHelpDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]-screenSize[1]/7 + 40))
     
     leftRect = menuList[3].get_rect(center = (screenSize[0] * 0.2 , screenSize[1]/3) )
     rightRect = menuList[4].get_rect(center = (screenSize[0] * 0.8 , screenSize[1]/3) )
@@ -676,8 +680,10 @@ def startMenu(player):
                 icon.draw()
                     
             
+            
             screen.blit(startDisplay,startRect)
             screen.blit(startHelpDisplay, startHelpRect)
+            if savedOverallHighScore >= 30: screen.blit(shipHelpDisplay,shipHelpRect)
             screen.blit(player.image, (player.rect.x,player.rect.y + startOffset)) # Current spaceship
             screen.blit(menuList[0],(-14 + startRect.left + menuList[0].get_width() - menuList[0].get_width()/8,screenSize[1]/2 - 42)) # "A" symbol
             screen.blit(menuList[1],(-42 + screenSize[0] - startRect.centerx + menuList[1].get_width() * 2,screenSize[1]/2 - 42)) # "O" symbol
