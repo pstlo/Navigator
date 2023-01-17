@@ -718,8 +718,9 @@ def pauseMenu(player,obstacles,currentStage,lastAngle,cloudPos,gameClock,current
     while paused:
         screen.fill(screenColor)
         screen.blit(bgList[currentStage-1][0],(0,0))
-        showHUD(gameClock,currentStage,currentLevel)
         screen.blit(cloud,(0,cloudPos))
+        showHUD(gameClock,currentStage,currentLevel)
+        
         screen.blit(playerBlit[0],playerBlit[1])
         
         for obs in obstacles: # Draw obstacles
