@@ -24,7 +24,7 @@ timerColor = [255,255,255] # Default = [255,255,255]
 timerDelay = 1000 # Default = 1000
 
 # LEVEL COUNTER
-levelSize = 50 # Default = 50                                                                                                                                                                   
+levelSize = 30 # Default = 30                                                                                                                                                                   
 levelColor = [255,255,255] # Default = [255,255,255] 
 
 # BACKGROUND CLOUD
@@ -47,7 +47,7 @@ pauseMax = 6
 maxIcons = 3
 maxIconSpeed = 5
 maxIconRotationSpeed = 3
-startSize = 120 # Default = 150
+startSize = 120 # Default = 120
 startColor = [0,255,0] # Default = [0,255,0]
 minIconSize = 30
 maxIconSize = 100
@@ -568,13 +568,8 @@ def showHUD(gameClock,currentStage,currentLevel):
     stageDisplay = stageFont.render( str(stageNum), True, levelColor )
     stageRect = stageDisplay.get_rect(topleft = screen.get_rect().topleft)
     
-    dashFont = pygame.font.SysFont(None, levelSize)
-    dashDisplay = dashFont.render( "-", True, levelColor )
-    dashRect = dashDisplay.get_rect()
-    dashRect.center = (stageRect.right + dashRect.width, stageRect.centery + dashRect.height/5)
-
     # LEVEL DISPLAY
-    levelNum = "Level " + str(currentLevel)
+    levelNum = "-  Level " + str(currentLevel)
     levelFont = pygame.font.Font(gameFont, levelSize)
     levelDisplay = levelFont.render( str(levelNum), True, levelColor )
     levelRect = levelDisplay.get_rect() 
@@ -584,7 +579,6 @@ def showHUD(gameClock,currentStage,currentLevel):
     
     screen.blit(timerDisplay, timerRect)
     screen.blit(stageDisplay, stageRect)
-    screen.blit(dashDisplay, dashRect)
     screen.blit(levelDisplay, levelRect)
 
 
