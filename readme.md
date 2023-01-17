@@ -4,7 +4,7 @@
 \
 To get started either download, extract, and run the executable from latest release\
 \
-or, to run the newest version:
+or, 
 1. Install python, check "ADD TO PATH"
 2. Install pygame with
 ```pip install pygame```
