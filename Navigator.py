@@ -679,8 +679,6 @@ def startMenu(player):
                 if bounceCount == bounceDelay: icon.move()    
                 icon.draw()
                     
-            
-            
             screen.blit(startDisplay,startRect)
             screen.blit(startHelpDisplay, startHelpRect)
             if savedOverallHighScore >= 30: screen.blit(shipHelpDisplay,shipHelpRect)
@@ -780,7 +778,7 @@ def gameOver(gameClock,running,player,obstacles):
     survivedDisplay = statFont.render(survivedLine, True, finalScoreColor)
     levelDisplay = statFont.render(levelLine, True, finalScoreColor)
     newHighScoreDisplay = statFont.render(newHighScoreLine, True, finalScoreColor)
-    exitDisplay = exitFont.render("TAB = MENU     SPACE = RESTART    ESCAPE = QUIT", True, helpColor)
+    exitDisplay = exitFont.render("TAB = MENU     SPACE = RESTART    ESCAPE = QUIT    C = CREDITS", True, helpColor)
     
     # Rects
     attemptRect = attemptDisplay.get_rect()
