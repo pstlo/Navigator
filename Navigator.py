@@ -44,17 +44,17 @@ pausedColor = [255,255,255] # Default = [255,255,255]
 pauseMax = 6
 
 # START MENU
-maxIcons = 3
-maxIconSpeed = 5
-maxIconRotationSpeed = 3
+maxIcons = 3 # Default = 3
+maxIconSpeed = 5 # Default = 5
+maxIconRotationSpeed = 3 # Default = 3
 startSize = 120 # Default = 120
 startColor = [0,255,0] # Default = [0,255,0]
-minIconSize = 30
-maxIconSize = 100
+minIconSize = 30 # Default = 30
+maxIconSize = 100 # Default = 100
 
 # PLAYER           
 playerSpeed = 5 # Default = 5
-savedShipNum = 0
+savedShipNum = 0 # Default = 0
 
 # OBSTACLES
 obstacleSpeed = 4  # Default = 4           
@@ -701,7 +701,7 @@ def pauseMenu(player,obstacles,currentStage,lastAngle,cloudPos,gameClock,current
     
     # REMAINING PAUSES
     pauseCountSize = 40
-    pauseNum = str(pauseMax - pauseCount) + " Pauses Remaining"
+    pauseNum = str(pauseMax - pauseCount) + " Pauses left"
     
     if pauseCount >= pauseMax:
         pauseNum = "Out of pauses"
@@ -717,7 +717,11 @@ def pauseMenu(player,obstacles,currentStage,lastAngle,cloudPos,gameClock,current
         showHUD(gameClock,currentStage,currentLevel)
         screen.blit(cloud,(0,cloudPos))
         screen.blit(playerBlit[0],playerBlit[1])
-        obstacles.draw(screen) # Draw obstacles
+        
+        for obs in obstacles: # Draw obstacles
+            newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
+            screen.blit(newBlit[0],newBlit[1])
+            
         screen.blit(pauseDisplay, pauseRect)
         screen.blit(pausedDisplay,pausedRect)
         pygame.display.flip()
