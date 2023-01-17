@@ -22,13 +22,17 @@ fps = 60 # Default = 60
 timerSize = 75 # Default = 100                             
 timerColor = [255,255,255] # Default = [255,255,255] 
 timerDelay = 1000 # Default = 1000
+
+# LEVEL COUNTER
 levelSize = 50 # Default = 50                                                                                                                                                                   
-levelColor = [255,255,255] # Default = [255,255,255]                                                                                                                                            
+levelColor = [255,255,255] # Default = [255,255,255] 
+
+# BACKGROUND CLOUD
 cloudSpeed = 1 # Default = 1
 cloudStart = -1000 # Default = -1000
 cloudSpeedMult = 1.5 # Default = 1.5
-startSize = 150 # Default = 150
-startColor = [0,255,0] # Default = [0,255,0]
+
+# GAME OVER SCREEN
 gameOverColor = [255,0,0] # Default = [255,0,0]
 gameOverSize = 100 # Default = 100
 helpSize = 30 # Default = 30 
@@ -38,6 +42,15 @@ finalScoreColor = [0,255,0] # Default = [0,255,0]
 pausedSize = 100 # Default = 100
 pausedColor = [255,255,255] # Default = [255,255,255]
 pauseMax = 6
+
+# START MENU
+maxIcons = 3
+maxIconSpeed = 5
+maxIconRotationSpeed = 3
+startSize = 150 # Default = 150
+startColor = [0,255,0] # Default = [0,255,0]
+minIconSize = 30
+maxIconSize = 100
 
 # PLAYER           
 playerSpeed = 5 # Default = 5
@@ -230,6 +243,13 @@ restrictedBottomDir = ["N", "NE", "NW"]
 restrictedRightDir = ["NW", "SW", "W"]
 
 
+# ROTATE IMAGE
+def rotateImage(image, rect, angle):
+    rotated = pygame.transform.rotate(image, angle)
+    rotatedRect = rotated.get_rect(center=rect.center)
+    return rotated,rotatedRect
+
+
 class Player(pygame.sprite.Sprite):
         def __init__(self):
             super().__init__()
@@ -325,14 +345,51 @@ class Obstacle(pygame.sprite.Sprite):
         
         spins = [-1,1]
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
+        
 
+class Icon(pygame.sprite.Sprite):
+    def __init__(self):
+        spins = [-1,1]
+        self.speed = random.randint(1,maxIconSpeed)
+        self.movement = getMovement(False)
+        self.direction = self.movement[1]
+        self.spinDirection = spins[random.randint(0,len(spins)-1)]
+        self.image = menuList[random.randint(5,len(menuList)-1)]
+        size = random.randint(minIconSize,maxIconSize)
+        self.image = pygame.transform.scale(self.image, (size, size))
+        self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
+        self.angle = 0
+     
 
-# ROTATE IMAGE
-def rotateImage(image, rect, angle):
-    rotated = pygame.transform.rotate(image, angle)
-    rotatedRect = rotated.get_rect(center=rect.center)
-    return rotated,rotatedRect
-    
+    def move(self):
+        
+        if "N" in self.direction: self.rect.centery -= self.speed                       
+        if "S" in self.direction: self.rect.centery += self.speed                        
+        if "E" in self.direction: self.rect.centerx += self.speed               
+        if "W" in self.direction: self.rect.centerx -= self.speed  
+        
+        if self.angle >= 360 or self.angle <= -360: self.angle = 0
+            
+        self.angle += self.spinDirection * random.uniform(0, maxIconRotationSpeed)
+        
+        randomTimerUX = random.randint(screenSize[0] * 2,screenSize[0] * 4)
+        randomTimerUY = random.randint(screenSize[1] * 2,screenSize[1] * 4)
+        randomTimerLX = -1 * random.randint(screenSize[0], screenSize[0] * 3)
+        randomTimerLY = -1 * random.randint(screenSize[0], screenSize[1] * 3)
+        
+        if (self.rect.centery > randomTimerUY) or (self.rect.centery < randomTimerLY) or (self.rect.centerx> randomTimerUX) or (self.rect.centerx < randomTimerLX):
+            self.movement = getMovement(False)
+            self.direction = self.movement[1]
+            self.image = menuList[random.randint(5,len(menuList)-1)]
+            self.speed = random.randint(1,maxIconSpeed)
+            self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
+            size = random.randint(minIconSize,maxIconSize)
+            self.image = pygame.transform.scale(self.image, (size, size))
+
+    def draw(self):
+        drawing, drawee = rotateImage(self.image,self.rect,self.angle)
+        screen.blit(drawing,drawee)
+
 
 # REVERSE OBSTACLE MOVEMENT DIRECTION
 def movementReverse(direction):
@@ -535,10 +592,9 @@ def showHUD(gameClock,currentStage,currentLevel):
 def startMenu(player):
     global currentStage, mainMenu, savedShipNum
     
-    iconPositions = [] # List parallel with menuList[2:]
-    for menuIcons in range(5,len(menuList)):
-        iconPositions.append(getMovement(True))
-    
+    icons = []
+    for icon in range(maxIcons): icons.append(Icon())
+ 
     startFont = pygame.font.Font(gameFont, startSize)
     startDisplay = startFont.render("N VIGAT R", True, startColor)
     startRect = startDisplay.get_rect(center = screen.get_rect().center)
@@ -554,10 +610,8 @@ def startMenu(player):
     bounceDelay = 5
     bounceCount = 0
     
-    unlockNumber = 0
-    
     # SHIP UNLOCKS   
-    
+    unlockNumber = 0
     if savedOverallHighScore >= 300: unlockNumber = len(spaceShipList)
     elif savedOverallHighScore >= 270: unlockNumber = len(spaceShipList) - 1
     elif savedOverallHighScore >= 240: unlockNumber = len(spaceShipList) - 2
@@ -568,8 +622,6 @@ def startMenu(player):
     elif savedOverallHighScore >= 90: unlockNumber = len(spaceShipList) - 7   
     elif savedOverallHighScore >= 60: unlockNumber = len(spaceShipList) - 8    
     elif savedOverallHighScore >= 30: unlockNumber = len(spaceShipList) - 9
-    
-    
 
     for imageNum in range(unlockNumber-1):
         player.nextSpaceShip()
@@ -632,18 +684,10 @@ def startMenu(player):
             screen.fill([0,0,0])
             screen.blit(bgList[currentStage - 1][0],(0,0))
             
-            for menuIndex in range(5, len(menuList)):
-                screen.blit(menuList[menuIndex], ( iconPositions[menuIndex-5][0][0] , iconPositions[menuIndex-5][0][1] ) )
-                if bounceCount == bounceDelay:               
-                    if "N" in iconPositions[menuIndex-5][1]: iconPositions[menuIndex-5][0][1] -= 1    
-                    if "S" in iconPositions[menuIndex-5][1]: iconPositions[menuIndex-5][0][1] += 1     
-                    if "E" in iconPositions[menuIndex-5][1]: iconPositions[menuIndex-5][0][0] += 1
-                    if "W" in iconPositions[menuIndex-5][1]: iconPositions[menuIndex-5][0][0] -= 1
-                
-                    if iconPositions[menuIndex-5][0][1] > screenSize[1] * 2: iconPositions[menuIndex-5] = getMovement(False)
-                    if iconPositions[menuIndex-5][0][1] < -screenSize[1] : iconPositions[menuIndex-5] = getMovement(False)
-                    if iconPositions[menuIndex-5][0][0] > screenSize[0] * 2: iconPositions[menuIndex-5] = getMovement(False)
-                    if iconPositions[menuIndex-5][0][0] < -screenSize[0] : iconPositions[menuIndex-5] = getMovement(False)
+            for icon in icons:
+                if bounceCount == bounceDelay: icon.move()    
+                icon.draw()
+                    
             
             screen.blit(startDisplay,startRect)
             screen.blit(startHelpDisplay, startHelpRect)
