@@ -47,7 +47,7 @@ pauseMax = 6
 maxIcons = 3
 maxIconSpeed = 5
 maxIconRotationSpeed = 3
-startSize = 150 # Default = 150
+startSize = 120 # Default = 150
 startColor = [0,255,0] # Default = [0,255,0]
 minIconSize = 30
 maxIconSize = 100
@@ -596,8 +596,9 @@ def startMenu(player):
     for icon in range(maxIcons): icons.append(Icon())
  
     startFont = pygame.font.Font(gameFont, startSize)
-    startDisplay = startFont.render("N VIGAT R", True, startColor)
-    startRect = startDisplay.get_rect(center = screen.get_rect().center)
+    startDisplay = startFont.render("N  VIGAT  R", True, startColor)
+    startRect = startDisplay.get_rect()
+    startRect.center = (screenSize[0]/2,screenSize[1]/2)
     
     startHelpFont = pygame.font.Font(gameFont, helpSize)
     startHelpDisplay = startHelpFont.render("Press SPACE to start or ESCAPE to quit", True, helpColor)
@@ -650,20 +651,12 @@ def startMenu(player):
                         # Start animation
                         screen.fill([0,0,0])
                         screen.blit(bgList[currentStage - 1][0],(0,0))
-                        screen.blit(startDisplay,startRect)
-                        screen.blit(startHelpDisplay, startHelpRect)
                         screen.blit(player.image, (player.rect.x,player.rect.y + iconPosition)) # Current spaceship
-                        screen.blit(menuList[0],(startRect.left + menuList[0].get_width() - menuList[0].get_width()/8,screenSize[1]/2 - 16)) # "A" symbol
-                        screen.blit(menuList[1],(screenSize[0] - startRect.centerx + menuList[1].get_width() * 2,screenSize[1]/2 - 16)) # "O" symbol
-                        
-                        # UFO icons
-                        screen.blit(menuList[2],(screenSize[0]/2 - menuList[2].get_width()/2,screenSize[1]/6)) # Big icon
-                        screen.blit(menuList[3],leftRect) # Left UFO
-                        screen.blit(menuList[4],rightRect) # Right UFO
                         
                         pygame.display.update()
                         
                         if startDelayCounter >= startDelay: iconPosition-=1
+ 
                     mainMenu = False    
                     return
                 
@@ -680,7 +673,7 @@ def startMenu(player):
                 elif event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and  event.key == pygame.K_ESCAPE):
                     pygame.quit()
                     sys.exit()
-                  
+  
             screen.fill([0,0,0])
             screen.blit(bgList[currentStage - 1][0],(0,0))
             
@@ -692,11 +685,11 @@ def startMenu(player):
             screen.blit(startDisplay,startRect)
             screen.blit(startHelpDisplay, startHelpRect)
             screen.blit(player.image, (player.rect.x,player.rect.y + startOffset)) # Current spaceship
-            screen.blit(menuList[0],(startRect.left + menuList[0].get_width() - menuList[0].get_width()/8,screenSize[1]/2 - 16)) # "A" symbol
-            screen.blit(menuList[1],(screenSize[0] - startRect.centerx + menuList[1].get_width() * 2,screenSize[1]/2 - 16)) # "O" symbol
+            screen.blit(menuList[0],(-14 + startRect.left + menuList[0].get_width() - menuList[0].get_width()/8,screenSize[1]/2 - 42)) # "A" symbol
+            screen.blit(menuList[1],(-42 + screenSize[0] - startRect.centerx + menuList[1].get_width() * 2,screenSize[1]/2 - 42)) # "O" symbol
             
             # UFO icons
-            screen.blit(menuList[2],(screenSize[0]/2 - menuList[2].get_width()/2,screenSize[1]/6)) # Big icon
+            screen.blit(menuList[2],(screenSize[0]/2 - menuList[2].get_width()/2,screenSize[1]/8)) # Big icon
             screen.blit(menuList[3],leftRect) # Left UFO
             screen.blit(menuList[4],rightRect) # Right UFO
             
