@@ -989,7 +989,7 @@ game = Game()
 def main():
     
     game.resetGameConstants()
-
+    game.pauseCount = 0
     player = Player()    
     if game.mainMenu: startMenu(player,game)
     else:
