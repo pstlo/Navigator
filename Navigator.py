@@ -230,7 +230,7 @@ levelEight = [ False, 7 * levelTimer, "BOUNCE", speedIncrement, sizeIncrement, n
 levelNine = [ False, 8 * levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ]
 levelTen = [ False, 9 * levelTimer, "WRAP", speedIncrement, sizeIncrement, numIncrement ]
 
-overTimeOne = [ False, 1/5 * levelTimer, "KILL", speedIncrement, sizeIncrement * 2, - numIncrement/2 ]
+overTimeOne = [ False, 10 * levelTimer, "KILL", speedIncrement, sizeIncrement * 2, - numIncrement/2 ]
 overTimeTwo = [ False, 11 * levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ]
 overTimeThree = [ False, 12 * levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ]
 
