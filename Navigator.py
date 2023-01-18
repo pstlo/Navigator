@@ -63,7 +63,14 @@ creditsFontSize = 55 # Default = 55
 creditsColor = [255,255,255] # Default = [255,255,255] 
 
 # PLAYER           
-playerSpeed = 5 # Default = 5
+playerSpeed = 5     # Default = 5
+boostAdder = 0.2   # Default = 0.05 / Speed added per unit of fuel used
+boostFuel = 20  # Default = 80
+speedLimit = 12 # Default = 8
+boostReplenishDelay = 750   # Default = 750
+boostReplenishAmount = 0.4     # Default = .4
+boostDrain = 0.5    # Default = 0.5
+maxBoost = 20   # Default = 20
 
 # OBSTACLES
 obstacleSpeed = 4  # Default = 4           
@@ -304,7 +311,7 @@ class Game:
             screen.blit(bgList[self.currentStage-1][0],(0,0))
             screen.blit(stageUpCloud,stageUpRect)
             screen.blit(stageUpDisplay,stageUpRect.center)
-            showHUD(self.gameClock,self.currentStage,self.currentLevel)
+            showHUD(self.gameClock,self.currentStage,self.currentLevel,player)
             screen.blit(img,imgRect)
             pygame.display.flip()
             stageUpRect.centery += stageUpCloudSpeed
@@ -342,11 +349,13 @@ class Player(pygame.sprite.Sprite):
         def __init__(self):
             super().__init__()
             self.currentImageNum = 0         
-            self.speed = playerSpeed
+            self.speed,self.baseSpeed = playerSpeed, playerSpeed
             self.image = spaceShipList[self.currentImageNum]
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
             self.angle = 0
+            self.boostFuel = boostFuel
+            self.maxBoost = maxBoost
     
         # PLAYER MOVEMENT
         def movement(self):
@@ -394,7 +403,16 @@ class Player(pygame.sprite.Sprite):
             
             if (key[pygame.K_a] or key[pygame.K_LEFT]) and ( key[pygame.K_w] or key[pygame.K_UP]) and (key[pygame.K_s] or key[pygame.K_DOWN]) and (key[pygame.K_d] or key[pygame.K_RIGHT]): 
                 self.angle = 0
+        
+        def boost(self):
+            key = pygame.key.get_pressed()
+            if key[pygame.K_LSHIFT] or key[pygame.K_RSHIFT] and self.boostFuel - boostDrain > 0 and self.speed + boostAdder < speedLimit:
+                self.speed += boostAdder
+                self.boostFuel -= boostDrain
+            
+            else: self.speed = self.baseSpeed
 
+    
         # MOVEMENT DURING STAGE UP
         def alternateMovement(self):    
             for event in pygame.event.get():
@@ -626,7 +644,7 @@ def wrapObstacle(obstacles):
 
 
 # HUD
-def showHUD(gameClock,currentStage,currentLevel):
+def showHUD(gameClock,currentStage,currentLevel,player):
     
     # TIMER DISPLAY
     timerDisplay = timerFont.render(str(gameClock), True, timerColor)
@@ -649,6 +667,7 @@ def showHUD(gameClock,currentStage,currentLevel):
     screen.blit(timerDisplay, timerRect)
     screen.blit(stageDisplay, stageRect)
     screen.blit(levelDisplay, levelRect)
+    pygame.draw.rect(screen, [255,0,0],[screenSize[0]/3, 0, player.boostFuel * 20, 10]) # HITBOX TEST [SQUARE]
 
 
 # START MENU
@@ -786,7 +805,7 @@ def pauseMenu(player,obstacles,currentStage,lastAngle,cloudPos,gameClock,current
         screen.fill(screenColor)
         screen.blit(bgList[currentStage-1][0],(0,0))
         screen.blit(cloud,(0,cloudPos))
-        showHUD(gameClock,currentStage,currentLevel)
+        showHUD(gameClock,currentStage,currentLevel,player)
         
         screen.blit(playerBlit[0],playerBlit[1])
         
@@ -998,10 +1017,15 @@ def main():
     obstacles = pygame.sprite.Group()
     sprites = pygame.sprite.Group()
     sprites.add(player)
-    game.gameClock = 0
     
-    timerEvent = pygame.USEREVENT + 1
+    # GAMECLOCK
+    game.gameClock = 0
+    timerEvent = pygame.USEREVENT
     pygame.time.set_timer(timerEvent, timerDelay) 
+    
+    # BOOST
+    boostReplenishEvent = pygame.USEREVENT + 1
+    pygame.time.set_timer(boostReplenishEvent, boostReplenishDelay) 
     
     cloudPos = cloudStart
     lastAngle = 0
@@ -1020,13 +1044,15 @@ def main():
                 sys.exit()
             
             # INCREMENT TIMER
-            elif event.type == timerEvent:
+            if event.type == timerEvent:
                 game.gameClock +=1
             
             # PAUSE GAME
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and game.pauseCount < pauseMax :
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and game.pauseCount < pauseMax :
                 game.pauseCount += 1
                 pauseMenu(player,obstacles,game.currentStage,lastAngle,cloudPos,game.gameClock,game.currentLevel,game.pauseCount)
+            
+            if event.type == boostReplenishEvent and player.boostFuel < player.maxBoost: player.boostFuel += boostReplenishAmount
 
         # BACKGROUND ANIMATION
         screen.blit(bgList[game.currentStage - 1][0], (0,0) )
@@ -1035,13 +1061,14 @@ def main():
         else: cloudPos = cloudStart 
         
         # HUD
-        showHUD(game.gameClock,game.currentStage,game.currentLevel)
+        showHUD(game.gameClock,game.currentStage,game.currentLevel,player)
         
         # COLLISION DETECTION
         if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask): gameOver(game.gameClock,running,player,obstacles,game)
         
         # DRAW AND MOVE SPRITES
         player.movement()
+        player.boost()
         player.wrapping()
         spawner(sprites,obstacles,maxObstacles)
         obstacleMove(obstacles)
@@ -1070,9 +1097,9 @@ def main():
         # UPDATE SCREEN
         lastAngle = player.angle
         player.angle = 0 # Reset player orientation
+        
         pygame.display.flip()
         game.tick()
-
 
 if __name__ == '__main__': main()
     
