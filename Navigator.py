@@ -64,13 +64,13 @@ creditsColor = [255,255,255] # Default = [255,255,255]
 
 # PLAYER           
 playerSpeed = 5     # Default = 5
-boostAdder = 0.2   # Default = 0.2 / Speed added per unit of fuel used
+boostAdder = 1   # Default = 1 / Speed added per unit of fuel used
 boostFuel = 10  # Default = 10
 speedLimit = 10 # Default = 10
 boostReplenishDelay = 50   # Default = 50
-boostReplenishAmount = 0.1    # Default = 0.1
+boostReplenishAmount = 0.05    # Default = 0.05
 boostDrain = 0.5    # Default = 0.5
-maxBoost = 15   # Default = 15
+maxBoost = 20   # Default = 20
 
 # OBSTACLES
 obstacleSpeed = 4  # Default = 4           
@@ -414,16 +414,15 @@ class Player(pygame.sprite.Sprite):
         def boost(self):
             key = pygame.key.get_pressed()
             
-            if key[pygame.K_LSHIFT] and self.boostFuel - boostDrain > 0 and self.speed + boostAdder < speedLimit and  ( (key[pygame.K_a] or key[pygame.K_LEFT]) or ( key[pygame.K_w] or key[pygame.K_UP]) or (key[pygame.K_s] or key[pygame.K_DOWN]) or (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
-                self.speed += boostAdder
-                self.boostFuel -= boostDrain
-            
-            elif key[pygame.K_RSHIFT] and self.boostFuel - boostDrain > 0 and self.speed + boostAdder < speedLimit and  ( (key[pygame.K_a] or key[pygame.K_LEFT]) or ( key[pygame.K_w] or key[pygame.K_UP]) or (key[pygame.K_s] or key[pygame.K_DOWN]) or (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
-                self.speed += boostAdder
-                self.boostFuel -= boostDrain
-            
-            else: self.speed = self.baseSpeed
+            if (key[pygame.K_LSHIFT] or key[pygame.K_RSHIFT]) and self.boostFuel - boostDrain > 0 and self.speed + boostAdder < speedLimit and  ( (key[pygame.K_a] or key[pygame.K_LEFT]) and ( key[pygame.K_w] or key[pygame.K_UP]) and (key[pygame.K_s] or key[pygame.K_DOWN]) and (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
+                pass
+                
+            elif (key[pygame.K_LSHIFT] or key[pygame.K_RSHIFT]) and self.boostFuel - boostDrain > 0 and self.speed + boostAdder < speedLimit and  ( (key[pygame.K_a] or key[pygame.K_LEFT]) or ( key[pygame.K_w] or key[pygame.K_UP]) or (key[pygame.K_s] or key[pygame.K_DOWN]) or (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
+                self.speed += (boostAdder)
+                self.boostFuel -= (boostDrain)
 
+            else: self.speed = self.baseSpeed
+            print(self.boostFuel)
     
         # MOVEMENT DURING STAGE UP
         def alternateMovement(self):    
@@ -1109,6 +1108,7 @@ def main():
         # UPDATE SCREEN
         lastAngle = player.angle
         player.angle = 0 # Reset player orientation
+        print(player.speed)
         
         pygame.display.flip()
         game.tick()
