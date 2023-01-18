@@ -18,5 +18,6 @@ for python 3.11
 or use the provided batch file
  
  
-Created by Mike Pistolesi <br />
-art by Collin Guetta / @guetta.rt on instagram
+Created by Mike Pistolesi \
+art by Collin Guetta / @guetta.rt on instagram \
+OST coming soon!
