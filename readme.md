@@ -2,7 +2,8 @@
 
 ### Simple and addictive arcade game written in Python with PyGame ###
 \
-To get started either download, extract, and run the executable from latest release tag\
+To get started either download, extract, and run the executable from latest release:\
+https://github.com/pstlo/Navigator/releases/download/v0.3.1/Navigator.zip
 \
 or, 
 1. Install python, check "ADD TO PATH"
