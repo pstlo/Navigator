@@ -53,14 +53,14 @@ minIconSize = 30 # Default = 30
 maxIconSize = 100 # Default = 100
 
 # STAGE UP
-stageUpColor = [0,255,0]
-stageUpSize = 75
-stageUpCloudStartPos = -10
-stageUpCloudSpeed = 5
+stageUpColor = [0,255,0] # Default = [0,255,0]
+stageUpSize = 75 # Default = 75
+stageUpCloudStartPos = -10 # Defaut = -10
+stageUpCloudSpeed = 5 # Default = 5
 
 # CREDITS
-creditsFontSize = 55 
-creditsColor = [255,255,255]
+creditsFontSize = 55 # Default = 55
+creditsColor = [255,255,255] # Default = [255,255,255] 
 
 # PLAYER           
 playerSpeed = 5 # Default = 5
@@ -71,27 +71,22 @@ obstacleSize = 30    # Default = 30
 maxObstacles = 12  # Default = 12
 obstacleBoundaries = "KILL" # Default = "KILL" (Can be updated by level)
 
-
 # LEVELS  
 levelTimer = 15 # Default = 15 / Time between levels
-
 speedIncrement = obstacleSpeed / 16 # Default = obstacleSpeed / 15
 sizeIncrement = round(obstacleSize/8) # Default = round(obstacleSize/7)
 numIncrement = maxObstacles / 6 # Default = maxObstacles / 4
 
 #---------------------------------------------------------------------------------------------------------------------------------
-
 # STORE LEVEL DEFAULTS
-
 screen = pygame.display.set_mode(screenSize) # Initialize screen
 screenColor = [0,0,0] # Screen fill color 
 
-
+# FOR EXE
 def resource_path(relative_path):
     try: base_path = sys._MEIPASS    
     except Exception: base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
-
 
 # ASSET LOADING
 curDir = resource_path('Assets')
@@ -212,14 +207,7 @@ restrictedLeftDir = ["E", "NE", "SE"]
 restrictedBottomDir = ["N", "NE", "NW"]
 restrictedRightDir = ["NW", "SW", "W"]
 
-
-# ROTATE IMAGE
-def rotateImage(image, rect, angle):
-    rotated = pygame.transform.rotate(image, angle)
-    rotatedRect = rotated.get_rect(center=rect.center)
-    return rotated,rotatedRect
-    
-# [ False , (levelNumber - 1) * levelTimer , BOUNDS, SPEED, SIZE, NUMBER ]
+# ADD LEVELS HERE: [ (False) , (levelNumber - 1) * levelTimer , BOUNDS , SPEED , SIZE , NUMBER ]
 levelTwo = [ False, levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ] 
 levelThree = [ False, 2 * levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ] 
 levelFour = [ False, 3 * levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ] 
@@ -229,7 +217,6 @@ levelSeven = [ False, 6 * levelTimer, "KILL", speedIncrement, sizeIncrement, num
 levelEight = [ False, 7 * levelTimer, "BOUNCE", speedIncrement, sizeIncrement, numIncrement ] 
 levelNine = [ False, 8 * levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ]
 levelTen = [ False, 9 * levelTimer, "WRAP", speedIncrement, sizeIncrement, numIncrement ]
-
 overTimeOne = [ False, 10 * levelTimer, "KILL", speedIncrement, sizeIncrement * 2, - numIncrement/2 ]
 overTimeTwo = [ False, 11 * levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ]
 overTimeThree = [ False, 12 * levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ]
@@ -238,11 +225,11 @@ overTimeThree = [ False, 12 * levelTimer, "KILL", speedIncrement, sizeIncrement,
 stageOneLevels = [levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight,levelNine,levelTen] # Stage 1
 overTimeLevels = [overTimeOne,overTimeTwo,overTimeThree]
 
+# STORE IN LIST
 stageList = [stageOneLevels, overTimeLevels] # List of stages
 
 
 class Game:
-    
     def __init__(self):
         self.currentLevel = 1
         self.currentStage = 1
@@ -251,19 +238,18 @@ class Game:
         self.clk = pygame.time.Clock()
         self.savedOverallHighScore = overallHighScore
         self.savedTotalAttempts = totalAttempts
-        self.obstacleSpeed = 4  # Default = 4           
-        self.obstacleSize = 30    # Default = 30
-        self.maxObstacles = 12  # Default = 12
-        self.obstacleBoundaries = "KILL" # Default = "KILL" (Can be updated by level)
+        self.obstacleSpeed = obstacleSpeed         
+        self.obstacleSize = obstacleSize  
+        self.maxObstacles = maxObstacles  
+        self.obstacleBoundaries = obstacleBoundaries 
         self.cloudSpeed = cloudSpeed
         self.attemptNumber = 1
         self.mainMenu = True # Assures start menu only runs when called
         self.sessionHighScore = 0
         self.gameConstants = []
         self.savedShipNum = 0
-        # STORE IN LIST
         
-        returnList = []
+        contantList = []
         for stage in stageList:
             stageConstants = []
             for settings in stage:
@@ -275,10 +261,9 @@ class Game:
                                 "obsSizeMult" : settings[4],
                                 "maxObsMult" : settings[5],                    
                     }
-                    
                 stageConstants.append(levelDict)
-            returnList.append(stageConstants)
-        self.gameConstants = returnList 
+            contantList.append(stageConstants)
+        self.gameConstants = contantList 
         
         # LOAD GAME CONSTANTS
         self.savedConstants = {
@@ -288,9 +273,8 @@ class Game:
                 "obstacleBoundaries" : self.obstacleBoundaries,
                 "cloudSpeed" : self.cloudSpeed
                 }
-                
-    def tick(self):
-        self.clk.tick(fps)
+
+    def tick(self): self.clk.tick(fps)  
 
     # SET GAME CONSTANTS TO DEFAULT
     def resetGameConstants(self):
@@ -300,7 +284,6 @@ class Game:
         self.obstacleBoundaries = self.savedConstants["obstacleBoundaries"]
         self.cloudSpeed = self.savedConstants["cloudSpeed"]  
     
-    
     def stageUp(self,player,obstacles):
         stageUpCloud = bgList[self.currentStage-1][1]
         stageUpFont = pygame.font.Font(gameFont, stageUpSize)
@@ -309,6 +292,7 @@ class Game:
         stageUpRect.center = (screenSize[0]/2, stageUpCloudStartPos)
         stageUp = True   
         killAllObstacles(obstacles)
+        
         # STAGE UP ANIMATION
         while stageUp:
             
@@ -323,12 +307,10 @@ class Game:
             showHUD(self.gameClock,self.currentStage,self.currentLevel)
             screen.blit(img,imgRect)
             pygame.display.flip()
-            
             stageUpRect.centery += stageUpCloudSpeed
             self.tick()
             if stageUpRect.centery >= screenSize[1]: stageUp = False
-    
- 
+     
     # UPDATE GAME CONSTANTS
     def levelUpdater(self,player,obstacles):
         if self.currentStage < len(self.gameConstants):
@@ -337,8 +319,7 @@ class Game:
                 self.currentStage += 1
                 self.currentLevel = 1
                 self.stageUp(player,obstacles)
-                
-                
+
         for levelDict in self.gameConstants[self.currentStage-1]:
             if levelDict["TIME"] == self.gameClock:
                 if not levelDict["START"]:
@@ -349,8 +330,7 @@ class Game:
                     self.obstacleSize += levelDict["obsSizeMult"]
                     self.cloudSpeed *= cloudSpeedMult
                     self.currentLevel += 1
-                    
-                    
+
     # RESET LEVEL PROGRESS
     def resetAllLevels(self):
         for stage in self.gameConstants:
@@ -358,7 +338,6 @@ class Game:
                 levels["START"] = False
 
     
-
 class Player(pygame.sprite.Sprite):
         def __init__(self):
             super().__init__()
@@ -369,7 +348,6 @@ class Player(pygame.sprite.Sprite):
             self.mask = pygame.mask.from_surface(self.image)
             self.angle = 0
     
-
         # PLAYER MOVEMENT
         def movement(self):
             key = pygame.key.get_pressed()
@@ -416,23 +394,30 @@ class Player(pygame.sprite.Sprite):
             
             if (key[pygame.K_a] or key[pygame.K_LEFT]) and ( key[pygame.K_w] or key[pygame.K_UP]) and (key[pygame.K_s] or key[pygame.K_DOWN]) and (key[pygame.K_d] or key[pygame.K_RIGHT]): 
                 self.angle = 0
-                
-                
+
         # MOVEMENT DURING STAGE UP
         def alternateMovement(self):    
             for event in pygame.event.get():
+                if (event.type == pygame.QUIT) or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE): 
+                    pygame.quit()
+                    sys.exit()
+                
                 if event.type == pygame.KEYDOWN and (event.key == pygame.K_w or event.key == pygame.K_UP): 
                     self.rect.centery -=1
                     self.angle = 0
+
                 if event.type == pygame.KEYDOWN and (event.key == pygame.K_a or event.key == pygame.K_LEFT): 
                     self.rect.centerx -=1
                     self.angle = 90
+
                 if event.type == pygame.KEYDOWN and (event.key == pygame.K_s or event.key == pygame.K_DOWN): 
                     self.rect.centery +=1
-                    self.angle = 180   
+                    self.angle = 180  
+
                 if event.type == pygame.KEYDOWN and (event.key == pygame.K_d or event.key == pygame.K_RIGHT): 
                     self.rect.centerx +=1
                     self.angle = -90 
+
                 if event.type == pygame.KEYDOWN and (event.key == pygame.K_d or event.key == pygame.K_RIGHT) and (event.key == pygame.K_w or event.key == pygame.K_UP): self.angle = -45
                 if event.type == pygame.KEYDOWN and (event.key == pygame.K_a or event.key == pygame.K_LEFT) and (event.key == pygame.K_w or event.key == pygame.K_UP): self.angle = -45  
                 if event.type == pygame.KEYDOWN and (event.key == pygame.K_s or event.key == pygame.K_DOWN) and (event.key == pygame.K_a or event.key == pygame.K_LEFT): self.angle = 120   
@@ -444,14 +429,13 @@ class Player(pygame.sprite.Sprite):
                 if event.type == pygame.KEYDOWN and (event.key == pygame.K_s or event.key == pygame.K_DOWN) and (event.key == pygame.K_a or event.key == pygame.K_LEFT) and (event.key == pygame.K_d or event.key == pygame.K_RIGHT) and (event.key == pygame.K_w or event.key == pygame.K_UP): self.angle = 0
                 else: self.angle = 0
  
- 
         # WRAP AROUND SCREEN
         def wrapping(self):
             if self.rect.centery  > screenSize[1]: self.rect.centery = 0
             if self.rect.centery < 0: self.rect.centery = screenSize[1]
             if self.rect.centerx > screenSize[0]: self.rect.centerx = 0
             if self.rect.centerx < 0: self.rect.centerx = screenSize[0]
-                
+
         # GET NEXT SPACESHIP IMAGE
         def nextSpaceShip(self):
             if self.currentImageNum < len(spaceShipList)-1:
@@ -460,7 +444,7 @@ class Player(pygame.sprite.Sprite):
                 self.mask = pygame.mask.from_surface(self.image)
                 self.currentImageNum+=1
             
-        # GET NEXT SPACESHIP IMAGE
+        # GET PREVIOUS SPACESHIP IMAGE
         def lastSpaceShip(self):
             if self.currentImageNum >= 1: 
                 self.image = spaceShipList[self.currentImageNum - 1]
@@ -476,17 +460,14 @@ class Obstacle(pygame.sprite.Sprite):
         self.size = game.obstacleSize
         self.movement = getMovement(True)
         self.direction = self.movement[1]
-        try:
-            self.image = obstacleImages[game.currentStage - 1][game.currentLevel-1].convert_alpha()
-        except:
-            self.image = meteorList[random.randint(0,len(meteorList)-1)]
+        try: self.image = obstacleImages[game.currentStage - 1][game.currentLevel-1].convert_alpha()
+        except: self.image = meteorList[random.randint(0,len(meteorList)-1)]
         self.image = pygame.transform.scale(self.image, (self.size, self.size))
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
         self.angle = 0
-        
         spins = [-1,1]
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
-        
+
 
 class Icon(pygame.sprite.Sprite):
     def __init__(self):
@@ -500,8 +481,7 @@ class Icon(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (size, size))
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
         self.angle = 0
-     
-
+ 
     def move(self): 
         if "N" in self.direction: self.rect.centery -= self.speed                       
         if "S" in self.direction: self.rect.centery += self.speed                        
@@ -529,6 +509,13 @@ class Icon(pygame.sprite.Sprite):
     def draw(self):
         drawing, drawee = rotateImage(self.image,self.rect,self.angle)
         screen.blit(drawing,drawee)
+
+
+# ROTATE IMAGE
+def rotateImage(image, rect, angle):
+    rotated = pygame.transform.rotate(image, angle)
+    rotatedRect = rotated.get_rect(center=rect.center)
+    return rotated,rotatedRect
 
 
 # REVERSE OBSTACLE MOVEMENT DIRECTION
@@ -586,8 +573,6 @@ def getMovement(eightDirections):
 def killAllObstacles(obstacles):
     for obstacle in obstacles:
         obstacle.kill()
-
-
 
 
 # SPAWN OBSTACLES
@@ -760,7 +745,7 @@ def startMenu(player,game):
         for icon in icons:
             if bounceCount == bounceDelay: icon.move()    
             icon.draw()
-                
+
         screen.blit(startDisplay,startRect)
         screen.blit(startHelpDisplay, startHelpRect)
         if game.savedOverallHighScore >= 30: screen.blit(shipHelpDisplay,shipHelpRect)
@@ -776,8 +761,6 @@ def startMenu(player,game):
         pygame.display.update()
     
     
-
-
 def pauseMenu(player,obstacles,currentStage,lastAngle,cloudPos,gameClock,currentLevel,pauseCount):
     
     playerBlit = rotateImage(player.image,player.rect,lastAngle)
@@ -886,7 +869,7 @@ def gameOver(gameClock,running,player,obstacles,game):
     updatedRecords = True
     
     while gameOver:
-        
+    
         # Background
         screen.fill(screenColor)
         screen.blit(bgList[game.currentStage - 1][0],(0,0))
@@ -908,7 +891,7 @@ def gameOver(gameClock,running,player,obstacles,game):
             
             # CREDITS
             elif (event.type == pygame.KEYDOWN and event.key == pygame.K_c): creditScreen()
-                
+
             elif (event.type == pygame.KEYDOWN and event.key == pygame.K_TAB): 
                 # SET DEFAULTS AND GO BACK TO MENU
                 game.gameClock = 0
@@ -920,7 +903,7 @@ def gameOver(gameClock,running,player,obstacles,game):
                 game.attemptNumber += 1
                 game.mainMenu = True
                 main()
-                
+
             elif (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE):
                 # SET DEFAULTS AND RESTART GAME
                 game.gameClock = 0
@@ -1005,16 +988,13 @@ game = Game()
 
 def main():
     
-    
     game.resetGameConstants()
-    
 
     player = Player()    
     if game.mainMenu: startMenu(player,game)
     else:
-        for i in range(game.savedShipNum):
-            player.nextSpaceShip()
-    
+        for i in range(game.savedShipNum): player.nextSpaceShip()
+
     obstacles = pygame.sprite.Group()
     sprites = pygame.sprite.Group()
     sprites.add(player)
@@ -1038,7 +1018,6 @@ def main():
                 running = False
                 pygame.quit()
                 sys.exit()
-                break
             
             # INCREMENT TIMER
             elif event.type == timerEvent:
@@ -1093,6 +1072,7 @@ def main():
         player.angle = 0 # Reset player orientation
         pygame.display.flip()
         game.tick()
+
 
 if __name__ == '__main__': main()
     
