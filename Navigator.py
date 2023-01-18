@@ -379,6 +379,9 @@ class Player(pygame.sprite.Sprite):
             
             if (key[pygame.K_a] or key[pygame.K_LEFT]) and (key[pygame.K_w] or key[pygame.K_UP]):
                 self.angle = 45
+                
+            if (key[pygame.K_a] or key[pygame.K_LEFT]) and (key[pygame.K_d] or key[pygame.K_RIGHT]):
+                self.angle = 0
             
             if (key[pygame.K_d] or key[pygame.K_RIGHT]) and (key[pygame.K_w] or key[pygame.K_UP]):
                 self.angle = -45
@@ -403,9 +406,11 @@ class Player(pygame.sprite.Sprite):
             
             if (key[pygame.K_a] or key[pygame.K_LEFT]) and ( key[pygame.K_w] or key[pygame.K_UP]) and (key[pygame.K_s] or key[pygame.K_DOWN]) and (key[pygame.K_d] or key[pygame.K_RIGHT]): 
                 self.angle = 0
+            
         
         def boost(self):
             key = pygame.key.get_pressed()
+            
             if key[pygame.K_LSHIFT] and self.boostFuel - boostDrain > 0 and self.speed + boostAdder < speedLimit and  ( (key[pygame.K_a] or key[pygame.K_LEFT]) or ( key[pygame.K_w] or key[pygame.K_UP]) or (key[pygame.K_s] or key[pygame.K_DOWN]) or (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
                 self.speed += boostAdder
                 self.boostFuel -= boostDrain
@@ -413,7 +418,7 @@ class Player(pygame.sprite.Sprite):
             elif key[pygame.K_RSHIFT] and self.boostFuel - boostDrain > 0 and self.speed + boostAdder < speedLimit and  ( (key[pygame.K_a] or key[pygame.K_LEFT]) or ( key[pygame.K_w] or key[pygame.K_UP]) or (key[pygame.K_s] or key[pygame.K_DOWN]) or (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
                 self.speed += boostAdder
                 self.boostFuel -= boostDrain
-                
+            
             else: self.speed = self.baseSpeed
 
     
