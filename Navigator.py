@@ -64,13 +64,13 @@ creditsColor = [255,255,255] # Default = [255,255,255]
 
 # PLAYER           
 playerSpeed = 5     # Default = 5
-boostAdder = 0.2   # Default = 0.05 / Speed added per unit of fuel used
-boostFuel = 20  # Default = 80
-speedLimit = 12 # Default = 8
-boostReplenishDelay = 750   # Default = 750
-boostReplenishAmount = 0.4     # Default = .4
+boostAdder = 0.2   # Default = 0.2 / Speed added per unit of fuel used
+boostFuel = 10  # Default = 10
+speedLimit = 10 # Default = 10
+boostReplenishDelay = 50   # Default = 50
+boostReplenishAmount = 0.1    # Default = 0.1
 boostDrain = 0.5    # Default = 0.5
-maxBoost = 20   # Default = 20
+maxBoost = 15   # Default = 15
 
 # OBSTACLES
 obstacleSpeed = 4  # Default = 4           
@@ -406,10 +406,14 @@ class Player(pygame.sprite.Sprite):
         
         def boost(self):
             key = pygame.key.get_pressed()
-            if key[pygame.K_LSHIFT] or key[pygame.K_RSHIFT] and self.boostFuel - boostDrain > 0 and self.speed + boostAdder < speedLimit:
+            if key[pygame.K_LSHIFT] and self.boostFuel - boostDrain > 0 and self.speed + boostAdder < speedLimit and  ( (key[pygame.K_a] or key[pygame.K_LEFT]) or ( key[pygame.K_w] or key[pygame.K_UP]) or (key[pygame.K_s] or key[pygame.K_DOWN]) or (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
                 self.speed += boostAdder
                 self.boostFuel -= boostDrain
             
+            elif key[pygame.K_RSHIFT] and self.boostFuel - boostDrain > 0 and self.speed + boostAdder < speedLimit and  ( (key[pygame.K_a] or key[pygame.K_LEFT]) or ( key[pygame.K_w] or key[pygame.K_UP]) or (key[pygame.K_s] or key[pygame.K_DOWN]) or (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
+                self.speed += boostAdder
+                self.boostFuel -= boostDrain
+                
             else: self.speed = self.baseSpeed
 
     
