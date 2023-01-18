@@ -380,6 +380,9 @@ class Player(pygame.sprite.Sprite):
             if (key[pygame.K_a] or key[pygame.K_LEFT]) and (key[pygame.K_w] or key[pygame.K_UP]):
                 self.angle = 45
                 
+            if (key[pygame.K_s] or key[pygame.K_DOWN]) and (key[pygame.K_w] or key[pygame.K_UP]):
+                self.angle = 0
+                
             if (key[pygame.K_a] or key[pygame.K_LEFT]) and (key[pygame.K_d] or key[pygame.K_RIGHT]):
                 self.angle = 0
             
