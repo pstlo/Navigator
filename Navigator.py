@@ -80,9 +80,9 @@ obstacleBoundaries = "KILL" # Default = "KILL" (Can be updated by level)
 
 # LEVELS  
 levelTimer = 15 # Default = 15 / Time between levels
-speedIncrement = obstacleSpeed / 16 # Default = obstacleSpeed / 15
-sizeIncrement = round(obstacleSize/8) # Default = round(obstacleSize/7)
-numIncrement = maxObstacles / 6 # Default = maxObstacles / 4
+speedIncrement = obstacleSpeed / 15 # Default = obstacleSpeed / 15
+sizeIncrement = round(obstacleSize/7) # Default = round(obstacleSize/7)
+numIncrement = maxObstacles / 4 # Default = maxObstacles / 4
 
 #---------------------------------------------------------------------------------------------------------------------------------
 # STORE LEVEL DEFAULTS
@@ -422,7 +422,6 @@ class Player(pygame.sprite.Sprite):
                 self.boostFuel -= (boostDrain)
 
             else: self.speed = self.baseSpeed
-            print(self.boostFuel)
     
         # MOVEMENT DURING STAGE UP
         def alternateMovement(self):    
