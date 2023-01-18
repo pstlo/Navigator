@@ -1107,8 +1107,6 @@ def main():
         # UPDATE SCREEN
         lastAngle = player.angle
         player.angle = 0 # Reset player orientation
-        print(player.speed)
-        
         pygame.display.flip()
         game.tick()
 
