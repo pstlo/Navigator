@@ -54,9 +54,9 @@ maxIconSize = 100 # Default = 100
 
 # STAGE UP
 stageUpColor = [0,255,0] # Default = [0,255,0]
-stageUpSize = 75 # Default = 75
-stageUpCloudStartPos = -10 # Defaut = -10
-stageUpCloudSpeed = 5 # Default = 5
+stageUpSize = 90 # Default = 90
+stageUpCloudStartPos = -900 # Default = -900
+stageUpCloudSpeed = 8 # Default = 8
 
 # CREDITS
 creditsFontSize = 55 # Default = 55
@@ -112,6 +112,10 @@ for filename in os.listdir(curDir):
         path = os.path.join(curDir, filename)
         gameFont = path
         break
+
+# STAGE WIPE CLOUD
+stageCloudImg = pygame.image.load( resource_path(os.path.join(curDir,'StageCloud.png') ) ).convert_alpha()
+
 
 # METEOR ASSETS
 meteorList = []
@@ -290,42 +294,51 @@ class Game:
         self.maxObstacles = self.savedConstants["maxObstacles"]
         self.obstacleBoundaries = self.savedConstants["obstacleBoundaries"]
         self.cloudSpeed = self.savedConstants["cloudSpeed"]  
-    
-    def stageUp(self,player,obstacles):
-        stageUpCloud = bgList[self.currentStage-1][1]
-        stageUpFont = pygame.font.Font(gameFont, stageUpSize)
-        stageUpDisplay = stageUpFont.render("STAGE UP!", True, stageUpColor)
-        stageUpRect = stageUpCloud.get_rect()
-        stageUpRect.center = (screenSize[0]/2, stageUpCloudStartPos)
-        stageUp = True   
-        killAllObstacles(obstacles)
-        
-        # STAGE UP ANIMATION
-        while stageUp:
-            
-            img, imgRect = rotateImage(player.image, player.rect, player.angle)
-            player.alternateMovement()
-            player.movement()
-            player.wrapping()
-            screen.fill(screenColor)
-            screen.blit(bgList[self.currentStage-1][0],(0,0))
-            screen.blit(stageUpCloud,stageUpRect)
-            screen.blit(stageUpDisplay,stageUpRect.center)
-            showHUD(self.gameClock,self.currentStage,self.currentLevel,player)
-            screen.blit(img,imgRect)
-            pygame.display.flip()
-            stageUpRect.centery += stageUpCloudSpeed
-            self.tick()
-            if stageUpRect.centery >= screenSize[1]: stageUp = False
-     
+
     # UPDATE GAME CONSTANTS
     def levelUpdater(self,player,obstacles):
         if self.currentStage < len(self.gameConstants):
             if self.gameConstants[self.currentStage][0]["TIME"] == self.gameClock and not self.gameConstants[self.currentStage][0]["START"]:
                 self.gameConstants[self.currentStage][0]["START"] = True
-                self.currentStage += 1
-                self.currentLevel = 1
-                self.stageUp(player,obstacles)
+                stageUpCloud = stageCloudImg
+                stageUpFont = pygame.font.Font(gameFont, stageUpSize)
+                stageUpDisplay = stageUpFont.render("STAGE UP", True, stageUpColor)
+                stageUpRect = stageUpCloud.get_rect()
+                stageUpRect.center = (screenSize[0]/2, stageUpCloudStartPos)
+                stageUp , stageWipe = True , True  
+                
+                # STAGE UP ANIMATION
+                while stageUp:
+                    
+                    img, imgRect = rotateImage(player.image, player.rect, player.angle)
+                    player.alternateMovement()
+                    player.movement()
+                    player.wrapping()
+                    screen.fill(screenColor)
+                    screen.blit(bgList[self.currentStage-1][0],(0,0)) # Draw background
+                    obstacleMove(obstacles)
+                    
+                    for obs in obstacles:
+                        newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
+                        screen.blit(newBlit[0],newBlit[1])
+                        obs.angle += (self.currentLevel * self.currentStage * obs.spinDirection) # Update angle 
+                        
+                        if obs.rect.centery <= stageUpRect.centery: obs.kill()
+
+                    screen.blit(stageUpCloud,stageUpRect) # Draw cloud
+                    screen.blit(stageUpDisplay,(stageUpRect.centerx - screenSize[0]/5, stageUpRect.centery)) # Draw "STAGE UP" text
+                    showHUD(self.gameClock,self.currentStage,self.currentLevel,player)
+                    screen.blit(img,imgRect) # Draw player
+                    pygame.display.flip()
+                    stageUpRect.centery += stageUpCloudSpeed
+                    self.tick()
+                    
+                    if stageUpRect.centery >= screenSize[1]/2 and stageWipe: 
+                        self.currentStage += 1
+                        self.currentLevel = 1
+                        stageWipe = False
+        
+                    elif stageUpRect.centery >= screenSize[1] * 2: stageUp = False
 
         for levelDict in self.gameConstants[self.currentStage-1]:
             if levelDict["TIME"] == self.gameClock:
