@@ -83,7 +83,7 @@ spinSpeed = 1
 levelTimer = 15 # Default = 15 / Time between levels
 
 # ADD LEVELS HERE: [ (False) , (levelNumber - 1) * levelTimer , BOUNDS , SPEED , SIZE , NUMBER, SPIN ]
-levelTwo =           [ False,     levelTimer, "KILL", 5.5,   32, 15, 1   ] 
+levelTwo =           [ False,     levelTimer, "KILL", 5.5,   32, 14, 1   ] 
 levelThree =         [ False, 2 * levelTimer, "KILL", 6,     34, 16, 2   ] 
 levelFour =          [ False, 3 * levelTimer, "KILL", 6.5,   36, 18, 3   ] 
 levelFive =          [ False, 4 * levelTimer, "KILL", 7,     38, 20, 4   ] 
@@ -620,8 +620,8 @@ def killAllObstacles(obstacles):
 
 
 # SPAWN OBSTACLES
-def spawner(sprites,obstacles,maxObstacles):
-        if len(obstacles) < maxObstacles:
+def spawner(sprites,obstacles,game):
+        if len(obstacles) < game.maxObstacles:
             obstacle = Obstacle()
             obstacles.add(obstacle)
             sprites.add(obstacle) 
@@ -1096,7 +1096,7 @@ def main():
         player.movement()
         player.boost()
         player.wrapping()
-        spawner(sprites,obstacles,maxObstacles)
+        spawner(sprites,obstacles,game)
         obstacleMove(obstacles)
 
         # UPDATE HIGH SCORE
@@ -1125,6 +1125,7 @@ def main():
         player.angle = 0 # Reset player orientation
         pygame.display.flip()
         game.tick()
+  
 
 if __name__ == '__main__': main()
     
