@@ -1092,7 +1092,7 @@ def main():
         showHUD(game.gameClock,game.currentStage,game.currentLevel,player)
         
         # COLLISION DETECTION
-        #if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask): gameOver(game.gameClock,running,player,obstacles,game)
+        if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask): gameOver(game.gameClock,running,player,obstacles,game)
         
         # DRAW AND MOVE SPRITES
         player.movement()
