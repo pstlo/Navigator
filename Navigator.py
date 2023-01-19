@@ -19,7 +19,7 @@ pygame.mouse.set_visible(False)
 # SCREEN                                                                                                                            
 screenSize = [800,800] # Default = [800,800]                                                        
 fps = 60 # Default = 60                                    
-timerSize = 75 # Default = 100                             
+timerSize = 75 # Default = 75                            
 timerColor = [255,255,255] # Default = [255,255,255] 
 timerDelay = 1000 # Default = 1000
 
@@ -30,7 +30,7 @@ levelColor = [255,255,255] # Default = [255,255,255]
 # BACKGROUND CLOUD
 cloudSpeed = 1 # Default = 1
 cloudStart = -1000 # Default = -1000
-cloudSpeedMult = 1.5 # Default = 1.5
+cloudSpeedAdder = 0.5 # Default = 0.5
 
 # GAME OVER SCREEN
 gameOverColor = [255,0,0] # Default = [255,0,0]
@@ -77,12 +77,31 @@ obstacleSpeed = 4  # Default = 4
 obstacleSize = 30    # Default = 30
 maxObstacles = 12  # Default = 12
 obstacleBoundaries = "KILL" # Default = "KILL" (Can be updated by level)
+spinSpeed = 1
 
 # LEVELS  
 levelTimer = 15 # Default = 15 / Time between levels
-speedIncrement = obstacleSpeed / 15 # Default = obstacleSpeed / 15
-sizeIncrement = round(obstacleSize/7) # Default = round(obstacleSize/7)
-numIncrement = maxObstacles / 4 # Default = maxObstacles / 4
+
+# ADD LEVELS HERE: [ (False) , (levelNumber - 1) * levelTimer , BOUNDS , SPEED , SIZE , NUMBER, SPIN ]
+levelTwo =           [ False,     levelTimer, "KILL", 5.5,   32, 15, 1   ] 
+levelThree =         [ False, 2 * levelTimer, "KILL", 6,     34, 16, 2   ] 
+levelFour =          [ False, 3 * levelTimer, "KILL", 6.5,   36, 18, 3   ] 
+levelFive =          [ False, 4 * levelTimer, "KILL", 7,     38, 20, 4   ] 
+levelSix =           [ False, 5 * levelTimer, "KILL", 7.5,   40, 22, 5   ] 
+levelSeven =         [ False, 6 * levelTimer, "KILL", 8,     42, 24, 6   ] 
+levelEight =         [ False, 7 * levelTimer, "KILL", 8.5,   44, 26, 7   ] 
+levelNine =          [ False, 8 * levelTimer, "KILL", 9,     46, 28, 8   ]
+levelTen =           [ False, 9 * levelTimer, "KILL", 9.5,   48, 30, 9   ]
+stageTwoLevelOne =   [ False, 10 * levelTimer, "KILL", 10,   50, 32, 0.5 ]
+stageTwoLevelTwo =   [ False, 11 * levelTimer, "KILL", 10.5, 40, 34, 0.5 ]
+stageTwoLevelThree = [ False, 12 * levelTimer, "KILL", 11,   44, 36, 0.5 ]
+
+# DIVIDE INTO STAGES
+stageOneLevels = [levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight,levelNine,levelTen] # Stage 1
+stageTwoLevels = [stageTwoLevelOne,stageTwoLevelTwo,stageTwoLevelThree]
+
+# STORE IN LIST
+stageList = [stageOneLevels, stageTwoLevels] # List of stages
 
 #---------------------------------------------------------------------------------------------------------------------------------
 # STORE LEVEL DEFAULTS
@@ -115,7 +134,6 @@ for filename in os.listdir(curDir):
 
 # STAGE WIPE CLOUD
 stageCloudImg = pygame.image.load( resource_path(os.path.join(curDir,'StageCloud.png') ) ).convert_alpha()
-
 
 # METEOR ASSETS
 meteorList = []
@@ -218,26 +236,7 @@ restrictedLeftDir = ["E", "NE", "SE"]
 restrictedBottomDir = ["N", "NE", "NW"]
 restrictedRightDir = ["NW", "SW", "W"]
 
-# ADD LEVELS HERE: [ (False) , (levelNumber - 1) * levelTimer , BOUNDS , SPEED , SIZE , NUMBER ]
-levelTwo = [ False, levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ] 
-levelThree = [ False, 2 * levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ] 
-levelFour = [ False, 3 * levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ] 
-levelFive = [ False, 4 * levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ] 
-levelSix = [ False, 5 * levelTimer, "WRAP", speedIncrement, sizeIncrement, numIncrement ] 
-levelSeven = [ False, 6 * levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ] 
-levelEight = [ False, 7 * levelTimer, "BOUNCE", speedIncrement, sizeIncrement, numIncrement ] 
-levelNine = [ False, 8 * levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ]
-levelTen = [ False, 9 * levelTimer, "WRAP", speedIncrement, sizeIncrement, numIncrement ]
-overTimeOne = [ False, 10 * levelTimer, "KILL", speedIncrement, sizeIncrement * 2, - numIncrement/2 ]
-overTimeTwo = [ False, 11 * levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ]
-overTimeThree = [ False, 12 * levelTimer, "KILL", speedIncrement, sizeIncrement, numIncrement ]
 
-# DIVIDE INTO STAGES
-stageOneLevels = [levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight,levelNine,levelTen] # Stage 1
-overTimeLevels = [overTimeOne,overTimeTwo,overTimeThree]
-
-# STORE IN LIST
-stageList = [stageOneLevels, overTimeLevels] # List of stages
 
 
 class Game:
@@ -259,6 +258,7 @@ class Game:
         self.sessionHighScore = 0
         self.gameConstants = []
         self.savedShipNum = 0
+        self.spinSpeed = spinSpeed
         
         contantList = []
         for stage in stageList:
@@ -270,7 +270,8 @@ class Game:
                                 "bound" : settings[2],  
                                 "speedMult" : settings[3],
                                 "obsSizeMult" : settings[4],
-                                "maxObsMult" : settings[5],                    
+                                "maxObsMult" : settings[5],
+                                "spinSpeed" : settings[6]
                     }
                 stageConstants.append(levelDict)
             contantList.append(stageConstants)
@@ -282,7 +283,8 @@ class Game:
                 "obstacleSize" : self.obstacleSize, 
                 "maxObstacles" : self.maxObstacles, 
                 "obstacleBoundaries" : self.obstacleBoundaries,
-                "cloudSpeed" : self.cloudSpeed
+                "cloudSpeed" : self.cloudSpeed,
+                "spinSpeed" : self.spinSpeed
                 }
 
     def tick(self): self.clk.tick(fps)  
@@ -293,7 +295,8 @@ class Game:
         self.obstacleSize = self.savedConstants["obstacleSize"]
         self.maxObstacles = self.savedConstants["maxObstacles"]
         self.obstacleBoundaries = self.savedConstants["obstacleBoundaries"]
-        self.cloudSpeed = self.savedConstants["cloudSpeed"]  
+        self.cloudSpeed = self.savedConstants["cloudSpeed"]
+        self.spinSpeed = self.savedConstants["spinSpeed"]
 
     # UPDATE GAME CONSTANTS
     def levelUpdater(self,player,obstacles):
@@ -345,10 +348,11 @@ class Game:
                 if not levelDict["START"]:
                     levelDict["START"] = True
                     self.obstacleBoundaries = levelDict["bound"]
-                    self.obstacleSpeed += levelDict["speedMult"]
-                    self.maxObstacles += levelDict["maxObsMult"]
-                    self.obstacleSize += levelDict["obsSizeMult"]
-                    self.cloudSpeed *= cloudSpeedMult
+                    self.obstacleSpeed = levelDict["speedMult"]
+                    self.maxObstacles = levelDict["maxObsMult"]
+                    self.obstacleSize = levelDict["obsSizeMult"]
+                    self.spinSpeed = levelDict["spinSpeed"]
+                    self.cloudSpeed += cloudSpeedAdder
                     self.currentLevel += 1
 
     # RESET LEVEL PROGRESS
@@ -499,6 +503,7 @@ class Obstacle(pygame.sprite.Sprite):
         super().__init__()
         self.speed = game.obstacleSpeed
         self.size = game.obstacleSize
+        self.spinSpeed = game.spinSpeed
         self.movement = getMovement(True)
         self.direction = self.movement[1]
         try: self.image = obstacleImages[game.currentStage - 1][game.currentLevel-1].convert_alpha()
@@ -1087,7 +1092,7 @@ def main():
         showHUD(game.gameClock,game.currentStage,game.currentLevel,player)
         
         # COLLISION DETECTION
-        if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask): gameOver(game.gameClock,running,player,obstacles,game)
+        #if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask): gameOver(game.gameClock,running,player,obstacles,game)
         
         # DRAW AND MOVE SPRITES
         player.movement()
