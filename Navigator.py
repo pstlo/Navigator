@@ -237,8 +237,6 @@ restrictedBottomDir = ["N", "NE", "NW"]
 restrictedRightDir = ["NW", "SW", "W"]
 
 
-
-
 class Game:
     def __init__(self):
         self.currentLevel = 1
