@@ -348,6 +348,8 @@ class Game:
         for levelDict in self.gameConstants[self.currentStage-1]:
             if levelDict["TIME"] == self.gameClock:
                 if not levelDict["START"]:
+                    
+                    if self.obstacleBoundaries != "KILL": waitForObstacles(obstacles)
                     levelDict["START"] = True
                     self.obstacleBoundaries = levelDict["bound"]
                     self.obstacleSpeed = levelDict["speedMult"]
@@ -356,13 +358,18 @@ class Game:
                     self.spinSpeed = levelDict["spinSpeed"]
                     self.cloudSpeed += cloudSpeedAdder
                     self.currentLevel += 1
-
+    
 
     # RESET LEVEL PROGRESS
     def resetAllLevels(self):
         for stage in self.gameConstants:
             for levels in stage:
                 levels["START"] = False
+
+
+    def waitForObstacles(self,obstacles):
+        self.obstacleBoundaries = "KILL"
+        while len(obstacles) != 0: self.updateAll()
 
 
     # HUD
