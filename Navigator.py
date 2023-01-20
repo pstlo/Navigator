@@ -298,6 +298,7 @@ class Game:
         self.obstacleBoundaries = self.savedConstants["obstacleBoundaries"]
         self.cloudSpeed = self.savedConstants["cloudSpeed"]
         self.spinSpeed = self.savedConstants["spinSpeed"]
+        self.cloudPos = cloudStart
 
 
     # UPDATE GAME CONSTANTS
