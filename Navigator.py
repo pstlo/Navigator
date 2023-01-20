@@ -82,18 +82,18 @@ spinSpeed = 1
 levelTimer = 15 # Default = 15 / Time between levels
 
 # ADD LEVELS HERE: [ (False) , (levelNumber - 1) * levelTimer , BOUNDS , SPEED , SIZE , NUMBER, SPIN ]
-levelTwo =           [ False,      levelTimer,  "KILL",  5.5,  32,  14,  1    ] 
-levelThree =         [ False,  2 * levelTimer,  "KILL",  5.5,  34,  15,  1.5  ] 
-levelFour =          [ False,  3 * levelTimer,  "KILL",  6,    36,  16,  2    ] 
-levelFive =          [ False,  4 * levelTimer,  "KILL",  6,    38,  17,  2.5  ] 
-levelSix =           [ False,  5 * levelTimer,  "KILL",  6.5,  40,  18,  3    ] 
-levelSeven =         [ False,  6 * levelTimer,  "KILL",  6.5,  42,  19,  3.5  ] 
-levelEight =         [ False,  7 * levelTimer,  "KILL",  7,    44,  20,  4    ] 
-levelNine =          [ False,  8 * levelTimer,  "KILL",  7,    46,  21,  4.5  ]
-levelTen =           [ False,  9 * levelTimer,  "KILL",  7.5,  48,  22,  5    ]
-stageTwoLevelOne =   [ False,  10 * levelTimer, "KILL",  7.5,  50,  23,  0    ]
-stageTwoLevelTwo =   [ False,  11 * levelTimer, "KILL",  8,    52,  24,  0    ]
-stageTwoLevelThree = [ False,  12 * levelTimer, "KILL",  8,    54,  25,  0    ]
+levelTwo =           [ False,       levelTimer, "KILL", 5.5,  32,  16,  1   ]  
+levelThree =         [ False,   2 * levelTimer, "KILL", 6,    34,  16,  2   ] 
+levelFour =          [ False,   3 * levelTimer, "KILL", 6.5,  36,  18,  3   ] 
+levelFive =          [ False,   4 * levelTimer, "KILL", 6,    38,  20,  4   ] 
+levelSix =           [ False,   5 * levelTimer, "KILL", 6.5,  40,  18,  3   ] 
+levelSeven =         [ False,   6 * levelTimer, "KILL", 2.2,  50,  65,  1   ] 
+levelEight =         [ False,   7 * levelTimer, "KILL", 7,    44,  20,  4   ] 
+levelNine =          [ False,   8 * levelTimer, "KILL", 7,    46,  21,  4.5 ]
+levelTen =           [ False,   9 * levelTimer, "KILL", 7.5,  48,  22,  5   ]
+stageTwoLevelOne =   [ False,  10 * levelTimer, "KILL", 7.5,  50,  23,  0   ]
+stageTwoLevelTwo =   [ False,  11 * levelTimer, "KILL", 8,    52,  24,  0   ]
+stageTwoLevelThree = [ False,  12 * levelTimer, "KILL", 8,    54,  25,  0   ]
 
 # DIVIDE INTO STAGES
 stageOneLevels = [levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight,levelNine,levelTen] # Stage 1
