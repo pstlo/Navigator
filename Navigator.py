@@ -1,4 +1,5 @@
 # NAVIGATOR
+
 import random
 import math
 import sys
@@ -13,9 +14,7 @@ pygame.font.init()
 
 pygame.mouse.set_visible(False)
 
-# GAME CONSTANTS
-#------------------------------------------------------------------------------------------------------------------
-
+#------------------GAME CONSTANTS--------------------------------------------------------------------------
 # SCREEN                                                                                                                            
 screenSize = [800,800] # Default = [800,800]                                                        
 fps = 60 # Default = 60                                    
@@ -103,7 +102,7 @@ stageTwoLevels = [stageTwoLevelOne,stageTwoLevelTwo,stageTwoLevelThree] # Stage 
 # STORE IN LIST
 stageList = [stageOneLevels, stageTwoLevels] # List of stages
 
-#---------------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------------------
 # STORE LEVEL DEFAULTS
 screen = pygame.display.set_mode(screenSize) # Initialize screen
 screenColor = [0,0,0] # Screen fill color 
@@ -237,6 +236,7 @@ restrictedBottomDir = ["N", "NE", "NW"]
 restrictedRightDir = ["NW", "SW", "W"]
 
 
+# GAME 
 class Game:
     def __init__(self):
         self.currentLevel = 1
@@ -367,9 +367,9 @@ class Game:
                 levels["START"] = False
 
 
-    def waitForObstacles(self,obstacles):
-        self.obstacleBoundaries = "KILL"
-        while len(obstacles) != 0: self.updateAll()
+    # REMOVE ALL OBSTACLES
+    def killAllObstacles(self,obstacles):
+        for obstacle in obstacles: obstacle.kill()
 
 
     # HUD
@@ -397,8 +397,16 @@ class Game:
         screen.blit(stageDisplay, stageRect)
         screen.blit(levelDisplay, levelRect)
         pygame.draw.rect(screen, [255,0,0],[screenSize[0]/3, 0, player.boostFuel * 20, 10]) # BOOST METER
-
     
+    
+    # SPAWN OBSTACLES
+    def spawner(self,obstacles):
+            if len(obstacles) < self.maxObstacles:
+                obstacle = Obstacle()
+                obstacles.add(obstacle)
+
+
+# MENUS
 class Menu:
         # START MENU
         def home(self,game,player):
@@ -647,11 +655,11 @@ class Menu:
                         game.currentLevel = 1
                         game.currentStage = 1
                         player.kill()
-                        killAllObstacles(obstacles)
+                        game.killAllObstacles(obstacles)
                         game.resetAllLevels()
                         game.attemptNumber += 1
                         game.mainMenu = True
-                        main()
+                        gameLoop()
 
                     elif (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE):
                         # SET DEFAULTS AND RESTART GAME
@@ -659,11 +667,11 @@ class Menu:
                         game.currentLevel = 1
                         game.currentStage = 1
                         player.kill()
-                        killAllObstacles(obstacles)
+                        game.killAllObstacles(obstacles)
                         game.resetAllLevels()
                         game.attemptNumber += 1
                         running = True
-                        main()
+                        gameLoop()
 
 
         def creditScreen(self):
@@ -733,6 +741,7 @@ class Menu:
                     if bounceCount >= 10: bounceCount = 0
 
 
+# PLAYER
 class Player(pygame.sprite.Sprite):
         def __init__(self):
             super().__init__()
@@ -875,6 +884,7 @@ class Player(pygame.sprite.Sprite):
                 self.currentImageNum-=1
   
 
+# OBSTACLES
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -892,6 +902,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
 
 
+# START MENU METEOR GENERATION
 class Icon(pygame.sprite.Sprite):
     def __init__(self):
         spins = [-1,1]
@@ -994,20 +1005,6 @@ def getMovement(eightDirections):
     return move 
 
 
-# REMOVE ALL OBSTACLES
-def killAllObstacles(obstacles):
-    for obstacle in obstacles:
-        obstacle.kill()
-
-
-# SPAWN OBSTACLES
-def spawner(sprites,obstacles,game):
-        if len(obstacles) < game.maxObstacles:
-            obstacle = Obstacle()
-            obstacles.add(obstacle)
-            sprites.add(obstacle) 
-
-
 # OBSTACLE MOVEMENT
 def obstacleMove(obstacles):
     for obs in obstacles:
@@ -1054,18 +1051,17 @@ game = Game()
 menu = Menu()
 
 
-def main():
+def gameLoop():
     
     game.resetGameConstants()
     game.pauseCount = 0
     player = Player()    
+    
     if game.mainMenu: menu.home(game,player)
     else:
         for i in range(game.savedShipNum): player.nextSpaceShip()
 
     obstacles = pygame.sprite.Group()
-    sprites = pygame.sprite.Group()
-    sprites.add(player)
     
     # GAMECLOCK
     game.gameClock = 0
@@ -1118,7 +1114,7 @@ def main():
         player.movement()
         player.boost()
         player.wrapping()
-        spawner(sprites,obstacles,game)
+        game.spawner(obstacles)
         obstacleMove(obstacles)
 
         # UPDATE HIGH SCORE
@@ -1149,7 +1145,7 @@ def main():
         game.tick()
   
 
-if __name__ == '__main__': main()
+if __name__ == '__main__': gameLoop()
     
     
     
