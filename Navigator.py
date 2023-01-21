@@ -43,7 +43,7 @@ pausedColor = [255,255,255] # Default = [255,255,255]
 pauseMax = 5 # Default = 5
 
 # START MENU
-maxIcons = 3 # Default = 3
+maxIcons = 5 # Default = 5
 maxIconSpeed = 5 # Default = 5
 maxIconRotationSpeed = 3 # Default = 3
 startSize = 120 # Default = 120
@@ -77,7 +77,7 @@ obstacleSize = 30    # Default = 30
 maxObstacles = 12  # Default = 12
 obstacleBoundaries = "KILL" # Default = "KILL" 
 aggro = True # Default = True / Determines if obstacles have ability to spawn in every direction / False = More difficult
-spinSpeed = 1
+spinSpeed = 1 # Default = 1
 
 # LEVELS  
 levelTimer = 15 # Default = 15 / Time (seconds) between levels
@@ -95,13 +95,12 @@ levelNine =          [ False,   8 * levelTimer, "KILL", 7,    46,  21,  5, True 
 levelTen =           [ False,   9 * levelTimer, "KILL", 7.5,  48,  22,  5, True  ]
 stageTwoLevelOne =   [ False,  10 * levelTimer, "KILL", 7.5,  50,  23,  0, False ]
 stageTwoLevelTwo =   [ False,  11 * levelTimer, "KILL", 8,    52,  24,  0, False ]
-stageTwoLevelThree = [ False,  12 * levelTimer, "KILL", 8,    54,  25,  0, False ]
+stageTwoLevelThree = [ False,  12 * levelTimer, "KILL", 8,    54,  25,  3, False ]
 stageTwoLevelFour =  [ False,  13 * levelTimer, "KILL", 8.5,  56,  26,  0, False ]
-stageTwoLevelFive =  [ False,  14 * levelTimer, "KILL", 8.5,  58,  27,  0, False ]
 
 # DIVIDE INTO STAGES
 stageOneLevels = [levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight,levelNine,levelTen] # Stage 1
-stageTwoLevels = [stageTwoLevelOne,stageTwoLevelTwo,stageTwoLevelThree,stageTwoLevelFour,stageTwoLevelFive] # Stage 2
+stageTwoLevels = [stageTwoLevelOne,stageTwoLevelTwo,stageTwoLevelThree,stageTwoLevelFour] # Stage 2
 
 # STORE IN LIST
 stageList = [stageOneLevels, stageTwoLevels] # List of stages
@@ -557,7 +556,7 @@ class Event:
     
 # MENUS
 class Menu:
-        # START MENU
+    # START MENU
     def home(self,game,player):
         
         icons = []
