@@ -80,7 +80,7 @@ aggro = True # Default = True / Determines if obstacles have ability to spawn in
 spinSpeed = 1 # Default = 1
 
 # LEVELS  
-levelTimer = 1 # Default = 15 / Time (seconds) between levels
+levelTimer = 15 # Default = 15 / Time (seconds) between levels
 levelUpCloudSpeed = 50 # Default = 50
 
 # ADD LEVELS HERE: [ hasStarted(T/F) , (levelNumber - 1) * levelTimer , BOUNDS , SPEED , SIZE , NUMBER, SPIN, AGGRO(T/F) ]
