@@ -78,25 +78,26 @@ maxObstacles = 12  # Default = 12
 obstacleBoundaries = "KILL" # Default = "KILL" 
 aggro = True # Default = True / Determines if obstacles have ability to spawn in every direction / False = More difficult
 spinSpeed = 1 # Default = 1
+obstacleWipe = False # Default = False / Wipe before level
 
 # LEVELS  
 levelTimer = 15 # Default = 15 / Time (seconds) between levels
-levelUpCloudSpeed = 50 # Default = 50
+levelUpCloudSpeed = 25 # Default = 25
 
-# ADD LEVELS HERE: [ hasStarted(T/F) , (levelNumber - 1) * levelTimer , BOUNDS , SPEED , SIZE , NUMBER, SPIN, AGGRO(T/F) ]
-levelTwo =           [ False,       levelTimer, "KILL", 5.5,  32,  16,  1, True  ]  
-levelThree =         [ False,   2 * levelTimer, "KILL", 6,    34,  16,  2, True  ] 
-levelFour =          [ False,   3 * levelTimer, "KILL", 6.5,  36,  18,  3, True  ] 
-levelFive =          [ False,   4 * levelTimer, "KILL", 6,    38,  20,  4, True  ] 
-levelSix =           [ False,   5 * levelTimer, "KILL", 6.5,  40,  18,  3, True  ] 
-levelSeven =         [ False,   6 * levelTimer, "KILL", 2.2,  50,  65,  1, True  ] 
-levelEight =         [ False,   7 * levelTimer, "KILL", 7,    44,  20,  4, True  ] 
-levelNine =          [ False,   8 * levelTimer, "KILL", 7,    46,  21,  5, True  ]
-levelTen =           [ False,   9 * levelTimer, "KILL", 7.5,  48,  22,  5, True  ]
-stageTwoLevelOne =   [ False,  10 * levelTimer, "KILL", 7.5,  50,  23,  0, False ]
-stageTwoLevelTwo =   [ False,  11 * levelTimer, "KILL", 8,    52,  24,  0, False ]
-stageTwoLevelThree = [ False,  12 * levelTimer, "KILL", 8,    54,  25,  3, False ]
-stageTwoLevelFour =  [ False,  13 * levelTimer, "KILL", 8.5,  56,  26,  0, False ]
+# ADD LEVELS HERE: [ hasStarted(T/F) , (levelNumber - 1) * levelTimer , BOUNDS , SPEED , SIZE , NUMBER, SPIN, AGGRO(T/F), WIPE(T/F) ]
+levelTwo =           [ False,       levelTimer, "KILL", 5.5,  32,  16,  1, True,  False ]  
+levelThree =         [ False,   2 * levelTimer, "KILL", 6,    34,  16,  2, True,  False ] 
+levelFour =          [ False,   3 * levelTimer, "KILL", 6.5,  36,  18,  3, True,  False ] 
+levelFive =          [ False,   4 * levelTimer, "KILL", 6,    38,  20,  4, True,  False ] 
+levelSix =           [ False,   5 * levelTimer, "KILL", 6.5,  40,  18,  3, True,  False ] 
+levelSeven =         [ False,   6 * levelTimer, "KILL", 2.2,  50,  65,  1, True,  False ] 
+levelEight =         [ False,   7 * levelTimer, "KILL", 7,    44,  20,  4, True,  True  ] 
+levelNine =          [ False,   8 * levelTimer, "KILL", 7,    46,  21,  5, True,  False ]
+levelTen =           [ False,   9 * levelTimer, "KILL", 7.5,  48,  22,  5, True,  False ]
+stageTwoLevelOne =   [ False,  10 * levelTimer, "KILL", 7.5,  50,  23,  0, False, False ]
+stageTwoLevelTwo =   [ False,  11 * levelTimer, "KILL", 8,    52,  24,  0, False, False ]
+stageTwoLevelThree = [ False,  12 * levelTimer, "KILL", 8,    54,  25,  3, False, False ]
+stageTwoLevelFour =  [ False,  13 * levelTimer, "KILL", 8.5,  56,  26,  0, False, False ]
 
 # DIVIDE INTO STAGES
 stageOneLevels = [levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight,levelNine,levelTen] # Stage 1
@@ -263,6 +264,7 @@ class Game:
         self.savedShipNum = 0
         self.spinSpeed = spinSpeed
         self.cloudPos = cloudStart
+        self.wipe = obstacleWipe
         contantList = []
         for stage in stageList:
             stageConstants = []
@@ -275,7 +277,8 @@ class Game:
                                 "obsSizeMult" : settings[4],
                                 "maxObsMult" : settings[5],
                                 "spinSpeed" : settings[6],
-                                "aggro" : settings[7]
+                                "aggro" : settings[7],
+                                "wipe" : settings[8]
                     }
                 stageConstants.append(levelDict)
             contantList.append(stageConstants)
@@ -289,7 +292,8 @@ class Game:
                 "obstacleBoundaries" : self.obstacleBoundaries,
                 "cloudSpeed" : self.cloudSpeed,
                 "spinSpeed" : self.spinSpeed,
-                "aggro" : self.aggro
+                "aggro" : self.aggro,
+                "wipe" : self.wipe
                 }
 
     
@@ -325,7 +329,7 @@ class Game:
         self.showHUD(player)
         
         # COLLISION DETECTION
-        if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask): menu.gameOver(self,player,obstacles)
+        #if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask): menu.gameOver(self,player,obstacles)
         
         # DRAW AND MOVE SPRITES
         player.movement()
@@ -374,6 +378,7 @@ class Game:
         self.cloudSpeed = self.savedConstants["cloudSpeed"]
         self.spinSpeed = self.savedConstants["spinSpeed"]
         self.aggro = self.savedConstants["aggro"]
+        self.wipe = self.savedConstants["wipe"]
         self.cloudPos = cloudStart
     
     
@@ -437,28 +442,30 @@ class Game:
             if levelDict["TIME"] == self.gameClock:
                 if not levelDict["START"]:
                     
-                    # REMOVE OLD OBSTACLES
-                    levelUpCloud = stageCloudImg
-                    levelUpRect = levelUpCloud.get_rect()
-                    levelUpRect.center = (screenSize[0]/2, stageUpCloudStartPos)
-                    levelUp = True  
-                    
-                    # LEVEL UP ANIMATION / Removes old obstacles
-                    while levelUp:
+                    if self.gameConstants[self.currentStage-1][self.currentLevel-1]["wipe"]:
+                        # REMOVE OLD OBSTACLES
+                        levelUpCloud = stageCloudImg
+                        levelUpRect = levelUpCloud.get_rect()
+                        levelUpRect.center = (screenSize[0]/2, stageUpCloudStartPos)
+                        levelUp = True  
                         
-                        img, imgRect = rotateImage(player.image, player.rect, player.angle)                        
-                        self.alternateUpdate(player,obstacles,events)
-                        for obs in obstacles:
-                            if obs.rect.centery <= levelUpRect.centery: obs.kill()
+                        # LEVEL UP ANIMATION / Removes old obstacles
+                        while levelUp:
+                            
+                            img, imgRect = rotateImage(player.image, player.rect, player.angle)                        
+                            self.alternateUpdate(player,obstacles,events)
+                            for obs in obstacles:
+                                if obs.rect.centery <= levelUpRect.centery: obs.kill()
 
-                        screen.blit(levelUpCloud,levelUpRect) # Draw cloud
-                        game.showHUD(player)
-                        screen.blit(img,imgRect) # Draw player
-                        pygame.display.flip()
-                        levelUpRect.centery += levelUpCloudSpeed
-                        self.tick()
+                            screen.blit(levelUpCloud,levelUpRect) # Draw cloud
+                            game.showHUD(player)
+                            screen.blit(img,imgRect) # Draw player
+                            pygame.display.flip()
+                            levelUpRect.centery += levelUpCloudSpeed
 
-                        if levelUpRect.top >= screenSize[1]: levelUp = False
+                            if levelUpRect.top >= screenSize[1]: levelUp = False
+ 
+                            self.tick()
                      
                     levelDict["START"] = True
                     self.obstacleBoundaries = levelDict["bound"]
@@ -467,6 +474,7 @@ class Game:
                     self.obstacleSize = levelDict["obsSizeMult"]
                     self.spinSpeed = levelDict["spinSpeed"]
                     self.aggro = levelDict["aggro"]
+                    self.wipe = levelDict["wipe"]
                     self.cloudSpeed += cloudSpeedAdder
                     self.currentLevel += 1
     
