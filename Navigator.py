@@ -105,8 +105,6 @@ stageTwoLevels = [stageTwoLevelOne,stageTwoLevelTwo,stageTwoLevelThree,stageTwoL
 # STORE IN LIST
 stageList = [stageOneLevels, stageTwoLevels] # List of stages
 
-
-
 #----------------------------------------------------------------------------------------------------------------------
 # STORE LEVEL DEFAULTS
 screen = pygame.display.set_mode(screenSize) # Initialize screen
@@ -888,7 +886,6 @@ class Player(pygame.sprite.Sprite):
             self.maxBoost = maxBoost
             self.lastAngle = 0
 
-    
         # PLAYER MOVEMENT
         def movement(self):
             key = pygame.key.get_pressed()
