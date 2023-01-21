@@ -80,7 +80,7 @@ aggro = True # Default = True / Determines if obstacles have ability to spawn in
 spinSpeed = 1 # Default = 1
 
 # LEVELS  
-levelTimer = 15 # Default = 15 / Time (seconds) between levels
+levelTimer = 1 # Default = 15 / Time (seconds) between levels
 levelUpCloudSpeed = 50 # Default = 50
 
 # ADD LEVELS HERE: [ hasStarted(T/F) , (levelNumber - 1) * levelTimer , BOUNDS , SPEED , SIZE , NUMBER, SPIN, AGGRO(T/F) ]
@@ -105,7 +105,7 @@ stageTwoLevels = [stageTwoLevelOne,stageTwoLevelTwo,stageTwoLevelThree,stageTwoL
 # STORE IN LIST
 stageList = [stageOneLevels, stageTwoLevels] # List of stages
 
-overtimeLength = levelTimer # Default = levelTimer / Time (seconds) per overtime level / Activates when player beats all stages+levels
+
 
 #----------------------------------------------------------------------------------------------------------------------
 # STORE LEVEL DEFAULTS
@@ -185,7 +185,7 @@ spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'ogreShi
 
 # ALL OBSTACLE ASSETS
 obstacleImages = [meteorList,ufoList]
-        
+
 # MAIN MENU ASSETS
 menuList = []
 menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'A.png'))).convert_alpha())
@@ -265,8 +265,6 @@ class Game:
         self.savedShipNum = 0
         self.spinSpeed = spinSpeed
         self.cloudPos = cloudStart
-        self.overtimeCounter = 0 # Count to next overtime
-        self.overtimeNum = 0 # Number of overtimes
         contantList = []
         for stage in stageList:
             stageConstants = []
@@ -329,7 +327,7 @@ class Game:
         self.showHUD(player)
         
         # COLLISION DETECTION
-        if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask): menu.gameOver(self,player,obstacles)
+        #if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask): menu.gameOver(self,player,obstacles)
         
         # DRAW AND MOVE SPRITES
         player.movement()
@@ -380,8 +378,8 @@ class Game:
         self.aggro = self.savedConstants["aggro"]
         self.cloudPos = cloudStart
     
+    
     def alternateUpdate(self,player,obstacles,events):
-        
         
         player.alternateMovement()
         player.movement()
@@ -397,9 +395,9 @@ class Game:
             screen.blit(newBlit[0],newBlit[1])
             obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle 
 
+
     # UPDATE GAME CONSTANTS
     def levelUpdater(self,player,obstacles,events):
-        
         
         # UPDATES STAGE
         if self.currentStage < len(self.gameConstants):
@@ -435,22 +433,7 @@ class Game:
                         stageWipe = False
         
                     elif stageUpRect.centery >= screenSize[1] * 2: stageUp = False
-        
-        # UPDATES OVERTIME
-        elif self.currentStage == len(self.gameConstants) and self.currentLevel == len(self.gameConstants[self.currentStage-1]):
-            if self.overtimeCounter == overtimeLength:
-                self.overtimeCounter = 0 
-                self.obstacleSpeed += 0.5
-                self.maxObstacles += 1
-                self.obstacleSize += 1
-                self.spinSpeed += 0.5
-                self.cloudSpeed += 0.5
-                self.overtimeNum +=1
-                
-            for event in pygame.event.get():
-                if event.type == events.timerEvent: self.overtimeCounter += 1
-            return
-        
+
         # UPDATES LEVEL
         for levelDict in self.gameConstants[self.currentStage-1]:
             if levelDict["TIME"] == self.gameClock:
