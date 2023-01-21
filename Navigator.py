@@ -801,6 +801,7 @@ class Menu:
             screen.blit(player.finalImg,player.finalRect) # Explosion
             if newHighScore: screen.blit(newHighScoreDisplay,recordRect)   
             else: screen.blit(recordDisplay,recordRect)
+            pygame.draw.rect(screen, screenColor, [gameOverRect.x - 12,gameOverRect.y + 4,gameOverRect.width + 16, gameOverRect.height - 16],0,10)
             screen.blit(gameOverDisplay,gameOverRect)
             screen.blit(attemptDisplay,attemptRect)
             screen.blit(survivedDisplay,survivedRect)
