@@ -70,6 +70,7 @@ boostReplenishDelay = 50   # Default = 50
 boostReplenishAmount = 0.05    # Default = 0.05
 boostDrain = 0.5 # Default = 0.5
 maxBoost = 20   # Default = 20
+exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
 
 # OBSTACLES  (Can be updated by level)
 obstacleSpeed = 4  # Default = 4           
@@ -126,6 +127,7 @@ sDir = os.path.join(curDir, 'Spaceships') # Spaceship asset directory
 bDir = os.path.join(curDir, 'Backgrounds') # Background asset directory
 menuDir = os.path.join(curDir, 'MainMenu') # Start menu asset directory
 rDir = os.path.join(os.getcwd(), 'Records') # Game records directory
+eDir = os.path.join(curDir, 'Exhaust')
 
 # FONT
 gameFont = ''
@@ -166,6 +168,14 @@ for filename in os.listdir(bDir):
         
         bgList.append([bg,cloud])
         break
+        
+# EXHAUST ASSETS
+exhaustList = []
+for filename in os.listdir(eDir):
+    if filename.endswith('.png'):
+        path = os.path.join(eDir, filename)
+        exhaustList.append(pygame.image.load(resource_path(path)).convert_alpha())
+
 
 # SPACESHIP ASSETS
 spaceShipList = []
@@ -318,7 +328,10 @@ class Game:
             
             # BOOST REPLENISH
             if event.type == events.boostReplenish and player.boostFuel < player.maxBoost: player.boostFuel += boostReplenishAmount
-
+            
+            # EXHAUST UPDATE
+            if event.type == events.exhaustUpdate:
+                player.updateExhaust()
         # BACKGROUND ANIMATION
         screen.blit(bgList[self.currentStage - 1][0], (0,0) )
         screen.blit(bgList[self.currentStage - 1][1], (0,self.cloudPos) )
@@ -351,7 +364,9 @@ class Game:
         
         # DRAW SPRITES
         newBlit = rotateImage(player.image,player.rect,player.angle) # Player rotation
+        newExhaustBlit = rotateImage(exhaustList[player.exhaustState-1],player.rect,player.angle) # Rotate exhaust 
         screen.blit(newBlit[0],newBlit[1]) # Draw player
+        screen.blit(newExhaustBlit[0],newBlit[1]) # Draw exhaust
         
         # DRAW OBSTACLES
         for obs in obstacles:
@@ -364,7 +379,6 @@ class Game:
         player.angle = 0 # Reset player orientation
         pygame.display.flip()
         self.tick()
-    
     
     def tick(self): self.clk.tick(fps)
 
@@ -537,11 +551,15 @@ class Event:
         
         # BOOST
         self.boostReplenish = pygame.USEREVENT + 1
+        
+        # EXHAUST UPDATE
+        self.exhaustUpdate = pygame.USEREVENT + 2
 
     # SETS EVENTS
     def set(self):
         pygame.time.set_timer(self.timerEvent, timerDelay)
         pygame.time.set_timer(self.boostReplenish, boostReplenishDelay)
+        pygame.time.set_timer(self.exhaustUpdate, exhaustUpdateDelay)
 
     
 # MENUS
@@ -893,6 +911,7 @@ class Player(pygame.sprite.Sprite):
             self.boostFuel = boostFuel
             self.maxBoost = maxBoost
             self.lastAngle = 0
+            self.exhaustState = 0 # Determines frame of exhaust animation
 
         # PLAYER MOVEMENT
         def movement(self):
@@ -946,6 +965,7 @@ class Player(pygame.sprite.Sprite):
             
             if (key[pygame.K_a] or key[pygame.K_LEFT]) and ( key[pygame.K_w] or key[pygame.K_UP]) and (key[pygame.K_s] or key[pygame.K_DOWN]) and (key[pygame.K_d] or key[pygame.K_RIGHT]): 
                 self.angle = 0
+                
             
         
         def boost(self):
@@ -958,7 +978,8 @@ class Player(pygame.sprite.Sprite):
                 self.speed += (boostAdder)
                 self.boostFuel -= (boostDrain)
 
-            else: self.speed = self.baseSpeed
+            else: 
+                self.speed = self.baseSpeed
 
     
         # MOVEMENT DURING STAGE UP
@@ -1020,6 +1041,14 @@ class Player(pygame.sprite.Sprite):
                 self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
                 self.mask = pygame.mask.from_surface(self.image)
                 self.currentImageNum-=1
+                
+        def updateExhaust(self):
+            if self.exhaustState+1 > len(exhaustList): self.exhaustState = 0
+            else: self.exhaustState += 1
+                
+        
+            
+            
   
 
 # OBSTACLES
