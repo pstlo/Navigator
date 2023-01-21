@@ -619,7 +619,7 @@ class Menu:
                         else: startDelayCounter +=1
                              
                         # Start animation
-                        screen.fill([0,0,0])
+                        screen.fill(screenColor)
                         screen.blit(bgList[game.currentStage - 1][0],(0,0))
                         screen.blit(player.image, (player.rect.x,player.rect.y + iconPosition)) # Current spaceship
                         
@@ -644,7 +644,7 @@ class Menu:
                     pygame.quit()
                     sys.exit()
 
-            screen.fill([0,0,0])
+            screen.fill(screenColor)
             screen.blit(bgList[game.currentStage - 1][0],(0,0))
             
             for icon in icons:
