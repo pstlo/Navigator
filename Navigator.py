@@ -167,6 +167,9 @@ for filename in os.listdir(bDir):
         bg = pygame.image.load(resource_path(stageBgPath)).convert_alpha()
         cloud = pygame.image.load(resource_path(stageCloudPath)).convert_alpha()
         
+        bg = pygame.transform.scale(bg, screenSize)
+        cloud = pygame.transform.scale(cloud, screenSize)
+        
         bgList.append([bg,cloud])
         break
         
@@ -342,6 +345,7 @@ class Game:
                 player.updateExhaust()
 
         # BACKGROUND ANIMATION
+        screen.fill(screenColor)
         screen.blit(bgList[self.currentStage - 1][0], (0,0) )
         screen.blit(bgList[self.currentStage - 1][1], (0,self.cloudPos) )
         if self.cloudPos < screenSize[1]: self.cloudPos += self.cloudSpeed  
@@ -378,6 +382,11 @@ class Game:
         newExhaustBlit = rotateImage(exhaustList[player.exhaustState-1],player.rect,player.angle) # Rotate exhaust 
         screen.blit(newBlit[0],newBlit[1]) # Draw player
         screen.blit(newExhaustBlit[0],newBlit[1]) # Draw exhaust
+        
+        # UPDATE BOOST ANIMATION
+        player.lastThreeExhaustPos[2] = player.lastThreeExhaustPos[1]
+        player.lastThreeExhaustPos[1] = player.lastThreeExhaustPos[0]
+        player.lastThreeExhaustPos[0] =  newExhaustBlit
         
         # DRAW OBSTACLES
         for obs in obstacles:
@@ -927,6 +936,7 @@ class Player(pygame.sprite.Sprite):
             self.exhaustState = 0 # Frame of exhaust animation
             self.explosionState = 0 # Frame of explosion animation
             self.finalImg,self.finalRect = '',''
+            self.lastThreeExhaustPos = [[0,0],[0,0],[0,0]]
             
         # PLAYER MOVEMENT
         def movement(self):
@@ -986,12 +996,31 @@ class Player(pygame.sprite.Sprite):
         def boost(self):
             key = pygame.key.get_pressed()
             
+            
             if (key[pygame.K_LSHIFT] or key[pygame.K_RSHIFT]) and self.boostFuel - boostDrain > 0 and self.speed + boostAdder < speedLimit and  ( (key[pygame.K_a] or key[pygame.K_LEFT]) and ( key[pygame.K_w] or key[pygame.K_UP]) and (key[pygame.K_s] or key[pygame.K_DOWN]) and (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
                 pass
                 
             elif (key[pygame.K_LSHIFT] or key[pygame.K_RSHIFT]) and self.boostFuel - boostDrain > 0 and self.speed + boostAdder < speedLimit and  ( (key[pygame.K_a] or key[pygame.K_LEFT]) or ( key[pygame.K_w] or key[pygame.K_UP]) or (key[pygame.K_s] or key[pygame.K_DOWN]) or (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
                 self.speed += (boostAdder)
                 self.boostFuel -= (boostDrain)
+                if self.boostFuel > maxBoost * .75: 
+                    try:
+                        screen.blit(self.lastThreeExhaustPos[0][0],self.lastThreeExhaustPos[0][1])
+                        screen.blit(self.lastThreeExhaustPos[1][0],self.lastThreeExhaustPos[1][1])
+                        screen.blit(self.lastThreeExhaustPos[2][0],self.lastThreeExhaustPos[2][1])
+                    except: pass
+                
+                elif self.boostFuel > maxBoost * .5: 
+                    try:
+                        screen.blit(self.lastThreeExhaustPos[0][0],self.lastThreeExhaustPos[0][1])
+                        screen.blit(self.lastThreeExhaustPos[1][0],self.lastThreeExhaustPos[1][1])
+                    except: pass
+                
+                else:
+                    try:
+                        screen.blit(self.lastThreeExhaustPos[0][0],self.lastThreeExhaustPos[0][1])
+                    except: pass
+                
 
             else: self.speed = self.baseSpeed
 
