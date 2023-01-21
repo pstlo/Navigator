@@ -127,7 +127,8 @@ sDir = os.path.join(curDir, 'Spaceships') # Spaceship asset directory
 bDir = os.path.join(curDir, 'Backgrounds') # Background asset directory
 menuDir = os.path.join(curDir, 'MainMenu') # Start menu asset directory
 rDir = os.path.join(os.getcwd(), 'Records') # Game records directory
-eDir = os.path.join(curDir, 'Exhaust')
+eDir = os.path.join(curDir, 'Exhaust') # Exhaust animation directory
+xDir = os.path.join(curDir, 'Explosion') # Explosion animation directory
 
 # FONT
 gameFont = ''
@@ -175,6 +176,13 @@ for filename in os.listdir(eDir):
     if filename.endswith('.png'):
         path = os.path.join(eDir, filename)
         exhaustList.append(pygame.image.load(resource_path(path)).convert_alpha())
+
+# EXHAUST ASSETS
+explosionList = []
+for filename in os.listdir(xDir):
+    if filename.endswith('.png'):
+        path = os.path.join(xDir, filename)
+        explosionList.append(pygame.image.load(resource_path(path)).convert_alpha())
 
 
 # SPACESHIP ASSETS
@@ -332,6 +340,7 @@ class Game:
             # EXHAUST UPDATE
             if event.type == events.exhaustUpdate:
                 player.updateExhaust()
+
         # BACKGROUND ANIMATION
         screen.blit(bgList[self.currentStage - 1][0], (0,0) )
         screen.blit(bgList[self.currentStage - 1][1], (0,self.cloudPos) )
@@ -342,7 +351,9 @@ class Game:
         self.showHUD(player)
         
         # COLLISION DETECTION
-        if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask): menu.gameOver(self,player,obstacles)
+        if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask):
+            player.explode(game,obstacles)
+            menu.gameOver(self,player,obstacles)
         
         # DRAW AND MOVE SPRITES
         player.movement()
@@ -787,6 +798,7 @@ class Menu:
             # Background
             screen.fill(screenColor)
             screen.blit(bgList[game.currentStage - 1][0],(0,0))
+            screen.blit(player.finalImg,player.finalRect) # Explosion
             if newHighScore: screen.blit(newHighScoreDisplay,recordRect)   
             else: screen.blit(recordDisplay,recordRect)
             screen.blit(gameOverDisplay,gameOverRect)
@@ -907,12 +919,14 @@ class Player(pygame.sprite.Sprite):
             self.image = spaceShipList[self.currentImageNum]
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
-            self.angle = 0
             self.boostFuel = boostFuel
             self.maxBoost = maxBoost
-            self.lastAngle = 0
-            self.exhaustState = 0 # Determines frame of exhaust animation
-
+            self.angle = 0 # Players current angle
+            self.lastAngle = 0 # Players last angle
+            self.exhaustState = 0 # Frame of exhaust animation
+            self.explosionState = 0 # Frame of explosion animation
+            self.finalImg,self.finalRect = '',''
+            
         # PLAYER MOVEMENT
         def movement(self):
             key = pygame.key.get_pressed()
@@ -965,8 +979,8 @@ class Player(pygame.sprite.Sprite):
             
             if (key[pygame.K_a] or key[pygame.K_LEFT]) and ( key[pygame.K_w] or key[pygame.K_UP]) and (key[pygame.K_s] or key[pygame.K_DOWN]) and (key[pygame.K_d] or key[pygame.K_RIGHT]): 
                 self.angle = 0
-                
-            
+
+
         
         def boost(self):
             key = pygame.key.get_pressed()
@@ -978,10 +992,9 @@ class Player(pygame.sprite.Sprite):
                 self.speed += (boostAdder)
                 self.boostFuel -= (boostDrain)
 
-            else: 
-                self.speed = self.baseSpeed
+            else: self.speed = self.baseSpeed
 
-    
+
         # MOVEMENT DURING STAGE UP
         def alternateMovement(self):    
             for event in pygame.event.get():
@@ -1045,11 +1058,31 @@ class Player(pygame.sprite.Sprite):
         def updateExhaust(self):
             if self.exhaustState+1 > len(exhaustList): self.exhaustState = 0
             else: self.exhaustState += 1
-                
         
-            
-            
-  
+        
+        def explode(self,game,obstacles):
+            while self.explosionState < len(explosionList):
+                height = explosionList[self.explosionState].get_height()   
+                width = explosionList[self.explosionState].get_width()
+                screen.blit(bgList[game.currentStage-1][0],(0,0))
+                screen.blit(bgList[game.currentStage-1][1],(0,game.cloudPos))
+                obstacleMove(obstacles)
+                
+                for obs in obstacles:
+                    newBlit = rotateImage(obs.image,obs.rect,obs.angle)
+                    screen.blit(newBlit[0],newBlit[1])
+                    
+                img = pygame.transform.scale(explosionList[self.explosionState], (height * self.explosionState, width * self.explosionState))
+                img, imgRect = rotateImage(img, self.rect, self.lastAngle)
+                
+                
+                screen.blit(img,imgRect)    
+                screen.blit(explosionList[self.explosionState],self.rect)
+                pygame.display.update()
+                game.tick()
+                self.explosionState += 1
+                self.finalImg,self.finalRect = img,imgRect
+
 
 # OBSTACLES
 class Obstacle(pygame.sprite.Sprite):
