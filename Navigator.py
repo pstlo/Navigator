@@ -329,7 +329,7 @@ class Game:
         self.showHUD(player)
         
         # COLLISION DETECTION
-        #if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask): menu.gameOver(self,player,obstacles)
+        if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask): menu.gameOver(self,player,obstacles)
         
         # DRAW AND MOVE SPRITES
         player.movement()
