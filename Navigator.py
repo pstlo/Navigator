@@ -148,7 +148,7 @@ gunShip = {
             "speedLimit" : speedLimit * 0.75,
             "laserCost" : laserCost/10,
             "fuelRegenDelay" : fuelRegenDelay,
-            "laserFireRate" : laserFireRate/100
+            "laserFireRate" : 100
             }
 
 shipConstants = [baseShip,gunShip]
@@ -1200,6 +1200,8 @@ class Player(pygame.sprite.Sprite):
             self.boostDrain = spaceShipList[game.savedShipLevel][2]["boostDrain"]
             self.speedLimit = spaceShipList[game.savedShipLevel][2]["speedLimit"]
             self.laserCost = spaceShipList[game.savedShipLevel][2]["laserCost"]
+            self.laserFireRate = spaceShipList[game.savedShipLevel][2]["laserFireRate"]
+            
         
         def updateExhaust(self,game):
             if self.exhaustState+1 > len(spaceShipList[game.savedShipLevel][0]): self.exhaustState = 0
@@ -1442,13 +1444,14 @@ def gameLoop():
     game.pauseCount = 0
     game.resetClock()
     player = Player(game)
-    events = Event()
-    events.set(player)
-
+    
     if game.mainMenu: menu.home(game,player)
     else:
         for i in range(game.savedShipNum): player.nextSpaceShip()
     if game.savedShipLevel > 0: player.updatePlayerConstants(game)
+    
+    events = Event()
+    events.set(player)
     lasers = pygame.sprite.Group()
     obstacles = pygame.sprite.Group()
     running = True
