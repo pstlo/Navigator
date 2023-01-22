@@ -122,6 +122,37 @@ stageList = [stageOneLevels, stageTwoLevels] # List of stages
 screen = pygame.display.set_mode(screenSize) # Initialize screen
 screenColor = [0,0,0] # Screen fill color 
 
+
+# SHIP CONSTANTS
+
+baseShip = {
+            "playerSpeed" : playerSpeed,
+            "fuel" : fuel,
+            "maxFuel" : maxFuel,
+            "fuelRegenNum" : fuelRegenNum,
+            "boostAdder" : boostAdder,
+            "boostDrain" : boostDrain,
+            "speedLimit" : speedLimit,
+            "laserCost" : laserCost,
+            "fuelRegenDelay" : fuelRegenDelay,
+            "laserFireRate" : laserFireRate
+            }
+
+gunShip = {
+            "playerSpeed" : playerSpeed*0.75,
+            "fuel" : fuel * 1.5,
+            "maxFuel" : maxFuel * 2,
+            "fuelRegenNum" : fuelRegenNum,
+            "boostAdder" : boostAdder,
+            "boostDrain" : boostDrain,
+            "speedLimit" : speedLimit * 0.75,
+            "laserCost" : laserCost/10,
+            "fuelRegenDelay" : fuelRegenDelay,
+            "laserFireRate" : laserFireRate/100
+            }
+
+shipConstants = [baseShip,gunShip]
+
 # FOR EXE
 def resource_path(relative_path):
     try: base_path = sys._MEIPASS    
@@ -129,51 +160,53 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 # ASSET LOADING
-curDir = resource_path('Assets')
-obsDir = os.path.join(curDir, 'Obstacles') # Obstacle asset directory
-mDir = os.path.join(obsDir, 'Meteors') # Meteor asset directory
-uDir = os.path.join(obsDir, 'UFOs') # UFO asset directory
-sDir = os.path.join(curDir, 'Spaceships') # Spaceship asset directory
-bDir = os.path.join(curDir, 'Backgrounds') # Background asset directory
-menuDir = os.path.join(curDir, 'MainMenu') # Start menu asset directory
-rDir = os.path.join(os.getcwd(), 'Records') # Game records directory
-eDir = os.path.join(curDir, 'Exhaust') # Exhaust animation directory
-xDir = os.path.join(curDir, 'Explosion') # Explosion animation directory
+currentDirectory = resource_path('Assets')
+obstacleDirectory = os.path.join(currentDirectory, 'Obstacles') # Obstacle asset directory
+meteorDirectory = os.path.join(obstacleDirectory, 'Meteors') # Meteor asset directory
+ufoDirectory = os.path.join(obstacleDirectory, 'UFOs') # UFO asset directory
+shipDirectory = os.path.join(currentDirectory, 'Spaceships') # Spaceship asset directory
+backgroundDirectory = os.path.join(currentDirectory, 'Backgrounds') # Background asset directory
+menufoDirectory = os.path.join(currentDirectory, 'MainMenu') # Start menu asset directory
+recordsDirectory = os.path.join(os.getcwd(), 'Records') # Game records directory
+explosionDirectory = os.path.join(currentDirectory, 'Explosion') # Explosion animation directory
 
 # LASER
-laserImage = pygame.image.load( resource_path(os.path.join(curDir,'Laser.png') ) )
+laserImage = pygame.image.load( resource_path(os.path.join(currentDirectory,'Laser.png') ) )
 laserImage.set_colorkey([255,255,255])
 laserImage = laserImage.convert_alpha()
 
 # FONT
 gameFont = ''
-for filename in os.listdir(curDir):
+for filename in os.listdir(currentDirectory):
     if filename.endswith('.ttf'):
-        path = os.path.join(curDir, filename)
+        path = os.path.join(currentDirectory, filename)
         gameFont = path
         break
 
 # STAGE WIPE CLOUD
-stageCloudImg = pygame.image.load( resource_path(os.path.join(curDir,'StageCloud.png') ) ).convert_alpha()
+stageCloudImg = pygame.image.load( resource_path(os.path.join(currentDirectory,'StageCloud.png') ) ).convert_alpha()
 
 # METEOR ASSETS
 meteorList = []
-for filename in os.listdir(mDir):
+for filename in os.listdir(meteorDirectory):
     if filename.endswith('.png'):
-        path = os.path.join(mDir, filename)
+        path = os.path.join(meteorDirectory, filename)
         meteorList.append(pygame.image.load(resource_path(path)).convert_alpha())
 
 # UFO ASSETS
 ufoList = []
-for filename in os.listdir(uDir):
+for filename in os.listdir(ufoDirectory):
     if filename.endswith('.png'):
-        path = os.path.join(uDir, filename)
+        path = os.path.join(ufoDirectory, filename)
         ufoList.append(pygame.image.load(resource_path(path)).convert_alpha())
+
+# ALL OBSTACLE ASSETS
+obstacleImages = [meteorList,ufoList]
 
 # BACKGROUND ASSETS
 bgList = []
-for filename in os.listdir(bDir):
-    bgPath = os.path.join(bDir,filename)
+for filename in os.listdir(backgroundDirectory):
+    bgPath = os.path.join(backgroundDirectory,filename)
     for nextBg in os.listdir(bgPath):
         
         stageBgPath = os.path.join(bgPath,'Background.png')
@@ -187,65 +220,62 @@ for filename in os.listdir(bDir):
         
         bgList.append([bg,cloud])
         break
-        
-# EXHAUST ASSETS
-exhaustList = []
-for filename in os.listdir(eDir):
-    if filename.endswith('.png'):
-        path = os.path.join(eDir, filename)
-        exhaustList.append(pygame.image.load(resource_path(path)).convert_alpha())
 
-# EXHAUST ASSETS
+
+# EXPLOSION ASSETS
 explosionList = []
-for filename in os.listdir(xDir):
+for filename in os.listdir(explosionDirectory):
     if filename.endswith('.png'):
-        path = os.path.join(xDir, filename)
+        path = os.path.join(explosionDirectory, filename)
         explosionList.append(pygame.image.load(resource_path(path)).convert_alpha())
 
 
 # SPACESHIP ASSETS
-spaceShipList = []
-spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'spaceShip.png'))).convert_alpha())
-spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'yellowShip.png'))).convert_alpha())
-spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'blackAndGoldShip.png'))).convert_alpha())
-spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'blackAndRedShip.png'))).convert_alpha())
-spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'blueShip.png'))).convert_alpha())
-spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'purpleShip.png'))).convert_alpha())
-spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'taxiShip.png'))).convert_alpha())
-spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'greyAndRedShip.png'))).convert_alpha())
-spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'greenShip.png'))).convert_alpha())
-spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'orangeShip.png'))).convert_alpha())
-spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'rastaShip.png'))).convert_alpha())
-spaceShipList.append(pygame.image.load(resource_path(os.path.join(sDir, 'ogreShip.png'))).convert_alpha())
+spaceShipList = [] 
 
-# ALL OBSTACLE ASSETS
-obstacleImages = [meteorList,ufoList]
+for shipLevelFolder in os.listdir(shipDirectory):
+    shipLevelFolderPath = os.path.join(shipDirectory,shipLevelFolder)
+    shipLevelAssets = []
+    for shipAssetFolder in os.listdir(shipLevelFolderPath):
+        shipAssetFolderPath = os.path.join(shipLevelFolderPath,shipAssetFolder)
+        shipAssets = []
+        for files in os.listdir(shipAssetFolderPath):
+            if files == 'gunShip.png':
+                gunShip = pygame.image.load(resource_path(os.path.join(shipAssetFolderPath,files)))
+                gunShip.set_colorkey([255,255,255])
+                shipAssets.append(gunShip.convert_alpha())
+            elif files.endswith('.png'): shipAssets.append(pygame.image.load(resource_path(os.path.join(shipAssetFolderPath,files))).convert_alpha())
+        shipLevelAssets.append(shipAssets)
+    spaceShipList.append(shipLevelAssets)
+    
+for i in range(len(spaceShipList)): spaceShipList[i].append(shipConstants[i])
+# [   ( [Exhaust frames],[Ship Skins],{Player Constants} )   ]
 
 # MAIN MENU ASSETS
 menuList = []
-menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'A.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'O.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'big.png'))).convert_alpha()) 
-menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'left.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'right.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'dblue.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'lblue.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'lgreen.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'dgreen.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'orange.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'red.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'white.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menuDir,'yellow.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menufoDirectory,'A.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menufoDirectory,'O.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menufoDirectory,'big.png'))).convert_alpha()) 
+menuList.append(pygame.image.load(resource_path(os.path.join(menufoDirectory,'left.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menufoDirectory,'right.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menufoDirectory,'dblue.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menufoDirectory,'lblue.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menufoDirectory,'lgreen.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menufoDirectory,'dgreen.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menufoDirectory,'orange.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menufoDirectory,'red.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menufoDirectory,'white.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menufoDirectory,'yellow.png'))).convert_alpha())
 
 # WINDOW
 pygame.display.set_caption('Navigator')
 pygame.display.set_icon(menuList[0])
 
 # LOAD GAME RECORDS
-overallHighScorePath = os.path.join(rDir,'OverallHighScore.txt')
-totalAttemptsPath = os.path.join(rDir,'TotalAttempts.txt')
+overallHighScorePath = os.path.join(recordsDirectory,'OverallHighScore.txt')
+totalAttemptsPath = os.path.join(recordsDirectory,'TotalAttempts.txt')
 
-if not os.path.exists(rDir):
+if not os.path.exists(recordsDirectory):
     os.mkdir('Records')
     newFile = open(overallHighScorePath,'w')
     newFile.write('0')
@@ -268,12 +298,12 @@ timerFont = pygame.font.Font(gameFont, timerSize)
 # FOR RANDOM MOVEMENT    
 topDir = ["S", "E", "W", "SE", "SW"]
 leftDir = ["E", "S", "N", "NE", "SE"]
-bottomDir = ["N", "W", "E", "NE", "NW"]
+bottometeorDirectory = ["N", "W", "E", "NE", "NW"]
 rightDir = ["W", "N", "S", "NW", "SW"]
 
 restrictedTopDir = ["SE", "SW", "S"]
 restrictedLeftDir = ["E", "NE", "SE"]
-restrictedBottomDir = ["N", "NE", "NW"]
+restrictedBottometeorDirectory = ["N", "NE", "NW"]
 restrictedRightDir = ["NW", "SW", "W"]
 
 
@@ -298,6 +328,7 @@ class Game:
         self.sessionHighScore = 0
         self.gameConstants = []
         self.savedShipNum = 0
+        self.savedShipLevel = 0
         self.spinSpeed = spinSpeed
         self.cloudPos = cloudStart
         self.wipe = obstacleWipe
@@ -344,8 +375,7 @@ class Game:
                 sys.exit()
             
             # INCREMENT TIMER
-            if event.type == events.timerEvent:
-                self.gameClock +=1
+            if event.type == events.timerEvent: self.gameClock +=1
             
             # PAUSE GAME
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and game.pauseCount < pauseMax :
@@ -353,15 +383,13 @@ class Game:
                 menu.pause(game,player,obstacles,lasers)
             
             # FUEL REPLENISH
-            if event.type == events.fuelReplenish and player.fuel < player.maxFuel: player.fuel += fuelRegenNum
+            if event.type == events.fuelReplenish and player.fuel < player.maxFuel: player.fuel += player.fuelRegenNum
             
             # EXHAUST UPDATE
-            if event.type == events.exhaustUpdate:
-                player.updateExhaust()
+            if event.type == events.exhaustUpdate: player.updateExhaust(game)
             
-            if event.type == events.laserCooldown and not player.laserReady:
-                player.laserReady = True
-
+            # GUN COOLDOWN
+            if event.type == events.laserCooldown and not player.laserReady: player.laserReady = True
 
         # BACKGROUND ANIMATION
         screen.fill(screenColor)
@@ -404,9 +432,10 @@ class Game:
         
         # DRAW SPRITES
         newBlit = rotateImage(player.image,player.rect,player.angle) # Player rotation
-        newExhaustBlit = rotateImage(exhaustList[player.exhaustState-1],player.rect,player.angle) # Rotate exhaust 
+        newExhaustBlit = rotateImage(spaceShipList[game.savedShipLevel][0][player.exhaustState-1],player.rect,player.angle) # Rotate exhaust 
+        
         screen.blit(newBlit[0],newBlit[1]) # Draw player
-        screen.blit(newExhaustBlit[0],newBlit[1]) # Draw exhaust
+        if game.savedShipLevel == 0: screen.blit(newExhaustBlit[0],newExhaustBlit[1]) # Draw exhaust
         
         # UPDATE BOOST ANIMATION
         player.lastThreeExhaustPos[2] = player.lastThreeExhaustPos[1]
@@ -427,6 +456,7 @@ class Game:
         player.angle = 0 # Reset player orientation
         pygame.display.flip()
         self.tick()
+    
     
     def tick(self): self.clk.tick(fps)
 
@@ -613,11 +643,11 @@ class Event:
         
 
     # SETS EVENTS
-    def set(self):
+    def set(self,player):
         pygame.time.set_timer(self.timerEvent, timerDelay)
-        pygame.time.set_timer(self.fuelReplenish, fuelRegenDelay)
+        pygame.time.set_timer(self.fuelReplenish, player.fuelRegenDelay)
         pygame.time.set_timer(self.exhaustUpdate, exhaustUpdateDelay)
-        pygame.time.set_timer(self.laserCooldown, laserFireRate)
+        pygame.time.set_timer(self.laserCooldown, player.laserFireRate)
         
 
     
@@ -625,7 +655,8 @@ class Event:
 class Menu:
     # START MENU
     def home(self,game,player):
-        
+        player.currentImageNum = 0
+        game.savedShipLevel = 0
         icons = []
         for icon in range(maxIcons): icons.append(Icon())
      
@@ -651,21 +682,20 @@ class Menu:
         
         # SHIP UNLOCKS   
         unlockNumber = 0
-        if game.savedOverallHighScore >= 330: unlockNumber = len(spaceShipList)
-        elif game.savedOverallHighScore >= 300: unlockNumber = len(spaceShipList) - 1
-        elif game.savedOverallHighScore >= 270: unlockNumber = len(spaceShipList) - 2
-        elif game.savedOverallHighScore >= 240: unlockNumber = len(spaceShipList) - 3
-        elif game.savedOverallHighScore >= 210: unlockNumber = len(spaceShipList) - 4
-        elif game.savedOverallHighScore >= 180: unlockNumber = len(spaceShipList) - 5    
-        elif game.savedOverallHighScore >= 150: unlockNumber = len(spaceShipList) - 6 
-        elif game.savedOverallHighScore >= 120: unlockNumber = len(spaceShipList) - 7   
-        elif game.savedOverallHighScore >= 90: unlockNumber = len(spaceShipList) - 8    
-        elif game.savedOverallHighScore >= 60: unlockNumber = len(spaceShipList) - 9
-        elif game.savedOverallHighScore >= 30: unlockNumber = len(spaceShipList) - 10
+        if game.savedOverallHighScore >= 330: unlockNumber = len(spaceShipList[game.savedShipLevel][1])
+        elif game.savedOverallHighScore >= 300: unlockNumber = len(spaceShipList[game.savedShipLevel][1]) - 1
+        elif game.savedOverallHighScore >= 270: unlockNumber = len(spaceShipList[game.savedShipLevel][1]) - 2
+        elif game.savedOverallHighScore >= 240: unlockNumber = len(spaceShipList[game.savedShipLevel][1]) - 3
+        elif game.savedOverallHighScore >= 210: unlockNumber = len(spaceShipList[game.savedShipLevel][1]) - 4
+        elif game.savedOverallHighScore >= 180: unlockNumber = len(spaceShipList[game.savedShipLevel][1]) - 5    
+        elif game.savedOverallHighScore >= 150: unlockNumber = len(spaceShipList[game.savedShipLevel][1]) - 6 
+        elif game.savedOverallHighScore >= 120: unlockNumber = len(spaceShipList[game.savedShipLevel][1]) - 7   
+        elif game.savedOverallHighScore >= 90: unlockNumber = len(spaceShipList[game.savedShipLevel][1]) - 8    
+        elif game.savedOverallHighScore >= 60: unlockNumber = len(spaceShipList[game.savedShipLevel][1]) - 9
+        elif game.savedOverallHighScore >= 30: unlockNumber = len(spaceShipList[game.savedShipLevel][1]) - 10
 
-        for imageNum in range(unlockNumber-1):
-            player.nextSpaceShip()
-        
+        for imageNum in range(unlockNumber-1): player.nextSpaceShip() # Gets highest unlocked ship by default
+
         startOffset = 100
         startDelay = 1
         iconPosition, startDelayCounter = startOffset, 0
@@ -698,11 +728,20 @@ class Menu:
                     game.mainMenu = False    
                     return
                 
+                # NEXT SPACESHIP
                 elif event.type == pygame.KEYDOWN and (event.key == pygame.K_d or event.key == pygame.K_RIGHT):
                     if unlockNumber > player.currentImageNum + 1: player.nextSpaceShip()
-                    
+                
+                # PREVIOUS SPACESHIP                
                 elif event.type == pygame.KEYDOWN and (event.key == pygame.K_a or event.key == pygame.K_LEFT):
                     player.lastSpaceShip()
+                
+                # SHIP TYPE TOGGLE
+                elif (event.type == pygame.KEYDOWN) and event.key == pygame.K_m:
+                    player.toggleSpaceShip(game)
+
+
+
                 
                 # CREDITS
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_c: menu.creditScreen()
@@ -888,6 +927,7 @@ class Menu:
                     game.currentLevel = 1
                     game.currentStage = 1
                     player.kill()
+                    player.updatePlayerConstants(game)
                     game.killAllObstacles(obstacles)
                     game.resetAllLevels()
                     game.attemptNumber += 1
@@ -938,7 +978,7 @@ class Menu:
                 # BOUNCE OFF EDGES
                 if createdByRect.right > screenSize[0]: direction = rightDir[random.randint(0, len(rightDir) - 1)]
                 if createdByRect.left < 0: direction = leftDir[random.randint(0, len(leftDir) - 1)]  
-                if creditsRect.bottom > screenSize[1]: direction = bottomDir[random.randint(0, len(bottomDir) - 1)]
+                if creditsRect.bottom > screenSize[1]: direction = bottometeorDirectory[random.randint(0, len(bottometeorDirectory) - 1)]
                 if createdByRect.top < 0 : direction = topDir[random.randint(0, len(topDir) - 1)]
 
                 if bounceCount == 0:
@@ -964,11 +1004,11 @@ class Menu:
 
 # PLAYER
 class Player(pygame.sprite.Sprite):
-        def __init__(self):
+        def __init__(self,game):
             super().__init__()
-            self.currentImageNum = 0         
+            self.currentImageNum = 0
             self.speed,self.baseSpeed = playerSpeed, playerSpeed
-            self.image = spaceShipList[self.currentImageNum]
+            self.image = spaceShipList[game.savedShipLevel][1][self.currentImageNum]
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
             self.fuel = fuel
@@ -980,6 +1020,13 @@ class Player(pygame.sprite.Sprite):
             self.finalImg,self.finalRect = '','' # Last frame of exhaust animation for boost
             self.lastThreeExhaustPos = [[0,0],[0,0],[0,0]] # Will be updated with recent player positions
             self.laserReady = True
+            self.boostDrain = boostDrain
+            self.boostAdder = boostAdder
+            self.speedLimit = speedLimit
+            self.fuelRegenNum = fuelRegenNum
+            self.laserCost = laserCost
+            self.fuelRegenDelay = fuelRegenDelay
+            self.laserFireRate = laserFireRate
             
         # PLAYER MOVEMENT
         def movement(self):
@@ -1039,38 +1086,37 @@ class Player(pygame.sprite.Sprite):
             key = pygame.key.get_pressed()
             
             
-            if (key[pygame.K_LSHIFT] or key[pygame.K_RSHIFT]) and self.fuel - boostDrain > 0 and self.speed + boostAdder < speedLimit and  ( (key[pygame.K_a] or key[pygame.K_LEFT]) and ( key[pygame.K_w] or key[pygame.K_UP]) and (key[pygame.K_s] or key[pygame.K_DOWN]) and (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
+            if (key[pygame.K_LSHIFT] or key[pygame.K_RSHIFT]) and self.fuel - self.boostDrain > 0 and self.speed + self.boostAdder < self.speedLimit and  ( (key[pygame.K_a] or key[pygame.K_LEFT]) and ( key[pygame.K_w] or key[pygame.K_UP]) and (key[pygame.K_s] or key[pygame.K_DOWN]) and (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
                 pass
                 
-            elif (key[pygame.K_LSHIFT] or key[pygame.K_RSHIFT]) and self.fuel - boostDrain > 0 and self.speed + boostAdder < speedLimit and  ( (key[pygame.K_a] or key[pygame.K_LEFT]) or ( key[pygame.K_w] or key[pygame.K_UP]) or (key[pygame.K_s] or key[pygame.K_DOWN]) or (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
-                self.speed += (boostAdder)
-                self.fuel -= (boostDrain)
-                if self.fuel > maxFuel * .75: 
+            elif (key[pygame.K_LSHIFT] or key[pygame.K_RSHIFT]) and self.fuel - self.boostDrain > 0 and self.speed + self.boostAdder < self.speedLimit and  ( (key[pygame.K_a] or key[pygame.K_LEFT]) or ( key[pygame.K_w] or key[pygame.K_UP]) or (key[pygame.K_s] or key[pygame.K_DOWN]) or (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
+                self.speed += (self.boostAdder)
+                self.fuel -= (self.boostDrain)
+                if self.fuel > self.maxFuel * .75: 
                     try:
                         screen.blit(self.lastThreeExhaustPos[0][0],self.lastThreeExhaustPos[0][1])
                         screen.blit(self.lastThreeExhaustPos[1][0],self.lastThreeExhaustPos[1][1])
                         screen.blit(self.lastThreeExhaustPos[2][0],self.lastThreeExhaustPos[2][1])
                     except: pass
                 
-                elif self.fuel > maxFuel * .5: 
+                elif self.fuel > self.maxFuel * .5: 
                     try:
                         screen.blit(self.lastThreeExhaustPos[0][0],self.lastThreeExhaustPos[0][1])
                         screen.blit(self.lastThreeExhaustPos[1][0],self.lastThreeExhaustPos[1][1])
                     except: pass
                 
                 else:
-                    try:
-                        screen.blit(self.lastThreeExhaustPos[0][0],self.lastThreeExhaustPos[0][1])
+                    try: screen.blit(self.lastThreeExhaustPos[0][0],self.lastThreeExhaustPos[0][1])
                     except: pass
-         
+
             else: self.speed = self.baseSpeed
 
 
         def shoot(self,lasers):
             key = pygame.key.get_pressed()
-            if  (key[pygame.K_LCTRL] or key[pygame.K_RCTRL]) and self.fuel - laserCost > 0 and self.laserReady:
+            if  (key[pygame.K_LCTRL] or key[pygame.K_RCTRL]) and self.fuel - self.laserCost > 0 and self.laserReady:
                 lasers.add(Laser(self))
-                self.fuel -= laserCost
+                self.fuel -= self.laserCost
                 self.laserReady = False
 
 
@@ -1119,8 +1165,8 @@ class Player(pygame.sprite.Sprite):
 
         # GET NEXT SPACESHIP IMAGE
         def nextSpaceShip(self):
-            if self.currentImageNum < len(spaceShipList)-1:
-                self.image = spaceShipList[self.currentImageNum + 1]
+            if self.currentImageNum + 1 < len(spaceShipList[game.savedShipLevel][1]):
+                self.image = spaceShipList[game.savedShipLevel][1][self.currentImageNum + 1]
                 self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
                 self.mask = pygame.mask.from_surface(self.image)
                 self.currentImageNum+=1
@@ -1128,14 +1174,35 @@ class Player(pygame.sprite.Sprite):
 
         # GET PREVIOUS SPACESHIP IMAGE
         def lastSpaceShip(self):
-            if self.currentImageNum >= 1: 
-                self.image = spaceShipList[self.currentImageNum - 1]
+            if self.currentImageNum >= 1 and self.currentImageNum + 1 < len(spaceShipList[game.savedShipLevel][1]): 
+                self.image = spaceShipList[game.savedShipLevel][1][self.currentImageNum - 1]
                 self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
                 self.mask = pygame.mask.from_surface(self.image)
-                self.currentImageNum-=1
-                
-        def updateExhaust(self):
-            if self.exhaustState+1 > len(exhaustList): self.exhaustState = 0
+                if self.currentImageNum - 1 >= 0: self.currentImageNum-=1
+        
+        def toggleSpaceShip(self,game):
+            if game.savedShipLevel + 1 < len(spaceShipList):
+                game.savedShipLevel +=1
+            else: game.savedShipLevel = 0
+            self.updatePlayerConstants(game)
+
+
+        def updatePlayerConstants(self,game):
+            self.image = spaceShipList[game.savedShipLevel][1][0]
+            self.currentImageNum = 0
+            self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
+            self.mask = pygame.mask.from_surface(self.image)
+            self.speed,self.baseSpeed = spaceShipList[game.savedShipLevel][2]["playerSpeed"],spaceShipList[game.savedShipLevel][2]["playerSpeed"]
+            self.fuel = spaceShipList[game.savedShipLevel][2]["fuel"]
+            self.maxFuel = spaceShipList[game.savedShipLevel][2]["maxFuel"]
+            self.fuelRegenNum = spaceShipList[game.savedShipLevel][2]["fuelRegenNum"]
+            self.boostAdder = spaceShipList[game.savedShipLevel][2]["boostAdder"]
+            self.boostDrain = spaceShipList[game.savedShipLevel][2]["boostDrain"]
+            self.speedLimit = spaceShipList[game.savedShipLevel][2]["speedLimit"]
+            self.laserCost = spaceShipList[game.savedShipLevel][2]["laserCost"]
+        
+        def updateExhaust(self,game):
+            if self.exhaustState+1 > len(spaceShipList[game.savedShipLevel][0]): self.exhaustState = 0
             else: self.exhaustState += 1
         
         
@@ -1294,8 +1361,8 @@ def randomEightDirection():
 def getMovement(eightDirections):
     top,bottom,left,right = [],[],[],[]
     
-    if eightDirections: top, bottom, left, right = topDir, bottomDir, leftDir, rightDir
-    else: top, bottom, left, right, = restrictedTopDir, restrictedBottomDir, restrictedLeftDir, restrictedRightDir
+    if eightDirections: top, bottom, left, right = topDir, bottometeorDirectory, leftDir, rightDir
+    else: top, bottom, left, right, = restrictedTopDir, restrictedBottometeorDirectory, restrictedLeftDir, restrictedRightDir
     X = random.randint(0, screenSize[0])
     Y = random.randint(0, screenSize[1])
     
@@ -1306,12 +1373,12 @@ def getMovement(eightDirections):
     
     topDirection = top[random.randint(0, len(top) - 1)]
     leftDirection = left[random.randint(0, len(left) - 1)]
-    bottomDirection = bottom[random.randint(0, len(bottom) - 1)]
+    bottometeorDirectoryection = bottom[random.randint(0, len(bottom) - 1)]
     rightDirection = right[random.randint(0, len(right) - 1)]
     
     topBound = [X, lowerY, topDirection]
     leftBound = [lowerX, Y, leftDirection]
-    bottomBound = [X, upperY, bottomDirection]
+    bottomBound = [X, upperY, bottometeorDirectoryection]
     rightBound = [upperX, Y, rightDirection]
  
     possible = [topBound, leftBound, rightBound, bottomBound]
@@ -1374,14 +1441,14 @@ def gameLoop():
     game.resetGameConstants()
     game.pauseCount = 0
     game.resetClock()
-    player = Player()
+    player = Player(game)
     events = Event()
-    events.set()    
+    events.set(player)
 
     if game.mainMenu: menu.home(game,player)
     else:
         for i in range(game.savedShipNum): player.nextSpaceShip()
-    
+    if game.savedShipLevel > 0: player.updatePlayerConstants(game)
     lasers = pygame.sprite.Group()
     obstacles = pygame.sprite.Group()
     running = True
