@@ -80,7 +80,7 @@ exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation fr
 laserSpeed = 10 # Default = 10
 laserCost = 2 # Default = 2
 laserColor = [255,0,0]
-laserFireRate = 500 # Default = 500 / Delay (ms) between lasers fired
+laserFireRate = 750 # Default = 750 / Delay (ms) between lasers fired
 
 # OBSTACLES  (Can be updated by level)
 obstacleSpeed = 4  # Default = 4           
@@ -350,7 +350,7 @@ class Game:
             # PAUSE GAME
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and game.pauseCount < pauseMax :
                 game.pauseCount += 1
-                menu.pause(game,player,obstacles)
+                menu.pause(game,player,obstacles,lasers)
             
             # FUEL REPLENISH
             if event.type == events.fuelReplenish and player.fuel < player.maxFuel: player.fuel += fuelRegenNum
@@ -734,7 +734,7 @@ class Menu:
             pygame.display.update()
         
         
-    def pause(self,game,player,obstacles):
+    def pause(self,game,player,obstacles,lasers):
         
         playerBlit = rotateImage(player.image,player.rect,player.lastAngle)
         paused = True
@@ -753,7 +753,7 @@ class Menu:
         pauseCountFont = pygame.font.Font(gameFont,pauseCountSize)
         pauseDisplay = pauseCountFont.render( pauseNum , True, levelColor )
         pauseRect = pauseDisplay.get_rect() 
-        pauseRect.center = (screenSize[0] * .5 , screenSize[1] -16)
+        pauseRect.center = (screenSize[0] * .5 , screenSize[1] - 16)
         
         while paused:
             screen.fill(screenColor)
@@ -766,7 +766,9 @@ class Menu:
             for obs in obstacles: # Draw obstacles
                 newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
                 screen.blit(newBlit[0],newBlit[1])
-
+            
+            lasers.draw(screen)
+            
             screen.blit(pauseDisplay, pauseRect)
             screen.blit(pausedDisplay,pausedRect)
             pygame.display.flip()
@@ -846,6 +848,7 @@ class Menu:
             # Background
             screen.fill(screenColor)
             screen.blit(bgList[game.currentStage - 1][0],(0,0))
+            screen.blit(bgList[game.currentStage-1][1],(0,game.cloudPos))
             screen.blit(player.finalImg,player.finalRect) # Explosion
             if newHighScore: screen.blit(newHighScoreDisplay,recordRect)   
             else: screen.blit(recordDisplay,recordRect)
