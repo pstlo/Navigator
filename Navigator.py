@@ -63,14 +63,24 @@ creditsColor = [255,255,255] # Default = [255,255,255]
 
 # PLAYER           
 playerSpeed = 5 # Default = 5
-boostAdder = 1 # Default = 1 / Speed added per unit of fuel used
-boostFuel = 10 # Default = 10
-speedLimit = 10 # Default = 10
-boostReplenishDelay = 50   # Default = 50
-boostReplenishAmount = 0.05    # Default = 0.05
+
+# FUEL
+fuel = 10 # Default = 10
+maxFuel = 20   # Default = 20
+fuelRegenDelay = 50 # Default = 50
+fuelRegenNum = 0.05    # Default = 0.05
+
+# BOOST
+boostAdder = 1 # Default = 1 / Speed added per unit of fuel used for boost
 boostDrain = 0.5 # Default = 0.5
-maxBoost = 20   # Default = 20
+speedLimit = 10 # Default = 10
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
+
+# LASERS
+laserSpeed = 10 # Default = 10
+laserCost = 2 # Default = 2
+laserColor = [255,0,0]
+laserFireRate = 500 # Default = 500 / Delay (ms) between lasers fired
 
 # OBSTACLES  (Can be updated by level)
 obstacleSpeed = 4  # Default = 4           
@@ -129,6 +139,11 @@ menuDir = os.path.join(curDir, 'MainMenu') # Start menu asset directory
 rDir = os.path.join(os.getcwd(), 'Records') # Game records directory
 eDir = os.path.join(curDir, 'Exhaust') # Exhaust animation directory
 xDir = os.path.join(curDir, 'Explosion') # Explosion animation directory
+
+# LASER
+laserImage = pygame.image.load( resource_path(os.path.join(curDir,'Laser.png') ) )
+laserImage.set_colorkey([255,255,255])
+laserImage = laserImage.convert_alpha()
 
 # FONT
 gameFont = ''
@@ -319,7 +334,7 @@ class Game:
 
     
     # MAIN GAME LOOP
-    def update(self,player,obstacles,menu,events):
+    def update(self,player,obstacles,menu,events,lasers):
         for event in pygame.event.get():
             
             # EXIT
@@ -337,12 +352,16 @@ class Game:
                 game.pauseCount += 1
                 menu.pause(game,player,obstacles)
             
-            # BOOST REPLENISH
-            if event.type == events.boostReplenish and player.boostFuel < player.maxBoost: player.boostFuel += boostReplenishAmount
+            # FUEL REPLENISH
+            if event.type == events.fuelReplenish and player.fuel < player.maxFuel: player.fuel += fuelRegenNum
             
             # EXHAUST UPDATE
             if event.type == events.exhaustUpdate:
                 player.updateExhaust()
+            
+            if event.type == events.laserCooldown and not player.laserReady:
+                player.laserReady = True
+
 
         # BACKGROUND ANIMATION
         screen.fill(screenColor)
@@ -354,13 +373,19 @@ class Game:
         # HUD
         self.showHUD(player)
         
-        # COLLISION DETECTION
+        # OBSTACLE/PLAYER COLLISION DETECTION
         if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask):
             player.explode(game,obstacles)
             menu.gameOver(self,player,obstacles)
         
+        # OBSTACLE/LASER COLLISION DETECTION
+        for laser in lasers:
+            if pygame.sprite.spritecollide(laser,obstacles,True,pygame.sprite.collide_mask):
+                screen.blit(explosionList[len(explosionList)-1],laser.rect.center)
+        
         # DRAW AND MOVE SPRITES
         player.movement()
+        player.shoot(lasers)
         player.boost()
         player.wrapping()
         self.spawner(obstacles)
@@ -388,10 +413,13 @@ class Game:
         player.lastThreeExhaustPos[1] = player.lastThreeExhaustPos[0]
         player.lastThreeExhaustPos[0] =  newExhaustBlit
         
+        # DRAW LASERS
+        self.laserUpdate(lasers,player)
+        
         # DRAW OBSTACLES
         for obs in obstacles:
             newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
-            screen.blit(newBlit[0],newBlit[1])
+            screen.blit(newBlit[0],newBlit[1]) # Blit obstacles
             obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle 
         
         # UPDATE SCREEN
@@ -549,7 +577,7 @@ class Game:
         screen.blit(timerDisplay, timerRect)
         screen.blit(stageDisplay, stageRect)
         screen.blit(levelDisplay, levelRect)
-        pygame.draw.rect(screen, [255,0,0],[screenSize[0]/3, 0, player.boostFuel * 20, 10]) # BOOST METER
+        pygame.draw.rect(screen, [255,0,0],[screenSize[0]/3, 0, player.fuel * 20, 10]) # BOOST METER
     
     
     # SPAWN OBSTACLES
@@ -557,6 +585,11 @@ class Game:
             if len(obstacles) < self.maxObstacles:
                 obstacle = Obstacle(self.aggro)
                 obstacles.add(obstacle)
+    
+    def laserUpdate(self,lasers,player):
+        for laser in lasers:
+            laser.move(player)
+            screen.blit(laser.image,laser.rect)
     
     
     def resetClock(self): self.gameClock = 0
@@ -570,16 +603,22 @@ class Event:
         self.timerEvent = pygame.USEREVENT
         
         # BOOST
-        self.boostReplenish = pygame.USEREVENT + 1
+        self.fuelReplenish = pygame.USEREVENT + 1
         
         # EXHAUST UPDATE
         self.exhaustUpdate = pygame.USEREVENT + 2
+        
+        # LASER COOLDOWN
+        self.laserCooldown = pygame.USEREVENT + 3
+        
 
     # SETS EVENTS
     def set(self):
         pygame.time.set_timer(self.timerEvent, timerDelay)
-        pygame.time.set_timer(self.boostReplenish, boostReplenishDelay)
+        pygame.time.set_timer(self.fuelReplenish, fuelRegenDelay)
         pygame.time.set_timer(self.exhaustUpdate, exhaustUpdateDelay)
+        pygame.time.set_timer(self.laserCooldown, laserFireRate)
+        
 
     
 # MENUS
@@ -854,7 +893,7 @@ class Menu:
 
 
     def creditScreen(self):
-        
+
             rollCredits = True 
             posX = screenSize[0]/2
             posY = screenSize[1]/2
@@ -929,14 +968,15 @@ class Player(pygame.sprite.Sprite):
             self.image = spaceShipList[self.currentImageNum]
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
-            self.boostFuel = boostFuel
-            self.maxBoost = maxBoost
+            self.fuel = fuel
+            self.maxFuel = maxFuel
             self.angle = 0 # Players current angle
             self.lastAngle = 0 # Players last angle
             self.exhaustState = 0 # Frame of exhaust animation
             self.explosionState = 0 # Frame of explosion animation
-            self.finalImg,self.finalRect = '',''
-            self.lastThreeExhaustPos = [[0,0],[0,0],[0,0]]
+            self.finalImg,self.finalRect = '','' # Last frame of exhaust animation for boost
+            self.lastThreeExhaustPos = [[0,0],[0,0],[0,0]] # Will be updated with recent player positions
+            self.laserReady = True
             
         # PLAYER MOVEMENT
         def movement(self):
@@ -992,25 +1032,24 @@ class Player(pygame.sprite.Sprite):
                 self.angle = 0
 
 
-        
         def boost(self):
             key = pygame.key.get_pressed()
             
             
-            if (key[pygame.K_LSHIFT] or key[pygame.K_RSHIFT]) and self.boostFuel - boostDrain > 0 and self.speed + boostAdder < speedLimit and  ( (key[pygame.K_a] or key[pygame.K_LEFT]) and ( key[pygame.K_w] or key[pygame.K_UP]) and (key[pygame.K_s] or key[pygame.K_DOWN]) and (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
+            if (key[pygame.K_LSHIFT] or key[pygame.K_RSHIFT]) and self.fuel - boostDrain > 0 and self.speed + boostAdder < speedLimit and  ( (key[pygame.K_a] or key[pygame.K_LEFT]) and ( key[pygame.K_w] or key[pygame.K_UP]) and (key[pygame.K_s] or key[pygame.K_DOWN]) and (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
                 pass
                 
-            elif (key[pygame.K_LSHIFT] or key[pygame.K_RSHIFT]) and self.boostFuel - boostDrain > 0 and self.speed + boostAdder < speedLimit and  ( (key[pygame.K_a] or key[pygame.K_LEFT]) or ( key[pygame.K_w] or key[pygame.K_UP]) or (key[pygame.K_s] or key[pygame.K_DOWN]) or (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
+            elif (key[pygame.K_LSHIFT] or key[pygame.K_RSHIFT]) and self.fuel - boostDrain > 0 and self.speed + boostAdder < speedLimit and  ( (key[pygame.K_a] or key[pygame.K_LEFT]) or ( key[pygame.K_w] or key[pygame.K_UP]) or (key[pygame.K_s] or key[pygame.K_DOWN]) or (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
                 self.speed += (boostAdder)
-                self.boostFuel -= (boostDrain)
-                if self.boostFuel > maxBoost * .75: 
+                self.fuel -= (boostDrain)
+                if self.fuel > maxFuel * .75: 
                     try:
                         screen.blit(self.lastThreeExhaustPos[0][0],self.lastThreeExhaustPos[0][1])
                         screen.blit(self.lastThreeExhaustPos[1][0],self.lastThreeExhaustPos[1][1])
                         screen.blit(self.lastThreeExhaustPos[2][0],self.lastThreeExhaustPos[2][1])
                     except: pass
                 
-                elif self.boostFuel > maxBoost * .5: 
+                elif self.fuel > maxFuel * .5: 
                     try:
                         screen.blit(self.lastThreeExhaustPos[0][0],self.lastThreeExhaustPos[0][1])
                         screen.blit(self.lastThreeExhaustPos[1][0],self.lastThreeExhaustPos[1][1])
@@ -1020,9 +1059,16 @@ class Player(pygame.sprite.Sprite):
                     try:
                         screen.blit(self.lastThreeExhaustPos[0][0],self.lastThreeExhaustPos[0][1])
                     except: pass
-                
-
+         
             else: self.speed = self.baseSpeed
+
+
+        def shoot(self,lasers):
+            key = pygame.key.get_pressed()
+            if  (key[pygame.K_LCTRL] or key[pygame.K_RCTRL]) and self.fuel - laserCost > 0 and self.laserReady:
+                lasers.add(Laser(self))
+                self.fuel -= laserCost
+                self.laserReady = False
 
 
         # MOVEMENT DURING STAGE UP
@@ -1112,6 +1158,7 @@ class Player(pygame.sprite.Sprite):
                 game.tick()
                 self.explosionState += 1
                 self.finalImg,self.finalRect = img,imgRect
+            
 
 
 # OBSTACLES
@@ -1133,6 +1180,43 @@ class Obstacle(pygame.sprite.Sprite):
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
 
 
+class Laser(pygame.sprite.Sprite):
+    def __init__(self,player):
+        super().__init__()
+        self.speed = laserSpeed
+        self.angle = player.angle
+        newBlit = rotateImage(laserImage,laserImage.get_rect(center = player.rect.center),player.angle)
+        self.image = newBlit[0]
+        self.rect = newBlit[1]
+        self.mask = pygame.mask.from_surface(self.image)
+
+
+    def move(self,player): 
+        if self.angle == 0: self.rect.centery -= (self.speed + player.speed) 
+        elif self.angle == 180: self.rect.centery +=  (self.speed + player.speed) 
+        elif self.angle == 90: self.rect.centerx -=  (self.speed + player.speed) 
+        elif self.angle == -90: self.rect.centerx +=  (self.speed + player.speed) 
+
+        elif self.angle == 45: 
+            self.rect.centery -=  (self.speed + player.speed) 
+            self.rect.centerx -= (self.speed + player.speed) 
+
+        elif self.angle == -45: 
+            self.rect.centery -=  (self.speed + player.speed) 
+            self.rect.centerx += (self.speed + player.speed) 
+
+        elif self.angle == 120: 
+            self.rect.centery +=  (self.speed + player.speed) 
+            self.rect.centerx -= (self.speed + player.speed) 
+
+        elif self.angle == -120: 
+            self.rect.centery +=  (self.speed + player.speed) 
+            self.rect.centerx += (self.speed + player.speed) 
+        
+        if self.rect.centerx > screenSize[0] or self.rect.centery > screenSize[1] or self.rect.centerx < 0 or self.rect.centery < 0: self.kill()
+        
+
+
 # START MENU METEOR GENERATION
 class Icon(pygame.sprite.Sprite):
     def __init__(self):
@@ -1147,7 +1231,7 @@ class Icon(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
         self.angle = 0
 
- 
+
     def move(self): 
         if "N" in self.direction: self.rect.centery -= self.speed                       
         if "S" in self.direction: self.rect.centery += self.speed                        
@@ -1294,19 +1378,14 @@ def gameLoop():
     if game.mainMenu: menu.home(game,player)
     else:
         for i in range(game.savedShipNum): player.nextSpaceShip()
-
+    
+    lasers = pygame.sprite.Group()
     obstacles = pygame.sprite.Group()
     running = True
     
     # GAME LOOP
-    while running: game.update(player,obstacles,menu,events)
+    while running: game.update(player,obstacles,menu,events,lasers)
 
 
 if __name__ == '__main__': gameLoop()
     
-    
-    
-    
-
-
-
