@@ -122,7 +122,6 @@ stageList = [stageOneLevels, stageTwoLevels] # List of stages
 screen = pygame.display.set_mode(screenSize) # Initialize screen
 screenColor = [0,0,0] # Screen fill color 
 
-
 # SHIP CONSTANTS
 
 baseShip = {
@@ -139,16 +138,16 @@ baseShip = {
             }
 
 gunShip = {
-            "playerSpeed" : playerSpeed*0.75,
-            "fuel" : fuel * 1.5,
-            "maxFuel" : maxFuel * 2,
+            "playerSpeed" : playerSpeed-2,
+            "fuel" : fuel,
+            "maxFuel" : maxFuel,
             "fuelRegenNum" : fuelRegenNum,
-            "boostAdder" : boostAdder,
-            "boostDrain" : boostDrain,
-            "speedLimit" : speedLimit * 0.75,
-            "laserCost" : laserCost/10,
+            "boostAdder" : 0.03,
+            "boostDrain" : 0.05,
+            "speedLimit" : speedLimit -2,
+            "laserCost" : laserCost/3,
             "fuelRegenDelay" : fuelRegenDelay,
-            "laserFireRate" : 100
+            "laserFireRate" : 250
             }
 
 shipConstants = [baseShip,gunShip]
@@ -221,14 +220,12 @@ for filename in os.listdir(backgroundDirectory):
         bgList.append([bg,cloud])
         break
 
-
 # EXPLOSION ASSETS
 explosionList = []
 for filename in os.listdir(explosionDirectory):
     if filename.endswith('.png'):
         path = os.path.join(explosionDirectory, filename)
         explosionList.append(pygame.image.load(resource_path(path)).convert_alpha())
-
 
 # SPACESHIP ASSETS
 spaceShipList = [] 
@@ -740,9 +737,6 @@ class Menu:
                 elif (event.type == pygame.KEYDOWN) and event.key == pygame.K_m:
                     player.toggleSpaceShip(game)
 
-
-
-                
                 # CREDITS
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_c: menu.creditScreen()
                 
