@@ -302,7 +302,7 @@ rightDir = ["W", "N", "S", "NW", "SW"]
 
 restrictedTopDir = ["SE", "SW", "S"]
 restrictedLeftDir = ["E", "NE", "SE"]
-restrictedBottomDirectory = ["N", "NE", "NW"]
+restrictedBottomDir = ["N", "NE", "NW"]
 restrictedRightDir = ["NW", "SW", "W"]
 
 
@@ -1357,7 +1357,7 @@ def getMovement(eightDirections):
     top,bottom,left,right = [],[],[],[]
     
     if eightDirections: top, bottom, left, right = topDir, bottomDir, leftDir, rightDir
-    else: top, bottom, left, right, = restrictedTopDir, restrictedBottomDirectory, restrictedLeftDir, restrictedRightDir
+    else: top, bottom, left, right, = restrictedTopDir, restrictedBottomDir, restrictedLeftDir, restrictedRightDir
     X = random.randint(0, screenSize[0])
     Y = random.randint(0, screenSize[1])
     
