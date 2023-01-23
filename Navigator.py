@@ -83,32 +83,36 @@ laserColor = [255,0,0]
 laserFireRate = 750 # Default = 750 / Delay (ms) between lasers fired
 
 # OBSTACLES  (Can be updated by level)
-obstacleSpeed = 4  # Default = 4           
-obstacleSize = 30    # Default = 30
-maxObstacles = 12  # Default = 12
+scaler = (screenSize[0] + screenSize[1])  / 1600 # Default = x + y / 2  / 800
+
+obstacleSpeed = 4 *scaler  # Default = 4           
+obstacleSize = 30 *scaler  # Default = 30
+maxObstacles = 12 *scaler  # Default = 12
 obstacleBoundaries = "KILL" # Default = "KILL" 
 aggro = True # Default = True / Determines if obstacles have ability to spawn in every direction / False = More difficult
 spinSpeed = 1 # Default = 1
 obstacleWipe = False # Default = False / Wipe before level
+
+
 
 # LEVELS  
 levelTimer = 15 # Default = 15 / Time (seconds) between levels
 levelUpCloudSpeed = 25 # Default = 25
 
 # ADD LEVELS HERE: [ hasStarted(T/F) , (levelNumber - 1) * levelTimer , BOUNDS , SPEED , SIZE , NUMBER, SPIN, AGGRO(T/F), WIPE(T/F) ]
-levelTwo =           [ False,       levelTimer, "KILL", 5.5,  32,  16,  1, True,  False ]  
-levelThree =         [ False,   2 * levelTimer, "KILL", 6,    34,  16,  2, True,  False ] 
-levelFour =          [ False,   3 * levelTimer, "KILL", 6.5,  36,  18,  3, True,  False ] 
-levelFive =          [ False,   4 * levelTimer, "KILL", 6,    38,  20,  4, True,  False ] 
-levelSix =           [ False,   5 * levelTimer, "KILL", 6.5,  40,  18,  3, True,  False ] 
-levelSeven =         [ False,   6 * levelTimer, "KILL", 2.2,  50,  65,  1, True,  False ] 
-levelEight =         [ False,   7 * levelTimer, "KILL", 7,    44,  20,  4, True,  True  ] 
-levelNine =          [ False,   8 * levelTimer, "KILL", 7,    46,  21,  5, True,  False ]
-levelTen =           [ False,   9 * levelTimer, "KILL", 7.5,  48,  22,  5, True,  False ]
-stageTwoLevelOne =   [ False,  10 * levelTimer, "KILL", 7.5,  50,  23,  0, False, False ]
-stageTwoLevelTwo =   [ False,  11 * levelTimer, "KILL", 8,    52,  24,  0, False, False ]
-stageTwoLevelThree = [ False,  12 * levelTimer, "KILL", 8,    54,  25,  3, False, False ]
-stageTwoLevelFour =  [ False,  13 * levelTimer, "KILL", 8.5,  56,  26,  0, False, False ]
+levelTwo =           [ False,       levelTimer, "KILL", 5.5*scaler,  32*scaler,  16*scaler,  1, True,  False ]  
+levelThree =         [ False,   2 * levelTimer, "KILL", 6*scaler,    34*scaler,  16*scaler,  2, True,  False ] 
+levelFour =          [ False,   3 * levelTimer, "KILL", 6.5*scaler,  36*scaler,  18*scaler,  3, True,  False ] 
+levelFive =          [ False,   4 * levelTimer, "KILL", 6*scaler,    38*scaler,  20*scaler,  4, True,  False ] 
+levelSix =           [ False,   5 * levelTimer, "KILL", 6.5*scaler,  40*scaler,  18*scaler,  3, True,  False ] 
+levelSeven =         [ False,   6 * levelTimer, "KILL", 2.2*scaler,  50*scaler,  65*scaler,  1, True,  False ] 
+levelEight =         [ False,   7 * levelTimer, "KILL", 7*scaler,    44*scaler,  20*scaler,  4, True,  True  ] 
+levelNine =          [ False,   8 * levelTimer, "KILL", 7*scaler,    46*scaler,  21*scaler,  5, True,  False ]
+levelTen =           [ False,   9 * levelTimer, "KILL", 7.5*scaler,  48*scaler,  22*scaler,  5, True,  False ]
+stageTwoLevelOne =   [ False,  10 * levelTimer, "KILL", 7.5*scaler,  50*scaler,  23*scaler,  0, False, False ]
+stageTwoLevelTwo =   [ False,  11 * levelTimer, "KILL", 8*scaler,    52*scaler,  24*scaler,  0, False, False ]
+stageTwoLevelThree = [ False,  12 * levelTimer, "KILL", 8*scaler,    54*scaler,  25*scaler,  3, False, False ]
+stageTwoLevelFour =  [ False,  13 * levelTimer, "KILL", 8.5*scaler,  56*scaler,  26*scaler,  0, False, False ]
 
 # DIVIDE INTO STAGES
 stageOneLevels = [levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight,levelNine,levelTen] # Stage 1
@@ -122,6 +126,9 @@ stageList = [stageOneLevels, stageTwoLevels] # List of stages
 screen = pygame.display.set_mode(screenSize) # Initialize screen
 screenColor = [0,0,0] # Screen fill color 
 
+
+
+print(scaler)
 # SHIP CONSTANTS
 
 baseShip = {
