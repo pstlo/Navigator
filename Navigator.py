@@ -16,14 +16,17 @@ pygame.mouse.set_visible(False)
 
 #------------------GAME CONSTANTS--------------------------------------------------------------------------
 # SCREEN                                                                                                                            
-screenSize = [800,800] # Default = [800,800]                                                        
+screenSize = [800,800] # Default = [800,800]
+scaler = (screenSize[0] + screenSize[1])  / 1600 # Default = x + y / 2  / 800
+roundedScaler = int(round(scaler))
+
 fps = 60 # Default = 60                                    
-timerSize = 75 # Default = 75                            
+timerSize = 75 * roundedScaler # Default = 75                            
 timerColor = [255,255,255] # Default = [255,255,255] 
 timerDelay = 1000 # Default = 1000
 
 # LEVEL COUNTER
-levelSize = 30 # Default = 30                                                                                                                                                                   
+levelSize = 30 * roundedScaler # Default = 30                                                                                                                                                                   
 levelColor = [255,255,255] # Default = [255,255,255] 
 
 # BACKGROUND CLOUD
@@ -33,12 +36,12 @@ cloudSpeedAdder = 0.5 # Default = 0.5
 
 # GAME OVER SCREEN
 gameOverColor = [255,0,0] # Default = [255,0,0]
-gameOverSize = 100 # Default = 100
-helpSize = 30 # Default = 30 
+gameOverSize = 100 * roundedScaler # Default = 100
+helpSize = 30 * roundedScaler # Default = 30 
 helpColor = [0,255,0] # Default = [0,255,0]
 finalScoreSize = 40 # Default = 40
 finalScoreColor = [0,255,0] # Default = [0,255,0]
-pausedSize = 100 # Default = 100
+pausedSize = 100 * roundedScaler # Default = 100
 pausedColor = [255,255,255] # Default = [255,255,255]
 pauseMax = 5 # Default = 5
 
@@ -46,19 +49,19 @@ pauseMax = 5 # Default = 5
 maxIcons = 5 # Default = 5
 maxIconSpeed = 5 # Default = 5
 maxIconRotationSpeed = 3 # Default = 3
-startSize = 120 # Default = 120
+startSize = 120 * roundedScaler # Default = 120
 startColor = [0,255,0] # Default = [0,255,0]
-minIconSize = 30 # Default = 30
-maxIconSize = 100 # Default = 100
+minIconSize = 30 * roundedScaler # Default = 30
+maxIconSize = 100 * roundedScaler # Default = 100
 
 # STAGE UP
 stageUpColor = [0,255,0] # Default = [0,255,0]
-stageUpSize = 90 # Default = 90
+stageUpSize = 90 * roundedScaler # Default = 90
 stageUpCloudStartPos = -900 # Default = -900
-stageUpCloudSpeed = 8 # Default = 8
+stageUpCloudSpeed = 8 * roundedScaler # Default = 8
 
 # CREDITS
-creditsFontSize = 55 # Default = 55
+creditsFontSize = 55 * roundedScaler # Default = 55
 creditsColor = [255,255,255] # Default = [255,255,255] 
 
 # PLAYER           
@@ -83,8 +86,6 @@ laserColor = [255,0,0]
 laserFireRate = 750 # Default = 750 / Delay (ms) between lasers fired
 
 # OBSTACLES  (Can be updated by level)
-scaler = (screenSize[0] + screenSize[1])  / 1600 # Default = x + y / 2  / 800
-
 obstacleSpeed = 4 *scaler  # Default = 4           
 obstacleSize = 30 *scaler  # Default = 30
 maxObstacles = 12 *scaler  # Default = 12
@@ -126,11 +127,7 @@ stageList = [stageOneLevels, stageTwoLevels] # List of stages
 screen = pygame.display.set_mode(screenSize) # Initialize screen
 screenColor = [0,0,0] # Screen fill color 
 
-
-
-print(scaler)
 # SHIP CONSTANTS
-
 baseShip = {
             "playerSpeed" : playerSpeed,
             "fuel" : fuel,
@@ -784,7 +781,7 @@ class Menu:
         pausedRect.center = (screenSize[0]/2, screenSize[1]/2)
         
         # REMAINING PAUSES
-        pauseCountSize = 40
+        pauseCountSize = 40 * roundedScaler
         pauseNum = str(pauseMax - game.pauseCount) + " Pauses left"
         
         if game.pauseCount >= pauseMax:
