@@ -94,8 +94,6 @@ aggro = True # Default = True / Determines if obstacles have ability to spawn in
 spinSpeed = 1 # Default = 1
 obstacleWipe = False # Default = False / Wipe before level
 
-
-
 # LEVELS  
 levelTimer = 15 # Default = 15 / Time (seconds) between levels
 levelUpCloudSpeed = 25 # Default = 25
