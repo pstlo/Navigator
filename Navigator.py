@@ -169,7 +169,7 @@ meteorDirectory = os.path.join(obstacleDirectory, 'Meteors') # Meteor asset dire
 ufoDirectory = os.path.join(obstacleDirectory, 'UFOs') # UFO asset directory
 shipDirectory = os.path.join(currentDirectory, 'Spaceships') # Spaceship asset directory
 backgroundDirectory = os.path.join(currentDirectory, 'Backgrounds') # Background asset directory
-menufoDirectory = os.path.join(currentDirectory, 'MainMenu') # Start menu asset directory
+menuDirectory = os.path.join(currentDirectory, 'MainMenu') # Start menu asset directory
 recordsDirectory = os.path.join(os.getcwd(), 'Records') # Game records directory
 explosionDirectory = os.path.join(currentDirectory, 'Explosion') # Explosion animation directory
 
@@ -254,19 +254,19 @@ for i in range(len(spaceShipList)): spaceShipList[i].append(shipConstants[i])
 
 # MAIN MENU ASSETS
 menuList = []
-menuList.append(pygame.image.load(resource_path(os.path.join(menufoDirectory,'A.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menufoDirectory,'O.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menufoDirectory,'big.png'))).convert_alpha()) 
-menuList.append(pygame.image.load(resource_path(os.path.join(menufoDirectory,'left.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menufoDirectory,'right.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menufoDirectory,'dblue.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menufoDirectory,'lblue.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menufoDirectory,'lgreen.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menufoDirectory,'dgreen.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menufoDirectory,'orange.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menufoDirectory,'red.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menufoDirectory,'white.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menufoDirectory,'yellow.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'A.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'O.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'big.png'))).convert_alpha()) 
+menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'left.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'right.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'dblue.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'lblue.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'lgreen.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'dgreen.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'orange.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'red.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'white.png'))).convert_alpha())
+menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'yellow.png'))).convert_alpha())
 
 # WINDOW
 pygame.display.set_caption('Navigator')
@@ -649,9 +649,8 @@ class Event:
         pygame.time.set_timer(self.fuelReplenish, player.fuelRegenDelay)
         pygame.time.set_timer(self.exhaustUpdate, exhaustUpdateDelay)
         pygame.time.set_timer(self.laserCooldown, player.laserFireRate)
-        
 
-    
+
 # MENUS
 class Menu:
     # START MENU
@@ -1228,7 +1227,6 @@ class Player(pygame.sprite.Sprite):
                 game.tick()
                 self.explosionState += 1
                 self.finalImg,self.finalRect = img,imgRect
-            
 
 
 # OBSTACLES
@@ -1284,7 +1282,6 @@ class Laser(pygame.sprite.Sprite):
             self.rect.centerx += (self.speed + player.speed) 
         
         if self.rect.centerx > screenSize[0] or self.rect.centery > screenSize[1] or self.rect.centerx < 0 or self.rect.centery < 0: self.kill()
-        
 
 
 # START MENU METEOR GENERATION
