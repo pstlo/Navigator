@@ -22,5 +22,5 @@ for python 3.11
 
 
 Created by Mike Pistolesi \
-art by Collin Guetta / @guetta.rt on instagram \
+art by Collin Guetta \
 OST coming soon!
