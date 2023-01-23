@@ -297,12 +297,12 @@ timerFont = pygame.font.Font(gameFont, timerSize)
 # FOR RANDOM MOVEMENT    
 topDir = ["S", "E", "W", "SE", "SW"]
 leftDir = ["E", "S", "N", "NE", "SE"]
-bottometeorDirectory = ["N", "W", "E", "NE", "NW"]
+bottomDir = ["N", "W", "E", "NE", "NW"]
 rightDir = ["W", "N", "S", "NW", "SW"]
 
 restrictedTopDir = ["SE", "SW", "S"]
 restrictedLeftDir = ["E", "NE", "SE"]
-restrictedBottometeorDirectory = ["N", "NE", "NW"]
+restrictedBottomDirectory = ["N", "NE", "NW"]
 restrictedRightDir = ["NW", "SW", "W"]
 
 
@@ -973,7 +973,7 @@ class Menu:
                 # BOUNCE OFF EDGES
                 if createdByRect.right > screenSize[0]: direction = rightDir[random.randint(0, len(rightDir) - 1)]
                 if createdByRect.left < 0: direction = leftDir[random.randint(0, len(leftDir) - 1)]  
-                if creditsRect.bottom > screenSize[1]: direction = bottometeorDirectory[random.randint(0, len(bottometeorDirectory) - 1)]
+                if creditsRect.bottom > screenSize[1]: direction = bottomDir[random.randint(0, len(bottomDir) - 1)]
                 if createdByRect.top < 0 : direction = topDir[random.randint(0, len(topDir) - 1)]
 
                 if bounceCount == 0:
@@ -1356,8 +1356,8 @@ def randomEightDirection():
 def getMovement(eightDirections):
     top,bottom,left,right = [],[],[],[]
     
-    if eightDirections: top, bottom, left, right = topDir, bottometeorDirectory, leftDir, rightDir
-    else: top, bottom, left, right, = restrictedTopDir, restrictedBottometeorDirectory, restrictedLeftDir, restrictedRightDir
+    if eightDirections: top, bottom, left, right = topDir, bottomDir, leftDir, rightDir
+    else: top, bottom, left, right, = restrictedTopDir, restrictedBottomDirectory, restrictedLeftDir, restrictedRightDir
     X = random.randint(0, screenSize[0])
     Y = random.randint(0, screenSize[1])
     
@@ -1368,12 +1368,12 @@ def getMovement(eightDirections):
     
     topDirection = top[random.randint(0, len(top) - 1)]
     leftDirection = left[random.randint(0, len(left) - 1)]
-    bottometeorDirectoryection = bottom[random.randint(0, len(bottom) - 1)]
+    bottomDirection = bottom[random.randint(0, len(bottom) - 1)]
     rightDirection = right[random.randint(0, len(right) - 1)]
     
     topBound = [X, lowerY, topDirection]
     leftBound = [lowerX, Y, leftDirection]
-    bottomBound = [X, upperY, bottometeorDirectoryection]
+    bottomBound = [X, upperY, bottomDirection]
     rightBound = [upperX, Y, rightDirection]
  
     possible = [topBound, leftBound, rightBound, bottomBound]
