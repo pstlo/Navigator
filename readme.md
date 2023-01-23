@@ -19,7 +19,7 @@ for python 3.11
 4. Navigate to directory and start game with
 ```python Navigator.py```
 , or use the provided batch file (Windows only)
-
+ 
 
 Created by Mike Pistolesi \
 art by Collin Guetta \
