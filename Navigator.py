@@ -82,7 +82,6 @@ exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation fr
 # LASERS
 laserSpeed = 10 # Default = 10
 laserCost = 2 # Default = 2
-laserColor = [255,0,0]
 laserFireRate = 750 # Default = 750 / Delay (ms) between lasers fired
 
 # OBSTACLES  (Can be updated by level)
@@ -126,6 +125,8 @@ screen = pygame.display.set_mode(screenSize) # Initialize screen
 screenColor = [0,0,0] # Screen fill color 
 
 # SHIP CONSTANTS
+
+# DEFAULT SHIP
 baseShip = {
             "playerSpeed" : playerSpeed,
             "fuel" : fuel,
@@ -139,6 +140,7 @@ baseShip = {
             "laserFireRate" : laserFireRate
             }
 
+# OTHER UNNAMED SHIP
 gunShip = {
             "playerSpeed" : playerSpeed-2,
             "fuel" : fuel,
@@ -152,7 +154,21 @@ gunShip = {
             "laserFireRate" : 250
             }
 
-shipConstants = [baseShip,gunShip]
+# LASER SHIP
+laserShip = {
+            "playerSpeed" : 2 ,
+            "fuel" : 1,
+            "maxFuel" : 0,
+            "fuelRegenNum" : 0,
+            "boostAdder" : 0,
+            "boostDrain" : 0,
+            "speedLimit" : 2,
+            "laserCost" : 0,
+            "fuelRegenDelay" : 0,
+            "laserFireRate" : 50
+            }
+
+shipConstants = [baseShip,gunShip,laserShip] # Add ship dictionaries to list
 
 # FOR EXE
 def resource_path(relative_path):
@@ -235,7 +251,7 @@ for shipLevelFolder in os.listdir(shipDirectory):
         shipAssets = []
         if os.path.isdir(shipAssetFolderPath):
             for files in os.listdir(shipAssetFolderPath):
-                if files == 'gunShip.png':
+                if files == 'gunShip.png' or files == 'laserShip.png' or files == 'f1Laser.png':
                     gunShip = pygame.image.load(resource_path(os.path.join(shipAssetFolderPath,files)))
                     gunShip.set_colorkey([255,255,255])
                     shipAssets.append(gunShip.convert_alpha())
@@ -409,7 +425,7 @@ class Game:
         # OBSTACLE/LASER COLLISION DETECTION
         for laser in lasers:
             if pygame.sprite.spritecollide(laser,obstacles,True,pygame.sprite.collide_mask):
-                screen.blit(explosionList[len(explosionList)-1],laser.rect.center)
+                screen.blit(explosionList[len(explosionList)-1],laser.rect.center) # Draw final explosion frame on collision
         
         # DRAW AND MOVE SPRITES
         player.movement()
@@ -452,7 +468,7 @@ class Game:
             obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle 
         
         # UPDATE SCREEN
-        player.lastAngle = player.angle
+        player.lastAngle = player.angle # Save recent player orientation
         player.angle = 0 # Reset player orientation
         pygame.display.flip()
         self.tick()
@@ -670,7 +686,7 @@ class Menu:
         startHelpRect.center = (screenSize[0]/2,screenSize[1]-screenSize[1]/7)
         
         shipHelpFont = pygame.font.Font(gameFont, round(helpSize * .8))
-        shipHelpDisplay = shipHelpFont.render("A/LEFT = PREV SHIP     D/RIGHT = NEXT SHIP", True, helpColor)
+        shipHelpDisplay = shipHelpFont.render("A/LEFT = PREV SKIN     D/RIGHT = NEXT SKIN", True, helpColor)
         shipHelpRect = shipHelpDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]-screenSize[1]/7 + 40))
         
         leftRect = menuList[3].get_rect(center = (screenSize[0] * 0.2 , screenSize[1]/3) )
@@ -727,17 +743,21 @@ class Menu:
                     game.mainMenu = False    
                     return
                 
-                # NEXT SPACESHIP
+                # NEXT SPACESHIP SKIN
                 elif event.type == pygame.KEYDOWN and (event.key == pygame.K_d or event.key == pygame.K_RIGHT):
                     if unlockNumber > player.currentImageNum + 1: player.nextSpaceShip()
                 
-                # PREVIOUS SPACESHIP                
+                # PREVIOUS SPACESHIP SKIN                
                 elif event.type == pygame.KEYDOWN and (event.key == pygame.K_a or event.key == pygame.K_LEFT):
                     player.lastSpaceShip()
                 
-                # SHIP TYPE TOGGLE
-                elif (event.type == pygame.KEYDOWN) and event.key == pygame.K_m:
-                    player.toggleSpaceShip(game)
+                # NEXT SHIP TYPE
+                elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_w or event.key == pygame.K_UP):
+                    player.toggleSpaceShip(game,True)
+                
+                # PREVIOUS SHIP TYPE
+                elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_s or event.key == pygame.K_DOWN):
+                    player.toggleSpaceShip(game,False)
 
                 # CREDITS
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_c: menu.creditScreen()
@@ -1051,10 +1071,10 @@ class Player(pygame.sprite.Sprite):
                 self.angle = -45
             
             if (key[pygame.K_d] or key[pygame.K_RIGHT]) and (key[pygame.K_s] or key[pygame.K_DOWN]):
-                self.angle = -120
+                self.angle = -135
                 
             if (key[pygame.K_a] or key[pygame.K_LEFT]) and (key[pygame.K_s] or key[pygame.K_DOWN]):
-                self.angle = 120
+                self.angle = 135
             
             if (key[pygame.K_d] or key[pygame.K_RIGHT]) and ( key[pygame.K_a] or key[pygame.K_LEFT]): 
                 self.angle = 0
@@ -1082,14 +1102,14 @@ class Player(pygame.sprite.Sprite):
             elif (key[pygame.K_LSHIFT] or key[pygame.K_RSHIFT]) and self.fuel - self.boostDrain > 0 and self.speed + self.boostAdder < self.speedLimit and  ( (key[pygame.K_a] or key[pygame.K_LEFT]) or ( key[pygame.K_w] or key[pygame.K_UP]) or (key[pygame.K_s] or key[pygame.K_DOWN]) or (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
                 self.speed += (self.boostAdder)
                 self.fuel -= (self.boostDrain)
-                if self.fuel > self.maxFuel * .75: 
+                if self.fuel > self.maxFuel * .5: 
                     try:
                         screen.blit(self.lastThreeExhaustPos[0][0],self.lastThreeExhaustPos[0][1])
                         screen.blit(self.lastThreeExhaustPos[1][0],self.lastThreeExhaustPos[1][1])
                         screen.blit(self.lastThreeExhaustPos[2][0],self.lastThreeExhaustPos[2][1])
                     except: pass
                 
-                elif self.fuel > self.maxFuel * .5: 
+                elif self.fuel > self.maxFuel * .25: 
                     try:
                         screen.blit(self.lastThreeExhaustPos[0][0],self.lastThreeExhaustPos[0][1])
                         screen.blit(self.lastThreeExhaustPos[1][0],self.lastThreeExhaustPos[1][1])
@@ -1136,8 +1156,8 @@ class Player(pygame.sprite.Sprite):
 
                 if event.type == pygame.KEYDOWN and (event.key == pygame.K_d or event.key == pygame.K_RIGHT) and (event.key == pygame.K_w or event.key == pygame.K_UP): self.angle = -45
                 if event.type == pygame.KEYDOWN and (event.key == pygame.K_a or event.key == pygame.K_LEFT) and (event.key == pygame.K_w or event.key == pygame.K_UP): self.angle = -45  
-                if event.type == pygame.KEYDOWN and (event.key == pygame.K_s or event.key == pygame.K_DOWN) and (event.key == pygame.K_a or event.key == pygame.K_LEFT): self.angle = 120   
-                if event.type == pygame.KEYDOWN and (event.key == pygame.K_s or event.key == pygame.K_DOWN) and (event.key == pygame.K_d or event.key == pygame.K_RIGHT): self.angle = -120  
+                if event.type == pygame.KEYDOWN and (event.key == pygame.K_s or event.key == pygame.K_DOWN) and (event.key == pygame.K_a or event.key == pygame.K_LEFT): self.angle = 135  
+                if event.type == pygame.KEYDOWN and (event.key == pygame.K_s or event.key == pygame.K_DOWN) and (event.key == pygame.K_d or event.key == pygame.K_RIGHT): self.angle = -135 
                 if event.type == pygame.KEYDOWN and (event.key == pygame.K_d or event.key == pygame.K_RIGHT) and (event.key == pygame.K_a or event.key == pygame.K_LEFT): self.angle = 0
                 if event.type == pygame.KEYDOWN and (event.key == pygame.K_s or event.key == pygame.K_DOWN) and (event.key == pygame.K_a or event.key == pygame.K_LEFT) and (event.key == pygame.K_d or event.key == pygame.K_RIGHT): self.angle = 180
                 if event.type == pygame.KEYDOWN and (event.key == pygame.K_s or event.key == pygame.K_DOWN) and (event.key == pygame.K_d or event.key == pygame.K_RIGHT) and (event.key == pygame.K_w or event.key == pygame.K_UP): self.angle = -90
@@ -1172,11 +1192,17 @@ class Player(pygame.sprite.Sprite):
                 if self.currentImageNum - 1 >= 0: self.currentImageNum-=1
         
         # SWITCH SHIP TYPE
-        def toggleSpaceShip(self,game):
-            if game.savedShipLevel + 1 < len(spaceShipList):
-                game.savedShipLevel +=1
-            else: game.savedShipLevel = 0
-            self.updatePlayerConstants(game)
+        def toggleSpaceShip(self,game,toggleDirection):
+            if toggleDirection:
+                if game.savedShipLevel + 1 < len(spaceShipList): game.savedShipLevel +=1
+                else: game.savedShipLevel = 0
+                self.updatePlayerConstants(game)
+            
+            else:
+                if game.savedShipLevel - 1 < 0: game.savedShipLevel = len(spaceShipList) - 1
+                else: game.savedShipLevel -=1
+                self.updatePlayerConstants(game)
+                
 
 
         def updatePlayerConstants(self,game):
@@ -1254,8 +1280,9 @@ class Laser(pygame.sprite.Sprite):
         self.rect = newBlit[1]
         self.mask = pygame.mask.from_surface(self.image)
 
-
+    # MOVE LASERS 
     def move(self,player): 
+        # Laser angles = player angles, hard coded here
         if self.angle == 0: self.rect.centery -= (self.speed + player.speed) 
         elif self.angle == 180: self.rect.centery +=  (self.speed + player.speed) 
         elif self.angle == 90: self.rect.centerx -=  (self.speed + player.speed) 
@@ -1269,14 +1296,15 @@ class Laser(pygame.sprite.Sprite):
             self.rect.centery -=  (self.speed + player.speed) 
             self.rect.centerx += (self.speed + player.speed) 
 
-        elif self.angle == 120: 
+        elif self.angle == 135: 
             self.rect.centery +=  (self.speed + player.speed) 
             self.rect.centerx -= (self.speed + player.speed) 
 
-        elif self.angle == -120: 
+        elif self.angle == -135: 
             self.rect.centery +=  (self.speed + player.speed) 
             self.rect.centerx += (self.speed + player.speed) 
         
+        # Remove lasers off screen
         if self.rect.centerx > screenSize[0] or self.rect.centery > screenSize[1] or self.rect.centerx < 0 or self.rect.centery < 0: self.kill()
 
 
