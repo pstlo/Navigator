@@ -96,7 +96,7 @@ obstacleWipe = False # Default = False / Wipe before level
 
 # LEVELS  
 levelTimer = 15 # Default = 15 / Time (seconds) between levels
-levelUpCloudSpeed = 25 # Default = 25
+levelUpCloudSpeed = 25 # Default = 25 / Only affects levels preceded by wipe
 
 # ADD LEVELS HERE: [ hasStarted(T/F) , (levelNumber - 1) * levelTimer , BOUNDS , SPEED , SIZE , NUMBER, SPIN, AGGRO(T/F), WIPE(T/F) ]
 levelTwo =           [ False,       levelTimer, "KILL", 5.5*scaler,  32*scaler,  16*scaler,  1, True,  False ]  
@@ -171,11 +171,6 @@ menuDirectory = os.path.join(currentDirectory, 'MainMenu') # Start menu asset di
 recordsDirectory = os.path.join(os.getcwd(), 'Records') # Game records directory
 explosionDirectory = os.path.join(currentDirectory, 'Explosion') # Explosion animation directory
 
-# LASER
-laserImage = pygame.image.load( resource_path(os.path.join(currentDirectory,'Laser.png') ) )
-laserImage.set_colorkey([255,255,255])
-laserImage = laserImage.convert_alpha()
-
 # FONT
 gameFont = ''
 for filename in os.listdir(currentDirectory):
@@ -238,17 +233,23 @@ for shipLevelFolder in os.listdir(shipDirectory):
     for shipAssetFolder in os.listdir(shipLevelFolderPath):
         shipAssetFolderPath = os.path.join(shipLevelFolderPath,shipAssetFolder)
         shipAssets = []
-        for files in os.listdir(shipAssetFolderPath):
-            if files == 'gunShip.png':
-                gunShip = pygame.image.load(resource_path(os.path.join(shipAssetFolderPath,files)))
-                gunShip.set_colorkey([255,255,255])
-                shipAssets.append(gunShip.convert_alpha())
-            elif files.endswith('.png'): shipAssets.append(pygame.image.load(resource_path(os.path.join(shipAssetFolderPath,files))).convert_alpha())
-        shipLevelAssets.append(shipAssets)
+        if os.path.isdir(shipAssetFolderPath):
+            for files in os.listdir(shipAssetFolderPath):
+                if files == 'gunShip.png':
+                    gunShip = pygame.image.load(resource_path(os.path.join(shipAssetFolderPath,files)))
+                    gunShip.set_colorkey([255,255,255])
+                    shipAssets.append(gunShip.convert_alpha())
+                elif files.endswith('.png'): shipAssets.append(pygame.image.load(resource_path(os.path.join(shipAssetFolderPath,files))).convert_alpha())
+            shipLevelAssets.append(shipAssets)
+        elif shipAssetFolder == 'Laser.png':
+            laserImage = pygame.image.load( resource_path(os.path.join(shipLevelFolderPath,shipAssetFolder)))
+            laserImage.set_colorkey([255,255,255])
+            laserImage = laserImage.convert_alpha()
+            shipLevelAssets.append(laserImage)
     spaceShipList.append(shipLevelAssets)
-    
+
 for i in range(len(spaceShipList)): spaceShipList[i].append(shipConstants[i])
-# [   ( [Exhaust frames],[Ship Skins],{Player Constants} )   ]
+# [   ( [Exhaust frames],Laser Image,[Ship Skins],{Player Constants} )   ]
 
 # MAIN MENU ASSETS
 menuList = []
@@ -680,17 +681,17 @@ class Menu:
         
         # SHIP UNLOCKS   
         unlockNumber = 0
-        if game.savedOverallHighScore >= 330: unlockNumber = len(spaceShipList[game.savedShipLevel][1])
-        elif game.savedOverallHighScore >= 300: unlockNumber = len(spaceShipList[game.savedShipLevel][1]) - 1
-        elif game.savedOverallHighScore >= 270: unlockNumber = len(spaceShipList[game.savedShipLevel][1]) - 2
-        elif game.savedOverallHighScore >= 240: unlockNumber = len(spaceShipList[game.savedShipLevel][1]) - 3
-        elif game.savedOverallHighScore >= 210: unlockNumber = len(spaceShipList[game.savedShipLevel][1]) - 4
-        elif game.savedOverallHighScore >= 180: unlockNumber = len(spaceShipList[game.savedShipLevel][1]) - 5    
-        elif game.savedOverallHighScore >= 150: unlockNumber = len(spaceShipList[game.savedShipLevel][1]) - 6 
-        elif game.savedOverallHighScore >= 120: unlockNumber = len(spaceShipList[game.savedShipLevel][1]) - 7   
-        elif game.savedOverallHighScore >= 90: unlockNumber = len(spaceShipList[game.savedShipLevel][1]) - 8    
-        elif game.savedOverallHighScore >= 60: unlockNumber = len(spaceShipList[game.savedShipLevel][1]) - 9
-        elif game.savedOverallHighScore >= 30: unlockNumber = len(spaceShipList[game.savedShipLevel][1]) - 10
+        if game.savedOverallHighScore >= 330: unlockNumber = len(spaceShipList[game.savedShipLevel][2])
+        elif game.savedOverallHighScore >= 300: unlockNumber = len(spaceShipList[game.savedShipLevel][2]) - 1
+        elif game.savedOverallHighScore >= 270: unlockNumber = len(spaceShipList[game.savedShipLevel][2]) - 2
+        elif game.savedOverallHighScore >= 240: unlockNumber = len(spaceShipList[game.savedShipLevel][2]) - 3
+        elif game.savedOverallHighScore >= 210: unlockNumber = len(spaceShipList[game.savedShipLevel][2]) - 4
+        elif game.savedOverallHighScore >= 180: unlockNumber = len(spaceShipList[game.savedShipLevel][2]) - 5    
+        elif game.savedOverallHighScore >= 150: unlockNumber = len(spaceShipList[game.savedShipLevel][2]) - 6 
+        elif game.savedOverallHighScore >= 120: unlockNumber = len(spaceShipList[game.savedShipLevel][2]) - 7   
+        elif game.savedOverallHighScore >= 90: unlockNumber = len(spaceShipList[game.savedShipLevel][2]) - 8    
+        elif game.savedOverallHighScore >= 60: unlockNumber = len(spaceShipList[game.savedShipLevel][2]) - 9
+        elif game.savedOverallHighScore >= 30: unlockNumber = len(spaceShipList[game.savedShipLevel][2]) - 10
 
         for imageNum in range(unlockNumber-1): player.nextSpaceShip() # Gets highest unlocked ship by default
 
@@ -1002,26 +1003,20 @@ class Player(pygame.sprite.Sprite):
         def __init__(self,game):
             super().__init__()
             self.currentImageNum = 0
-            self.speed,self.baseSpeed = playerSpeed, playerSpeed
-            self.image = spaceShipList[game.savedShipLevel][1][self.currentImageNum]
+            self.speed, self.baseSpeed = playerSpeed, playerSpeed
+            self.image = spaceShipList[game.savedShipLevel][2][self.currentImageNum]
+            self.laserImage = spaceShipList[game.savedShipLevel][1]
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
-            self.fuel = fuel
-            self.maxFuel = maxFuel
-            self.angle = 0 # Players current angle
-            self.lastAngle = 0 # Players last angle
-            self.exhaustState = 0 # Frame of exhaust animation
-            self.explosionState = 0 # Frame of explosion animation
-            self.finalImg,self.finalRect = '','' # Last frame of exhaust animation for boost
-            self.lastThreeExhaustPos = [[0,0],[0,0],[0,0]] # Will be updated with recent player positions
-            self.laserReady = True
-            self.boostDrain = boostDrain
-            self.boostAdder = boostAdder
-            self.speedLimit = speedLimit
-            self.fuelRegenNum = fuelRegenNum
-            self.laserCost = laserCost
-            self.fuelRegenDelay = fuelRegenDelay
-            self.laserFireRate = laserFireRate
+            self.fuel, self.maxFuel = fuel, maxFuel
+            self.angle, self.lastAngle = 0, 0
+            self.exhaustState, self.explosionState = 0, 0 # Index of animation frame
+            self.finalImg, self.finalRect = '','' # Last frame of exhaust animation for boost
+            self.lastThreeExhaustPos = [[0,0],[0,0],[0,0]] # Will be updated with rotateImage(recent player blits)
+            self.laserReady, self.laserCost, self.laserFireRate = True, laserCost, laserFireRate
+            self.boostDrain, self.boostAdder = boostDrain,boostAdder
+            self.speedLimit, self.fuelRegenNum, self.fuelRegenDelay = speedLimit, fuelRegenNum, fuelRegenDelay
+
             
         # PLAYER MOVEMENT
         def movement(self):
@@ -1077,9 +1072,9 @@ class Player(pygame.sprite.Sprite):
                 self.angle = 0
 
 
+        # SPEED BOOST
         def boost(self):
             key = pygame.key.get_pressed()
-            
             
             if (key[pygame.K_LSHIFT] or key[pygame.K_RSHIFT]) and self.fuel - self.boostDrain > 0 and self.speed + self.boostAdder < self.speedLimit and  ( (key[pygame.K_a] or key[pygame.K_LEFT]) and ( key[pygame.K_w] or key[pygame.K_UP]) and (key[pygame.K_s] or key[pygame.K_DOWN]) and (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
                 pass
@@ -1107,6 +1102,7 @@ class Player(pygame.sprite.Sprite):
             else: self.speed = self.baseSpeed
 
 
+        # SHOOT ROCKETS/LASERS
         def shoot(self,lasers):
             key = pygame.key.get_pressed()
             if  (key[pygame.K_LCTRL] or key[pygame.K_RCTRL]) and self.fuel - self.laserCost > 0 and self.laserReady:
@@ -1160,8 +1156,8 @@ class Player(pygame.sprite.Sprite):
 
         # GET NEXT SPACESHIP IMAGE
         def nextSpaceShip(self):
-            if self.currentImageNum + 1 < len(spaceShipList[game.savedShipLevel][1]):
-                self.image = spaceShipList[game.savedShipLevel][1][self.currentImageNum + 1]
+            if self.currentImageNum + 1 < len(spaceShipList[game.savedShipLevel][2]):
+                self.image = spaceShipList[game.savedShipLevel][2][self.currentImageNum + 1]
                 self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
                 self.mask = pygame.mask.from_surface(self.image)
                 self.currentImageNum+=1
@@ -1169,12 +1165,13 @@ class Player(pygame.sprite.Sprite):
 
         # GET PREVIOUS SPACESHIP IMAGE
         def lastSpaceShip(self):
-            if self.currentImageNum >= 1 and self.currentImageNum + 1 < len(spaceShipList[game.savedShipLevel][1]): 
-                self.image = spaceShipList[game.savedShipLevel][1][self.currentImageNum - 1]
+            if self.currentImageNum >= 1 and self.currentImageNum + 1 < len(spaceShipList[game.savedShipLevel][2]): 
+                self.image = spaceShipList[game.savedShipLevel][2][self.currentImageNum - 1]
                 self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
                 self.mask = pygame.mask.from_surface(self.image)
                 if self.currentImageNum - 1 >= 0: self.currentImageNum-=1
         
+        # SWITCH SHIP TYPE
         def toggleSpaceShip(self,game):
             if game.savedShipLevel + 1 < len(spaceShipList):
                 game.savedShipLevel +=1
@@ -1183,19 +1180,20 @@ class Player(pygame.sprite.Sprite):
 
 
         def updatePlayerConstants(self,game):
-            self.image = spaceShipList[game.savedShipLevel][1][0]
+            self.image = spaceShipList[game.savedShipLevel][2][0]
+            self.laserImage = spaceShipList[game.savedShipLevel][1]
             self.currentImageNum = 0
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
-            self.speed,self.baseSpeed = spaceShipList[game.savedShipLevel][2]["playerSpeed"],spaceShipList[game.savedShipLevel][2]["playerSpeed"]
-            self.fuel = spaceShipList[game.savedShipLevel][2]["fuel"]
-            self.maxFuel = spaceShipList[game.savedShipLevel][2]["maxFuel"]
-            self.fuelRegenNum = spaceShipList[game.savedShipLevel][2]["fuelRegenNum"]
-            self.boostAdder = spaceShipList[game.savedShipLevel][2]["boostAdder"]
-            self.boostDrain = spaceShipList[game.savedShipLevel][2]["boostDrain"]
-            self.speedLimit = spaceShipList[game.savedShipLevel][2]["speedLimit"]
-            self.laserCost = spaceShipList[game.savedShipLevel][2]["laserCost"]
-            self.laserFireRate = spaceShipList[game.savedShipLevel][2]["laserFireRate"]
+            self.speed,self.baseSpeed = spaceShipList[game.savedShipLevel][3]["playerSpeed"],spaceShipList[game.savedShipLevel][3]["playerSpeed"]
+            self.fuel = spaceShipList[game.savedShipLevel][3]["fuel"]
+            self.maxFuel = spaceShipList[game.savedShipLevel][3]["maxFuel"]
+            self.fuelRegenNum = spaceShipList[game.savedShipLevel][3]["fuelRegenNum"]
+            self.boostAdder = spaceShipList[game.savedShipLevel][3]["boostAdder"]
+            self.boostDrain = spaceShipList[game.savedShipLevel][3]["boostDrain"]
+            self.speedLimit = spaceShipList[game.savedShipLevel][3]["speedLimit"]
+            self.laserCost = spaceShipList[game.savedShipLevel][3]["laserCost"]
+            self.laserFireRate = spaceShipList[game.savedShipLevel][3]["laserFireRate"]
             
         
         def updateExhaust(self,game):
@@ -1251,7 +1249,7 @@ class Laser(pygame.sprite.Sprite):
         super().__init__()
         self.speed = laserSpeed
         self.angle = player.angle
-        newBlit = rotateImage(laserImage,laserImage.get_rect(center = player.rect.center),player.angle)
+        newBlit = rotateImage(player.laserImage,player.laserImage.get_rect(center = player.rect.center),player.angle)
         self.image = newBlit[0]
         self.rect = newBlit[1]
         self.mask = pygame.mask.from_surface(self.image)
