@@ -95,7 +95,7 @@ gunShip = {
             "boostAdder" : 2,
             "boostDrain" : 0.3,
             "speedLimit" : 9,
-            "laserCost" : 250,
+            "laserCost" : 0.4,
             "laserSpeed" : 10,
             "fuelRegenDelay" : 50,
             "laserFireRate" : 250,
@@ -340,6 +340,7 @@ class Game:
         self.gameConstants = []
         self.savedShipNum = 0
         self.savedShipLevel = 0
+        self.unlockNumber = 0
         self.spinSpeed = spinSpeed
         self.cloudPos = cloudStart
         self.wipe = obstacleWipe
@@ -691,21 +692,21 @@ class Menu:
         bounceDelay = 5
         bounceCount = 0
         
-        # DEFAULT SHIP SKIN UNLOCKS   
-        unlockNumber = 0
-        if game.savedOverallHighScore >= 330: unlockNumber = len(spaceShipList[game.savedShipLevel][2])
-        elif game.savedOverallHighScore >= 300: unlockNumber = len(spaceShipList[game.savedShipLevel][2]) - 1
-        elif game.savedOverallHighScore >= 270: unlockNumber = len(spaceShipList[game.savedShipLevel][2]) - 2
-        elif game.savedOverallHighScore >= 240: unlockNumber = len(spaceShipList[game.savedShipLevel][2]) - 3
-        elif game.savedOverallHighScore >= 210: unlockNumber = len(spaceShipList[game.savedShipLevel][2]) - 4
-        elif game.savedOverallHighScore >= 180: unlockNumber = len(spaceShipList[game.savedShipLevel][2]) - 5    
-        elif game.savedOverallHighScore >= 150: unlockNumber = len(spaceShipList[game.savedShipLevel][2]) - 6 
-        elif game.savedOverallHighScore >= 120: unlockNumber = len(spaceShipList[game.savedShipLevel][2]) - 7   
-        elif game.savedOverallHighScore >= 90: unlockNumber = len(spaceShipList[game.savedShipLevel][2]) - 8    
-        elif game.savedOverallHighScore >= 60: unlockNumber = len(spaceShipList[game.savedShipLevel][2]) - 9
-        elif game.savedOverallHighScore >= 30: unlockNumber = len(spaceShipList[game.savedShipLevel][2]) - 10
+        # DEFAULT SHIP SKIN UNLOCKS   ( spaceShipList[0] )
+        if game.savedOverallHighScore >= 330: game.unlockNumber = len(spaceShipList[0][2])
+        elif game.savedOverallHighScore >= 300: game.unlockNumber = len(spaceShipList[0][2]) - 1
+        elif game.savedOverallHighScore >= 270: game.unlockNumber = len(spaceShipList[0][2]) - 2
+        elif game.savedOverallHighScore >= 240: game.unlockNumber = len(spaceShipList[0][2]) - 3
+        elif game.savedOverallHighScore >= 210: game.unlockNumber = len(spaceShipList[0][2]) - 4
+        elif game.savedOverallHighScore >= 180: game.unlockNumber = len(spaceShipList[0][2]) - 5    
+        elif game.savedOverallHighScore >= 150: game.unlockNumber = len(spaceShipList[0][2]) - 6 
+        elif game.savedOverallHighScore >= 120: game.unlockNumber = len(spaceShipList[0][2]) - 7   
+        elif game.savedOverallHighScore >= 90: game.unlockNumber = len(spaceShipList[0][2]) - 8    
+        elif game.savedOverallHighScore >= 60: game.unlockNumber = len(spaceShipList[0][2]) - 9
+        elif game.savedOverallHighScore >= 30: game.unlockNumber = len(spaceShipList[0][2]) - 10
 
-        for imageNum in range(unlockNumber-1): player.nextSpaceShip() # Gets highest unlocked ship by default
+        if game.unlockNumber < 0: game.unlockNumber = 0
+        for imageNum in range(game.unlockNumber-1): player.nextSpaceShip() # Gets highest unlocked ship by default
 
         startOffset = 100
         startDelay = 1
@@ -741,7 +742,7 @@ class Menu:
                 
                 # NEXT SPACESHIP SKIN
                 elif event.type == pygame.KEYDOWN and (event.key == pygame.K_d or event.key == pygame.K_RIGHT):
-                    if unlockNumber > player.currentImageNum + 1: player.nextSpaceShip()
+                    player.nextSpaceShip()
                 
                 # PREVIOUS SPACESHIP SKIN                
                 elif event.type == pygame.KEYDOWN and (event.key == pygame.K_a or event.key == pygame.K_LEFT):
@@ -749,11 +750,11 @@ class Menu:
                 
                 # NEXT SHIP TYPE
                 elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_w or event.key == pygame.K_UP):
-                    player.toggleSpaceShip(game,True,unlockNumber)
+                    player.toggleSpaceShip(game,True,game.unlockNumber)
                 
                 # PREVIOUS SHIP TYPE
                 elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_s or event.key == pygame.K_DOWN):
-                    player.toggleSpaceShip(game,False,unlockNumber)
+                    player.toggleSpaceShip(game,False,game.unlockNumber)
 
                 # CREDITS
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_c: menu.creditScreen()
@@ -1182,21 +1183,39 @@ class Player(pygame.sprite.Sprite):
 
         # GET NEXT SPACESHIP IMAGE
         def nextSpaceShip(self):
+            
             if self.currentImageNum + 1 < len(spaceShipList[game.savedShipLevel][2]):
-                self.image = spaceShipList[game.savedShipLevel][2][self.currentImageNum + 1]
-                self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
-                self.mask = pygame.mask.from_surface(self.image)
-                self.currentImageNum+=1
+            
+                if (game.savedShipLevel == 0 and self.currentImageNum + 1 >= game.unlockNumber): 
+                    self.image = spaceShipList[game.savedShipLevel][2][0]
+                    self.currentImageNum = 0
+                
+                else:   
+                    self.image = spaceShipList[game.savedShipLevel][2][self.currentImageNum + 1]
+                    self.currentImageNum+=1
+
+            self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
+            self.mask = pygame.mask.from_surface(self.image)
+
 
 
         # GET PREVIOUS SPACESHIP IMAGE
         def lastSpaceShip(self):
-            if self.currentImageNum >= 1 and self.currentImageNum + 1 < len(spaceShipList[game.savedShipLevel][2]): 
+            if self.currentImageNum >= 1: 
                 self.image = spaceShipList[game.savedShipLevel][2][self.currentImageNum - 1]
-                self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
-                self.mask = pygame.mask.from_surface(self.image)
+                
                 if self.currentImageNum - 1 >= 0: self.currentImageNum-=1
+            
+            else:
+                if game.savedShipLevel == 0:
+                    self.image = spaceShipList[0][2][game.unlockNumber - 1]
+                    self.currentImageNum = game.unlockNumber - 1
+                else:
+                    self.image = spaceShipList[game.savedShipLevel][2][len(spaceShipList[game.savedShipLevel][2]) - 1]
+                    self.currentImageNum = len(spaceShipList[game.savedShipLevel][2]) - 1
 
+            self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
+            self.mask = pygame.mask.from_surface(self.image)
 
         # SWITCH SHIP TYPE
         def toggleSpaceShip(self,game,toggleDirection,skinUnlocks):
