@@ -20,6 +20,7 @@ screenSize = [800,800] # Default = [800,800]
 scaler = (screenSize[0] + screenSize[1])  / 1600 # Default = x + y / 2  / 800
 roundedScaler = int(round(scaler))
 
+fuelColor = [255,0,0] # Default = [255,0,0] / Color of fuel gauge
 fps = 60 # Default = 60                                    
 timerSize = 75 * roundedScaler # Default = 75                            
 timerColor = [255,255,255] # Default = [255,255,255] 
@@ -89,7 +90,7 @@ obstacleSpeed = 4 *scaler  # Default = 4
 obstacleSize = 30 *scaler  # Default = 30
 maxObstacles = 12 *scaler  # Default = 12
 obstacleBoundaries = "KILL" # Default = "KILL" 
-aggro = True # Default = True / Determines if obstacles have ability to spawn in every direction / False = More difficult
+aggro = True # Default = True / Removes restriction on obstacle movement - False = more difficult
 spinSpeed = 1 # Default = 1
 obstacleWipe = False # Default = False / Wipe before level
 
@@ -135,9 +136,11 @@ baseShip = {
             "boostAdder" : boostAdder,
             "boostDrain" : boostDrain,
             "speedLimit" : speedLimit,
-            "laserCost" : laserCost,
+            "laserCost" : laserCost * 0,
+            "laserSpeed" : laserSpeed * 0,
             "fuelRegenDelay" : fuelRegenDelay,
-            "laserFireRate" : laserFireRate
+            "laserFireRate" : laserFireRate,
+            "hasGuns" : False
             }
 
 # OTHER UNNAMED SHIP
@@ -150,8 +153,10 @@ gunShip = {
             "boostDrain" : 0.3,
             "speedLimit" : speedLimit -2,
             "laserCost" : laserCost/3,
+            "laserSpeed" : laserSpeed,
             "fuelRegenDelay" : fuelRegenDelay,
-            "laserFireRate" : 250
+            "laserFireRate" : 250,
+            "hasGuns" : True
             }
 
 # LASER SHIP
@@ -164,8 +169,10 @@ laserShip = {
             "boostDrain" : 0,
             "speedLimit" : 2,
             "laserCost" : 0,
+            "laserSpeed" : laserSpeed,
             "fuelRegenDelay" : 0,
-            "laserFireRate" : 50
+            "laserFireRate" : 50,
+            "hasGuns" : True
             }
 
 shipConstants = [baseShip,gunShip,laserShip] # Add ship dictionaries to list
@@ -312,11 +319,14 @@ attemptFile.close()
 timerFont = pygame.font.Font(gameFont, timerSize)
 
 # FOR RANDOM MOVEMENT    
+
+# aggro = False
 topDir = ["S", "E", "W", "SE", "SW"]
 leftDir = ["E", "S", "N", "NE", "SE"]
 bottomDir = ["N", "W", "E", "NE", "NW"]
 rightDir = ["W", "N", "S", "NW", "SW"]
 
+# aggro = True 
 restrictedTopDir = ["SE", "SW", "S"]
 restrictedLeftDir = ["E", "NE", "SE"]
 restrictedBottomDir = ["N", "NE", "NW"]
@@ -453,7 +463,7 @@ class Game:
         screen.blit(newBlit[0],newBlit[1]) # Draw player
         if game.savedShipLevel == 0: screen.blit(newExhaustBlit[0],newExhaustBlit[1]) # Draw exhaust
         
-        # UPDATE BOOST ANIMATION
+        # UPDATE BOOST ANIMATION / currently only 3 frames
         player.lastThreeExhaustPos[2] = player.lastThreeExhaustPos[1]
         player.lastThreeExhaustPos[1] = player.lastThreeExhaustPos[0]
         player.lastThreeExhaustPos[0] =  newExhaustBlit
@@ -623,7 +633,8 @@ class Game:
         screen.blit(timerDisplay, timerRect)
         screen.blit(stageDisplay, stageRect)
         screen.blit(levelDisplay, levelRect)
-        pygame.draw.rect(screen, [255,0,0],[screenSize[0]/3, 0, player.fuel * 20, 10]) # BOOST METER
+        if player.maxFuel > 0:
+            pygame.draw.rect(screen, fuelColor,[screenSize[0]/3, 0, player.fuel * 20, 10]) # FUEL DISPLAY
     
     
     # SPAWN OBSTACLES
@@ -695,7 +706,7 @@ class Menu:
         bounceDelay = 5
         bounceCount = 0
         
-        # SHIP UNLOCKS   
+        # DEFAULT SHIP SKIN UNLOCKS   
         unlockNumber = 0
         if game.savedOverallHighScore >= 330: unlockNumber = len(spaceShipList[game.savedShipLevel][2])
         elif game.savedOverallHighScore >= 300: unlockNumber = len(spaceShipList[game.savedShipLevel][2]) - 1
@@ -753,11 +764,11 @@ class Menu:
                 
                 # NEXT SHIP TYPE
                 elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_w or event.key == pygame.K_UP):
-                    player.toggleSpaceShip(game,True)
+                    player.toggleSpaceShip(game,True,unlockNumber)
                 
                 # PREVIOUS SHIP TYPE
                 elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_s or event.key == pygame.K_DOWN):
-                    player.toggleSpaceShip(game,False)
+                    player.toggleSpaceShip(game,False,unlockNumber)
 
                 # CREDITS
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_c: menu.creditScreen()
@@ -1033,7 +1044,7 @@ class Player(pygame.sprite.Sprite):
             self.exhaustState, self.explosionState = 0, 0 # Index of animation frame
             self.finalImg, self.finalRect = '','' # Last frame of exhaust animation for boost
             self.lastThreeExhaustPos = [[0,0],[0,0],[0,0]] # Will be updated with rotateImage(recent player blits)
-            self.laserReady, self.laserCost, self.laserFireRate = True, laserCost, laserFireRate
+            self.laserReady, self.laserCost, self.laserSpeed, self.laserFireRate, self.hasGuns = True, laserCost, laserSpeed, laserFireRate, False
             self.boostDrain, self.boostAdder = boostDrain,boostAdder
             self.speedLimit, self.fuelRegenNum, self.fuelRegenDelay = speedLimit, fuelRegenNum, fuelRegenDelay
 
@@ -1124,11 +1135,12 @@ class Player(pygame.sprite.Sprite):
 
         # SHOOT ROCKETS/LASERS
         def shoot(self,lasers):
-            key = pygame.key.get_pressed()
-            if  (key[pygame.K_LCTRL] or key[pygame.K_RCTRL]) and self.fuel - self.laserCost > 0 and self.laserReady:
-                lasers.add(Laser(self))
-                self.fuel -= self.laserCost
-                self.laserReady = False
+            if self.hasGuns and self.laserReady:
+                key = pygame.key.get_pressed()
+                if  (key[pygame.K_LCTRL] or key[pygame.K_RCTRL]) and self.fuel - self.laserCost > 0:
+                    lasers.add(Laser(self))
+                    self.fuel -= self.laserCost
+                    self.laserReady = False
 
 
         # MOVEMENT DURING STAGE UP
@@ -1190,19 +1202,19 @@ class Player(pygame.sprite.Sprite):
                 self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
                 self.mask = pygame.mask.from_surface(self.image)
                 if self.currentImageNum - 1 >= 0: self.currentImageNum-=1
-        
+
+
         # SWITCH SHIP TYPE
-        def toggleSpaceShip(self,game,toggleDirection):
+        def toggleSpaceShip(self,game,toggleDirection,skinUnlocks):
             if toggleDirection:
                 if game.savedShipLevel + 1 < len(spaceShipList): game.savedShipLevel +=1
                 else: game.savedShipLevel = 0
-                self.updatePlayerConstants(game)
             
             else:
                 if game.savedShipLevel - 1 < 0: game.savedShipLevel = len(spaceShipList) - 1
                 else: game.savedShipLevel -=1
-                self.updatePlayerConstants(game)
-                
+
+            self.updatePlayerConstants(game)
 
 
         def updatePlayerConstants(self,game):
@@ -1219,7 +1231,9 @@ class Player(pygame.sprite.Sprite):
             self.boostDrain = spaceShipList[game.savedShipLevel][3]["boostDrain"]
             self.speedLimit = spaceShipList[game.savedShipLevel][3]["speedLimit"]
             self.laserCost = spaceShipList[game.savedShipLevel][3]["laserCost"]
+            self.laserSpeed = spaceShipList[game.savedShipLevel][3]["laserSpeed"]
             self.laserFireRate = spaceShipList[game.savedShipLevel][3]["laserFireRate"]
+            self.hasGuns = spaceShipList[game.savedShipLevel][3]["hasGuns"]
             
         
         def updateExhaust(self,game):
@@ -1273,7 +1287,7 @@ class Obstacle(pygame.sprite.Sprite):
 class Laser(pygame.sprite.Sprite):
     def __init__(self,player):
         super().__init__()
-        self.speed = laserSpeed
+        self.speed = player.laserSpeed
         self.angle = player.angle
         newBlit = rotateImage(player.laserImage,player.laserImage.get_rect(center = player.rect.center),player.angle)
         self.image = newBlit[0]
