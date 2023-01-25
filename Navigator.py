@@ -1193,6 +1193,10 @@ class Player(pygame.sprite.Sprite):
                 else:   
                     self.image = spaceShipList[game.savedShipLevel][2][self.currentImageNum + 1]
                     self.currentImageNum+=1
+            
+            else:
+                self.image = spaceShipList[game.savedShipLevel][2][0]
+                self.currentImageNum = 0
 
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
@@ -1203,13 +1207,15 @@ class Player(pygame.sprite.Sprite):
         def lastSpaceShip(self):
             if self.currentImageNum >= 1: 
                 self.image = spaceShipList[game.savedShipLevel][2][self.currentImageNum - 1]
-                
-                if self.currentImageNum - 1 >= 0: self.currentImageNum-=1
+                self.currentImageNum-=1
             
             else:
-                if game.savedShipLevel == 0:
-                    self.image = spaceShipList[0][2][game.unlockNumber - 1]
-                    self.currentImageNum = game.unlockNumber - 1
+                if game.savedShipLevel == 0 and game.unlockNumber == 0:
+                    self.image = spaceShipList[0][2][game.unlockNumber]
+                    self.currentImageNum = game.unlockNumber
+                elif game.savedShipLevel == 0 and game.unlockNumber > 0:
+                    self.image = spaceShipList[0][2][game.unlockNumber-1]
+                    self.currentImageNum = game.unlockNumber-1
                 else:
                     self.image = spaceShipList[game.savedShipLevel][2][len(spaceShipList[game.savedShipLevel][2]) - 1]
                     self.currentImageNum = len(spaceShipList[game.savedShipLevel][2]) - 1
