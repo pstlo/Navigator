@@ -679,8 +679,10 @@ class Menu:
         startHelpRect = startHelpDisplay.get_rect()
         startHelpRect.center = (screenSize[0]/2,screenSize[1]-screenSize[1]/7)
         
-        shipHelpFont = pygame.font.Font(gameFont, round(helpSize * .8))
-        shipHelpDisplay = shipHelpFont.render("A/LEFT = PREV SKIN     D/RIGHT = NEXT SKIN", True, helpColor)
+        shipHelpFont = pygame.font.Font(gameFont, round(helpSize * .65))
+        skinHelpDisplay = shipHelpFont.render("A/LEFT = PREV SKIN     D/RIGHT = NEXT SKIN", True, helpColor)
+        shipHelpDisplay = shipHelpFont.render("S/DOWN = PREV SHIP     W/UP = NEXT SHIP", True, helpColor)
+        skinHelpRect = skinHelpDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]-screenSize[1]/7 + 70))
         shipHelpRect = shipHelpDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]-screenSize[1]/7 + 40))
         
         leftRect = menuList[3].get_rect(center = (screenSize[0] * 0.2 , screenSize[1]/3) )
@@ -770,7 +772,8 @@ class Menu:
 
             screen.blit(startDisplay,startRect)
             screen.blit(startHelpDisplay, startHelpRect)
-            if game.savedOverallHighScore >= 30: screen.blit(shipHelpDisplay,shipHelpRect)
+            if game.savedOverallHighScore >= 30 and len(spaceShipList[game.savedShipLevel][2]) > 1: screen.blit(skinHelpDisplay,skinHelpRect)
+            screen.blit(shipHelpDisplay,shipHelpRect)
             screen.blit(player.image, (player.rect.x,player.rect.y + startOffset)) # Current spaceship
             screen.blit(menuList[0],(-14 + startRect.left + menuList[0].get_width() - menuList[0].get_width()/8,screenSize[1]/2 - 42)) # "A" symbol
             screen.blit(menuList[1],(-42 + screenSize[0] - startRect.centerx + menuList[1].get_width() * 2,screenSize[1]/2 - 42)) # "O" symbol
