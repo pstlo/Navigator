@@ -1207,7 +1207,7 @@ class Player(pygame.sprite.Sprite):
             self.mask = pygame.mask.from_surface(self.image)
 
         # SWITCH SHIP TYPE
-        def toggleSpaceShip(self,game,toggleDirection,skinUnlocks):
+        def toggleSpaceShip(self,game,toggleDirection,skinUnlocks): # Skin unlocks == True -> next ship, False -> Last
             if toggleDirection:
                 if game.savedShipLevel + 1 < len(spaceShipList): game.savedShipLevel +=1
                 else: game.savedShipLevel = 0
