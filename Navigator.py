@@ -67,13 +67,14 @@ creditsColor = [255,255,255] # Default = [255,255,255]
 
 # PLAYER           
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
+boostCooldownTime = 500 # Default = 500 / Activates when fuel runs out to allow regen
 
 # SHIP CONSTANTS
-#                       [speed,fuel,maxFuel,fuelRegenNum,fuelRegenDelay,speedLimit,hasGuns,laserCost,laserSpeed,laserFireRate,boostAdder,boostDrain,]
-defaultShipAttributes = [ 5,   10,  20,     0.05,        50,            10,        False,   0,        0,         0,           1 ,        0.5  ]
-gunShipAttributes =     [ 3,   10,  20,     0.05,        50,            10,        True,    0.4,      10,        250,         2,         0.3  ]
-laserShipAttributes =   [ 2,   1,   1,      0,           0,             2,         True,    0,        10,        50,          0,         0    ]
-hyperYachtAttributes =  [ 3,   20,  30,     0.1,         25,            12,        False,   0,        0,         0,           2 ,        0.25  ]
+#                       [speed,fuel,maxFuel,fuelRegenNum,fuelRegenDelay,boostSpeed,hasGuns,laserCost,laserSpeed,laserFireRate,boostDrain,]
+defaultShipAttributes = [ 5,   10,  20,     0.05,        50,            7,        False,   0,        0,          0,            0.4  ]
+gunShipAttributes =     [ 3,   10,  20,     0.05,        50,            10,        True,    0.4,      10,        250,          0.3  ]
+laserShipAttributes =   [ 2,   1,   1,      0,           0,             2,         True,    0,        10,        50,           0    ]
+hyperYachtAttributes =  [ 3,   20,  30,     0.1,         25,            12,        False,   0,        0,         0,            0.25 ]
 
 shipAttributes = [defaultShipAttributes,gunShipAttributes,laserShipAttributes,hyperYachtAttributes]
 
@@ -214,7 +215,6 @@ for shipLevelFolder in os.listdir(shipDirectory):
             shipLevelAssets.append(laserImage)
     spaceShipList.append(shipLevelAssets)
 
-#[speed,fuel,maxFuel,fuelRegenNum,fuelRegenDelay,speedLimit,hasGuns,laserCost,laserSpeed,laserFireRate,boostAdder,boostDrain,]# DEFAULT SHIP
 shipConstants = []
 for i in shipAttributes: 
     levelConstantsDict = {
@@ -223,13 +223,12 @@ for i in shipAttributes:
     "maxFuel" : i[2],
     "fuelRegenNum" : i[3],
     "fuelRegenDelay" : i[4],
-    "speedLimit" : i[5],
+    "boostSpeed" : i[5],
     "hasGuns" : i[6],
     "laserCost" : i[7],
     "laserSpeed" : i[8],
     "laserFireRate" : i[9],
-    "boostAdder" : i[10],
-    "boostDrain" : i[11]
+    "boostDrain" : i[10]
     }
     shipConstants.append(levelConstantsDict)
     
@@ -379,6 +378,9 @@ class Game:
             
             # GUN COOLDOWN
             if event.type == events.laserCooldown: player.laserReady = True
+            
+            # BOOST COOLDOWN
+            if event.type == events.boostCooldown: player.boostReady = True
 
         # BACKGROUND ANIMATION
         screen.fill(screenColor)
@@ -403,7 +405,7 @@ class Game:
         # DRAW AND MOVE SPRITES
         player.movement()
         player.shoot(lasers,events)
-        player.boost()
+        player.boost(events)
         player.wrapping()
         self.spawner(obstacles)
         obstacleMove(obstacles)
@@ -635,6 +637,9 @@ class Event:
         
         # LASER COOLDOWN
         self.laserCooldown = pygame.USEREVENT + 3
+        
+        # BOOST COOLDOWN
+        self.boostCooldown = pygame.USEREVENT + 4
 
     # SETS EVENTS
     def set(self,player):
@@ -645,6 +650,10 @@ class Event:
     def laserCharge(self,player):
         pygame.time.set_timer(self.laserCooldown, player.laserFireRate)
         player.laserReady = False
+    
+    def boostCharge(self,player):
+        pygame.time.set_timer(self.boostCooldown, boostCooldownTime)
+        player.boostReady = False
 
 
 # MENUS
@@ -1007,7 +1016,7 @@ class Player(pygame.sprite.Sprite):
             
             # GET DEFAULT SHIP CONSTANTS
             self.currentImageNum = 0
-            self.speed,self.baseSpeed = spaceShipList[game.savedShipLevel][3]["playerSpeed"],spaceShipList[game.savedShipLevel][3]["playerSpeed"]
+            self.speed,self.baseSpeed,self.boostSpeed = spaceShipList[game.savedShipLevel][3]["playerSpeed"],spaceShipList[game.savedShipLevel][3]["playerSpeed"],spaceShipList[game.savedShipLevel][3]["boostSpeed"]
             self.image = spaceShipList[game.savedShipLevel][2][self.currentImageNum]
             self.laserImage = spaceShipList[game.savedShipLevel][1]
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
@@ -1019,13 +1028,11 @@ class Player(pygame.sprite.Sprite):
             self.lastThreeExhaustPos = [[0,0],[0,0],[0,0]] # Will be updated with rotateImage(recent player blits)
             self.fuelRegenNum = spaceShipList[game.savedShipLevel][3]["fuelRegenNum"]
             self.fuelRegenDelay = spaceShipList[game.savedShipLevel][3]["fuelRegenDelay"]
-            self.boostAdder = spaceShipList[game.savedShipLevel][3]["boostAdder"]
             self.boostDrain = spaceShipList[game.savedShipLevel][3]["boostDrain"]
-            self.speedLimit = spaceShipList[game.savedShipLevel][3]["speedLimit"]
             self.laserCost = spaceShipList[game.savedShipLevel][3]["laserCost"]
             self.laserSpeed = spaceShipList[game.savedShipLevel][3]["laserSpeed"]
             self.laserFireRate = spaceShipList[game.savedShipLevel][3]["laserFireRate"]
-            self.hasGuns, self.laserReady = spaceShipList[game.savedShipLevel][3]["hasGuns"], True
+            self.hasGuns, self.laserReady, self.boostReady = spaceShipList[game.savedShipLevel][3]["hasGuns"], True, True
         
 
         # PLAYER MOVEMENT
@@ -1083,33 +1090,29 @@ class Player(pygame.sprite.Sprite):
 
 
         # SPEED BOOST
-        def boost(self):
-            key = pygame.key.get_pressed()
-            
-            if (key[pygame.K_LSHIFT] or key[pygame.K_RSHIFT]) and self.fuel - self.boostDrain > 0 and self.speed + self.boostAdder < self.speedLimit and  ( (key[pygame.K_a] or key[pygame.K_LEFT]) and ( key[pygame.K_w] or key[pygame.K_UP]) and (key[pygame.K_s] or key[pygame.K_DOWN]) and (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
-                pass
-                
-            elif (key[pygame.K_LSHIFT] or key[pygame.K_RSHIFT]) and self.fuel - self.boostDrain > 0 and self.speed + self.boostAdder < self.speedLimit and  ( (key[pygame.K_a] or key[pygame.K_LEFT]) or ( key[pygame.K_w] or key[pygame.K_UP]) or (key[pygame.K_s] or key[pygame.K_DOWN]) or (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
-                self.speed += (self.boostAdder)
-                self.fuel -= (self.boostDrain)
-                if self.fuel > self.maxFuel * .5: 
-                    try:
-                        screen.blit(self.lastThreeExhaustPos[0][0],self.lastThreeExhaustPos[0][1])
-                        screen.blit(self.lastThreeExhaustPos[1][0],self.lastThreeExhaustPos[1][1])
-                        screen.blit(self.lastThreeExhaustPos[2][0],self.lastThreeExhaustPos[2][1])
-                    except: pass
-                
-                elif self.fuel > self.maxFuel * .25: 
-                    try:
-                        screen.blit(self.lastThreeExhaustPos[0][0],self.lastThreeExhaustPos[0][1])
-                        screen.blit(self.lastThreeExhaustPos[1][0],self.lastThreeExhaustPos[1][1])
-                    except: pass
+        def boost(self,events):
+            if self.boostReady:
+                if self.fuel - self.boostDrain > self.boostDrain:
+                    key = pygame.key.get_pressed()
+                    
+                    if (key[pygame.K_LSHIFT] or key[pygame.K_RSHIFT]) and ( (key[pygame.K_a] or key[pygame.K_LEFT]) and ( key[pygame.K_w] or key[pygame.K_UP]) and (key[pygame.K_s] or key[pygame.K_DOWN]) and (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
+                        pass
+                        
+                    elif (key[pygame.K_LSHIFT] or key[pygame.K_RSHIFT]) and ( (key[pygame.K_a] or key[pygame.K_LEFT]) or ( key[pygame.K_w] or key[pygame.K_UP]) or (key[pygame.K_s] or key[pygame.K_DOWN]) or (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
+                        self.speed = self.boostSpeed
+                        self.fuel -= (self.boostDrain)
+                        
+                        try:
+                            screen.blit(self.lastThreeExhaustPos[0][0],self.lastThreeExhaustPos[0][1])
+                            screen.blit(self.lastThreeExhaustPos[1][0],self.lastThreeExhaustPos[1][1])
+                            screen.blit(self.lastThreeExhaustPos[2][0],self.lastThreeExhaustPos[2][1])
+                        except: pass
+
+                    else: self.speed = self.baseSpeed
                 
                 else:
-                    try: screen.blit(self.lastThreeExhaustPos[0][0],self.lastThreeExhaustPos[0][1])
-                    except: pass
-
-            else: self.speed = self.baseSpeed
+                    self.speed = self.baseSpeed
+                    events.boostCharge(self)
 
 
         # SHOOT ROCKETS/LASERS
@@ -1230,9 +1233,8 @@ class Player(pygame.sprite.Sprite):
             self.maxFuel = spaceShipList[game.savedShipLevel][3]["maxFuel"]
             self.fuelRegenNum = spaceShipList[game.savedShipLevel][3]["fuelRegenNum"]
             self.fuelRegenDelay = spaceShipList[game.savedShipLevel][3]["fuelRegenDelay"]
-            self.boostAdder = spaceShipList[game.savedShipLevel][3]["boostAdder"]
+            self.boostSpeed = spaceShipList[game.savedShipLevel][3]["boostSpeed"]
             self.boostDrain = spaceShipList[game.savedShipLevel][3]["boostDrain"]
-            self.speedLimit = spaceShipList[game.savedShipLevel][3]["speedLimit"]
             self.laserCost = spaceShipList[game.savedShipLevel][3]["laserCost"]
             self.laserSpeed = spaceShipList[game.savedShipLevel][3]["laserSpeed"]
             self.laserFireRate = spaceShipList[game.savedShipLevel][3]["laserFireRate"]
