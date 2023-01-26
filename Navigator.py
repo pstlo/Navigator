@@ -73,8 +73,9 @@ exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation fr
 defaultShipAttributes = [ 5,   10,  20,     0.05,        50,            10,        False,   0,        0,         0,           1 ,        0.5  ]
 gunShipAttributes =     [ 3,   10,  20,     0.05,        50,            10,        True,    0.4,      10,        250,         2,         0.3  ]
 laserShipAttributes =   [ 2,   1,   1,      0,           0,             2,         True,    0,        10,        50,          0,         0    ]
+hyperYachtAttributes =  [ 3,   20,  30,     0.1,         25,            12,        False,   0,        0,         0,           2 ,        0.25  ]
 
-shipAttributes = [defaultShipAttributes,gunShipAttributes,laserShipAttributes]
+shipAttributes = [defaultShipAttributes,gunShipAttributes,laserShipAttributes,hyperYachtAttributes]
 
 # OBSTACLES  (Can be updated by level)
 obstacleSpeed = 4 *scaler  # Default = 4           
@@ -190,6 +191,7 @@ for filename in os.listdir(explosionDirectory):
 
 # SPACESHIP ASSETS
 spaceShipList = [] 
+toRemoveBackground = ['gunShip.png','laserShip.png','f1Laser.png','hyperYacht.png', 'HYf1.png','HYf2.png','HYf3.png'] # List of PNGs in ships folder with white backgrounds
 
 for shipLevelFolder in os.listdir(shipDirectory):
     shipLevelFolderPath = os.path.join(shipDirectory,shipLevelFolder)
@@ -199,10 +201,10 @@ for shipLevelFolder in os.listdir(shipDirectory):
         shipAssets = []
         if os.path.isdir(shipAssetFolderPath):
             for files in os.listdir(shipAssetFolderPath):
-                if files == 'gunShip.png' or files == 'laserShip.png' or files == 'f1Laser.png': # Handles background conversion
-                    gunShip = pygame.image.load(resource_path(os.path.join(shipAssetFolderPath,files)))
-                    gunShip.set_colorkey([255,255,255])
-                    shipAssets.append(gunShip.convert_alpha())
+                if files in toRemoveBackground: # Handles white background conversion
+                    ship = pygame.image.load(resource_path(os.path.join(shipAssetFolderPath,files)))
+                    ship.set_colorkey([255,255,255])
+                    shipAssets.append(ship.convert_alpha())
                 elif files.endswith('.png'): shipAssets.append(pygame.image.load(resource_path(os.path.join(shipAssetFolderPath,files))).convert_alpha())
             shipLevelAssets.append(shipAssets)
         elif shipAssetFolder == 'Laser.png':
