@@ -69,10 +69,10 @@ creditsColor = [255,255,255] # Default = [255,255,255]
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
 
 # SHIP CONSTANTS
-#[speed,fuel,maxFuel,fuelRegenNum,fuelRegenDelay,speedLimit,hasGuns,laserCost,laserSpeed,laserFireRate,boostAdder,boostDrain,]
-defaultShipAttributes = [ 5, 10, 20, 0.05, 50, 10, False, 0,   0,  0, 1,  0.5  ]
-gunShipAttributes =     [ 3, 10, 20, 0.05, 50, 10, True,  0.4, 10, 5, 2,  0.3  ]
-laserShipAttributes =   [ 2, 1,  1,  0,    0,   2, True,  0,   10, 5, 0,  0  ]
+#                       [speed,fuel,maxFuel,fuelRegenNum,fuelRegenDelay,speedLimit,hasGuns,laserCost,laserSpeed,laserFireRate,boostAdder,boostDrain,]
+defaultShipAttributes = [ 5,   10,  20,     0.05,        50,            10,        False,   0,        0,         0,           1 ,        0.5  ]
+gunShipAttributes =     [ 3,   10,  20,     0.05,        50,            10,        True,    0.4,      10,        250,         2,         0.3  ]
+laserShipAttributes =   [ 2,   1,   1,      0,           0,             2,         True,    0,        10,        50,          0,         0    ]
 
 shipAttributes = [defaultShipAttributes,gunShipAttributes,laserShipAttributes]
 
@@ -376,7 +376,7 @@ class Game:
             if event.type == events.exhaustUpdate: player.updateExhaust(game)
             
             # GUN COOLDOWN
-            if event.type == events.laserCooldown and not player.laserReady: player.laserReady = True
+            if event.type == events.laserCooldown: player.laserReady = True
 
         # BACKGROUND ANIMATION
         screen.fill(screenColor)
@@ -400,7 +400,7 @@ class Game:
         
         # DRAW AND MOVE SPRITES
         player.movement()
-        player.shoot(lasers)
+        player.shoot(lasers,events)
         player.boost()
         player.wrapping()
         self.spawner(obstacles)
@@ -594,7 +594,8 @@ class Game:
         screen.blit(stageDisplay, stageRect)
         screen.blit(levelDisplay, levelRect)
         if player.boostDrain > 0 or player.laserCost > 0:
-            pygame.draw.rect(screen, fuelColor,[screenSize[0]/3, 0, player.fuel * 20, 10]) # FUEL DISPLAY
+            rectWidth = (screenSize[0]/4) * (player.fuel / player.maxFuel)
+            pygame.draw.rect(screen, fuelColor,[screenSize[0]/3, 0, rectWidth, 10]) # FUEL DISPLAY
     
     
     # SPAWN OBSTACLES
@@ -627,14 +628,16 @@ class Event:
         
         # LASER COOLDOWN
         self.laserCooldown = pygame.USEREVENT + 3
-        
 
     # SETS EVENTS
     def set(self,player):
         pygame.time.set_timer(self.timerEvent, timerDelay)
         pygame.time.set_timer(self.fuelReplenish, player.fuelRegenDelay)
         pygame.time.set_timer(self.exhaustUpdate, exhaustUpdateDelay)
+    
+    def laserCharge(self,player):
         pygame.time.set_timer(self.laserCooldown, player.laserFireRate)
+        player.laserReady = False
 
 
 # MENUS
@@ -1015,7 +1018,7 @@ class Player(pygame.sprite.Sprite):
             self.laserCost = spaceShipList[game.savedShipLevel][3]["laserCost"]
             self.laserSpeed = spaceShipList[game.savedShipLevel][3]["laserSpeed"]
             self.laserFireRate = spaceShipList[game.savedShipLevel][3]["laserFireRate"]
-            self.hasGuns, self.laserReady = spaceShipList[game.savedShipLevel][3]["hasGuns"], False
+            self.hasGuns, self.laserReady = spaceShipList[game.savedShipLevel][3]["hasGuns"], True
         
 
         # PLAYER MOVEMENT
@@ -1103,13 +1106,13 @@ class Player(pygame.sprite.Sprite):
 
 
         # SHOOT ROCKETS/LASERS
-        def shoot(self,lasers):
+        def shoot(self,lasers,events):
             if self.hasGuns and self.laserReady:
                 key = pygame.key.get_pressed()
                 if  (key[pygame.K_LCTRL] or key[pygame.K_RCTRL]) and self.fuel - self.laserCost > 0:
                     lasers.add(Laser(self))
                     self.fuel -= self.laserCost
-                    self.laserReady = False
+                    events.laserCharge(self)
 
 
         # MOVEMENT DURING STAGE UP
@@ -1484,7 +1487,7 @@ def gameLoop():
     
     # GAME LOOP
     while running: game.update(player,obstacles,menu,events,lasers)
-
+ 
 
 if __name__ == '__main__': gameLoop()
     
