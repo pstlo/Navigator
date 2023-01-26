@@ -69,56 +69,12 @@ creditsColor = [255,255,255] # Default = [255,255,255]
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
 
 # SHIP CONSTANTS
+#[speed,fuel,maxFuel,fuelRegenNum,fuelRegenDelay,speedLimit,hasGuns,laserCost,laserSpeed,laserFireRate,boostAdder,boostDrain,]
+defaultShipAttributes = [ 5, 10, 20, 0.05, 50, 10, False, 0,   0,  0, 1,  0.5  ]
+gunShipAttributes =     [ 3, 10, 20, 0.05, 50, 10, True,  0.4, 10, 5, 2,  0.3  ]
+laserShipAttributes =   [ 2, 1,  1,  0,    0,   2, True,  0,   10, 5, 0,  0  ]
 
-# DEFAULT SHIP
-baseShip = {
-            "playerSpeed" : 5,
-            "fuel" : 10,
-            "maxFuel" : 20,
-            "fuelRegenNum" : 0.05,
-            "boostAdder" : 1,
-            "boostDrain" : 0.5,
-            "speedLimit" : 10,
-            "laserCost" : 0,
-            "laserSpeed" : 0,
-            "fuelRegenDelay" : 50,
-            "laserFireRate" : 0,
-            "hasGuns" : False
-            }
-
-# OTHER UNNAMED SHIP
-gunShip = {
-            "playerSpeed" : 3,
-            "fuel" : 10,
-            "maxFuel" : 20,
-            "fuelRegenNum" : 0.05,
-            "boostAdder" : 2,
-            "boostDrain" : 0.3,
-            "speedLimit" : 9,
-            "laserCost" : 0.4,
-            "laserSpeed" : 10,
-            "fuelRegenDelay" : 50,
-            "laserFireRate" : 250,
-            "hasGuns" : True
-            }
-
-# LASER SHIP
-laserShip = {
-            "playerSpeed" : 2 ,
-            "fuel" : 1,
-            "maxFuel" : 0,
-            "fuelRegenNum" : 0,
-            "boostAdder" : 0,
-            "boostDrain" : 0,
-            "speedLimit" : 2,
-            "laserCost" : 0,
-            "laserSpeed" : 10,
-            "fuelRegenDelay" : 0,
-            "laserFireRate" : 50,
-            "hasGuns" : True
-            }
-
-shipConstants = [baseShip,gunShip,laserShip] # Add ship dictionaries to list
+shipAttributes = [defaultShipAttributes,gunShipAttributes,laserShipAttributes]
 
 # OBSTACLES  (Can be updated by level)
 obstacleSpeed = 4 *scaler  # Default = 4           
@@ -205,7 +161,7 @@ for filename in os.listdir(ufoDirectory):
         ufoList.append(pygame.image.load(resource_path(path)).convert_alpha())
 
 # ALL OBSTACLE ASSETS
-obstacleImages = [meteorList,ufoList]
+obstacleImages = [meteorList,ufoList] # Seperated by stage
 
 # BACKGROUND ASSETS
 bgList = []
@@ -243,7 +199,7 @@ for shipLevelFolder in os.listdir(shipDirectory):
         shipAssets = []
         if os.path.isdir(shipAssetFolderPath):
             for files in os.listdir(shipAssetFolderPath):
-                if files == 'gunShip.png' or files == 'laserShip.png' or files == 'f1Laser.png':
+                if files == 'gunShip.png' or files == 'laserShip.png' or files == 'f1Laser.png': # Handles background conversion
                     gunShip = pygame.image.load(resource_path(os.path.join(shipAssetFolderPath,files)))
                     gunShip.set_colorkey([255,255,255])
                     shipAssets.append(gunShip.convert_alpha())
@@ -256,6 +212,25 @@ for shipLevelFolder in os.listdir(shipDirectory):
             shipLevelAssets.append(laserImage)
     spaceShipList.append(shipLevelAssets)
 
+#[speed,fuel,maxFuel,fuelRegenNum,fuelRegenDelay,speedLimit,hasGuns,laserCost,laserSpeed,laserFireRate,boostAdder,boostDrain,]# DEFAULT SHIP
+shipConstants = []
+for i in shipAttributes: 
+    levelConstantsDict = {
+    "playerSpeed" : i[0],
+    "fuel" : i[1],
+    "maxFuel" : i[2],
+    "fuelRegenNum" : i[3],
+    "fuelRegenDelay" : i[4],
+    "speedLimit" : i[5],
+    "hasGuns" : i[6],
+    "laserCost" : i[7],
+    "laserSpeed" : i[8],
+    "laserFireRate" : i[9],
+    "boostAdder" : i[10],
+    "boostDrain" : i[11]
+    }
+    shipConstants.append(levelConstantsDict)
+    
 for i in range(len(spaceShipList)): spaceShipList[i].append(shipConstants[i])
 # [   ( [Exhaust frames],Laser Image,[Ship Skins],{Player Constants} )   ]
 
@@ -487,7 +462,6 @@ class Game:
     
     
     def alternateUpdate(self,player,obstacles,events):
-        
         player.alternateMovement()
         player.movement()
         player.wrapping()
@@ -619,7 +593,7 @@ class Game:
         screen.blit(timerDisplay, timerRect)
         screen.blit(stageDisplay, stageRect)
         screen.blit(levelDisplay, levelRect)
-        if player.maxFuel > 0:
+        if player.boostDrain > 0 or player.laserCost > 0:
             pygame.draw.rect(screen, fuelColor,[screenSize[0]/3, 0, player.fuel * 20, 10]) # FUEL DISPLAY
     
     
@@ -1200,7 +1174,6 @@ class Player(pygame.sprite.Sprite):
 
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
-
 
 
         # GET PREVIOUS SPACESHIP IMAGE
