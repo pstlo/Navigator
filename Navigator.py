@@ -419,12 +419,17 @@ class Game:
         # LEVEL UP 
         self.levelUpdater(player,obstacles,events)   
         
-        # DRAW SPRITES
-        newBlit = rotateImage(player.image,player.rect,player.angle) # Player rotation
-        newExhaustBlit = rotateImage(spaceShipList[game.savedShipLevel][0][player.exhaustState-1],player.rect,player.angle) # Rotate exhaust 
+        # ROTATE PLAYER
+        newBlit = rotateImage(player.image,player.rect,player.angle)
         
-        screen.blit(newBlit[0],newBlit[1]) # Draw player
-        if game.savedShipLevel == 0: screen.blit(newExhaustBlit[0],newExhaustBlit[1]) # Draw exhaust
+        # ROTATE EXHAUST
+        newExhaustBlit = rotateImage(spaceShipList[game.savedShipLevel][0][player.exhaustState-1],player.rect,player.angle)
+        
+        # DRAW PLAYER
+        screen.blit(newBlit[0],newBlit[1])
+        
+        # DRAW EXHAST
+        if game.savedShipLevel != 1: screen.blit(newExhaustBlit[0],newExhaustBlit[1])
         
         # UPDATE BOOST ANIMATION / currently only 3 frames
         player.lastThreeExhaustPos[2] = player.lastThreeExhaustPos[1]
