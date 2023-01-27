@@ -70,13 +70,14 @@ exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation fr
 boostCooldownTime = 500 # Default = 500 / Activates when fuel runs out to allow regen
 
 # SHIP CONSTANTS
-#                       [speed,fuel,maxFuel,fuelRegenNum,fuelRegenDelay,boostSpeed,hasGuns,laserCost,laserSpeed,laserFireRate,boostDrain,]
-defaultShipAttributes = [ 5,   10,  20,     0.05,        50,            7,        False,   0,        0,          0,            0.4  ]
-gunShipAttributes =     [ 3,   10,  20,     0.05,        50,            10,        True,    0.4,      10,        250,          0.3  ]
-laserShipAttributes =   [ 2,   1,   1,      0,           0,             2,         True,    0,        10,        50,           0    ]
-hyperYachtAttributes =  [ 3,   20,  30,     0.1,         25,            12,        False,   0,        0,         0,            0.25 ]
+#                       [speed,fuel,maxFuel,fuelRegenNum,fuelRegenDelay,boostSpeed,hasGuns,laserCost,laserSpeed,laserFireRate,boostDrain,lasersStop]
+defaultShipAttributes = [ 5,   10,  20,     0.05,        50,            7,         False,   0,        0,         0,            0.4,  True  ]
+gunShipAttributes =     [ 3,   10,  20,     0.05,        50,            10,        True,    0.4,      10,        250,          0.3,  True  ]
+laserShipAttributes =   [ 2,   1,   1,      0,           0,             2,         True,    0,        10,        50,           0,    True  ]
+hyperYachtAttributes =  [ 3,   20,  30,     0.1,         25,            12,        False,   0,        0,         0,            0.25, True  ]
+oldReliableAttributes = [ 4,   10,  15,     0.05,         50,            6,         True,   1,      5,         1000,         0.25,   False ]
 
-shipAttributes = [defaultShipAttributes,gunShipAttributes,laserShipAttributes,hyperYachtAttributes]
+shipAttributes = [defaultShipAttributes,gunShipAttributes,laserShipAttributes,hyperYachtAttributes,oldReliableAttributes]
 
 # OBSTACLES  (Can be updated by level)
 obstacleSpeed = 4 *scaler  # Default = 4           
@@ -192,7 +193,7 @@ for filename in os.listdir(explosionDirectory):
 
 # SPACESHIP ASSETS
 spaceShipList = [] 
-toRemoveBackground = ['gunShip.png','laserShip.png','f1Laser.png','hyperYacht.png', 'HYf1.png','HYf2.png','HYf3.png'] # List of PNGs in ships folder with white backgrounds
+toRemoveBackground = ['gunShip.png','laserShip.png','f1Laser.png','hyperYacht.png', 'HYf1.png','HYf2.png','HYf3.png','olReliableShip.png','oRf1.png','oRf2.png','oRf3.png'] # List of PNGs in ships folder with white backgrounds
 
 for shipLevelFolder in os.listdir(shipDirectory):
     shipLevelFolderPath = os.path.join(shipDirectory,shipLevelFolder)
@@ -228,7 +229,8 @@ for i in shipAttributes:
     "laserCost" : i[7],
     "laserSpeed" : i[8],
     "laserFireRate" : i[9],
-    "boostDrain" : i[10]
+    "boostDrain" : i[10],
+    "laserCollat" : i[11]
     }
     shipConstants.append(levelConstantsDict)
     
@@ -400,6 +402,7 @@ class Game:
         # OBSTACLE/LASER COLLISION DETECTION
         for laser in lasers:
             if pygame.sprite.spritecollide(laser,obstacles,True,pygame.sprite.collide_mask):
+                if player.laserCollat: laser.kill()
                 screen.blit(explosionList[len(explosionList)-1],laser.rect.center) # Draw final explosion frame on collision
         
         # DRAW AND MOVE SPRITES
@@ -1032,6 +1035,7 @@ class Player(pygame.sprite.Sprite):
             self.laserCost = spaceShipList[game.savedShipLevel][3]["laserCost"]
             self.laserSpeed = spaceShipList[game.savedShipLevel][3]["laserSpeed"]
             self.laserFireRate = spaceShipList[game.savedShipLevel][3]["laserFireRate"]
+            self.laserCollat = spaceShipList[game.savedShipLevel][3]["laserCollat"]
             self.hasGuns, self.laserReady, self.boostReady = spaceShipList[game.savedShipLevel][3]["hasGuns"], True, True
         
 
@@ -1239,6 +1243,7 @@ class Player(pygame.sprite.Sprite):
             self.laserSpeed = spaceShipList[game.savedShipLevel][3]["laserSpeed"]
             self.laserFireRate = spaceShipList[game.savedShipLevel][3]["laserFireRate"]
             self.hasGuns = spaceShipList[game.savedShipLevel][3]["hasGuns"]
+            self.laserCollat = spaceShipList[game.savedShipLevel][3]["laserCollat"]
             
         
         def updateExhaust(self,game):
