@@ -1,4 +1,4 @@
-# NAVIGATOR W/ FULLSCREEN TOGGLE
+# NAVIGATOR v0.3.9 W/ FULLSCREEN TOGGLE
 
 import random
 import math
