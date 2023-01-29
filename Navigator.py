@@ -128,7 +128,7 @@ displayInfo = displayInfo.current_w,displayInfo.current_h
 displayInfo = pygame.Rect(0, 0, displayInfo[0], displayInfo[1]).center
 
 def getScreen():
-    if fullScreen: return pygame.display.set_mode(screenSize,pygame.FULLSCREEN) 
+    if fullScreen: return pygame.display.set_mode(screenSize,pygame.FULLSCREEN + pygame.SCALED) 
     else: return pygame.display.set_mode(screenSize)
 
 # TOGGLE FULLSCREEN
