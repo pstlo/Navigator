@@ -342,6 +342,8 @@ class Game:
         self.spinSpeed = spinSpeed
         self.cloudPos = cloudStart
         self.wipe = obstacleWipe
+        self.explosions = []
+        
         contantList = []
         for stage in stageList:
             stageConstants = []
@@ -422,8 +424,15 @@ class Game:
         # OBSTACLE/LASER COLLISION DETECTION
         for laser in lasers:
             if pygame.sprite.spritecollide(laser,obstacles,True,pygame.sprite.collide_mask):
-                if player.laserCollat: laser.kill()
+                if player.laserCollat:
+                    laser.kill()
+                    self.explosions.append(Explosion(self,laser))
                 screen.blit(explosionList[len(explosionList)-1],laser.rect.center) # Draw final explosion frame on collision
+                
+        for debris in self.explosions: 
+            if debris.finished: self.explosions.remove(debris)
+            else: debris.update()
+
         
         # DRAW AND MOVE SPRITES
         player.movement()
@@ -1355,6 +1364,20 @@ class Laser(pygame.sprite.Sprite):
         
         # Remove lasers off screen
         if self.rect.centerx > screenSize[0] or self.rect.centery > screenSize[1] or self.rect.centerx < 0 or self.rect.centery < 0: self.kill()
+
+
+class Explosion:
+    def __init__(self,game,laser):
+        self.state,self.finalState,self.finished = 0,len(explosionList)-1,False
+        self.rect = laser.rect
+        self.image = explosionList[self.state]
+        
+    def update(self):
+        screen.blit(self.image,self.rect)
+        if self.state +1 >= len(explosionList): self.finished = True
+        else: 
+            self.state +=1
+            self.image = explosionList[self.state]
 
 
 # START MENU METEOR GENERATION
