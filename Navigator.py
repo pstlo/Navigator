@@ -19,6 +19,7 @@ pygame.mouse.set_visible(False)
 screenSize = [800,800] # Default = [800,800]
 scaler = (screenSize[0] + screenSize[1])  / 1600 # Default = x + y / 2  / 800
 roundedScaler = int(round(scaler))
+fullScreen = False # Default = False
 
 fuelColor = [255,0,0] # Default = [255,0,0] / Color of fuel gauge
 fps = 60 # Default = 60                                    
@@ -115,8 +116,18 @@ stageTwoLevels = [stageTwoLevelOne,stageTwoLevelTwo,stageTwoLevelThree,stageTwoL
 stageList = [stageOneLevels, stageTwoLevels] # List of stages
 
 #----------------------------------------------------------------------------------------------------------------------
-# STORE LEVEL DEFAULTS
-screen = pygame.display.set_mode(screenSize) # Initialize screen
+
+# SCREEN
+def getScreen():
+    if fullScreen: return pygame.display.set_mode(screenSize,pygame.FULLSCREEN) # Initialize screen
+    else: return pygame.display.set_mode(screenSize)
+
+def toggleScreen():
+    global fullScreen
+    fullScreen = not fullScreen
+    return getScreen()
+    
+screen = getScreen()
 screenColor = [0,0,0] # Screen fill color 
 
 
@@ -663,6 +674,7 @@ class Event:
 class Menu:
     # START MENU
     def home(self,game,player):
+        global screen
         icons = []
         for icon in range(maxIcons): icons.append(Icon())
      
@@ -735,7 +747,14 @@ class Menu:
 
                     game.mainMenu = False    
                     return
-                
+                 
+                # TOGGLE FULLSCREEN
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_f:
+                    pygame.display.quit()
+                    pygame.display.init()
+                    pygame.mouse.set_visible(False)
+                    screen = toggleScreen()
+
                 # NEXT SPACESHIP SKIN
                 elif event.type == pygame.KEYDOWN and (event.key == pygame.K_d or event.key == pygame.K_RIGHT):
                     player.nextSpaceShip()
