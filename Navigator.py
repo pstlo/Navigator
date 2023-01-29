@@ -116,30 +116,40 @@ stageTwoLevels = [stageTwoLevelOne,stageTwoLevelTwo,stageTwoLevelThree,stageTwoL
 stageList = [stageOneLevels, stageTwoLevels] # List of stages
 
 #----------------------------------------------------------------------------------------------------------------------
-
-# SCREEN
-def getScreen():
-    if fullScreen: return pygame.display.set_mode(screenSize,pygame.FULLSCREEN) # Initialize screen
-    else: return pygame.display.set_mode(screenSize)
-
-def toggleScreen():
-    global fullScreen
-    fullScreen = not fullScreen
-    return getScreen()
-    
-screen = getScreen()
-screenColor = [0,0,0] # Screen fill color 
-
-
 # FOR EXE
 def resource_path(relative_path):
     try: base_path = sys._MEIPASS    
     except Exception: base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
+    
+# GET SCREEN SIZE
+displayInfo = pygame.display.Info()
+displayInfo = displayInfo.current_w,displayInfo.current_h
+displayInfo = pygame.Rect(0, 0, displayInfo[0], displayInfo[1]).center
 
+def getScreen():
+    if fullScreen: return pygame.display.set_mode(screenSize,pygame.FULLSCREEN) 
+    else: return pygame.display.set_mode(screenSize)
+
+# TOGGLE FULLSCREEN
+def toggleScreen():
+    global fullScreen
+    fullScreen = not fullScreen
+    return getScreen()
+
+# MAIN DIRECTORY
+currentDirectory = resource_path('Assets')
+
+# INITIALIZE SCREEN
+screen = getScreen()
+ 
+# WINDOW
+windowIcon = pygame.image.load(resource_path(os.path.join(currentDirectory,'Icon.png'))).convert_alpha()
+pygame.display.set_caption('Navigator')
+pygame.display.set_icon(windowIcon)
+screenColor = [0,0,0] # Screen fill color
 
 # ASSET LOADING
-currentDirectory = resource_path('Assets')
 obstacleDirectory = os.path.join(currentDirectory, 'Obstacles') # Obstacle asset directory
 meteorDirectory = os.path.join(obstacleDirectory, 'Meteors') # Meteor asset directory
 ufoDirectory = os.path.join(obstacleDirectory, 'UFOs') # UFO asset directory
@@ -264,9 +274,7 @@ menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'red.
 menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'white.png'))).convert_alpha())
 menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'yellow.png'))).convert_alpha())
 
-# WINDOW
-pygame.display.set_caption('Navigator')
-pygame.display.set_icon(menuList[0])
+
 
 # LOAD GAME RECORDS
 overallHighScorePath = os.path.join(recordsDirectory,'OverallHighScore.txt')
@@ -305,6 +313,7 @@ restrictedTopDir = ["SE", "SW", "S"]
 restrictedLeftDir = ["E", "NE", "SE"]
 restrictedBottomDir = ["N", "NE", "NW"]
 restrictedRightDir = ["NW", "SW", "W"]
+
 
 
 # GAME 
@@ -720,8 +729,7 @@ class Menu:
         startDelay = 1
         iconPosition, startDelayCounter = startOffset, 0
         
-        while game.mainMenu:
-                
+        while game.mainMenu:   
             if bounceCount >= bounceDelay: bounceCount = 0
             else: bounceCount +=1
                 
@@ -754,6 +762,8 @@ class Menu:
                     pygame.display.init()
                     pygame.mouse.set_visible(False)
                     screen = toggleScreen()
+                    pygame.display.set_icon(windowIcon)
+                    pygame.display.set_caption('Navigator')
 
                 # NEXT SPACESHIP SKIN
                 elif event.type == pygame.KEYDOWN and (event.key == pygame.K_d or event.key == pygame.K_RIGHT):
