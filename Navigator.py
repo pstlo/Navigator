@@ -758,12 +758,8 @@ class Menu:
                  
                 # TOGGLE FULLSCREEN
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_f:
-                    pygame.display.quit()
-                    pygame.display.init()
                     pygame.mouse.set_visible(False)
                     screen = toggleScreen()
-                    pygame.display.set_icon(windowIcon)
-                    pygame.display.set_caption('Navigator')
 
                 # NEXT SPACESHIP SKIN
                 elif event.type == pygame.KEYDOWN and (event.key == pygame.K_d or event.key == pygame.K_RIGHT):
