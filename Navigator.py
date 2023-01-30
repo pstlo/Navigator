@@ -314,7 +314,7 @@ restrictedTopDir = ["SE", "SW", "S"]
 restrictedLeftDir = ["E", "NE", "SE"]
 restrictedBottomDir = ["N", "NE", "NW"]
 restrictedRightDir = ["NW", "SW", "W"]
-
+    
 
 # GAME 
 class Game:
@@ -424,9 +424,8 @@ class Game:
         # OBSTACLE/LASER COLLISION DETECTION
         for laser in lasers:
             if pygame.sprite.spritecollide(laser,obstacles,True,pygame.sprite.collide_mask):
-                if player.laserCollat:
-                    laser.kill()
-                    self.explosions.append(Explosion(self,laser))
+                if player.laserCollat: laser.kill()
+                self.explosions.append(Explosion(self,laser))
     
         for debris in self.explosions: 
             if debris.finished: self.explosions.remove(debris)
@@ -689,8 +688,10 @@ class Event:
 
 # MENUS
 class Menu:
+    
     # START MENU
     def home(self,game,player):
+        
         global screen
         icons = []
         for icon in range(maxIcons): icons.append(Icon())
@@ -763,7 +764,11 @@ class Menu:
 
                     game.mainMenu = False    
                     return
-                 
+                
+                # HELP MENU
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_h:
+                    self.helpScreen(player)
+                
                 # TOGGLE FULLSCREEN
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_f:
                     pygame.mouse.set_visible(False)
@@ -814,8 +819,51 @@ class Menu:
             screen.blit(menuList[4],rightRect) # Right UFO
             
             pygame.display.update()
+
+
+    # HELP MENU
+    def helpScreen(self,player):
+        global screen
+        spacing = screenSize[1]/20
+        font = pygame.font.Font(gameFont, helpSize)
+        textList =  [
+                        [ "Controls",[screenSize[0]/2,spacing], helpSize * 2, helpColor ],
+                        [ "WASD   Movement",[screenSize[0]/2,spacing * 2], helpSize, helpColor ] 
+                    ]
+
+        if player.hasGuns: textList.append([ "CTRL   Shoot",[screenSize[0]/2,spacing * 3], helpSize, helpColor ])
+        if player.baseSpeed < player.boostSpeed: textList.append([ "SHIFT  Speed boost",[screenSize[0]/2,spacing * 4], helpSize, helpColor ])
         
         
+        helpMenu = True
+        screen.fill(screenColor)
+        
+        while(helpMenu):
+            for event in pygame.event.get():
+                # EXIT
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+                # TOGGLE FULLSCREEN
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_f:
+                    pygame.mouse.set_visible(False)
+                    screen = toggleScreen()
+
+                if event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_SPACE or event.key == pygame.K_h): helpMenu = False
+                    
+            screen.blit(bgList[game.currentStage - 1][0],(0,0))
+            for text in textList: 
+                textString,center,textSize,textColor = text
+                font = pygame.font.Font(gameFont, textSize)
+                display = font.render(textString, True, textColor)
+                rect = display.get_rect()
+                rect.center = (center)
+                screen.blit(display,rect)
+                
+            pygame.display.update()
+            
+    
     def pause(self,game,player,obstacles,lasers):
         global screen
         playerBlit = rotateImage(player.image,player.rect,player.lastAngle)
@@ -866,7 +914,7 @@ class Menu:
                     screen = toggleScreen()
 
                 elif event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_SPACE): paused = False
-     
+
 
     # GAME OVER SCREEN 
     def gameOver(self,game,player,obstacles):
