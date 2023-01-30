@@ -88,6 +88,7 @@ obstacleBoundaries = "KILL" # Default = "KILL"
 aggro = True # Default = True / Removes restriction on obstacle movement - False = more difficult
 spinSpeed = 1 # Default = 1
 obstacleWipe = False # Default = False / Wipe before level
+explosionDelay = 1 # Default = 1
 
 # LEVELS  
 levelTimer = 15 # Default = 15 / Time (seconds) between levels
@@ -427,8 +428,7 @@ class Game:
                 if player.laserCollat:
                     laser.kill()
                     self.explosions.append(Explosion(self,laser))
-                screen.blit(explosionList[len(explosionList)-1],laser.rect.center) # Draw final explosion frame on collision
-                
+    
         for debris in self.explosions: 
             if debris.finished: self.explosions.remove(debris)
             else: debris.update()
@@ -1371,13 +1371,19 @@ class Explosion:
         self.state,self.finalState,self.finished = 0,len(explosionList)-1,False
         self.rect = laser.rect
         self.image = explosionList[self.state]
+        self.updateFrame = 0
+        self.delay = explosionDelay
         
     def update(self):
-        screen.blit(self.image,self.rect)
-        if self.state +1 >= len(explosionList): self.finished = True
-        else: 
-            self.state +=1
-            self.image = explosionList[self.state]
+        self.updateFrame +=1
+        if self.updateFrame >= self.delay:
+            self.updateFrame = 0
+            if self.state +1 >= len(explosionList): self.finished = True
+            else: 
+                self.state +=1
+                self.image = explosionList[self.state]
+
+        screen.blit(self.image,self.rect)    
 
 
 # START MENU METEOR GENERATION
