@@ -17,7 +17,7 @@ pygame.mouse.set_visible(False)
 #------------------GAME CONSTANTS--------------------------------------------------------------------------
 # SCREEN                                                                                                                            
 screenSize = [800,800] # Default = [800,800]
-scaler = (screenSize[0] + screenSize[1])  / 1600 # Default = x + y / 2  / 800
+scaler = (screenSize[0] + screenSize[1])  / 1600 # Default = x + y / 2  / 800 == 1
 roundedScaler = int(round(scaler))
 fullScreen = False # Default = False
 
@@ -72,11 +72,11 @@ boostCooldownTime = 500 # Default = 500 / Activates when fuel runs out to allow 
 
 # SHIP CONSTANTS
 #                       [speed,fuel,maxFuel,fuelRegenNum,fuelRegenDelay,boostSpeed,hasGuns,laserCost,laserSpeed,laserFireRate,boostDrain,lasersStop]
-defaultShipAttributes = [ 5,   10,  20,     0.05,        50,            7,         False,   0,        0,         0,            0.4,  True  ]
-gunShipAttributes =     [ 3,   10,  20,     0.05,        50,            10,        True,    0.4,      10,        250,          0.3,  True  ]
-laserShipAttributes =   [ 2,   1,   1,      0,           0,             2,         True,    0,        10,        50,           0,    True  ]
-hyperYachtAttributes =  [ 3,   20,  30,     0.1,         25,            12,        False,   0,        0,         0,            0.25, True  ]
-oldReliableAttributes = [ 4,   10,  15,     0.05,         50,            6,         True,   1,      5,         1000,         0.25,   False ]
+defaultShipAttributes = [ 5,   10,  20,     0.05,        50,            7,         False,   0,        0,         0,           0.4,       True  ]
+gunShipAttributes =     [ 3,   10,  20,     0.05,        50,            10,        True,    0.4,      10,        250,         0.3,       True  ]
+laserShipAttributes =   [ 2,   1,   1,      0,           0,             2,         True,    0,        10,        50,          0,         True  ]
+hyperYachtAttributes =  [ 3,   20,  30,     0.1,         25,            12,        False,   0,        0,         0,           0.25,      True  ]
+oldReliableAttributes = [ 4,   10,  15,     0.05,        50,            6,         True,    1,        5,         1000,        0.25,      False ]
 
 shipAttributes = [defaultShipAttributes,gunShipAttributes,laserShipAttributes,hyperYachtAttributes,oldReliableAttributes]
 
@@ -314,7 +314,6 @@ restrictedTopDir = ["SE", "SW", "S"]
 restrictedLeftDir = ["E", "NE", "SE"]
 restrictedBottomDir = ["N", "NE", "NW"]
 restrictedRightDir = ["NW", "SW", "W"]
-
 
 
 # GAME 
@@ -818,7 +817,7 @@ class Menu:
         
         
     def pause(self,game,player,obstacles,lasers):
-        
+        global screen
         playerBlit = rotateImage(player.image,player.rect,player.lastAngle)
         paused = True
         pausedFont = pygame.font.Font(gameFont, pausedSize)
@@ -830,8 +829,7 @@ class Menu:
         pauseCountSize = 40 * roundedScaler
         pauseNum = str(pauseMax - game.pauseCount) + " Pauses left"
         
-        if game.pauseCount >= pauseMax:
-            pauseNum = "Out of pauses"
+        if game.pauseCount >= pauseMax: pauseNum = "Out of pauses"
 
         pauseCountFont = pygame.font.Font(gameFont,pauseCountSize)
         pauseDisplay = pauseCountFont.render( pauseNum , True, levelColor )
@@ -856,17 +854,23 @@ class Menu:
             screen.blit(pausedDisplay,pausedRect)
             pygame.display.flip()
             for event in pygame.event.get():
+            
                 # EXIT
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-                
+
+                # TOGGLE FULLSCREEN
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_f:
+                    pygame.mouse.set_visible(False)
+                    screen = toggleScreen()
+
                 elif event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_SPACE): paused = False
      
 
     # GAME OVER SCREEN 
     def gameOver(self,game,player,obstacles):
-        
+        global screen
         gameOver = True
         newHighScore = False
         
@@ -950,6 +954,11 @@ class Menu:
                     pygame.quit()
                     sys.exit()
                 
+                # TOGGLE FULLSCREEN
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_f:
+                    pygame.mouse.set_visible(False)
+                    screen = toggleScreen()
+
                 # CREDITS
                 elif (event.type == pygame.KEYDOWN and event.key == pygame.K_c): menu.creditScreen()
 
@@ -980,70 +989,75 @@ class Menu:
 
 
     def creditScreen(self):
+        global screen
+        rollCredits = True 
+        posX = screenSize[0]/2
+        posY = screenSize[1]/2
+        creditsFont = pygame.font.Font(gameFont, creditsFontSize)
+        
+        createdByLine = "Created by Mike Pistolesi"
+        creditsLine = "Art by Collin Guetta"
+        
+        createdByDisplay = creditsFont.render(createdByLine, True, creditsColor)
+        creditsDisplay = creditsFont.render(creditsLine, True, creditsColor)
+        
+        creditsRect = creditsDisplay.get_rect()
+        createdByRect = createdByDisplay.get_rect()
+        
+        creditsRect.center = (posX,posY)
+        createdByRect.center = (posX, posY - screenSize[1]/15) 
+        
+        bounceCount = 0
+        direction = randomEightDirection()
+        
+        while rollCredits:
+            
+            for event in pygame.event.get():
+                # EXIT
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
 
-            rollCredits = True 
-            posX = screenSize[0]/2
-            posY = screenSize[1]/2
-            creditsFont = pygame.font.Font(gameFont, creditsFontSize)
-            
-            createdByLine = "Created by Mike Pistolesi"
-            creditsLine = "Art by Collin Guetta"
-            
-            createdByDisplay = creditsFont.render(createdByLine, True, creditsColor)
-            creditsDisplay = creditsFont.render(creditsLine, True, creditsColor)
-            
-            creditsRect = creditsDisplay.get_rect()
-            createdByRect = createdByDisplay.get_rect()
-            
-            creditsRect.center = (posX,posY)
-            createdByRect.center = (posX, posY - screenSize[1]/15) 
-            
-            bounceCount = 0
-            direction = randomEightDirection()
-            
-            while rollCredits:
-                
-                for event in pygame.event.get():
-                    # EXIT
-                    if event.type == pygame.QUIT:
-                        pygame.quit()
-                        sys.exit()
+                # TOGGLE FULLSCREEN
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_f:
+                    pygame.mouse.set_visible(False)
+                    screen = toggleScreen()
 
-                    # RETURN TO GAME
-                    elif event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_c or event.key == pygame.K_SPACE):
-                        rollCredits = False
-                
-                screen.fill(screenColor)
-                screen.blit(bgList[game.currentStage - 1][0],(0,0))
-                screen.blit(createdByDisplay,createdByRect)
-                screen.blit(creditsDisplay,creditsRect)
-                pygame.display.flip()
+                # RETURN TO GAME
+                elif event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_c or event.key == pygame.K_SPACE):
+                    rollCredits = False
+            
+            screen.fill(screenColor)
+            screen.blit(bgList[game.currentStage - 1][0],(0,0))
+            screen.blit(createdByDisplay,createdByRect)
+            screen.blit(creditsDisplay,creditsRect)
+            pygame.display.flip()
 
-                # BOUNCE OFF EDGES
-                if createdByRect.right > screenSize[0]: direction = rightDir[random.randint(0, len(rightDir) - 1)]
-                if createdByRect.left < 0: direction = leftDir[random.randint(0, len(leftDir) - 1)]  
-                if creditsRect.bottom > screenSize[1]: direction = bottomDir[random.randint(0, len(bottomDir) - 1)]
-                if createdByRect.top < 0 : direction = topDir[random.randint(0, len(topDir) - 1)]
+            # BOUNCE OFF EDGES
+            if createdByRect.right > screenSize[0]: direction = rightDir[random.randint(0, len(rightDir) - 1)]
+            if createdByRect.left < 0: direction = leftDir[random.randint(0, len(leftDir) - 1)]  
+            if creditsRect.bottom > screenSize[1]: direction = bottomDir[random.randint(0, len(bottomDir) - 1)]
+            if createdByRect.top < 0 : direction = topDir[random.randint(0, len(topDir) - 1)]
 
-                if bounceCount == 0:
-                    if "N" in direction:
-                        creditsRect.centery-= 1
-                        createdByRect.centery-= 1
-                        
-                    if "S" in direction: 
-                        creditsRect.centery+= 1
-                        createdByRect.centery+= 1
-                        
-                    if "E" in direction:
-                        creditsRect.centerx+= 1
-                        createdByRect.centerx+= 1
-                        
-                    if "W" in direction:
-                        creditsRect.centerx-= 1
-                        createdByRect.centerx-= 1
+            if bounceCount == 0:
+                if "N" in direction:
+                    creditsRect.centery-= 1
+                    createdByRect.centery-= 1
+                    
+                if "S" in direction: 
+                    creditsRect.centery+= 1
+                    createdByRect.centery+= 1
+                    
+                if "E" in direction:
+                    creditsRect.centerx+= 1
+                    createdByRect.centerx+= 1
+                    
+                if "W" in direction:
+                    creditsRect.centerx-= 1
+                    createdByRect.centerx-= 1
 
-                bounceCount +=1
-                if bounceCount >= 10: bounceCount = 0
+            bounceCount +=1
+            if bounceCount >= 10: bounceCount = 0
 
 
 # PLAYER
@@ -1278,8 +1292,8 @@ class Player(pygame.sprite.Sprite):
             self.laserFireRate = spaceShipList[game.savedShipLevel][3]["laserFireRate"]
             self.hasGuns = spaceShipList[game.savedShipLevel][3]["hasGuns"]
             self.laserCollat = spaceShipList[game.savedShipLevel][3]["laserCollat"]
-            
-        
+
+
         def updateExhaust(self,game):
             if self.exhaustState+1 > len(spaceShipList[game.savedShipLevel][0]): self.exhaustState = 0
             else: self.exhaustState += 1
