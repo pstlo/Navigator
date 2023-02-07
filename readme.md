@@ -3,7 +3,7 @@
 ### Simple and addictive arcade game written in Python with PyGame ###
 
 #### Latest Releases:   
-Windows: https://github.com/pstlo/Navigator/releases/download/v0.3.9/Navigator.zip \
+Windows: https://github.com/pstlo/Navigator/releases/download/v0.4.0/Navigator.zip \
 MacOS: https://github.com/pstlo/Navigator/releases/download/v0.3.9/NavigatorMacOS.zip
  
 To get started, either download, extract, and run the latest release, or
