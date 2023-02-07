@@ -6,7 +6,7 @@
 Windows: https://github.com/pstlo/Navigator/releases/download/v0.3.9/Navigator.zip \
 MacOS: https://github.com/pstlo/Navigator/releases/download/v0.3.9/NavigatorMacOS.zip
  
-To get started, either download, extract, and run the executable from latest release, or
+To get started, either download, extract, and run the latest release, or
 
 1. Install python, check "ADD TO PATH"
 2. Install pygame with
