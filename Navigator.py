@@ -192,9 +192,14 @@ for filename in sorted(os.listdir(backgroundDirectory)):
         bgPath = os.path.join(backgroundDirectory,filename)  
         stageBgPath = os.path.join(bgPath,'Background.png')
         stageCloudPath = os.path.join(bgPath,'Cloud.png')
-
-        bg = pygame.image.load(resource_path(stageBgPath)).convert_alpha()
-        cloud = pygame.image.load(resource_path(stageCloudPath)).convert_alpha()
+        
+        if screenSize != [800,800]: # Stretching resolution
+            bg = pygame.transform.scale(pygame.image.load(resource_path(stageBgPath)).convert_alpha(), (screenSize[0], screenSize[1]))
+            cloud = pygame.transform.scale(pygame.image.load(resource_path(stageCloudPath)).convert_alpha(), (screenSize[0], screenSize[1]))
+        
+        else:
+            bg = pygame.image.load(resource_path(stageBgPath)).convert_alpha()
+            cloud = pygame.image.load(resource_path(stageCloudPath)).convert_alpha()
 
         bgList.append([bg,cloud])
 
