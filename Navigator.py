@@ -161,26 +161,21 @@ recordsDirectory = os.path.join(os.getcwd(), 'Records') # Game records directory
 explosionDirectory = os.path.join(currentDirectory, 'Explosion') # Explosion animation directory
 
 # FONT
-gameFont = ''
-for filename in os.listdir(currentDirectory):
-    if filename.endswith('.ttf'):
-        path = os.path.join(currentDirectory, filename)
-        gameFont = path
-        break
+gameFont = os.path.join(currentDirectory, 'Font.ttf')
 
 # STAGE WIPE CLOUD
-stageCloudImg = pygame.image.load( resource_path(os.path.join(currentDirectory,'StageCloud.png') ) ).convert_alpha()
+stageCloudImg = pygame.image.load(resource_path(os.path.join(currentDirectory,'StageCloud.png') ) ).convert_alpha()
 
 # METEOR ASSETS
 meteorList = []
-for filename in os.listdir(meteorDirectory):
+for filename in sorted(os.listdir(meteorDirectory)):
     if filename.endswith('.png'):
         path = os.path.join(meteorDirectory, filename)
         meteorList.append(pygame.image.load(resource_path(path)).convert_alpha())
 
 # UFO ASSETS
 ufoList = []
-for filename in os.listdir(ufoDirectory):
+for filename in sorted(os.listdir(ufoDirectory)):
     if filename.endswith('.png'):
         path = os.path.join(ufoDirectory, filename)
         ufoList.append(pygame.image.load(resource_path(path)).convert_alpha())
@@ -188,27 +183,25 @@ for filename in os.listdir(ufoDirectory):
 # ALL OBSTACLE ASSETS
 obstacleImages = [meteorList,ufoList] # Seperated by stage
 
-# BACKGROUND ASSETS
+# BACKGROUND ASSETS 
 bgList = []
-for filename in os.listdir(backgroundDirectory):
-    bgPath = os.path.join(backgroundDirectory,filename)
-    for nextBg in os.listdir(bgPath):
-        
+for filename in sorted(os.listdir(backgroundDirectory)):
+    filePath = os.path.join(backgroundDirectory,filename)
+    if os.path.isdir(filePath):
+
+        bgPath = os.path.join(backgroundDirectory,filename)  
         stageBgPath = os.path.join(bgPath,'Background.png')
         stageCloudPath = os.path.join(bgPath,'Cloud.png')
 
         bg = pygame.image.load(resource_path(stageBgPath)).convert_alpha()
         cloud = pygame.image.load(resource_path(stageCloudPath)).convert_alpha()
-        
-        bg = pygame.transform.scale(bg, screenSize)
-        cloud = pygame.transform.scale(cloud, screenSize)
-        
+
         bgList.append([bg,cloud])
-        break
+
 
 # EXPLOSION ASSETS
 explosionList = []
-for filename in os.listdir(explosionDirectory):
+for filename in sorted(os.listdir(explosionDirectory)):
     if filename.endswith('.png'):
         path = os.path.join(explosionDirectory, filename)
         explosionList.append(pygame.image.load(resource_path(path)).convert_alpha())
@@ -217,26 +210,32 @@ for filename in os.listdir(explosionDirectory):
 spaceShipList = [] 
 toRemoveBackground = ['gunShip.png','laserShip.png','f1Laser.png','hyperYacht.png', 'HYf1.png','HYf2.png','HYf3.png','olReliableShip.png','oRf1.png','oRf2.png','oRf3.png'] # List of PNGs in ships folder with white backgrounds
 
-for shipLevelFolder in os.listdir(shipDirectory):
-    shipLevelFolderPath = os.path.join(shipDirectory,shipLevelFolder)
-    shipLevelAssets = []
-    for shipAssetFolder in os.listdir(shipLevelFolderPath):
-        shipAssetFolderPath = os.path.join(shipLevelFolderPath,shipAssetFolder)
-        shipAssets = []
-        if os.path.isdir(shipAssetFolderPath):
-            for files in os.listdir(shipAssetFolderPath):
-                if files in toRemoveBackground: # Handles white background conversion
-                    ship = pygame.image.load(resource_path(os.path.join(shipAssetFolderPath,files)))
-                    ship.set_colorkey([255,255,255])
-                    shipAssets.append(ship.convert_alpha())
-                elif files.endswith('.png'): shipAssets.append(pygame.image.load(resource_path(os.path.join(shipAssetFolderPath,files))).convert_alpha())
-            shipLevelAssets.append(shipAssets)
-        elif shipAssetFolder == 'Laser.png':
-            laserImage = pygame.image.load( resource_path(os.path.join(shipLevelFolderPath,shipAssetFolder)))
-            laserImage.set_colorkey([255,255,255])
-            laserImage = laserImage.convert_alpha()
-            shipLevelAssets.append(laserImage)
-    spaceShipList.append(shipLevelAssets)
+for levelFolder in sorted(os.listdir(shipDirectory)):
+    levelFolderPath = os.path.join(shipDirectory,levelFolder) # level folder path
+    
+    if os.path.isdir(levelFolderPath): # Ignore DS_STORE on MacOS
+        shipLevelList = []
+        for shipAsset in sorted(os.listdir(levelFolderPath)): # Ship assets per level
+            shipAssetPath = os.path.join(levelFolderPath,shipAsset) # Ship asset path        
+            
+            if os.path.isdir(shipAssetPath): # Ignore DS_STORE on MacOS
+                assetList = []
+                for imageAsset in sorted(os.listdir(shipAssetPath)): # Iterate through image folders
+                    
+                    if imageAsset.endswith('.png'): 
+                        imageAssetPath = os.path.join(shipAssetPath,imageAsset)
+                        imageAssetPng = pygame.image.load(resource_path((imageAssetPath)))
+                        if imageAsset in toRemoveBackground: imageAssetPng.set_colorkey([255,255,255]) # Remove white background if specified in list
+                        assetList.append(imageAssetPng.convert_alpha())
+
+                shipLevelList.append(assetList)
+            
+            elif shipAsset == 'Laser.png':
+                laserPng = pygame.image.load(resource_path(shipAssetPath))
+                laserPng.set_colorkey([255,255,255]) 
+                shipLevelList.append(laserPng.convert_alpha())
+
+        spaceShipList.append(shipLevelList) # Add to main list
 
 shipConstants = []
 for i in shipAttributes: 
@@ -274,8 +273,6 @@ menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'oran
 menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'red.png'))).convert_alpha())
 menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'white.png'))).convert_alpha())
 menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'yellow.png'))).convert_alpha())
-
-
 
 # LOAD GAME RECORDS
 overallHighScorePath = os.path.join(recordsDirectory,'OverallHighScore.txt')
