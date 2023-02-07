@@ -3,6 +3,7 @@
 import random
 import math
 import sys
+import platform
 import os
 from os import environ
 import pickle
@@ -280,7 +281,9 @@ menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'whit
 menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'yellow.png'))).convert_alpha())
 
 # LOAD GAME RECORDS
-recordsPath = resource_path('gameRecords.txt')
+if platform.system().lower() != 'windows': recordsPath = resource_path('gameRecords.txt') # For MacOS (and possible linux)
+else: recordsPath = './gameRecords.txt' # For windows
+
 try: gameRecords = pickle.load(open(recordsPath,'rb'))
 except:
     gameRecords = {'highScore':0, 'attempts':0}
