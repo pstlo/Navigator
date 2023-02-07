@@ -699,15 +699,20 @@ class Menu:
         startRect.center = (screenSize[0]/2,screenSize[1]/2)
         
         startHelpFont = pygame.font.Font(gameFont, helpSize)
-        startHelpDisplay = startHelpFont.render("ESCAPE = QUIT     SPACE = START     C = CREDITS", True, helpColor)   
+        startHelpDisplay = startHelpFont.render("ESCAPE = Quit     SPACE = Start     F = Fullscreen     C = Credits", True, helpColor)   
         startHelpRect = startHelpDisplay.get_rect()
         startHelpRect.center = (screenSize[0]/2,screenSize[1]-screenSize[1]/7)
         
         shipHelpFont = pygame.font.Font(gameFont, round(helpSize * .65))
-        skinHelpDisplay = shipHelpFont.render("A/LEFT = PREV SKIN     D/RIGHT = NEXT SKIN", True, helpColor)
-        shipHelpDisplay = shipHelpFont.render("S/DOWN = PREV SHIP     W/UP = NEXT SHIP", True, helpColor)
-        skinHelpRect = skinHelpDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]-screenSize[1]/7 + 70))
-        shipHelpRect = shipHelpDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]-screenSize[1]/7 + 40))
+        skinHelpDisplay = shipHelpFont.render("A/LEFT = Last skin     D/RIGHT = Next skin", True, helpColor)
+        shipHelpDisplay = shipHelpFont.render("S/DOWN = Last ship     W/UP = Next ship", True, helpColor)
+        skinHelpRect = skinHelpDisplay.get_rect(center = (screenSize[0]/4 + 40, screenSize[1]-screenSize[1]/7 + 70))
+        shipHelpRect = shipHelpDisplay.get_rect(center = (screenSize[0]/4 + 40, screenSize[1]-screenSize[1]/7 + 40))
+        
+        boostHelp = shipHelpFont.render("SHIFT = Boost", True, helpColor)
+        shootHelp = shipHelpFont.render("CTRL = Shoot", True, helpColor)
+        boostHelpRect = boostHelp.get_rect()
+        shootHelpRect = shootHelp.get_rect()
         
         leftRect = menuList[3].get_rect(center = (screenSize[0] * 0.2 , screenSize[1]/3) )
         rightRect = menuList[4].get_rect(center = (screenSize[0] * 0.8 , screenSize[1]/3) )
@@ -790,6 +795,13 @@ class Menu:
                 elif event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and  event.key == pygame.K_ESCAPE):
                     pygame.quit()
                     sys.exit()
+                
+            # GET SHIP CONTROLS
+            if player.hasGuns and player.boostSpeed > player.baseSpeed: # has guns and boost
+                boostHelpRect.center = screenSize[0]*3/4 - 60, screenSize[1]-screenSize[1]/7 + 40
+                shootHelpRect.center = screenSize[0]*3/4 + 60, screenSize[1]-screenSize[1]/7 + 40
+            elif player.hasGuns: shootHelpRect.center = screenSize[0]*3/4, screenSize[1]-screenSize[1]/7 + 40 # has guns only 
+            elif player.boostSpeed > player.baseSpeed: boostHelpRect.center = screenSize[0]*3/4, screenSize[1]-screenSize[1]/7 + 40 # has boost only
 
             screen.fill(screenColor)
             screen.blit(bgList[game.currentStage - 1][0],(0,0))
@@ -797,16 +809,22 @@ class Menu:
             for icon in icons:
                 if bounceCount == bounceDelay: icon.move()    
                 icon.draw()
-
-            screen.blit(startDisplay,startRect)
-            screen.blit(startHelpDisplay, startHelpRect)
-            if game.savedOverallHighScore >= 30 and len(spaceShipList[game.savedShipLevel][2]) > 1: screen.blit(skinHelpDisplay,skinHelpRect)
+    
+            screen.blit(startDisplay,startRect) # Menu Logo
+            screen.blit(startHelpDisplay, startHelpRect) # Game controls
+            
+            # SHOW SHIP CONTROLS
+            if player.hasGuns: screen.blit(shootHelp,shootHelpRect)
+            if player.boostSpeed > player.baseSpeed: screen.blit(boostHelp,boostHelpRect)
+            if game.savedOverallHighScore >= 30 and len(spaceShipList[game.savedShipLevel][2]) > 1: screen.blit(skinHelpDisplay,skinHelpRect) # Show switch skin controls
             screen.blit(shipHelpDisplay,shipHelpRect)
             screen.blit(player.image, (player.rect.x,player.rect.y + startOffset)) # Current spaceship
+            
+            # LOGO LETTERS
             screen.blit(menuList[0],(-14 + startRect.left + menuList[0].get_width() - menuList[0].get_width()/8,screenSize[1]/2 - 42)) # "A" symbol
             screen.blit(menuList[1],(-42 + screenSize[0] - startRect.centerx + menuList[1].get_width() * 2,screenSize[1]/2 - 42)) # "O" symbol
             
-            # UFO icons
+            # UFO ICONS
             screen.blit(menuList[2],(screenSize[0]/2 - menuList[2].get_width()/2,screenSize[1]/8)) # Big icon
             screen.blit(menuList[3],leftRect) # Left UFO
             screen.blit(menuList[4],rightRect) # Right UFO
@@ -884,7 +902,7 @@ class Menu:
         
         # "GAME OVER" text
         gameOverFont = pygame.font.Font(gameFont, gameOverSize)
-        gameOverDisplay = gameOverFont.render("Game Over", True, gameOverColor)
+        gameOverDisplay = gameOverFont.render("GAME OVER", True, gameOverColor)
         gameOverRect = gameOverDisplay.get_rect()
         gameOverRect.center = (screenSize[0]/2, screenSize[1]/3)
         
@@ -906,7 +924,7 @@ class Menu:
         survivedDisplay = statFont.render(survivedLine, True, finalScoreColor)
         levelDisplay = statFont.render(levelLine, True, finalScoreColor)
         newHighScoreDisplay = statFont.render(newHighScoreLine, True, finalScoreColor)
-        exitDisplay = exitFont.render("TAB = MENU     SPACE = RESTART    ESCAPE = QUIT    C = CREDITS", True, helpColor)
+        exitDisplay = exitFont.render("TAB = Menu     SPACE = Restart    ESCAPE = Quit    C = Credits", True, helpColor)
         
         # Rects
         attemptRect = attemptDisplay.get_rect()
@@ -991,12 +1009,14 @@ class Menu:
         rollCredits = True 
         posX = screenSize[0]/2
         posY = screenSize[1]/2
-        creditsFont = pygame.font.Font(gameFont, creditsFontSize)
+        
+        creatorFont = pygame.font.Font(gameFont, creditsFontSize)
+        creditsFont = pygame.font.Font(gameFont, creditsFontSize - 15)
         
         createdByLine = "Created by Mike Pistolesi"
-        creditsLine = "Art by Collin Guetta"
+        creditsLine = "with art by Collin Guetta"
         
-        createdByDisplay = creditsFont.render(createdByLine, True, creditsColor)
+        createdByDisplay = creatorFont.render(createdByLine, True, creditsColor)
         creditsDisplay = creditsFont.render(creditsLine, True, creditsColor)
         
         creditsRect = creditsDisplay.get_rect()
@@ -1543,26 +1563,26 @@ def wrapObstacle(obstacles):
         if obs.rect.centerx < 0: obs.rect.centerx = screenSize[0]
 
 
-game = Game()
-menu = Menu()
+game = Game() # Initialize game
+menu = Menu() # Initialize menus
 
 
 def gameLoop():
     
-    game.resetGameConstants()
-    game.pauseCount = 0
-    game.resetClock()
-    player = Player(game)
+    game.resetGameConstants() # Reset level settings
+    game.pauseCount = 0 # Reset pause uses
+    game.resetClock() # Restart game clock
+    player = Player(game) # Initialize player
     
     if game.mainMenu: menu.home(game,player)
     else:
         for i in range(game.savedShipNum): player.nextSpaceShip()
     if game.savedShipLevel > 0: player.updatePlayerConstants(game)
     
-    events = Event()
-    events.set(player)
-    lasers = pygame.sprite.Group()
-    obstacles = pygame.sprite.Group()
+    events = Event() # Initialize events 
+    events.set(player) # Events manipulate player cooldowns
+    lasers = pygame.sprite.Group() # Laser group
+    obstacles = pygame.sprite.Group() # Obstacle group
     running = True
     
     # GAME LOOP
