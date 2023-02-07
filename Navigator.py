@@ -762,10 +762,6 @@ class Menu:
                     game.mainMenu = False    
                     return
                 
-                # HELP MENU
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_h:
-                    self.helpScreen(player)
-                
                 # TOGGLE FULLSCREEN
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_f:
                     pygame.mouse.set_visible(False)
@@ -817,49 +813,6 @@ class Menu:
             
             pygame.display.update()
 
-
-    # HELP MENU
-    def helpScreen(self,player):
-        global screen
-        spacing = screenSize[1]/20
-        font = pygame.font.Font(gameFont, helpSize)
-        textList =  [
-                        [ "Controls",[screenSize[0]/2,spacing], helpSize * 2, helpColor ],
-                        [ "WASD   Movement",[screenSize[0]/2,spacing * 2], helpSize, helpColor ] 
-                    ]
-
-        if player.hasGuns: textList.append([ "CTRL   Shoot",[screenSize[0]/2,spacing * 3], helpSize, helpColor ])
-        if player.baseSpeed < player.boostSpeed: textList.append([ "SHIFT  Speed boost",[screenSize[0]/2,spacing * 4], helpSize, helpColor ])
-        
-        
-        helpMenu = True
-        screen.fill(screenColor)
-        
-        while(helpMenu):
-            for event in pygame.event.get():
-                # EXIT
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-
-                # TOGGLE FULLSCREEN
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_f:
-                    pygame.mouse.set_visible(False)
-                    screen = toggleScreen()
-
-                if event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_SPACE or event.key == pygame.K_h): helpMenu = False
-                    
-            screen.blit(bgList[game.currentStage - 1][0],(0,0))
-            for text in textList: 
-                textString,center,textSize,textColor = text
-                font = pygame.font.Font(gameFont, textSize)
-                display = font.render(textString, True, textColor)
-                rect = display.get_rect()
-                rect.center = (center)
-                screen.blit(display,rect)
-                
-            pygame.display.update()
-            
     
     def pause(self,game,player,obstacles,lasers):
         global screen
