@@ -21,4 +21,4 @@ for python 3.11
  
 
 Created by Mike Pistolesi \
-art by Collin Guetta \
+art by Collin Guetta
