@@ -284,13 +284,16 @@ menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'yell
 if platform.system().lower() != 'windows': recordsPath = resource_path('gameRecords.txt') # For MacOS (and possible linux)
 else: recordsPath = './gameRecords.txt' # For windows
 
-try: gameRecords = pickle.load(open(recordsPath,'rb'))
+try: 
+    with open(recordsPath,'rb') as file:
+        gameRecords = pickle.load(file)
 except:
     gameRecords = {'highScore':0, 'attempts':0}
-    try:pickle.dump(gameRecords, open(recordsPath,'wb'))
+    try:
+        with open(recordsPath,'wb') as file: 
+            pickle.dump(gameRecords, file)
     except: pass
     
-
 timerFont = pygame.font.Font(gameFont, timerSize)
 
 # FOR RANDOM MOVEMENT    
@@ -887,11 +890,15 @@ class Menu:
         # Update game records
         newHighScore = False
         game.savedTotalAttempts += 1
-        
-        if game.sessionHighScore > game.savedOverallHighScore: newHighScore = True 
-        updatedRecordsDict = {"highScore":game.sessionHighScore, "attempts":game.savedTotalAttempts}
-        try: pickle.dump(updatedRecordsDict,open(recordsPath,'wb'))
-        except: pass    
+        updatedRecordsDict = {"highScore":game.savedOverallHighScore, "attempts":game.savedTotalAttempts}
+        if game.sessionHighScore > game.savedOverallHighScore: 
+            newHighScore = True 
+            game.savedOverallHighScore = game.sessionHighScore
+            updatedRecordsDict["highScore"] = game.sessionHighScore
+            
+        try: 
+            with open(recordsPath,'wb') as file: pickle.dump(updatedRecordsDict,file)
+        except: pass  
    
         statsSpacingY = screenSize[1]/16
         
