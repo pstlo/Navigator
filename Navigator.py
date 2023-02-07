@@ -5,6 +5,7 @@ import math
 import sys
 import os
 from os import environ
+import pickle
 
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
@@ -138,7 +139,7 @@ def toggleScreen():
     fullScreen = not fullScreen
     return getScreen()
 
-# MAIN DIRECTORY
+# ASSET DIRECTORY
 currentDirectory = resource_path('Assets')
 
 # INITIALIZE SCREEN
@@ -157,7 +158,6 @@ ufoDirectory = os.path.join(obstacleDirectory, 'UFOs') # UFO asset directory
 shipDirectory = os.path.join(currentDirectory, 'Spaceships') # Spaceship asset directory
 backgroundDirectory = os.path.join(currentDirectory, 'Backgrounds') # Background asset directory
 menuDirectory = os.path.join(currentDirectory, 'MainMenu') # Start menu asset directory
-recordsDirectory = os.path.join(os.getcwd(), 'Records') # Game records directory
 explosionDirectory = os.path.join(currentDirectory, 'Explosion') # Explosion animation directory
 
 # FONT
@@ -280,26 +280,10 @@ menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'whit
 menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'yellow.png'))).convert_alpha())
 
 # LOAD GAME RECORDS
-overallHighScorePath = os.path.join(recordsDirectory,'OverallHighScore.txt')
-totalAttemptsPath = os.path.join(recordsDirectory,'TotalAttempts.txt')
-
-if not os.path.exists(recordsDirectory):
-    os.mkdir('Records')
-    newFile = open(overallHighScorePath,'w')
-    newFile.write('0')
-    newFile.close()
-    newFile = open(totalAttemptsPath,'w')
-    newFile.write('0')
-    newFile.close()
-
-highScoreFile = open(overallHighScorePath,'r') # Open saved high score
-attemptFile = open(totalAttemptsPath,'r')  # Open saved attempts count
-
-overallHighScore = int( highScoreFile.readline() ) # Loads high score
-totalAttempts = int ( attemptFile.readline() ) # Loads number of game attempts
-
-highScoreFile.close()
-attemptFile.close()
+try: gameRecords = pickle.load(open('./gameRecords.txt','rb'))
+except:
+    gameRecords = {'highScore':0, 'attempts':0}
+    pickle.dump(gameRecords, open('./gameRecords.txt','wb'))
 
 timerFont = pygame.font.Font(gameFont, timerSize)
 
@@ -326,8 +310,8 @@ class Game:
         self.gameClock = 1
         self.pauseCount = 0
         self.clk = pygame.time.Clock()
-        self.savedOverallHighScore = overallHighScore
-        self.savedTotalAttempts = totalAttempts
+        self.savedOverallHighScore = gameRecords["highScore"]
+        self.savedTotalAttempts = gameRecords["attempts"]
         self.obstacleSpeed = obstacleSpeed         
         self.obstacleSize = obstacleSize  
         self.maxObstacles = maxObstacles
@@ -893,16 +877,16 @@ class Menu:
     def gameOver(self,game,player,obstacles):
         global screen
         gameOver = True
+  
+        # Update game records
         newHighScore = False
-        
-        if game.sessionHighScore > game.savedOverallHighScore:
-            updatedHighScoreFile = open(overallHighScorePath,'w')
-            updatedHighScoreFile.write(str(game.sessionHighScore))
-            updatedHighScoreFile.close()
-            game.savedOverallHighScore = game.sessionHighScore
-            newHighScore = True
-
         game.savedTotalAttempts += 1
+        
+        if game.sessionHighScore > game.savedOverallHighScore: newHighScore = True 
+        updatedRecordsDict = {"highScore":game.sessionHighScore, "attempts":game.savedTotalAttempts}    
+        pickle.dump(updatedRecordsDict,open('./gameRecords.txt','wb'))
+        updatedRecords = True    
+   
         statsSpacingY = screenSize[1]/16
         
         # "GAME OVER" text
@@ -945,11 +929,7 @@ class Menu:
         attemptRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 6)
         exitRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 8)
         
-        # Updated game records
-        updatedAttemptFile = open(totalAttemptsPath,'w')
-        updatedAttemptFile.write(str(game.savedTotalAttempts))
-        updatedAttemptFile.close()
-        updatedRecords = True
+      
         
         while gameOver:
         
