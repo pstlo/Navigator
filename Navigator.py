@@ -283,7 +283,9 @@ menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'yell
 try: gameRecords = pickle.load(open('./gameRecords.txt','rb'))
 except:
     gameRecords = {'highScore':0, 'attempts':0}
-    pickle.dump(gameRecords, open('./gameRecords.txt','wb'))
+    try:pickle.dump(gameRecords, open('./gameRecords.txt','wb'))
+    except: pass
+    
 
 timerFont = pygame.font.Font(gameFont, timerSize)
 
@@ -883,9 +885,9 @@ class Menu:
         game.savedTotalAttempts += 1
         
         if game.sessionHighScore > game.savedOverallHighScore: newHighScore = True 
-        updatedRecordsDict = {"highScore":game.sessionHighScore, "attempts":game.savedTotalAttempts}    
-        pickle.dump(updatedRecordsDict,open('./gameRecords.txt','wb'))
-        updatedRecords = True    
+        updatedRecordsDict = {"highScore":game.sessionHighScore, "attempts":game.savedTotalAttempts}
+        try: pickle.dump(updatedRecordsDict,open('./gameRecords.txt','wb'))
+        except: pass    
    
         statsSpacingY = screenSize[1]/16
         
