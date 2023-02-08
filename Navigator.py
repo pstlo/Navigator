@@ -287,11 +287,11 @@ try:
     with open(recordsPath,'rb') as file:
         gameRecords = pickle.load(file)
 except:
-    gameRecords = {'highScore':0, 'attempts':0}
+    gameRecords = {'highScore':0, 'attempts':0, 'timePlayed':0}
     try:
         with open(recordsPath,'wb') as file: 
             pickle.dump(gameRecords, file)
-    except: pass
+    except: pass # Continue game without saving
     
 timerFont = pygame.font.Font(gameFont, timerSize)
 
@@ -885,18 +885,25 @@ class Menu:
     def gameOver(self,game,player,obstacles):
         global screen
         gameOver = True
-  
+        
         # Update game records
         newHighScore = False
-        game.savedTotalAttempts += 1
-        updatedRecordsDict = {"highScore":game.savedOverallHighScore, "attempts":game.savedTotalAttempts}
+        
+        try:
+            with open(recordsPath,'rb') as file: outdatedRecords = pickle.load(file) # Load old records
+        except: outdatedRecords = gameRecords # Continue with outdated records
+            
+        savedClock = outdatedRecords["timePlayed"] + game.gameClock # Update total time played
+        game.savedTotalAttempts += 1 # Update total attempts
+        
+        updatedRecordsDict = {"highScore":game.savedOverallHighScore, "attempts":game.savedTotalAttempts,"timePlayed":savedClock} # Updated records
         if game.sessionHighScore > game.savedOverallHighScore: 
             newHighScore = True 
             game.savedOverallHighScore = game.sessionHighScore
             updatedRecordsDict["highScore"] = game.sessionHighScore
             
         try: 
-            with open(recordsPath,'wb') as file: pickle.dump(updatedRecordsDict,file)
+            with open(recordsPath,'wb') as file: pickle.dump(updatedRecordsDict,file) # Save updated records
         except: pass  
    
         statsSpacingY = screenSize[1]/16
@@ -918,6 +925,7 @@ class Menu:
         levelLine = "Died at stage " + str(game.currentStage) + "  -  level " + str(game.currentLevel)
         overallHighScoreLine = "High score  =  " + str(game.savedOverallHighScore) + " seconds"
         newHighScoreLine = "New high score! " + str(game.sessionHighScore) + " seconds"
+        timeWasted = "Time played = " + str(savedClock) + " seconds"
         
         # Display
         recordDisplay = statFont.render(overallHighScoreLine, True, finalScoreColor)
@@ -925,24 +933,18 @@ class Menu:
         survivedDisplay = statFont.render(survivedLine, True, finalScoreColor)
         levelDisplay = statFont.render(levelLine, True, finalScoreColor)
         newHighScoreDisplay = statFont.render(newHighScoreLine, True, finalScoreColor)
+        timeWastedDisplay = statFont.render(timeWasted,True,finalScoreColor)
         exitDisplay = exitFont.render("TAB = Menu     SPACE = Restart    ESCAPE = Quit    C = Credits", True, helpColor)
         
         # Rects
-        attemptRect = attemptDisplay.get_rect()
-        survivedRect = survivedDisplay.get_rect()
-        levelRect = levelDisplay.get_rect()
-        recordRect = recordDisplay.get_rect()
-        exitRect = exitDisplay.get_rect()
         
-        # Rect position
-        survivedRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 3)
-        recordRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 4)
-        levelRect.center = (screenSize[0]/2, screenSize[1]/3 +statsSpacingY * 5)
-        attemptRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 6)
-        exitRect.center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 8)
-        
+        survivedRect = survivedDisplay.get_rect(center =(screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 3))
+        recordRect = recordDisplay.get_rect(center =(screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 4))
+        levelRect = levelDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 +statsSpacingY * 5))
+        attemptRect = attemptDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 6))
+        wastedRect = timeWastedDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 +statsSpacingY * 7))
+        exitRect = exitDisplay.get_rect(center =(screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 8))
       
-        
         while gameOver:
         
             # Background
@@ -957,6 +959,7 @@ class Menu:
             screen.blit(attemptDisplay,attemptRect)
             screen.blit(survivedDisplay,survivedRect)
             screen.blit(levelDisplay,levelRect)
+            screen.blit(timeWastedDisplay,wastedRect)
             screen.blit(exitDisplay,exitRect)
             pygame.display.flip()
            
