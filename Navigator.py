@@ -204,7 +204,6 @@ for filename in sorted(os.listdir(backgroundDirectory)):
 
         bgList.append([bg,cloud])
 
-
 # EXPLOSION ASSETS
 explosionList = []
 for filename in sorted(os.listdir(explosionDirectory)):
