@@ -281,9 +281,8 @@ menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'whit
 menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'yellow.png'))).convert_alpha())
 
 # LOAD GAME RECORDS
-if platform.system().lower() != 'windows': recordsPath = resource_path('gameRecords.txt') # For MacOS (and possible linux)
-else: recordsPath = './gameRecords.txt' # For windows
-
+if platform.system().lower() == 'windows' or platform.system().lower == 'linux': recordsPath = './gameRecords.txt' # For windows and linux
+else: recordsPath = resource_path('gameRecords.txt') # For MacOS
 try: 
     with open(recordsPath,'rb') as file:
         gameRecords = pickle.load(file)
