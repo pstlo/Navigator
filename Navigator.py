@@ -1,13 +1,6 @@
 # NAVIGATOR
-
-import random
-import math
-import sys
-import platform
-import os
+import random,math,sys,platform,os,pickle
 from os import environ
-import pickle
-
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
 
@@ -96,20 +89,20 @@ explosionDelay = 1 # Default = 1
 levelTimer = 15 # Default = 15 / Time (seconds) between levels
 levelUpCloudSpeed = 25 # Default = 25 / Only affects levels preceded by wipe
 
-# ADD LEVELS HERE: [ hasStarted(T/F) , (levelNumber - 1) * levelTimer , BOUNDS , SPEED , SIZE , NUMBER, SPIN, AGGRO(T/F), WIPE(T/F) ]
-levelTwo =           [ False,       levelTimer, "KILL", 5.5*scaler,  32*scaler,  16*scaler,  1, True,  False ]  
-levelThree =         [ False,   2 * levelTimer, "KILL", 6*scaler,    34*scaler,  16*scaler,  2, True,  False ] 
-levelFour =          [ False,   3 * levelTimer, "KILL", 6.5*scaler,  36*scaler,  18*scaler,  3, True,  False ] 
-levelFive =          [ False,   4 * levelTimer, "KILL", 6*scaler,    38*scaler,  20*scaler,  4, True,  False ] 
-levelSix =           [ False,   5 * levelTimer, "KILL", 6.5*scaler,  40*scaler,  18*scaler,  3, True,  False ] 
-levelSeven =         [ False,   6 * levelTimer, "KILL", 2.2*scaler,  50*scaler,  65*scaler,  1, True,  False ] 
-levelEight =         [ False,   7 * levelTimer, "KILL", 7*scaler,    44*scaler,  20*scaler,  4, True,  True  ] 
-levelNine =          [ False,   8 * levelTimer, "KILL", 7*scaler,    46*scaler,  21*scaler,  5, True,  False ]
-levelTen =           [ False,   9 * levelTimer, "KILL", 7.5*scaler,  48*scaler,  22*scaler,  5, True,  False ]
-stageTwoLevelOne =   [ False,  10 * levelTimer, "KILL", 7.5*scaler,  50*scaler,  23*scaler,  0, False, False ]
-stageTwoLevelTwo =   [ False,  11 * levelTimer, "KILL", 8*scaler,    52*scaler,  24*scaler,  0, False, False ]
-stageTwoLevelThree = [ False,  12 * levelTimer, "KILL", 8*scaler,    54*scaler,  25*scaler,  3, False, False ]
-stageTwoLevelFour =  [ False,  13 * levelTimer, "KILL", 8.5*scaler,  56*scaler,  26*scaler,  0, False, False ]
+# ADD LEVELS HERE:   [ STARTED, (level-1)Timer, BOUNDS, SPEED ,      SIZE ,      NUMBER,     SPIN, AGGRO,      WIPE  ]
+levelTwo =           [ False,       levelTimer, "KILL", 5.5*scaler,  32*scaler,  16*scaler,  1,    True,       False ]  
+levelThree =         [ False,   2 * levelTimer, "KILL", 6*scaler,    34*scaler,  16*scaler,  2,    True,       False ] 
+levelFour =          [ False,   3 * levelTimer, "KILL", 6.5*scaler,  36*scaler,  18*scaler,  3,    True,       False ] 
+levelFive =          [ False,   4 * levelTimer, "KILL", 6*scaler,    38*scaler,  20*scaler,  4,    True,       False ] 
+levelSix =           [ False,   5 * levelTimer, "KILL", 6.5*scaler,  40*scaler,  18*scaler,  3,    True,       False ] 
+levelSeven =         [ False,   6 * levelTimer, "KILL", 2.2*scaler,  50*scaler,  65*scaler,  1,    True,       False ] 
+levelEight =         [ False,   7 * levelTimer, "KILL", 7*scaler,    44*scaler,  20*scaler,  4,    True,       True  ] 
+levelNine =          [ False,   8 * levelTimer, "KILL", 7*scaler,    46*scaler,  21*scaler,  5,    True,       False ]
+levelTen =           [ False,   9 * levelTimer, "KILL", 7.5*scaler,  48*scaler,  22*scaler,  5,    True,       False ]
+stageTwoLevelOne =   [ False,  10 * levelTimer, "KILL", 7.5*scaler,  50*scaler,  23*scaler,  0,    False,      False ]
+stageTwoLevelTwo =   [ False,  11 * levelTimer, "KILL", 8*scaler,    52*scaler,  24*scaler,  0,    False,      False ]
+stageTwoLevelThree = [ False,  12 * levelTimer, "KILL", 8*scaler,    54*scaler,  25*scaler,  3,    False,      False ]
+stageTwoLevelFour =  [ False,  13 * levelTimer, "KILL", 8.5*scaler,  56*scaler,  26*scaler,  0,    False,      False ]
 
 # DIVIDE INTO STAGES
 stageOneLevels = [levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight,levelNine,levelTen] # Stage 1
@@ -204,6 +197,7 @@ for filename in sorted(os.listdir(backgroundDirectory)):
 
         bgList.append([bg,cloud])
 
+
 # EXPLOSION ASSETS
 explosionList = []
 for filename in sorted(os.listdir(explosionDirectory)):
@@ -292,17 +286,15 @@ except:
             pickle.dump(gameRecords, file)
     except: pass # Continue game without saving
     
-timerFont = pygame.font.Font(gameFont, timerSize)
+timerFont = pygame.font.Font(gameFont, timerSize)  
 
-# FOR RANDOM MOVEMENT    
-
-# aggro = False
+# for not aggro
 topDir = ["S", "E", "W", "SE", "SW"]
 leftDir = ["E", "S", "N", "NE", "SE"]
 bottomDir = ["N", "W", "E", "NE", "NW"]
 rightDir = ["W", "N", "S", "NW", "SW"]
 
-# aggro = True 
+# for aggro  
 restrictedTopDir = ["SE", "SW", "S"]
 restrictedLeftDir = ["E", "NE", "SE"]
 restrictedBottomDir = ["N", "NE", "NW"]
@@ -1359,6 +1351,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
 
 
+# LASERS
 class Laser(pygame.sprite.Sprite):
     def __init__(self,player):
         super().__init__()
@@ -1397,6 +1390,7 @@ class Laser(pygame.sprite.Sprite):
         if self.rect.centerx > screenSize[0] or self.rect.centery > screenSize[1] or self.rect.centerx < 0 or self.rect.centery < 0: self.kill()
 
 
+# EXPLOSIONS
 class Explosion:
     def __init__(self,game,laser):
         self.state,self.finalState,self.finished = 0,len(explosionList)-1,False
@@ -1417,7 +1411,7 @@ class Explosion:
         screen.blit(self.image,self.rect)    
 
 
-# START MENU METEOR GENERATION
+# MENU METEOR ICONS
 class Icon(pygame.sprite.Sprite):
     def __init__(self):
         spins = [-1,1]
