@@ -411,7 +411,8 @@ class Game:
             if pygame.sprite.spritecollide(laser,obstacles,True,pygame.sprite.collide_mask):
                 if player.laserCollat: laser.kill()
                 self.explosions.append(Explosion(self,laser))
-    
+        
+        # DRAW OBSTACLE EXPLOSIONS
         for debris in self.explosions: 
             if debris.finished: self.explosions.remove(debris)
             else: debris.update()
