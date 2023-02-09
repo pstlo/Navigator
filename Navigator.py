@@ -13,7 +13,7 @@ pygame.mouse.set_visible(False)
 # SCREEN                                                                                                                            
 screenSize = [800,800] # Default = [800,800]
 scaler = (screenSize[0] + screenSize[1])  / 1600 # Default = x + y / 2  / 800 == 1
-roundedScaler = int(round(scaler))
+roundedScaler = int(round(scaler)) # Assure scaled values are whole numbers
 fullScreen = False # Default = False
 
 fuelColor = [255,0,0] # Default = [255,0,0] / Color of fuel gauge
@@ -75,7 +75,7 @@ oldReliableAttributes = [ 4,   10,  15,     0.05,        50,            6,      
 
 shipAttributes = [defaultShipAttributes,gunShipAttributes,laserShipAttributes,hyperYachtAttributes,oldReliableAttributes]
 
-# OBSTACLES  (Can be updated by level)
+# OBSTACLE STARTING VALUES
 obstacleSpeed = 4 *scaler  # Default = 4           
 obstacleSize = 30 *scaler  # Default = 30
 maxObstacles = 12 *scaler  # Default = 12
@@ -89,7 +89,7 @@ explosionDelay = 1 # Default = 1
 levelTimer = 15 # Default = 15 / Time (seconds) between levels
 levelUpCloudSpeed = 25 # Default = 25 / Only affects levels preceded by wipe
 
-# ADD LEVELS HERE:   [ STARTED, (level-1)Timer, BOUNDS, SPEED ,      SIZE ,      NUMBER,     SPIN, AGGRO,      WIPE  ]
+# ADD LEVELS HERE:   [ STARTED, (level-1)Timer, BOUNDS, SPEED,       SIZE,       NUMBER,     SPIN, AGGRO,      WIPE  ]
 levelTwo =           [ False,       levelTimer, "KILL", 5.5*scaler,  32*scaler,  16*scaler,  1,    True,       False ]  
 levelThree =         [ False,   2 * levelTimer, "KILL", 6*scaler,    34*scaler,  16*scaler,  2,    True,       False ] 
 levelFour =          [ False,   3 * levelTimer, "KILL", 6.5*scaler,  36*scaler,  18*scaler,  3,    True,       False ] 
@@ -545,7 +545,6 @@ class Game:
                 if not levelDict["START"]:
                     
                     if self.gameConstants[self.currentStage-1][self.currentLevel-1]["wipe"]:
-                        # REMOVE OLD OBSTACLES
                         levelUpCloud = stageCloudImg
                         levelUpRect = levelUpCloud.get_rect()
                         levelUpRect.center = (screenSize[0]/2, stageUpCloudStartPos)
@@ -836,9 +835,9 @@ class Menu:
         if game.pauseCount >= pauseMax: pauseNum = "Out of pauses"
 
         pauseCountFont = pygame.font.Font(gameFont,pauseCountSize)
-        pauseDisplay = pauseCountFont.render( pauseNum , True, levelColor )
+        pauseDisplay = pauseCountFont.render(pauseNum,True,levelColor)
         pauseRect = pauseDisplay.get_rect() 
-        pauseRect.center = (screenSize[0] * .5 , screenSize[1] - 16)
+        pauseRect.center = (screenSize[0]/2,screenSize[1]-16)
         
         while paused:
             screen.fill(screenColor)
@@ -1010,11 +1009,8 @@ class Menu:
         createdByDisplay = creatorFont.render(createdByLine, True, creditsColor)
         creditsDisplay = creditsFont.render(creditsLine, True, creditsColor)
         
-        creditsRect = creditsDisplay.get_rect()
-        createdByRect = createdByDisplay.get_rect()
-        
-        creditsRect.center = (posX,posY)
-        createdByRect.center = (posX, posY - screenSize[1]/15) 
+        creditsRect = creditsDisplay.get_rect(center = (posX,posY))
+        createdByRect = createdByDisplay.get_rect(center = (posX, posY - screenSize[1]/15) )
         
         bounceCount = 0
         direction = randomEightDirection()
