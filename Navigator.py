@@ -1318,7 +1318,6 @@ class Player(pygame.sprite.Sprite):
                 img = pygame.transform.scale(explosionList[self.explosionState], (height * self.explosionState, width * self.explosionState))
                 img, imgRect = rotateImage(img, self.rect, self.lastAngle)
                 
-                
                 screen.blit(img,imgRect)    
                 screen.blit(explosionList[self.explosionState],self.rect)
                 pygame.display.update()
@@ -1357,6 +1356,7 @@ class Laser(pygame.sprite.Sprite):
         self.rect = newBlit[1]
         self.mask = pygame.mask.from_surface(self.image)
 
+
     # MOVE LASERS 
     def move(self,player): 
         # Laser angles = player angles, hard coded here
@@ -1389,11 +1389,12 @@ class Laser(pygame.sprite.Sprite):
 class Explosion:
     def __init__(self,game,laser):
         self.state,self.finalState,self.finished = 0,len(explosionList)-1,False
-        self.rect = laser.rect
+        self.rect = laser.rect.copy()
         self.image = explosionList[self.state]
         self.updateFrame = 0
         self.delay = explosionDelay
-        
+
+
     def update(self):
         self.updateFrame +=1
         if self.updateFrame >= self.delay:
