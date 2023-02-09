@@ -683,13 +683,11 @@ class Menu:
      
         startFont = pygame.font.Font(gameFont, startSize)
         startDisplay = startFont.render("N  VIGAT  R", True, startColor)
-        startRect = startDisplay.get_rect()
-        startRect.center = (screenSize[0]/2,screenSize[1]/2)
+        startRect = startDisplay.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
         
         startHelpFont = pygame.font.Font(gameFont, helpSize)
         startHelpDisplay = startHelpFont.render("ESCAPE = Quit     SPACE = Start     F = Fullscreen     C = Credits", True, helpColor)   
-        startHelpRect = startHelpDisplay.get_rect()
-        startHelpRect.center = (screenSize[0]/2,screenSize[1]-screenSize[1]/7)
+        startHelpRect = startHelpDisplay.get_rect(center = (screenSize[0]/2,screenSize[1]-screenSize[1]/7))
         
         shipHelpFont = pygame.font.Font(gameFont, round(helpSize * .65))
         skinHelpDisplay = shipHelpFont.render("A/LEFT = Last skin     D/RIGHT = Next skin", True, helpColor)
