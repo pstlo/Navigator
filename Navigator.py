@@ -1028,7 +1028,7 @@ class Menu:
                     screen = toggleScreen()
 
                 # RETURN TO GAME
-                elif event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_c or event.key == pygame.K_SPACE):
+                elif event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_c or event.key == pygame.K_SPACE or event.key == pygame.K_TAB):
                     rollCredits = False
 
             screen.fill(screenColor)
