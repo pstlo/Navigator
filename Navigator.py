@@ -6,6 +6,7 @@ import pygame
 
 pygame.display.init()
 pygame.font.init()
+pygame.mixer.init()
 
 pygame.mouse.set_visible(False)
 
@@ -64,6 +65,12 @@ creditsColor = [255,255,255] # Default = [255,255,255]
 # PLAYER
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
 boostCooldownTime = 500 # Default = 500 / Activates when fuel runs out to allow regen
+
+# MUSIC
+musicMuted = False # Default = False
+musicVolume = 30 # Default = 30 / Music volume * 100
+menuLoopStart = 1100 # Default = 1100
+menuLoopEnd = 12800 # Default = 12800
 
 # SHIP CONSTANTS
 #                       [speed,fuel,maxFuel,fuelRegenNum,fuelRegenDelay,boostSpeed,hasGuns,laserCost,laserSpeed,laserFireRate,boostDrain,lasersStop]
@@ -132,6 +139,19 @@ def toggleScreen():
     global fullScreen
     fullScreen = not fullScreen
     return getScreen()
+
+# MENU MUSIC LOOP
+def menuMusicLoop():
+    if pygame.mixer.music.get_pos() >= menuLoopEnd:
+        pygame.mixer.music.rewind()
+        pygame.mixer.music.set_pos(menuLoopStart)
+        pygame.mixer.music.play()
+
+# TOGGLE MUSIC MUTE
+def toggleMusic(game):
+    game.musicMuted = not game.musicMuted
+    if pygame.mixer.music.get_volume() == 0: pygame.mixer.music.set_volume(musicVolume/100)
+    else: pygame.mixer.music.set_volume(0)
 
 # ASSET DIRECTORY
 currentDirectory = resource_path('Assets')
@@ -236,6 +256,9 @@ for levelFolder in sorted(os.listdir(shipDirectory)):
 
         spaceShipList.append(shipLevelList) # Add to main list
 
+# MUSIC ASSET
+pygame.mixer.music.load(resource_path(os.path.join(currentDirectory,"Soundtrack.mp3")))
+
 shipConstants = []
 for i in shipAttributes:
     levelConstantsDict = {
@@ -328,6 +351,7 @@ class Game:
         self.cloudPos = cloudStart
         self.wipe = obstacleWipe
         self.explosions = []
+        self.musicMuted = musicMuted
 
         contantList = []
         for stage in stageList:
@@ -378,6 +402,9 @@ class Game:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and game.pauseCount < pauseMax :
                 game.pauseCount += 1
                 menu.pause(game,player,obstacles,lasers)
+
+             # MUTE
+            if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_m): toggleMusic(game)
 
             # FUEL REPLENISH
             if event.type == events.fuelReplenish and player.fuel < player.maxFuel: player.fuel += player.fuelRegenNum
@@ -686,7 +713,7 @@ class Menu:
         startRect = startDisplay.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
 
         startHelpFont = pygame.font.Font(gameFont, helpSize)
-        startHelpDisplay = startHelpFont.render("ESCAPE = Quit     SPACE = Start     F = Fullscreen     C = Credits", True, helpColor)
+        startHelpDisplay = startHelpFont.render("ESCAPE = Quit   SPACE = Start   F = Fullscreen   M = Mute   C = Credits", True, helpColor)
         startHelpRect = startHelpDisplay.get_rect(center = (screenSize[0]/2,screenSize[1]-screenSize[1]/7))
 
         shipHelpFont = pygame.font.Font(gameFont, round(helpSize * .65))
@@ -727,6 +754,9 @@ class Menu:
         iconPosition, startDelayCounter = startOffset, 0
 
         while game.mainMenu:
+
+            menuMusicLoop() # Keep music looping
+
             if bounceCount >= bounceDelay: bounceCount = 0
             else: bounceCount +=1
 
@@ -773,6 +803,9 @@ class Menu:
                 # PREVIOUS SHIP TYPE
                 elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_s or event.key == pygame.K_DOWN):
                     player.toggleSpaceShip(game,False,game.unlockNumber)
+
+                # MUTE
+                elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_m): toggleMusic(game)
 
                 # CREDITS
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_c: menu.creditScreen()
@@ -867,6 +900,10 @@ class Menu:
                     pygame.mouse.set_visible(False)
                     screen = toggleScreen()
 
+                 # MUTE
+                elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_m): toggleMusic(game)
+
+                # UNPAUSE
                 elif event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_SPACE): paused = False
 
 
@@ -874,6 +911,7 @@ class Menu:
     def gameOver(self,game,player,obstacles):
         global screen
         gameOver = True
+        pygame.mixer.music.stop()
 
         # Update game records
         newHighScore = False
@@ -1004,17 +1042,23 @@ class Menu:
 
         createdByLine = "Created by Mike Pistolesi"
         creditsLine = "with art by Collin Guetta"
+        musicCreditsLine = "& music by Dylan KZ"
 
         createdByDisplay = creatorFont.render(createdByLine, True, creditsColor)
         creditsDisplay = creditsFont.render(creditsLine, True, creditsColor)
+        musicCreditsDisplay = creditsFont.render(musicCreditsLine, True, creditsColor)
 
-        creditsRect = creditsDisplay.get_rect(center = (posX,posY))
         createdByRect = createdByDisplay.get_rect(center = (posX, posY - screenSize[1]/15) )
+        creditsRect = creditsDisplay.get_rect(center = (posX,posY))
+        musicCreditsRect = musicCreditsDisplay.get_rect(center = (posX,posY+ screenSize[1]/15))
+
 
         bounceCount = 0
         direction = randomEightDirection()
 
         while rollCredits:
+
+            menuMusicLoop()
 
             for event in pygame.event.get():
                 # EXIT
@@ -1027,6 +1071,9 @@ class Menu:
                     pygame.mouse.set_visible(False)
                     screen = toggleScreen()
 
+                # MUTE
+                elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_m): toggleMusic(game)
+
                 # RETURN TO GAME
                 elif event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_c or event.key == pygame.K_SPACE or event.key == pygame.K_TAB):
                     rollCredits = False
@@ -1035,30 +1082,35 @@ class Menu:
             screen.blit(bgList[game.currentStage - 1][0],(0,0))
             screen.blit(createdByDisplay,createdByRect)
             screen.blit(creditsDisplay,creditsRect)
+            screen.blit(musicCreditsDisplay,musicCreditsRect)
             pygame.display.flip()
 
             # BOUNCE OFF EDGES
             if createdByRect.right > screenSize[0]: direction = rightDir[random.randint(0, len(rightDir) - 1)]
             if createdByRect.left < 0: direction = leftDir[random.randint(0, len(leftDir) - 1)]
-            if creditsRect.bottom > screenSize[1]: direction = bottomDir[random.randint(0, len(bottomDir) - 1)]
+            if musicCreditsRect.bottom > screenSize[1]: direction = bottomDir[random.randint(0, len(bottomDir) - 1)]
             if createdByRect.top < 0 : direction = topDir[random.randint(0, len(topDir) - 1)]
 
             if bounceCount == 0:
                 if "N" in direction:
-                    creditsRect.centery-= 1
                     createdByRect.centery-= 1
+                    creditsRect.centery-= 1
+                    musicCreditsRect.centery-= 1
 
                 if "S" in direction:
-                    creditsRect.centery+= 1
                     createdByRect.centery+= 1
+                    creditsRect.centery+= 1
+                    musicCreditsRect.centery+= 1
 
                 if "E" in direction:
-                    creditsRect.centerx+= 1
                     createdByRect.centerx+= 1
+                    creditsRect.centerx+= 1
+                    musicCreditsRect.centerx+= 1
 
                 if "W" in direction:
-                    creditsRect.centerx-= 1
                     createdByRect.centerx-= 1
+                    creditsRect.centerx-= 1
+                    musicCreditsRect.centerx-= 1
 
             bounceCount +=1
             if bounceCount >= 10: bounceCount = 0
@@ -1555,9 +1607,12 @@ def wrapObstacle(obstacles):
 game = Game() # Initialize game
 menu = Menu() # Initialize menus
 
+if not game.musicMuted: pygame.mixer.music.set_volume(musicVolume / 100)
+else: pygame.mixer.music.set_volume(0)
+
 
 def gameLoop():
-
+    pygame.mixer.music.play()
     game.resetGameConstants() # Reset level settings
     game.pauseCount = 0 # Reset pause uses
     game.resetClock() # Restart game clock
