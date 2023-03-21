@@ -72,9 +72,6 @@ musicVolume = 30 # Default = 30 / Music volume * 100
 menuLoopStart = 1100 # Default = 1100
 menuLoopEnd = 12800 # Default = 12800
 
-musicLoopStart = 25000 # Default = 25000
-musicLoopEnd = 76000 # Default = 76000
-
 # SHIP CONSTANTS
 #                       [speed,fuel,maxFuel,fuelRegenNum,fuelRegenDelay,boostSpeed,hasGuns,laserCost,laserSpeed,laserFireRate,boostDrain,lasersStop]
 defaultShipAttributes = [ 5,   10,  20,     0.05,        50,            7,         False,   0,        0,         0,           0.4,       True  ]
@@ -148,13 +145,6 @@ def menuMusicLoop():
     if pygame.mixer.music.get_pos() >= menuLoopEnd:
         pygame.mixer.music.rewind()
         pygame.mixer.music.set_pos(menuLoopStart)
-        pygame.mixer.music.play()
-
-# GAMEPLAY MUSIC LOOP
-def musicLoop():
-    if pygame.mixer.music.get_pos() >= musicLoopEnd:
-        pygame.mixer.music.rewind()
-        pygame.mixer.music.set_pos(musicLoopStart)
         pygame.mixer.music.play()
 
 # TOGGLE MUSIC MUTE
@@ -440,8 +430,8 @@ class Game:
 
         # OBSTACLE/PLAYER COLLISION DETECTION
         if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask):
-            player.explode(game,obstacles) # Animation
-            menu.gameOver(self,player,obstacles) # Game over
+            player.explode(game,obstacles)
+            menu.gameOver(self,player,obstacles)
 
         # OBSTACLE/LASER COLLISION DETECTION
         for laser in lasers:
@@ -499,8 +489,6 @@ class Game:
             newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
             screen.blit(newBlit[0],newBlit[1]) # Blit obstacles
             obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle
-
-        musicLoop() # Loop music
 
         # UPDATE SCREEN
         player.lastAngle = player.angle # Save recent player orientation
@@ -888,8 +876,8 @@ class Menu:
             screen.blit(bgList[game.currentStage-1][0],(0,0))
             screen.blit(cloud,(0,game.cloudPos))
             game.showHUD(player)
+
             screen.blit(playerBlit[0],playerBlit[1])
-            pygame.mixer.music.pause()
 
             for obs in obstacles: # Draw obstacles
                 newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
@@ -912,10 +900,11 @@ class Menu:
                     pygame.mouse.set_visible(False)
                     screen = toggleScreen()
 
+                 # MUTE
+                elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_m): toggleMusic(game)
+
                 # UNPAUSE
-                elif event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_SPACE):
-                    pygame.mixer.music.unpause()
-                    paused = False
+                elif event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_SPACE): paused = False
 
 
     # GAME OVER SCREEN
