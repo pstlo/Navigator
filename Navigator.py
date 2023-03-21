@@ -66,14 +66,16 @@ creditsColor = [255,255,255] # Default = [255,255,255]
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
 boostCooldownTime = 500 # Default = 500 / Activates when fuel runs out to allow regen
 
-# MUSIC
+# SOUNDS
 musicMuted = False # Default = False
-musicVolume = 30 # Default = 30 / Music volume * 100
+musicVolume = 35 # Default = 35 / Music volume / 100
 menuLoopStart = 1100 # Default = 1100
 menuLoopEnd = 12800 # Default = 12800
-
 musicLoopStart = 25000 # Default = 25000
 musicLoopEnd = 76000 # Default = 76000
+sfxVolume = 20 # Default = 20 / SFX volume / 100
+
+
 
 # SHIP CONSTANTS
 #                       [speed,fuel,maxFuel,fuelRegenNum,fuelRegenDelay,boostSpeed,hasGuns,laserCost,laserSpeed,laserFireRate,boostDrain,lasersStop]
@@ -183,6 +185,7 @@ shipDirectory = os.path.join(currentDirectory, 'Spaceships') # Spaceship asset d
 backgroundDirectory = os.path.join(currentDirectory, 'Backgrounds') # Background asset directory
 menuDirectory = os.path.join(currentDirectory, 'MainMenu') # Start menu asset directory
 explosionDirectory = os.path.join(currentDirectory, 'Explosion') # Explosion animation directory
+soundDirectory = os.path.join(currentDirectory, 'Sounds') # Sound assets directory
 
 # FONT
 gameFont = os.path.join(currentDirectory, 'Font.ttf')
@@ -266,11 +269,22 @@ for levelFolder in sorted(os.listdir(shipDirectory)):
         spaceShipList.append(shipLevelList) # Add to main list
 
 # MUSIC ASSET
-pygame.mixer.music.load(resource_path(os.path.join(currentDirectory,"Soundtrack.mp3")))
+pygame.mixer.music.load(resource_path(os.path.join(soundDirectory,"Soundtrack.mp3")))
 
-# EXPLOSION ASSET
-explosionNoise = pygame.mixer.Sound(resource_path(os.path.join(currentDirectory,"Explosion.wav")))
+# EXPLOSION NOISE ASSET
+explosionNoise = pygame.mixer.Sound(resource_path(os.path.join(soundDirectory,"Explosion.wav")))
+explosionNoise.set_volume(sfxVolume/100)
 
+# LASER NOISE ASSET
+laserNoise = pygame.mixer.Sound(resource_path(os.path.join(soundDirectory,"Laser.wav")))
+laserNoise.set_volume(sfxVolume/100)
+
+# LASER IMPACT NOISE ASSET
+impactNoise = pygame.mixer.Sound(resource_path(os.path.join(soundDirectory,"Impact.wav")))
+impactNoise.set_volume(sfxVolume/100)
+
+
+# SHIP ATTRIBUTES DATA
 shipConstants = []
 for i in shipAttributes:
     levelConstantsDict = {
@@ -450,6 +464,7 @@ class Game:
         for laser in lasers:
             if pygame.sprite.spritecollide(laser,obstacles,True,pygame.sprite.collide_mask):
                 if player.laserCollat: laser.kill()
+                if not self.musicMuted: impactNoise.play()
                 self.explosions.append(Explosion(self,laser))
 
         # DRAW OBSTACLE EXPLOSIONS
@@ -460,7 +475,7 @@ class Game:
 
         # DRAW AND MOVE SPRITES
         player.movement()
-        player.shoot(lasers,events)
+        player.shoot(self,lasers,events)
         player.boost(events)
         player.wrapping()
         self.spawner(obstacles)
@@ -1238,11 +1253,12 @@ class Player(pygame.sprite.Sprite):
 
 
         # SHOOT ROCKETS/LASERS
-        def shoot(self,lasers,events):
+        def shoot(self,game,lasers,events):
             if self.hasGuns and self.laserReady:
                 key = pygame.key.get_pressed()
                 if  (key[pygame.K_LCTRL] or key[pygame.K_RCTRL]) and self.fuel - self.laserCost > 0:
                     lasers.add(Laser(self))
+                    if not game.musicMuted: laserNoise.play()
                     self.fuel -= self.laserCost
                     events.laserCharge(self)
 
