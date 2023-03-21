@@ -227,7 +227,6 @@ for filename in sorted(os.listdir(backgroundDirectory)):
 
         bgList.append([bg,cloud])
 
-
 # EXPLOSION ASSETS
 explosionList = []
 for filename in sorted(os.listdir(explosionDirectory)):
@@ -268,6 +267,9 @@ for levelFolder in sorted(os.listdir(shipDirectory)):
 
 # MUSIC ASSET
 pygame.mixer.music.load(resource_path(os.path.join(currentDirectory,"Soundtrack.mp3")))
+
+# EXPLOSION ASSET
+explosionNoise = pygame.mixer.Sound(resource_path(os.path.join(currentDirectory,"Explosion.wav")))
 
 shipConstants = []
 for i in shipAttributes:
@@ -441,6 +443,7 @@ class Game:
         # OBSTACLE/PLAYER COLLISION DETECTION
         if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask):
             player.explode(game,obstacles) # Animation
+            if not self.musicMuted: explosionNoise.play()
             menu.gameOver(self,player,obstacles) # Game over
 
         # OBSTACLE/LASER COLLISION DETECTION
