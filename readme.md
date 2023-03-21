@@ -7,7 +7,7 @@ Windows: https://github.com/pstlo/Navigator/releases/download/v0.4.2/NavigatorWi
 MacOS: https://github.com/pstlo/Navigator/releases/download/v0.4.1/NavigatorMacOS.zip \
 Linux*: https://github.com/pstlo/Navigator/releases/download/v0.4.1/NavigatorLinux.zip *Does not save score
  
-To get started, either download, extract, and run the latest release, or, for developers:
+To get started, either download, extract, and run the latest release above, or, for developers:
 
 1. Install python, check "ADD TO PATH"
 2. Install pygame with
