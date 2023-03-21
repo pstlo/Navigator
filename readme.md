@@ -4,7 +4,7 @@
 
 #### Latest Releases:   
 Windows: https://github.com/pstlo/Navigator/releases/download/v0.4.2/NavigatorWindows.zip \
-MacOS: https://github.com/pstlo/Navigator/releases/download/v0.4.1/NavigatorMacOS.zip \
+MacOS: https://github.com/pstlo/Navigator/releases/download/v0.4.2/NavigatorMacOS.zip \
 Linux*: https://github.com/pstlo/Navigator/releases/download/v0.4.1/NavigatorLinux.zip *Does not save score
  
 To get started, either download, extract, and run the latest release above, or, for modifying code:
