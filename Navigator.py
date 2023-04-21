@@ -184,6 +184,46 @@ pygame.display.set_caption('Navigator')
 pygame.display.set_icon(windowIcon)
 screenColor = [0,0,0] # Screen fill color
 
+
+# Draw labels from formatted list of rects and displays, first 4 lines arranged based on truth value of two booleans
+def drawGameOverLabels(textList, conditionOne, conditionTwo):
+    statsSpacingY = 50
+    statsOffsetY = 10
+    skipped = 0
+    # Both true
+    if conditionOne and conditionTwo:
+        for x in range(len(textList)):
+            if x != 0 and x!= 1 and x!= 3 and x!= 4: # Skip 1st, 2nd, 4th, and 5th items
+                textList[x][1].center = screenSize[0]/2, screenSize[1]/3 + statsOffsetY + statsSpacingY * (x+1 - skipped)
+                screen.blit(textList[x][0],textList[x][1])
+            else: skipped+=1
+
+    # newHighScore
+    elif conditionOne and not conditionTwo:
+        for x in range(len(textList)):
+            if x != 0 and x!= 1 and x!= 5: # Skip 1st, 2nd, and 6th items
+                textList[x][1].center = screenSize[0]/2, screenSize[1]/3+ statsOffsetY + statsSpacingY * (x+1 - skipped)
+                screen.blit(textList[x][0],textList[x][1])
+            else: skipped+=1
+
+    # newLongestRun
+    elif conditionTwo and not conditionOne:
+        for x in range(len(textList)):
+            if x != 2 and x!= 3 and x!= 4: # Skip 3rd, 4th, and 5th items
+                textList[x][1].center = screenSize[0]/2, screenSize[1]/3 + statsOffsetY + statsSpacingY * (x+1 - skipped)
+                screen.blit(textList[x][0],textList[x][1])
+            else: skipped+=1
+
+    else:
+        for x in range(len(textList)):
+            if x != 2 and x != 5: # Skip 3rd and 6th items
+                textList[x][1].center = screenSize[0]/2, screenSize[1]/3 + statsOffsetY + statsSpacingY * (x+1 - skipped)
+                screen.blit(textList[x][0],textList[x][1])
+            else: skipped+=1
+
+
+
+
 # ASSET LOADING
 obstacleDirectory = os.path.join(currentDirectory, 'Obstacles') # Obstacle asset directory
 meteorDirectory = os.path.join(obstacleDirectory, 'Meteors') # Meteor asset directory
@@ -1021,7 +1061,7 @@ class Menu:
         if game.score > game.savedHighScore:
             newHighScore = True
             game.savedHighScore = game.score
-            updatedRecordsDict["highScore"] = game.savedHighScore
+            updatedRecordsDict["highScore"] = game.score
 
         try:
             with open(recordsPath,'wb') as file: pickle.dump(updatedRecordsDict,file) # Save updated records
@@ -1055,7 +1095,8 @@ class Menu:
         # Display
         scoreDisplay = statFont.render(scoreLine, True, finalScoreColor)
         highScoreDisplay = statFont.render(highScoreLine, True, finalScoreColor)
-        recordDisplay = statFont.render(overallLongestRunLine, True, finalScoreColor)
+        newHighScoreDisplay = statFont.render(newHighScoreLine, True, finalScoreColor)
+        longestRunDisplay = statFont.render(overallLongestRunLine, True, finalScoreColor)
         survivedDisplay = statFont.render(survivedLine, True, finalScoreColor)
         levelDisplay = statFont.render(levelLine, True, finalScoreColor)
         newLongestRunDisplay = statFont.render(newLongestRunLine, True, finalScoreColor)
@@ -1066,12 +1107,28 @@ class Menu:
         # Rects
         scoreRect = scoreDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 + statsOffsetY +statsSpacingY * 1))
         highScoreRect = highScoreDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 + statsOffsetY +statsSpacingY * 2))
+        newHighScoreRect = newHighScoreDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 + statsOffsetY +statsSpacingY * 1.5))
         survivedRect = survivedDisplay.get_rect(center =(screenSize[0]/2, screenSize[1]/3 + statsOffsetY + statsSpacingY * 3))
-        recordRect = recordDisplay.get_rect(center =(screenSize[0]/2, screenSize[1]/3 + statsOffsetY +statsSpacingY * 4))
+        longestRunRect = longestRunDisplay.get_rect(center =(screenSize[0]/2, screenSize[1]/3 + statsOffsetY +statsSpacingY * 4))
+        newLongestRunRect = newLongestRunDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 + statsOffsetY +statsSpacingY * 3.5))
         levelRect = levelDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 +statsOffsetY +statsSpacingY * 5))
         attemptRect = attemptDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 + statsOffsetY +statsSpacingY * 6))
         wastedRect = timeWastedDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 +statsOffsetY +statsSpacingY * 7))
         exitRect = exitDisplay.get_rect(center =(screenSize[0]/2, screenSize[1]/3 + 2* statsOffsetY +statsSpacingY * 8))
+
+        # [display,rect]
+        scoreText = scoreDisplay,scoreRect
+        highScoreText = highScoreDisplay,highScoreRect
+        newHighScoreText = newHighScoreDisplay,newHighScoreRect
+        survivedText = survivedDisplay, survivedRect
+        longestRunText = longestRunDisplay, longestRunRect
+        newLongestRunText = newLongestRunDisplay, newLongestRunRect
+        levelText = levelDisplay, levelRect
+        attemptText = attemptDisplay, attemptRect
+        wastedText = timeWastedDisplay, wastedRect
+
+        displayTextList = [scoreText, highScoreText, newHighScoreText, survivedText, longestRunText, newLongestRunText, levelText, attemptText, wastedText]
+
 
         while gameOver:
 
@@ -1080,16 +1137,10 @@ class Menu:
             screen.blit(bgList[game.currentStage - 1][0],(0,0))
             screen.blit(bgList[game.currentStage-1][1],(0,game.cloudPos))
             screen.blit(player.finalImg,player.finalRect) # Explosion
-            if newLongRun: screen.blit(newLongestRunDisplay,recordRect)
-            else: screen.blit(recordDisplay,recordRect)
+
             pygame.draw.rect(screen, screenColor, [gameOverRect.x - 12,gameOverRect.y + 4,gameOverRect.width + 16, gameOverRect.height - 16],0,10)
             screen.blit(gameOverDisplay,gameOverRect)
-            screen.blit(scoreDisplay,scoreRect)
-            screen.blit(highScoreDisplay,highScoreRect)
-            screen.blit(attemptDisplay,attemptRect)
-            screen.blit(survivedDisplay,survivedRect)
-            screen.blit(levelDisplay,levelRect)
-            screen.blit(timeWastedDisplay,wastedRect)
+            drawGameOverLabels(displayTextList,newHighScore,newLongRun)
             screen.blit(exitDisplay,exitRect)
             pygame.display.flip()
 
