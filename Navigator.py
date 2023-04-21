@@ -31,7 +31,7 @@ levelColor = [255,255,255] # Default = [255,255,255]
 scoreSize = 50 # Default = 50
 
 # POWER UPS
-pointSize = 10  # Default = 10
+pointSize = 25  # Default = 15
 
 # BACKGROUND CLOUD
 cloudSpeed = 1 # Default = 1
@@ -295,9 +295,15 @@ for levelFolder in sorted(os.listdir(shipDirectory)):
 # MUSIC ASSET
 pygame.mixer.music.load(resource_path(os.path.join(soundDirectory,"Soundtrack.mp3")))
 
+# LICENSE FREE SOUND ASSETS
+
 # EXPLOSION NOISE ASSET
 explosionNoise = pygame.mixer.Sound(resource_path(os.path.join(soundDirectory,"Explosion.wav")))
 explosionNoise.set_volume(sfxVolume/100)
+
+# POINT NOISE ASSET
+powerUpNoise = pygame.mixer.Sound(resource_path(os.path.join(soundDirectory,"Point.wav")))
+powerUpNoise.set_volume(sfxVolume/100)
 
 # LASER NOISE ASSET
 laserNoise = pygame.mixer.Sound(resource_path(os.path.join(soundDirectory,"Laser.wav")))
@@ -353,7 +359,7 @@ try:
     with open(recordsPath,'rb') as file:
         gameRecords = pickle.load(file)
 except:
-    gameRecords = {'highScore':0, 'attempts':0, 'timePlayed':0}
+    gameRecords = {'highScore':0, 'longestRun':0, 'attempts':0, 'timePlayed':0}
     try:
         with open(recordsPath,'wb') as file:
             pickle.dump(gameRecords, file)
@@ -384,7 +390,8 @@ class Game:
         self.gameClock = 1
         self.pauseCount = 0
         self.clk = pygame.time.Clock()
-        self.savedOverallHighScore = gameRecords["highScore"]
+        self.savedHighScore = gameRecords["highScore"]
+        self.savedLongestRun = gameRecords["longestRun"]
         self.savedTotalAttempts = gameRecords["attempts"]
         self.obstacleSpeed = obstacleSpeed
         self.obstacleSize = obstacleSize
@@ -394,7 +401,7 @@ class Game:
         self.cloudSpeed = cloudSpeed
         self.attemptNumber = 1
         self.mainMenu = True # Assures start menu only runs when called
-        self.sessionHighScore = 0
+        self.sessionLongRun = 0 # Longest run this session
         self.gameConstants = []
         self.savedShipNum = 0
         self.savedShipLevel = 0
@@ -403,7 +410,6 @@ class Game:
         self.cloudPos = cloudStart
         self.wipe = obstacleWipe
         self.explosions = []
-        
         self.musicMuted = musicMuted
 
         contantList = []
@@ -480,13 +486,17 @@ class Game:
 
         # HUD
         self.showHUD(player)
-        
+
         # PLAYER/POWERUP COLLISION DETECTION
         if pygame.sprite.collide_rect(player,self.thisPoint):
-            if self.thisPoint.powerUp == "Blue": player.fuel += player.maxFuel/4 # Replenish quarter tank
+            if self.thisPoint.powerUp == "Blue":
+                player.fuel += player.maxFuel/4 # Replenish quarter tank
+                if player.fuel > player.maxFuel: player.fuel = player.maxFuel
+
             elif self.thisPoint.powerUp == "Red": player.shieldUp()
             self.score += 1
             self.thisPoint.kill()
+            if not self.musicMuted: powerUpNoise.play()
             self.thisPoint = Point()
 
         # OBSTACLE/PLAYER COLLISION DETECTION
@@ -519,7 +529,7 @@ class Game:
         obstacleMove(obstacles)
 
         # UPDATE HIGH SCORE
-        if self.gameClock > self.sessionHighScore: self.sessionHighScore = self.gameClock
+        if self.gameClock > self.sessionLongRun: self.sessionLongRun = self.gameClock
 
         # OBSTACLE HANDLING
         if self.obstacleBoundaries == "KILL": obstacleRemove(obstacles)
@@ -534,6 +544,9 @@ class Game:
 
         # ROTATE EXHAUST
         newExhaustBlit = rotateImage(spaceShipList[game.savedShipLevel][0][player.exhaustState-1],player.rect,player.angle)
+
+        # DRAW POINT
+        screen.blit(self.thisPoint.image, self.thisPoint.rect)
 
         # DRAW PLAYER
         screen.blit(newBlit[0],newBlit[1])
@@ -555,9 +568,6 @@ class Game:
             screen.blit(newBlit[0],newBlit[1]) # Blit obstacles
             obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle
 
-        # DRAW POINT
-        screen.blit(self.thisPoint.image,self.thisPoint.rect)
-        
         musicLoop() # Loop music
 
         # UPDATE SCREEN
@@ -812,17 +822,17 @@ class Menu:
         bounceCount = 0
 
         # DEFAULT SHIP SKIN UNLOCKS   ( spaceShipList[0] )
-        if game.savedOverallHighScore >= 330: game.unlockNumber = len(spaceShipList[0][2])
-        elif game.savedOverallHighScore >= 300: game.unlockNumber = len(spaceShipList[0][2]) - 1
-        elif game.savedOverallHighScore >= 270: game.unlockNumber = len(spaceShipList[0][2]) - 2
-        elif game.savedOverallHighScore >= 240: game.unlockNumber = len(spaceShipList[0][2]) - 3
-        elif game.savedOverallHighScore >= 210: game.unlockNumber = len(spaceShipList[0][2]) - 4
-        elif game.savedOverallHighScore >= 180: game.unlockNumber = len(spaceShipList[0][2]) - 5
-        elif game.savedOverallHighScore >= 150: game.unlockNumber = len(spaceShipList[0][2]) - 6
-        elif game.savedOverallHighScore >= 120: game.unlockNumber = len(spaceShipList[0][2]) - 7
-        elif game.savedOverallHighScore >= 90: game.unlockNumber = len(spaceShipList[0][2]) - 8
-        elif game.savedOverallHighScore >= 60: game.unlockNumber = len(spaceShipList[0][2]) - 9
-        elif game.savedOverallHighScore >= 30: game.unlockNumber = len(spaceShipList[0][2]) - 10
+        if game.savedLongestRun >= 330: game.unlockNumber = len(spaceShipList[0][2])
+        elif game.savedLongestRun >= 300: game.unlockNumber = len(spaceShipList[0][2]) - 1
+        elif game.savedLongestRun >= 270: game.unlockNumber = len(spaceShipList[0][2]) - 2
+        elif game.savedLongestRun >= 240: game.unlockNumber = len(spaceShipList[0][2]) - 3
+        elif game.savedLongestRun >= 210: game.unlockNumber = len(spaceShipList[0][2]) - 4
+        elif game.savedLongestRun >= 180: game.unlockNumber = len(spaceShipList[0][2]) - 5
+        elif game.savedLongestRun >= 150: game.unlockNumber = len(spaceShipList[0][2]) - 6
+        elif game.savedLongestRun >= 120: game.unlockNumber = len(spaceShipList[0][2]) - 7
+        elif game.savedLongestRun >= 90: game.unlockNumber = len(spaceShipList[0][2]) - 8
+        elif game.savedLongestRun >= 60: game.unlockNumber = len(spaceShipList[0][2]) - 9
+        elif game.savedLongestRun >= 30: game.unlockNumber = len(spaceShipList[0][2]) - 10
 
         if game.unlockNumber < 0: game.unlockNumber = 0
         for imageNum in range(game.unlockNumber-1): player.nextSpaceShip() # Gets highest unlocked ship by default
@@ -913,7 +923,7 @@ class Menu:
             # SHOW SHIP CONTROLS
             if player.hasGuns: screen.blit(shootHelp,shootHelpRect)
             if player.boostSpeed > player.baseSpeed: screen.blit(boostHelp,boostHelpRect)
-            if game.savedOverallHighScore >= 30 and len(spaceShipList[game.savedShipLevel][2]) > 1: screen.blit(skinHelpDisplay,skinHelpRect) # Show switch skin controls
+            if game.savedLongestRun >= 30 and len(spaceShipList[game.savedShipLevel][2]) > 1: screen.blit(skinHelpDisplay,skinHelpRect) # Show switch skin controls
             screen.blit(shipHelpDisplay,shipHelpRect)
             screen.blit(player.image, (player.rect.x,player.rect.y + startOffset)) # Current spaceship
 
@@ -928,7 +938,7 @@ class Menu:
 
             pygame.display.update()
 
-
+    # PAUSE SCREEN
     def pause(self,game,player,obstacles,lasers):
         global screen
         playerBlit = rotateImage(player.image,player.rect,player.lastAngle)
@@ -954,6 +964,7 @@ class Menu:
             screen.blit(bgList[game.currentStage-1][0],(0,0))
             screen.blit(cloud,(0,game.cloudPos))
             game.showHUD(player)
+            screen.blit(game.thisPoint.image, game.thisPoint.rect)
             screen.blit(playerBlit[0],playerBlit[1])
             pygame.mixer.music.pause()
 
@@ -991,6 +1002,7 @@ class Menu:
         pygame.mixer.music.stop()
 
         # Update game records
+        newLongRun = False
         newHighScore = False
 
         try:
@@ -1000,17 +1012,23 @@ class Menu:
         savedClock = outdatedRecords["timePlayed"] + game.gameClock # Update total time played
         game.savedTotalAttempts += 1 # Update total attempts
 
-        updatedRecordsDict = {"highScore":game.savedOverallHighScore, "attempts":game.savedTotalAttempts,"timePlayed":savedClock} # Updated records
-        if game.sessionHighScore > game.savedOverallHighScore:
+        updatedRecordsDict = {"highScore":game.savedHighScore, "longestRun":game.savedLongestRun, "attempts":game.savedTotalAttempts,"timePlayed":savedClock} # Updated records
+        if game.sessionLongRun > game.savedLongestRun:
+            newLongRun = True
+            game.savedLongestRun = game.sessionLongRun
+            updatedRecordsDict["longestRun"] = game.sessionLongRun
+
+        if game.score > game.savedHighScore:
             newHighScore = True
-            game.savedOverallHighScore = game.sessionHighScore
-            updatedRecordsDict["highScore"] = game.sessionHighScore
+            game.savedHighScore = game.score
+            updatedRecordsDict["highScore"] = game.savedHighScore
 
         try:
             with open(recordsPath,'wb') as file: pickle.dump(updatedRecordsDict,file) # Save updated records
         except: pass
 
-        statsSpacingY = screenSize[1]/16
+        statsOffsetY = screenSize[1]/10
+        statsSpacingY = screenSize[1]/20
 
         # "GAME OVER" text
         gameOverFont = pygame.font.Font(gameFont, gameOverSize)
@@ -1024,30 +1042,36 @@ class Menu:
         exitFont = pygame.font.Font(gameFont, helpSize)
 
         # Text
-        attemptLine = str(game.attemptNumber) + " attempts this session, " + str(game.savedTotalAttempts) + " overall"
+        scoreLine = "Score " + str(game.score)
+        highScoreLine = "High Score " + str(game.savedHighScore)
+        newHighScoreLine = "New High Score! " + str(game.score)
         survivedLine = "Survived for " + str(game.gameClock) + " seconds"
+        overallLongestRunLine = "Longest run  =  " + str(game.savedLongestRun) + " seconds"
+        newLongestRunLine = "New longest run! " + str(game.sessionLongRun) + " seconds"
         levelLine = "Died at stage " + str(game.currentStage) + "  -  level " + str(game.currentLevel)
-        overallHighScoreLine = "High score  =  " + str(game.savedOverallHighScore) + " seconds"
-        newHighScoreLine = "New high score! " + str(game.sessionHighScore) + " seconds"
+        attemptLine = str(game.attemptNumber) + " attempts this session, " + str(game.savedTotalAttempts) + " overall"
         timeWasted = "Time played = " + str(savedClock) + " seconds"
 
         # Display
-        recordDisplay = statFont.render(overallHighScoreLine, True, finalScoreColor)
-        attemptDisplay = statFont.render(attemptLine, True, finalScoreColor)
+        scoreDisplay = statFont.render(scoreLine, True, finalScoreColor)
+        highScoreDisplay = statFont.render(highScoreLine, True, finalScoreColor)
+        recordDisplay = statFont.render(overallLongestRunLine, True, finalScoreColor)
         survivedDisplay = statFont.render(survivedLine, True, finalScoreColor)
         levelDisplay = statFont.render(levelLine, True, finalScoreColor)
-        newHighScoreDisplay = statFont.render(newHighScoreLine, True, finalScoreColor)
+        newLongestRunDisplay = statFont.render(newLongestRunLine, True, finalScoreColor)
+        attemptDisplay = statFont.render(attemptLine, True, finalScoreColor)
         timeWastedDisplay = statFont.render(timeWasted,True,finalScoreColor)
         exitDisplay = exitFont.render("TAB = Menu     SPACE = Restart    ESCAPE = Quit    C = Credits", True, helpColor)
 
         # Rects
-
-        survivedRect = survivedDisplay.get_rect(center =(screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 3))
-        recordRect = recordDisplay.get_rect(center =(screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 4))
-        levelRect = levelDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 +statsSpacingY * 5))
-        attemptRect = attemptDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 6))
-        wastedRect = timeWastedDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 +statsSpacingY * 7))
-        exitRect = exitDisplay.get_rect(center =(screenSize[0]/2, screenSize[1]/3 + statsSpacingY * 8))
+        scoreRect = scoreDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 + statsOffsetY +statsSpacingY * 1))
+        highScoreRect = highScoreDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 + statsOffsetY +statsSpacingY * 2))
+        survivedRect = survivedDisplay.get_rect(center =(screenSize[0]/2, screenSize[1]/3 + statsOffsetY + statsSpacingY * 3))
+        recordRect = recordDisplay.get_rect(center =(screenSize[0]/2, screenSize[1]/3 + statsOffsetY +statsSpacingY * 4))
+        levelRect = levelDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 +statsOffsetY +statsSpacingY * 5))
+        attemptRect = attemptDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 + statsOffsetY +statsSpacingY * 6))
+        wastedRect = timeWastedDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 +statsOffsetY +statsSpacingY * 7))
+        exitRect = exitDisplay.get_rect(center =(screenSize[0]/2, screenSize[1]/3 + 2* statsOffsetY +statsSpacingY * 8))
 
         while gameOver:
 
@@ -1056,10 +1080,12 @@ class Menu:
             screen.blit(bgList[game.currentStage - 1][0],(0,0))
             screen.blit(bgList[game.currentStage-1][1],(0,game.cloudPos))
             screen.blit(player.finalImg,player.finalRect) # Explosion
-            if newHighScore: screen.blit(newHighScoreDisplay,recordRect)
+            if newLongRun: screen.blit(newLongestRunDisplay,recordRect)
             else: screen.blit(recordDisplay,recordRect)
             pygame.draw.rect(screen, screenColor, [gameOverRect.x - 12,gameOverRect.y + 4,gameOverRect.width + 16, gameOverRect.height - 16],0,10)
             screen.blit(gameOverDisplay,gameOverRect)
+            screen.blit(scoreDisplay,scoreRect)
+            screen.blit(highScoreDisplay,highScoreRect)
             screen.blit(attemptDisplay,attemptRect)
             screen.blit(survivedDisplay,survivedRect)
             screen.blit(levelDisplay,levelRect)
@@ -1159,6 +1185,7 @@ class Menu:
 
             screen.fill(screenColor)
             screen.blit(bgList[game.currentStage - 1][0],(0,0))
+            screen.blit(bgList[game.currentStage-1][1],(0,game.cloudPos))
             screen.blit(createdByDisplay,createdByRect)
             screen.blit(creditsDisplay,creditsRect)
             screen.blit(musicCreditsDisplay,musicCreditsRect)
@@ -1220,7 +1247,7 @@ class Player(pygame.sprite.Sprite):
             self.laserFireRate = spaceShipList[game.savedShipLevel][3]["laserFireRate"]
             self.laserCollat = spaceShipList[game.savedShipLevel][3]["laserCollat"]
             self.hasGuns, self.laserReady, self.boostReady = spaceShipList[game.savedShipLevel][3]["hasGuns"], True, True
-            
+
             #SHIELDS
             self.shieldPieces = 0
             self.shields = 0
@@ -1460,13 +1487,13 @@ class Player(pygame.sprite.Sprite):
                 game.tick()
                 self.explosionState += 1
                 self.finalImg,self.finalRect = img,imgRect
-                
+
         def shieldUp(self):
             self.shieldPieces += 1
             if self.shieldPieces >= shieldPiecesNeeded:
                 self.shieldPieces = 0
                 self.shields += 1
-                
+
 
 
 # OBSTACLES
@@ -1563,14 +1590,8 @@ class Point(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center = positionGenerator())
         self.mask = pygame.mask.from_surface(self.image)
 
-    def collision(self,player,game):
-        if pygame.sprite.spritecollide(player,self,False,pygame.sprite.collide_mask):
-            if self.powerUp == "Blue": player.fuel += player.maxFuel/4 # Replenish quarter tank
-            elif self.powerUp == "Red": player.shieldUp()
-            game.score += 1
-            self.kill()
-            
-    
+
+
 # MENU METEOR ICONS
 class Icon:
     def __init__(self):
