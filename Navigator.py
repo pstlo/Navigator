@@ -491,9 +491,11 @@ class Game:
 
         # OBSTACLE/PLAYER COLLISION DETECTION
         if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask):
-            player.explode(game,obstacles) # Animation
-            if not self.musicMuted: explosionNoise.play()
-            menu.gameOver(self,player,obstacles) # Game over
+            if player.shields > 0: player.shields -= 1
+            else:
+                player.explode(game,obstacles) # Animation
+                if not self.musicMuted: explosionNoise.play()
+                menu.gameOver(self,player,obstacles) # Game over
 
         # OBSTACLE/LASER COLLISION DETECTION
         for laser in lasers:
