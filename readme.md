@@ -7,19 +7,7 @@ Windows: https://github.com/pstlo/Navigator/releases/download/v0.4.4/NavigatorWi
 MacOS (Apple Silicon): https://github.com/pstlo/Navigator/releases/download/v0.4.3/NavigatorMacOS.zip \
 Linux*: https://github.com/pstlo/Navigator/releases/download/v0.4.1/NavigatorLinux.zip *Does not save score
  
-To get started, either download, extract, and run the latest release above, or, for modifying code:
-
-1. Install python, check "ADD TO PATH"
-2. Install pygame with
-```pip install pygame```
-or
-```pip install pygame --pre```
-for python 3.11
-3. Clone this repository and extract
-4. Navigate to directory and start game with
-```python Navigator.py```
-, or use the provided batch file (Windows only)
- 
+To get started, either download, extract, and run the latest release above, or run it directly from the source code
 
 Created by Mike Pistolesi \
 with art by Collin Guetta & music by Dylan KZ
