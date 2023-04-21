@@ -102,10 +102,10 @@ levelTimer = 15 # Default = 15 / Time (seconds) between levels
 levelUpCloudSpeed = 25 # Default = 25 / Only affects levels preceded by wipe
 
 # ADD LEVELS HERE:   [ STARTED, (level-1)Timer, BOUNDS, SPEED,       SIZE,       NUMBER,     SPIN, AGGRO, WIPE  ]
-levelTwo =           [ False,       levelTimer, "KILL", 5.5*scaler,  32*scaler,  16*scaler,  1,    True,  False ]
-levelThree =         [ False,   2 * levelTimer, "KILL", 6*scaler,    34*scaler,  16*scaler,  2,    True,  False ]
-levelFour =          [ False,   3 * levelTimer, "KILL", 6.5*scaler,  36*scaler,  18*scaler,  3,    True,  False ]
-levelFive =          [ False,   4 * levelTimer, "KILL", 6*scaler,    38*scaler,  20*scaler,  4,    True,  False ]
+levelTwo =           [ False,       levelTimer, "KILL", 5*scaler,    32*scaler,  16*scaler,  1,    True,  False ]
+levelThree =         [ False,   2 * levelTimer, "KILL", 5*scaler,    34*scaler,  16*scaler,  2,    True,  False ]
+levelFour =          [ False,   3 * levelTimer, "KILL", 5.5*scaler,  36*scaler,  16*scaler,  3,    True,  False ]
+levelFive =          [ False,   4 * levelTimer, "KILL", 6*scaler,    38*scaler,  16*scaler,  4,    True,  False ]
 levelSix =           [ False,   5 * levelTimer, "KILL", 6.5*scaler,  40*scaler,  18*scaler,  3,    True,  False ]
 levelSeven =         [ False,   6 * levelTimer, "KILL", 2.2*scaler,  50*scaler,  65*scaler,  1,    True,  False ]
 levelEight =         [ False,   7 * levelTimer, "KILL", 7*scaler,    44*scaler,  20*scaler,  4,    True,  True  ]
