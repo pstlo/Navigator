@@ -2,6 +2,10 @@
 
 ### Simple and addictive arcade game written in Python with PyGame ###
 
+-The game is not rocket science, despite the theme. Navigate between randomly placed tokens like the game "Snake", with the twist of avoiding increasingly unforgiving asteroids- and whatever else may be out there.
+
+-Very much a work in progress, and any suggestions or feedback would be welcome. This is my first real attempt at making software, so bare with me! :)
+
 #### Latest Releases:   
 Windows: https://github.com/pstlo/Navigator/releases/download/v0.4.4/NavigatorWindows.zip \
 MacOS (Apple Silicon): https://github.com/pstlo/Navigator/releases/download/v0.4.3/NavigatorMacOS.zip \
