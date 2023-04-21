@@ -27,6 +27,12 @@ timerDelay = 1000 # Default = 1000
 levelSize = 30 * roundedScaler # Default = 30
 levelColor = [255,255,255] # Default = [255,255,255]
 
+# SCORE
+scoreSize = 50 # Default = 50
+
+# POWER UPS
+pointSize = 10  # Default = 10
+
 # BACKGROUND CLOUD
 cloudSpeed = 1 # Default = 1
 cloudStart = -1000 # Default = -1000
@@ -65,6 +71,7 @@ creditsColor = [255,255,255] # Default = [255,255,255]
 # PLAYER
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
 boostCooldownTime = 500 # Default = 500 / Activates when fuel runs out to allow regen
+shieldPiecesNeeded = 10 # Default = 10 / Pieces needed for an extra life
 
 # SOUNDS
 musicMuted = False # Default = False
@@ -185,6 +192,7 @@ shipDirectory = os.path.join(currentDirectory, 'Spaceships') # Spaceship asset d
 backgroundDirectory = os.path.join(currentDirectory, 'Backgrounds') # Background asset directory
 menuDirectory = os.path.join(currentDirectory, 'MainMenu') # Start menu asset directory
 explosionDirectory = os.path.join(currentDirectory, 'Explosion') # Explosion animation directory
+pointsDirectory = os.path.join(currentDirectory, 'Points') # Point image directory
 soundDirectory = os.path.join(currentDirectory, 'Sounds') # Sound assets directory
 
 # FONT
@@ -236,6 +244,22 @@ for filename in sorted(os.listdir(explosionDirectory)):
     if filename.endswith('.png'):
         path = os.path.join(explosionDirectory, filename)
         explosionList.append(pygame.image.load(resource_path(path)).convert_alpha())
+
+
+# POINTS ASSETS
+pointsList = []
+for filename in sorted(os.listdir(pointsDirectory)):
+
+    if filename.endswith('png'):
+
+        path = os.path.join(pointsDirectory, filename)
+        pointPng = pygame.image.load(resource_path(path))
+
+        if filename == 'default.png': pointPng.set_colorkey([0,0,0])
+        else: pointPng.set_colorkey([255,255,255])
+
+        pointsList.append(pointPng.convert_alpha())
+
 
 # SPACESHIP ASSETS
 spaceShipList = []
@@ -355,6 +379,8 @@ class Game:
     def __init__(self):
         self.currentLevel = 1
         self.currentStage = 1
+        self.score = 0
+        self.thisPoint = Point()
         self.gameClock = 1
         self.pauseCount = 0
         self.clk = pygame.time.Clock()
@@ -377,6 +403,7 @@ class Game:
         self.cloudPos = cloudStart
         self.wipe = obstacleWipe
         self.explosions = []
+        
         self.musicMuted = musicMuted
 
         contantList = []
@@ -453,6 +480,14 @@ class Game:
 
         # HUD
         self.showHUD(player)
+        
+        # PLAYER/POWERUP COLLISION DETECTION
+        if pygame.sprite.collide_rect(player,self.thisPoint):
+            if self.thisPoint.powerUp == "Blue": player.fuel += player.maxFuel/4 # Replenish quarter tank
+            elif self.thisPoint.powerUp == "Red": player.shieldUp()
+            self.score += 1
+            self.thisPoint.kill()
+            self.thisPoint = Point()
 
         # OBSTACLE/PLAYER COLLISION DETECTION
         if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask):
@@ -518,6 +553,9 @@ class Game:
             screen.blit(newBlit[0],newBlit[1]) # Blit obstacles
             obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle
 
+        # DRAW POINT
+        screen.blit(self.thisPoint.image,self.thisPoint.rect)
+        
         musicLoop() # Loop music
 
         # UPDATE SCREEN
@@ -655,6 +693,7 @@ class Game:
 
         # TIMER DISPLAY
         timerDisplay = timerFont.render(str(self.gameClock), True, timerColor)
+        timerRect = timerDisplay.get_rect(topright = screen.get_rect().topright)
 
         # STAGE DISPLAY
         stageNum = "Stage " + str(self.currentStage)
@@ -669,14 +708,22 @@ class Game:
         levelRect = levelDisplay.get_rect()
         levelRect.center = (stageRect.right + levelRect.width*0.65, stageRect.centery)
 
-        timerRect = timerDisplay.get_rect(topright = screen.get_rect().topright)
+        # SCORE DISPLAY
+        scoreNum = "Score " + str(self.score)
+        scoreFont = pygame.font.Font(gameFont, scoreSize)
+        scoreDisplay = scoreFont.render(scoreNum, True, levelColor)
+        scoreRect = scoreDisplay.get_rect()
+        scoreRect.topleft = (screenSize[0] - (2*scoreRect.width), levelRect.y)
 
         screen.blit(timerDisplay, timerRect)
         screen.blit(stageDisplay, stageRect)
         screen.blit(levelDisplay, levelRect)
+        screen.blit(scoreDisplay, scoreRect)
+
+        # FUEL DISPLAY
         if player.boostDrain > 0 or player.laserCost > 0:
             rectWidth = (screenSize[0]/4) * (player.fuel / player.maxFuel)
-            pygame.draw.rect(screen, fuelColor,[screenSize[0]/3, 0, rectWidth, 10]) # FUEL DISPLAY
+            pygame.draw.rect(screen, fuelColor,[screenSize[0]/3, 0, rectWidth, 10])
 
 
     # SPAWN OBSTACLES
@@ -689,7 +736,6 @@ class Game:
         for laser in lasers:
             laser.move(player)
             screen.blit(laser.image,laser.rect)
-
 
     def resetClock(self): self.gameClock = 0
 
@@ -1039,6 +1085,7 @@ class Menu:
                     game.gameClock = 0
                     game.currentLevel = 1
                     game.currentStage = 1
+                    game.score = 0
                     player.kill()
                     game.killAllObstacles(obstacles)
                     game.resetAllLevels()
@@ -1051,6 +1098,7 @@ class Menu:
                     game.gameClock = 0
                     game.currentLevel = 1
                     game.currentStage = 1
+                    game.score = 0
                     player.kill()
                     player.updatePlayerConstants(game)
                     game.killAllObstacles(obstacles)
@@ -1170,6 +1218,10 @@ class Player(pygame.sprite.Sprite):
             self.laserFireRate = spaceShipList[game.savedShipLevel][3]["laserFireRate"]
             self.laserCollat = spaceShipList[game.savedShipLevel][3]["laserCollat"]
             self.hasGuns, self.laserReady, self.boostReady = spaceShipList[game.savedShipLevel][3]["hasGuns"], True, True
+            
+            #SHIELDS
+            self.shieldPieces = 0
+            self.shields = 0
 
 
         # PLAYER MOVEMENT
@@ -1406,6 +1458,13 @@ class Player(pygame.sprite.Sprite):
                 game.tick()
                 self.explosionState += 1
                 self.finalImg,self.finalRect = img,imgRect
+                
+        def shieldUp(self):
+            self.shieldPieces += 1
+            if self.shieldPieces >= shieldPiecesNeeded:
+                self.shieldPieces = 0
+                self.shields += 1
+                
 
 
 # OBSTACLES
@@ -1489,8 +1548,29 @@ class Explosion:
         screen.blit(self.image,self.rect)
 
 
+# POWER UPS
+class Point(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        powerUps = ["Red", "Blue", "White"]
+        self.powerUp = powerUps[random.randint(0,len(powerUps)-1)]
+        if self.powerUp == "Red": self.image = pointsList[0]
+        elif self.powerUp == "Blue": self.image = pointsList[1]
+        elif self.powerUp == "White": self.image = pointsList[2]
+        self.image = pygame.transform.scale(self.image, (pointSize, pointSize))
+        self.rect = self.image.get_rect(center = positionGenerator())
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def collision(self,player,game):
+        if pygame.sprite.spritecollide(player,self,False,pygame.sprite.collide_mask):
+            if self.powerUp == "Blue": player.fuel += player.maxFuel/4 # Replenish quarter tank
+            elif self.powerUp == "Red": player.shieldUp()
+            game.score += 1
+            self.kill()
+            
+    
 # MENU METEOR ICONS
-class Icon(pygame.sprite.Sprite):
+class Icon:
     def __init__(self):
         spins = [-1,1]
         self.speed = random.randint(1,maxIconSpeed)
@@ -1632,6 +1712,16 @@ def wrapObstacle(obstacles):
         if obs.rect.centery < 0: obs.rect.centery = screenSize[1]
         if obs.rect.centerx > screenSize[0]: obs.rect.centerx = 0
         if obs.rect.centerx < 0: obs.rect.centerx = screenSize[0]
+
+
+# POINT POSITION GENERATION
+def positionGenerator():
+    spawnRange = [0.1,0.9]
+    xRange = [screenSize[0] * spawnRange[0] , screenSize[0] * spawnRange[1] ]
+    yRange = [screenSize[1] * spawnRange[0] , screenSize[1] * spawnRange[1] ]
+    xNum = random.randint(xRange[0],xRange[1])
+    yNum = random.randint(yRange[0],yRange[1])
+    return [xNum,yNum]
 
 
 game = Game() # Initialize game
