@@ -1,4 +1,4 @@
-# NAVIGATOR
+# Navigator v0.4.5
 # Copyright (c) 2023 Mike Pistolesi
 # All rights reserved
 
@@ -188,6 +188,16 @@ pygame.display.set_caption('Navigator')
 pygame.display.set_icon(windowIcon)
 screenColor = [0,0,0] # Screen fill color
 
+
+def readTxt(filename):
+    # Get dict from plain text
+    namesList = {}
+    path = os.path.join(os.getcwd(),filename+'.txt')
+    with open(path,'r') as file:
+        for line in file:
+            key, val = line.strip().split(':')
+            namesList[key] = val
+    return namesList
 
 # Draw labels from formatted list of rects and displays, first 4 lines arranged based on truth value of two booleans
 def drawGameOverLabels(textList, conditionOne, conditionTwo):
@@ -396,18 +406,36 @@ menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'red.
 menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'white.png'))).convert_alpha())
 menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'yellow.png'))).convert_alpha())
 
+# possible errors
+recordsLoaded = False
+donationsLoaded = False
+cannotSave = False
+
 # LOAD GAME RECORDS
 if platform.system().lower() == 'windows' or platform.system().lower == 'linux': recordsPath = './gameRecords.txt' # For windows and linux
 else: recordsPath = resource_path('gameRecords.txt') # For MacOS
 try:
     with open(recordsPath,'rb') as file:
         gameRecords = pickle.load(file)
+    recordsLoaded = True
+
 except:
     gameRecords = {'highScore':0, 'longestRun':0, 'attempts':0, 'timePlayed':0}
     try:
         with open(recordsPath,'wb') as file:
-            pickle.dump(gameRecords, file)
-    except: pass # Continue game without saving
+            pickle.dump(gameRecords, file) # Try overwriting records
+    except: cannotSave = True # Continue game without saving
+
+# LOAD DONATION RECORDS
+donations = {}
+try:
+    path = os.path.join(currentDirectory,'Supporters.txt')
+    with open(path,'r') as file:
+        for line in file:
+            key,value = line.strip().split(':')
+            donations[key] = value
+        donationsLoaded = True
+except: donationsLoaded = False
 
 timerFont = pygame.font.Font(gameFont, timerSize)
 
