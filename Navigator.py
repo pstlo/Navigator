@@ -1,4 +1,7 @@
 # NAVIGATOR
+# Copyright (c) 2023 Mike Pistolesi
+# All rights reserved
+
 import random,math,sys,platform,os,pickle
 from os import environ
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
@@ -76,7 +79,6 @@ creditsColor = [255,255,255] # Default = [255,255,255]
 # PLAYER
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
 
-
 # SOUNDS
 musicMuted = False # Default = False
 musicVolume = 35 # Default = 35 / Music volume / 100
@@ -86,15 +88,13 @@ musicLoopStart = 25000 # Default = 25000
 musicLoopEnd = 76000 # Default = 76000
 sfxVolume = 20 # Default = 20 / SFX volume / 100
 
-
-
 # SHIP CONSTANTS
 #                       [speed,fuel,maxFuel,fuelRegenNum,fuelRegenDelay,boostSpeed,hasGuns,laserCost,laserSpeed,laserFireRate,boostDrain,lasersStop,hasShields,piecesNeeded]
-defaultShipAttributes = [ 5,    1,  20,     0.05,        50,            7,         False,   0,        0,         0,           0.4,       True, True,  10  ]
-gunShipAttributes =     [ 3,   10,  20,     0.05,        50,            10,        True,    0.4,      10,        250,         0.3,       True, False,  0  ]
-laserShipAttributes =   [ 2,   1,   1,      0,           0,             2,         True,    0,        10,        50,          0,         True, False,  0  ]
-hyperYachtAttributes =  [ 3,   20,  30,     0.1,         25,            12,        False,   0,        0,         0,           0.25,      True, False,  0  ]
-oldReliableAttributes = [ 4,   10,  15,     0.05,        50,            6,         True,    1,        5,         1000,        0.25,      False,False,  0  ]
+defaultShipAttributes = [ 5,    1,  20,     0.05,        50,            7,         False,   0,        0,         0,           0.4,       True,      True,      10          ]
+gunShipAttributes =     [ 3,   10,  20,     0.05,        50,            10,        True,    0.4,      10,        250,         0.3,       True,      False,      0          ]
+laserShipAttributes =   [ 2,   1,   1,      0,           0,             2,         True,    0,        10,        50,          0,         True,      False,      0          ]
+hyperYachtAttributes =  [ 3,   20,  30,     0.1,         25,            12,        False,   0,        0,         0,           0.25,      True,      False,      0          ]
+oldReliableAttributes = [ 4,   10,  15,     0.05,        50,            6,         True,    1,        5,         1000,        0.25,      False,     False,      0          ]
 
 shipAttributes = [defaultShipAttributes,gunShipAttributes,laserShipAttributes,hyperYachtAttributes,oldReliableAttributes]
 
@@ -224,8 +224,6 @@ def drawGameOverLabels(textList, conditionOne, conditionTwo):
                 textList[x][1].center = screenSize[0]/2, screenSize[1]/3 + statsOffsetY + statsSpacingY * (x+1 - skipped)
                 screen.blit(textList[x][0],textList[x][1])
             else: skipped+=1
-
-
 
 
 # ASSET LOADING
@@ -748,28 +746,26 @@ class Game:
 
     # HUD
     def showHUD(self,player):
-        
+
         # SHIELDS DISPLAY
-        
-        
         shieldRectWidth = shieldChunkSize * player.shieldPieces
         if player.shields > 0: shieldRectWidth = shieldChunkSize * player.shieldPiecesNeeded
         shieldRect = pygame.Rect(screenSize[0]/3, 5, shieldRectWidth, 5)
         fullShieldRectWidth = shieldChunkSize * player.shieldPiecesNeeded
-        
+
         if player.hasShields:
             if player.shields > 0: pygame.draw.rect(screen,fullShieldColor,shieldRect)
             elif player.shieldPieces > 0: pygame.draw.rect(screen,shieldColor,shieldRect)
-    
+
         else: fullShieldRectWidth = shieldChunkSize * 10
-            
-        # FUEL DISPLAY 
+
+        # FUEL DISPLAY
         widthMultiplier = fullShieldRectWidth / (screenSize[0]/4)
         fuelRectWidth  = (screenSize[0]/4) * (player.fuel / player.maxFuel) * widthMultiplier
         fuelRect = pygame.Rect(screenSize[0]/3, 0, fuelRectWidth, 5)
-        if player.boostDrain > 0 or player.laserCost > 0: pygame.draw.rect(screen, fuelColor,fuelRect)    
-            
-    
+        if player.boostDrain > 0 or player.laserCost > 0: pygame.draw.rect(screen, fuelColor,fuelRect)
+
+
         # TIMER DISPLAY
         timerDisplay = timerFont.render(str(self.gameClock), True, timerColor)
         timerRect = timerDisplay.get_rect(topright = screen.get_rect().topright)
@@ -799,7 +795,6 @@ class Game:
         screen.blit(levelDisplay, levelRect)
         screen.blit(scoreDisplay, scoreRect)
 
-        
 
     # SPAWN OBSTACLES
     def spawner(self,obstacles):
@@ -1182,6 +1177,8 @@ class Menu:
                 # CREDITS
                 elif (event.type == pygame.KEYDOWN and event.key == pygame.K_c): menu.creditScreen()
 
+                # WIPE
+
                 elif (event.type == pygame.KEYDOWN and event.key == pygame.K_TAB):
                     # SET DEFAULTS AND GO BACK TO MENU
                     game.gameClock = 0
@@ -1393,11 +1390,12 @@ class Player(pygame.sprite.Sprite):
                         self.speed = self.boostSpeed
                         self.fuel -= (self.boostDrain)
 
+                        # Boost animation
                         try:
                             screen.blit(self.lastThreeExhaustPos[0][0],self.lastThreeExhaustPos[0][1])
                             screen.blit(self.lastThreeExhaustPos[1][0],self.lastThreeExhaustPos[1][1])
                             screen.blit(self.lastThreeExhaustPos[2][0],self.lastThreeExhaustPos[2][1])
-                        except: pass
+                        except: pass # will not have assets loaded in class variable until frame 3
 
                     else: self.speed = self.baseSpeed
 
@@ -1563,12 +1561,12 @@ class Player(pygame.sprite.Sprite):
                 self.explosionState += 1
                 self.finalImg,self.finalRect = img,imgRect
 
+
         def shieldUp(self):
             self.shieldPieces += 1
             if self.shieldPieces >= self.shieldPiecesNeeded:
                 self.shieldPieces = 0
                 self.shields += 1
-
 
 
 # OBSTACLES
@@ -1656,7 +1654,7 @@ class Explosion:
 class Point(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        powerUps = ["Blue", "Red", "White", "White"]
+        powerUps = ["Blue", "Red", "White", "White", "White", "White"]
         self.powerUp = powerUps[random.randint(0,len(powerUps)-1)]
         if self.powerUp == "Blue": self.image = pointsList[2]
         elif self.powerUp == "Red": self.image = pointsList[1]
@@ -1664,7 +1662,6 @@ class Point(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (pointSize, pointSize))
         self.rect = self.image.get_rect(center = positionGenerator())
         self.mask = pygame.mask.from_surface(self.image)
-
 
 
 # MENU METEOR ICONS
