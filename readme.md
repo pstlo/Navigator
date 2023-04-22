@@ -15,5 +15,5 @@ Linux*: https://github.com/pstlo/Navigator/releases/download/v0.4.1/NavigatorLin
 To get started, either download, extract, and run the latest release above, or run it directly from the source code
 
 Created by Mike Pistolesi \
-with art by Collin Guetta & music by Dylan KZ
+with art by Collin Guetta & music by "Glitpow" \
 Subject to change without notice.
