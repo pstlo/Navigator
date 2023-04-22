@@ -35,7 +35,7 @@ scoreSize = 50 # Default = 50
 # POWER UPS
 pointSize = 25  # Default = 20
 shieldChunkSize = screenSize[0]/40
-boostCooldownTime = 500 # Default = 500 / Activates when fuel runs out to allow regen
+boostCooldownTime = 2000 # Default = 2000 / Activates when fuel runs out to allow regen
 shieldPiecesNeeded = 10 # Default = 10 / Pieces needed for an extra life
 
 # BACKGROUND CLOUD
@@ -90,7 +90,7 @@ sfxVolume = 20 # Default = 20 / SFX volume / 100
 
 # SHIP CONSTANTS
 #                       [speed,fuel,maxFuel,fuelRegenNum,fuelRegenDelay,boostSpeed,hasGuns,laserCost,laserSpeed,laserFireRate,boostDrain,lasersStop,hasShields,piecesNeeded]
-defaultShipAttributes = [ 5,    0,  20,     0.05,        50,            7,         False,   0,        0,         0,           0.4,       True, True,  10  ]
+defaultShipAttributes = [ 5,    1,  20,     0.05,        50,            7,         False,   0,        0,         0,           0.4,       True, True,  10  ]
 gunShipAttributes =     [ 3,   10,  20,     0.05,        50,            10,        True,    0.4,      10,        250,         0.3,       True, False,  0  ]
 laserShipAttributes =   [ 2,   1,   1,      0,           0,             2,         True,    0,        10,        50,          0,         True, False,  0  ]
 hyperYachtAttributes =  [ 3,   20,  30,     0.1,         25,            12,        False,   0,        0,         0,           0.25,      True, False,  0  ]
@@ -750,13 +750,18 @@ class Game:
     def showHUD(self,player):
         
         # SHIELDS DISPLAY
-        shieldRectWidth = shieldChunkSize * player.shieldPieces
-        if player.shields > 0: shieldRectWidth = shieldChunkSize * shieldPiecesNeeded
-        shieldRect = pygame.Rect(screenSize[0]/3, 5, shieldRectWidth, 5)
-        fullShieldRectWidth = shieldChunkSize * shieldPiecesNeeded
         
-        if player.shields > 0: pygame.draw.rect(screen,fullShieldColor,shieldRect)
-        elif player.shieldPieces > 0: pygame.draw.rect(screen,shieldColor,shieldRect)
+        
+        shieldRectWidth = shieldChunkSize * player.shieldPieces
+        if player.shields > 0: shieldRectWidth = shieldChunkSize * player.shieldPiecesNeeded
+        shieldRect = pygame.Rect(screenSize[0]/3, 5, shieldRectWidth, 5)
+        fullShieldRectWidth = shieldChunkSize * player.shieldPiecesNeeded
+        
+        if player.hasShields:
+            if player.shields > 0: pygame.draw.rect(screen,fullShieldColor,shieldRect)
+            elif player.shieldPieces > 0: pygame.draw.rect(screen,shieldColor,shieldRect)
+    
+        else: fullShieldRectWidth = shieldChunkSize * 10
             
         # FUEL DISPLAY 
         widthMultiplier = fullShieldRectWidth / (screenSize[0]/4)
@@ -1315,9 +1320,8 @@ class Player(pygame.sprite.Sprite):
             self.laserFireRate = spaceShipList[game.savedShipLevel][3]["laserFireRate"]
             self.laserCollat = spaceShipList[game.savedShipLevel][3]["laserCollat"]
             self.hasGuns, self.laserReady, self.boostReady = spaceShipList[game.savedShipLevel][3]["hasGuns"], True, True
+            self.hasShields = spaceShipList[game.savedShipLevel][3]["hasShields"]
             self.shieldPiecesNeeded,self.shieldPieces,self.shields = spaceShipList[game.savedShipLevel][3]["piecesNeeded"],0,0
-
-            #SHIELDS
             self.shieldPieces = 0
             self.shields = 0
 
@@ -1528,6 +1532,8 @@ class Player(pygame.sprite.Sprite):
             self.laserFireRate = spaceShipList[game.savedShipLevel][3]["laserFireRate"]
             self.hasGuns = spaceShipList[game.savedShipLevel][3]["hasGuns"]
             self.laserCollat = spaceShipList[game.savedShipLevel][3]["laserCollat"]
+            self.hasShields = spaceShipList[game.savedShipLevel][3]["hasShields"]
+            self.shieldPiecesNeeded = spaceShipList[game.savedShipLevel][3]["piecesNeeded"]
 
 
         def updateExhaust(self,game):
@@ -1559,7 +1565,7 @@ class Player(pygame.sprite.Sprite):
 
         def shieldUp(self):
             self.shieldPieces += 1
-            if self.shieldPieces >= shieldPiecesNeeded:
+            if self.shieldPieces >= self.shieldPiecesNeeded:
                 self.shieldPieces = 0
                 self.shields += 1
 
