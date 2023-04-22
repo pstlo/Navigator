@@ -529,11 +529,11 @@ class Game:
 
         # PLAYER/POWERUP COLLISION DETECTION
         if pygame.sprite.collide_rect(player,self.thisPoint):
-            if self.thisPoint.powerUp == "Blue":
+            if self.thisPoint.powerUp == "Red":
                 player.fuel += player.maxFuel/4 # Replenish quarter tank
                 if player.fuel > player.maxFuel: player.fuel = player.maxFuel
 
-            elif self.thisPoint.powerUp == "Red": player.shieldUp()
+            elif self.thisPoint.powerUp == "Blue": player.shieldUp()
             self.score += 1
             self.thisPoint.kill()
             if not self.musicMuted: powerUpNoise.play()
@@ -1631,10 +1631,10 @@ class Explosion:
 class Point(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        powerUps = ["Red", "Blue", "White"]
+        powerUps = ["Blue", "Red", "White"]
         self.powerUp = powerUps[random.randint(0,len(powerUps)-1)]
-        if self.powerUp == "Red": self.image = pointsList[0]
-        elif self.powerUp == "Blue": self.image = pointsList[1]
+        if self.powerUp == "Blue": self.image = pointsList[0]
+        elif self.powerUp == "Red": self.image = pointsList[1]
         elif self.powerUp == "White": self.image = pointsList[2]
         self.image = pygame.transform.scale(self.image, (pointSize, pointSize))
         self.rect = self.image.get_rect(center = positionGenerator())
