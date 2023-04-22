@@ -16,3 +16,4 @@ To get started, either download, extract, and run the latest release above, or r
 
 Created by Mike Pistolesi \
 with art by Collin Guetta & music by Dylan KZ
+Subject to change without notice.
