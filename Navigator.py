@@ -1198,7 +1198,7 @@ class Menu:
 
         createdByLine = "Created by Mike Pistolesi"
         creditsLine = "with art by Collin Guetta"
-        musicCreditsLine = "& music by Dylan KZ"
+        musicCreditsLine = '& music by "Glitpow"'
 
         createdByDisplay = creatorFont.render(createdByLine, True, creditsColor)
         creditsDisplay = creditsFont.render(creditsLine, True, creditsColor)
@@ -1207,7 +1207,6 @@ class Menu:
         createdByRect = createdByDisplay.get_rect(center = (posX, posY - screenSize[1]/15) )
         creditsRect = creditsDisplay.get_rect(center = (posX,posY))
         musicCreditsRect = musicCreditsDisplay.get_rect(center = (posX,posY+ screenSize[1]/15))
-
 
         bounceCount = 0
         direction = randomEightDirection()
