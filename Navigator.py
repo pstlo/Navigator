@@ -430,7 +430,7 @@ class Game:
         self.currentLevel = 1
         self.currentStage = 1
         self.score = 0
-        self.thisPoint = Point()
+        self.thisPoint = Point(None)
         self.gameClock = 1
         self.pauseCount = 0
         self.clk = pygame.time.Clock()
@@ -541,7 +541,7 @@ class Game:
             self.score += 1
             self.thisPoint.kill()
             if not self.musicMuted: powerUpNoise.play()
-            self.thisPoint = Point()
+            self.thisPoint = Point(player)
 
         # OBSTACLE/PLAYER COLLISION DETECTION
         if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask):
@@ -1652,10 +1652,16 @@ class Explosion:
 
 # POWER UPS
 class Point(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self,player):
         super().__init__()
-        powerUps = ["Blue", "Red", "White", "White", "White", "White"]
-        self.powerUp = powerUps[random.randint(0,len(powerUps)-1)]
+        self.powerUp = ''
+        if not player or (not player.hasShields and player.boostDrain == 0 and player.laserCost == 0  and player.baseSpeed == player.boostSpeed): self.powerUp = "White"
+        else:
+            powerUps = ["Blue", "Red", "White", "White", "White", "White"]
+            if not player.hasShields: powerUps.remove("Blue")
+            if not player.hasGuns and player.baseSpeed == player.boostSpeed: powerUps.remove("Red")
+            self.powerUp = powerUps[random.randint(0,len(powerUps)-1)]
+
         if self.powerUp == "Blue": self.image = pointsList[2]
         elif self.powerUp == "Red": self.image = pointsList[1]
         elif self.powerUp == "White": self.image = pointsList[0]
