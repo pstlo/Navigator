@@ -414,7 +414,7 @@ menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'right.pn
 menuMeteorDir = os.path.join(menuDirectory,'FlyingObjects')
 
 for objPath in sorted(os.listdir(menuMeteorDir)): menuList.append(pygame.image.load(resources(os.path.join(menuMeteorDir,objPath))).convert_alpha())
-    
+
 # possible errors
 recordsLoaded = False
 donationsLoaded = False
