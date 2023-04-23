@@ -26,16 +26,12 @@ fps = 60 # Default = 60
 shieldColor = [0,0,255] # Default = [0,0,255] / Color of shield gauge
 fullShieldColor = [0,255,255] # Default = [0,255,255] / Color of active shield gauge
 fuelColor = [255,0,0] # Default = [255,0,0] / Color of fuel gauge
-timerSize = 30 * roundedScaler # Default = 50
+timerSize = 30 * roundedScaler # Default = 30
 timerColor = [255,255,255] # Default = [255,255,255]
 timerDelay = 1000 # Default = 1000
-
-# LEVEL COUNTER
 levelSize = 30 * roundedScaler # Default = 30
 levelColor = [255,255,255] # Default = [255,255,255]
-
-# SCORE
-scoreSize = 30 * roundedScaler # Default = 50
+scoreSize = 30 * roundedScaler # Default = 30
 
 # POWER UPS
 spawnRange = [0.1, 0.9]
@@ -93,7 +89,7 @@ minBackgroundShipSize = 50 # Default = 50
 maxBackgroundShipSize = 150 # Default = 150
 backgroundShipDelay = 20 # Default = 20
 showBackgroundShips = False # Default = True / Waiting for assets
-showSupporterNames = False # Default = True / Not started yet
+showSupporterNames = True # Default = True / Not started yet
 
 # PLAYER
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
@@ -2060,8 +2056,8 @@ def getAngle(direction):
     elif direction == "W": return 90
     elif direction == "NW": return 45
     elif direction == "NE": return -45
-    elif direction == "SE": return 135
-    elif direction == "SW": return -135
+    elif direction == "SE": return -135
+    elif direction == "SW": return 135
 
 
 # GET SCALED VALUE
