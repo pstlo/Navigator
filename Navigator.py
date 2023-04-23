@@ -38,6 +38,7 @@ levelColor = [255,255,255] # Default = [255,255,255]
 scoreSize = 50 * roundedScaler # Default = 50
 
 # POWER UPS
+spawnRange = [0.05, 0.95]
 pointSize = 25  # Default = 20 ( Waiting for assets )
 shieldChunkSize = screenSize[0]/40 # Default = screen width / 40
 boostCooldownTime = 2000 # Default = 2000 / Activates when fuel runs out to allow regen
@@ -479,6 +480,18 @@ if len(donationShips)==0: donationsLoaded = False # Asset folder is empty, proce
 
 timerFont = pygame.font.Font(gameFont, timerSize)
 
+# SPAWN AREA
+spawnWidth = int(screenSize[0] * (spawnRange[1] - spawnRange[0]))
+spawnHeight = int(screenSize[1] * (spawnRange[1] - spawnRange[0]))
+spawnOffsetX = int((screenSize[0] - spawnWidth) / 2)
+spawnOffsetY = int((screenSize[1] - spawnHeight) / 2)
+spawnAreaPoints = []
+for i in range(8):
+    angle = i * 2 * 3.14159 / 8 + (3.14159 / 8)
+    x = screenSize[0]/2 + (spawnWidth / 2) * math.cos(angle)
+    y = screenSize[1]/2 + (spawnHeight / 2) * math.sin(angle)
+    spawnAreaPoints.append((x, y))
+
 # for not aggro
 topDir = ["S", "E", "W", "SE", "SW"]
 leftDir = ["E", "S", "N", "NE", "SE"]
@@ -595,7 +608,7 @@ class Game:
         screen.blit(bgList[self.currentStage - 1][1], (0,self.cloudPos) )
         if self.cloudPos < screenSize[1]: self.cloudPos += self.cloudSpeed
         else: self.cloudPos = cloudStart
-
+        
         # HUD
         self.showHUD(player)
 
@@ -942,7 +955,7 @@ class Menu:
 
         leftRect = menuList[3].get_rect(center = (screenSize[0] * 0.2 , screenSize[1]/3) )
         rightRect = menuList[4].get_rect(center = (screenSize[0] * 0.8 , screenSize[1]/3) )
-        
+
         versionFont = pygame.font.Font(gameFont,versionSize)
         versionDisplay = versionFont.render(version,True,versionColor)
         versionRect = versionDisplay.get_rect(topright = (startRect.right-versionSize,startRect.bottom-versionSize))
@@ -1989,13 +2002,30 @@ def wrapObstacle(obstacles):
 
 
 # POINT POSITION GENERATION
-def positionGenerator():
-    spawnRange = [0.1,0.9]
+def getPosition():
     xRange = [screenSize[0] * spawnRange[0] , screenSize[0] * spawnRange[1] ]
     yRange = [screenSize[1] * spawnRange[0] , screenSize[1] * spawnRange[1] ]
     xNum = random.randint(xRange[0],xRange[1])
     yNum = random.randint(yRange[0],yRange[1])
     return [xNum,yNum]
+
+
+# CHECK IF POINT IS IN SPAWN AREA
+def pointValid(point):
+    centerX, centerY = screenSize[0]/2, screenSize[1]/2
+    lines = [((centerX + math.cos(angle + math.pi/8)*spawnWidth/2, centerY + math.sin(angle + math.pi/8)*spawnHeight/2), (centerX + math.cos(angle - math.pi/8)*spawnWidth/2, centerY + math.sin(angle - math.pi/8)*spawnHeight/2)) for angle in (i * math.pi/4 for i in range(8))]
+    sameSide = [((point[0]-l[0][0])*(l[1][1]-l[0][1]) - (point[1]-l[0][1])*(l[1][0]-l[0][0]))  * ((centerX-l[0][0])*(l[1][1]-l[0][1]) - (centerY-l[0][1])*(l[1][0]-l[0][0])) >= 0  for l in lines]
+    return all(sameSide)
+
+
+# GET POSITION IN SPAWN AREA
+def positionGenerator():
+    done = False
+    while not done:
+        point = getPosition()
+        if pointValid(point):
+            done = True
+            return point
 
 
 # GET ANGLE
