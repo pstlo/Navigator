@@ -38,11 +38,13 @@ levelColor = [255,255,255] # Default = [255,255,255]
 scoreSize = 50 * roundedScaler # Default = 50
 
 # POWER UPS
-spawnRange = [0.05, 0.95]
+spawnRange = [0.1, 0.9]
+spawnVertices = 8 # Default = 8 / Vertices in shape of point spawn area ( Octagon )
 pointSize = 25  # Default = 20 ( Waiting for assets )
 shieldChunkSize = screenSize[0]/40 # Default = screen width / 40
 boostCooldownTime = 2000 # Default = 2000 / Activates when fuel runs out to allow regen
 shieldPiecesNeeded = 10 # Default = 10 / Pieces needed for an extra life
+showSpawnArea = False # Default = False
 
 # BACKGROUND CLOUD
 cloudSpeed = 1 # Default = 1
@@ -486,8 +488,8 @@ spawnHeight = int(screenSize[1] * (spawnRange[1] - spawnRange[0]))
 spawnOffsetX = int((screenSize[0] - spawnWidth) / 2)
 spawnOffsetY = int((screenSize[1] - spawnHeight) / 2)
 spawnAreaPoints = []
-for i in range(8):
-    angle = i * 2 * 3.14159 / 8 + (3.14159 / 8)
+for i in range(spawnVertices):
+    angle = i * 2 * 3.14159 / spawnVertices + (3.14159 / spawnVertices)
     x = screenSize[0]/2 + (spawnWidth / 2) * math.cos(angle)
     y = screenSize[1]/2 + (spawnHeight / 2) * math.sin(angle)
     spawnAreaPoints.append((x, y))
@@ -608,6 +610,8 @@ class Game:
         screen.blit(bgList[self.currentStage - 1][1], (0,self.cloudPos) )
         if self.cloudPos < screenSize[1]: self.cloudPos += self.cloudSpeed
         else: self.cloudPos = cloudStart
+        
+        if showSpawnArea: pygame.draw.polygon(screen, (255, 0, 0), spawnAreaPoints,1)
         
         # HUD
         self.showHUD(player)
@@ -2013,18 +2017,16 @@ def getPosition():
 # CHECK IF POINT IS IN SPAWN AREA
 def pointValid(point):
     centerX, centerY = screenSize[0]/2, screenSize[1]/2
-    lines = [((centerX + math.cos(angle + math.pi/8)*spawnWidth/2, centerY + math.sin(angle + math.pi/8)*spawnHeight/2), (centerX + math.cos(angle - math.pi/8)*spawnWidth/2, centerY + math.sin(angle - math.pi/8)*spawnHeight/2)) for angle in (i * math.pi/4 for i in range(8))]
+    lines = [((centerX + math.cos(angle + math.pi/spawnVertices)*spawnWidth/2, centerY + math.sin(angle + math.pi/spawnVertices)*spawnHeight/2), (centerX + math.cos(angle - math.pi/spawnVertices)*spawnWidth/2, centerY + math.sin(angle - math.pi/spawnVertices)*spawnHeight/2)) for angle in (i * math.pi/4 for i in range(8))]
     sameSide = [((point[0]-l[0][0])*(l[1][1]-l[0][1]) - (point[1]-l[0][1])*(l[1][0]-l[0][0]))  * ((centerX-l[0][0])*(l[1][1]-l[0][1]) - (centerY-l[0][1])*(l[1][0]-l[0][0])) >= 0  for l in lines]
     return all(sameSide)
 
 
 # GET POSITION IN SPAWN AREA
 def positionGenerator():
-    done = False
-    while not done:
+    while True:
         point = getPosition()
         if pointValid(point):
-            done = True
             return point
 
 
