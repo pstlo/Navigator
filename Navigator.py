@@ -45,6 +45,7 @@ shieldChunkSize = screenSize[0]/40 # Default = screen width / 40
 boostCooldownTime = 2000 # Default = 2000 / Activates when fuel runs out to allow regen
 shieldPiecesNeeded = 10 # Default = 10 / Pieces needed for an extra life
 showSpawnArea = False # Default = False
+powerUpList = ["Blue", "Red", "White", "White", "White", "White"] # Red/White/Blue, chances of spawn
 
 # BACKGROUND CLOUD
 cloudSpeed = 1 # Default = 1
@@ -610,9 +611,9 @@ class Game:
         screen.blit(bgList[self.currentStage - 1][1], (0,self.cloudPos) )
         if self.cloudPos < screenSize[1]: self.cloudPos += self.cloudSpeed
         else: self.cloudPos = cloudStart
-        
+
         if showSpawnArea: pygame.draw.polygon(screen, (255, 0, 0), spawnAreaPoints,1)
-        
+
         # HUD
         self.showHUD(player)
 
@@ -630,7 +631,7 @@ class Game:
 
         # OBSTACLE/PLAYER COLLISION DETECTION
         if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask):
-            if player.shields > 0: player.shields -= 1
+            if player.shields > 0: player.shieldDown()
             else:
                 player.explode(game,obstacles) # Animation
                 if not self.musicMuted: explosionNoise.play()
@@ -1707,6 +1708,11 @@ class Player(pygame.sprite.Sprite):
                 self.shields += 1
 
 
+        def shieldDown(self):
+            self.shields -= 1
+            # Waiting for assets
+
+
 # OBSTACLES
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self,aggro):
@@ -1788,6 +1794,7 @@ class Explosion:
         screen.blit(self.image,self.rect)
 
 
+
 # POWER UPS
 class Point(pygame.sprite.Sprite):
     def __init__(self,player):
@@ -1795,7 +1802,7 @@ class Point(pygame.sprite.Sprite):
         self.powerUp = ''
         if not player or (not player.hasShields and player.boostDrain == 0 and player.laserCost == 0  and player.baseSpeed == player.boostSpeed): self.powerUp = "White"
         else:
-            powerUps = ["Blue", "Red", "White", "White", "White", "White"]
+            powerUps = powerUpList
             if not player.hasShields: powerUps.remove("Blue")
             if not player.hasGuns and player.baseSpeed == player.boostSpeed: powerUps.remove("Red")
             self.powerUp = powerUps[random.randint(0,len(powerUps)-1)]
