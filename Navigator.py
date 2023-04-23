@@ -445,7 +445,7 @@ try:
     with open(path,'r') as file:
         for line in file:
             key,value = line.strip().split(':')
-            donations[key] = value
+            donations[key] = int(value)
         donationsLoaded = True
 except: donationsLoaded = False
 
@@ -464,6 +464,8 @@ if donationsLoaded:
         if filename.endswith('.png'):
             path = os.path.join(donationShipsDir, filename)
             donationShips.append(pygame.image.load(resources(path)).convert_alpha())
+
+if len(donationShips)==0: donationsLoaded = False
 
 timerFont = pygame.font.Font(gameFont, timerSize)
 
@@ -1819,16 +1821,19 @@ class Icon:
 class BackgroundShip:
     def __init__(self,text,scale):
         self.scale = scale
-        self.size = int(valueScaler(scale,maxBackgroundShipSize,lowDon,maxDon))
-        if self.size <= minBackgroundShipSize:
+        self.size = int(valueScaler(scale,minBackgroundShipSize,maxBackgroundShipSize,lowDon,maxDon))
+        if self.size < minBackgroundShipSize:
             self.size = minBackgroundShipSize
             self.speed = maxBackgroundShipSpeed
-        elif self.size >= maxBackgroundShipSize:
+        elif self.size > maxBackgroundShipSize:
             self.size = minBackgroundShipSize
             self.speed = minBackgroundShipSpeed
-        elif self.size >= maxBackgroundShipSize * 2/3: self.speed = int(maxBackgroundShipSpeed * 1/3)
-        elif self.size >= maxBackgroundShipSize * 1/3: self.speed = int(maxBackgroundShipSpeed * 2/3)
-        else: self.speed = maxBackgroundShipSpeed
+
+        self.speed = maxBackgroundShipSpeed/self.size
+        if self.speed > maxBackgroundShipSpeed: self.speed = maxBackgroundShipSpeed
+        elif self.speed < minBackgroundShipSpeed: self.speed = minBackgroundShipSpeed
+
+        print(self.size)
         self.movement = getMovement(False)
         self.direction = self.movement[1]
         self.angle = getAngle(self.direction)
@@ -1989,15 +1994,11 @@ def getAngle(direction):
 
 
 # GET SCALED VALUE
-def valueScaler(amount,maximum,bottom,top):
-    if bottom is None or top is None: return 1
-    else:
-        factor = (int(top)-int(bottom))/int(maximum)
-        if factor <= 0: return 1
-        else:
-            scaled = (int(amount) - int(bottom))/factor
-            return min(max(scaled, 0), maximum)
-
+def valueScaler(amount,minimum,maximum,bottom,top):
+    if bottom is None or top is None: return minimum
+    else: 
+        scaled = (amount - bottom) / (top - bottom) * (maximum-minimum) + minimum
+        return min(max(scaled,minimum),maximum)
 
 game = Game() # Initialize game
 menu = Menu() # Initialize menus
