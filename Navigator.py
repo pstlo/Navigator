@@ -92,12 +92,14 @@ exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation fr
 
 # SOUNDS
 musicMuted = False # Default = False
-musicVolume = 15 # Default = 15 / Music volume / 100
+musicVolume = 10 # Default = 10 / Music volume / 100
+sfxVolume = 5 # Default = 5 / SFX volume / 100
+
+# DURATION
 menuLoopStart = 1100 # Default = 1100
 menuLoopEnd = 12800 # Default = 12800
 musicLoopStart = 25000 # Default = 25000
 musicLoopEnd = 76000 # Default = 76000
-sfxVolume = 20 # Default = 20 / SFX volume / 100
 
 # SHIP CONSTANTS
 #                       [speed,fuel,maxFuel,fuelRegenNum,fuelRegenDelay,boostSpeed,hasGuns,laserCost,laserSpeed,laserFireRate,boostDrain,lasersStop,hasShields,piecesNeeded]
@@ -1866,7 +1868,6 @@ class BackgroundShip:
             if self.displayRect.bottom < 0 or self.displayRect.top > screenSize[1] or self.displayRect.left > screenSize[0] or self.displayRect.right < 0:return True
         else:
             if self.rect.bottom < 0 or self.rect.top > screenSize[1] or self.rect.left > screenSize[0] or self.rect.right < 0: return True
-
 
 
 # ROTATE IMAGE
