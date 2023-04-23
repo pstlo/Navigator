@@ -1120,6 +1120,7 @@ class Menu:
     def gameOver(self,game,player,obstacles):
         global screen
         gameOver = True
+        game.thisPoint = Point(None)
         pygame.mixer.music.stop()
 
         # Update game records
