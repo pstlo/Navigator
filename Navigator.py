@@ -1283,7 +1283,7 @@ class Menu:
 
         createdByLine = "Created by Mike Pistolesi"
         creditsLine = "with art by Collin Guetta"
-        musicCreditsLine = '& music by "Glitpow"'
+        musicCreditsLine = '& music by Dylan Kusenko'
 
         createdByDisplay = creatorFont.render(createdByLine, True, creditsColor)
         creditsDisplay = creditsFont.render(creditsLine, True, creditsColor)
