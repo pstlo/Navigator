@@ -1868,8 +1868,9 @@ class Icon:
 
 
     def draw(self):
-        drawing, drawee = rotateImage(self.image,self.rect,self.angle)
-        screen.blit(drawing,drawee)
+        if self.active:
+            drawing, drawee = rotateImage(self.image,self.rect,self.angle)
+            screen.blit(drawing,drawee)
 
 
 # BACKGROUND SHIPS
