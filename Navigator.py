@@ -84,8 +84,8 @@ maxBackgroundShipSpeed = 3 # Default = 3
 minBackgroundShipSize = 50 # Default = 50
 maxBackgroundShipSize = 150 # Default = 150
 backgroundShipDelay = 20 # Default = 20
-showBackgroundShips = True
-showSupporterNames = True
+showBackgroundShips = False # Default = True / Waiting for assets
+showSupporterNames = True # Default = True
 
 # PLAYER
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
@@ -95,7 +95,7 @@ musicMuted = False # Default = False
 musicVolume = 10 # Default = 10 / Music volume / 100
 sfxVolume = 5 # Default = 5 / SFX volume / 100
 
-# DURATION
+# MUSIC LOOP DURATION
 menuLoopStart = 1100 # Default = 1100
 menuLoopEnd = 12800 # Default = 12800
 musicLoopStart = 25000 # Default = 25000
@@ -201,9 +201,8 @@ pygame.display.set_caption('Navigator')
 pygame.display.set_icon(windowIcon)
 screenColor = [0,0,0] # Screen fill color
 
-
+# Get dictionary from plain text
 def readTxt(filename):
-    # Get dict from plain text
     namesList = {}
     path = os.path.join(os.getcwd(),filename+'.txt')
     with open(path,'r') as file:
@@ -406,20 +405,16 @@ for i in range(len(spaceShipList)): spaceShipList[i].append(shipConstants[i])
 
 # MAIN MENU ASSETS
 menuList = []
-menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'A.png'))).convert_alpha())
-menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'O.png'))).convert_alpha())
-menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'big.png'))).convert_alpha())
-menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'left.png'))).convert_alpha())
-menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'right.png'))).convert_alpha())
-menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'dblue.png'))).convert_alpha())
-menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'lblue.png'))).convert_alpha())
-menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'lgreen.png'))).convert_alpha())
-menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'dgreen.png'))).convert_alpha())
-menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'orange.png'))).convert_alpha())
-menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'red.png'))).convert_alpha())
-menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'white.png'))).convert_alpha())
-menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'yellow.png'))).convert_alpha())
+menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'A.png'))).convert_alpha()) # 'A' icon
+menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'O.png'))).convert_alpha()) # 'O' icon
+menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'center.png'))).convert_alpha()) # Center icon
+menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'left.png'))).convert_alpha()) # Left icon
+menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'right.png'))).convert_alpha()) # Right icon
 
+menuMeteorDir = os.path.join(menuDirectory,'FlyingObjects')
+
+for objPath in sorted(os.listdir(menuMeteorDir)): menuList.append(pygame.image.load(resources(os.path.join(menuMeteorDir,objPath))).convert_alpha())
+    
 # possible errors
 recordsLoaded = False
 donationsLoaded = False
