@@ -1994,11 +1994,15 @@ def getAngle(direction):
 
 
 # GET SCALED VALUE
-def valueScaler(amount,minimum,maximum,bottom,top):
-    if bottom is None or top is None: return minimum
-    else: 
-        scaled = (amount - bottom) / (top - bottom) * (maximum-minimum) + minimum
-        return min(max(scaled,minimum),maximum)
+def valueScaler(amount, minimum, maximum, bottom, top):
+    if bottom is None or top is None:
+        return minimum
+    elif top - bottom == 0:
+        return (maximum + minimum) / 2
+    else:
+        scaled = (amount - bottom) / (top - bottom) * (maximum - minimum) + minimum
+        return min(max(scaled, minimum), maximum)
+
 
 game = Game() # Initialize game
 menu = Menu() # Initialize menus
