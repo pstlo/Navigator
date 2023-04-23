@@ -24,7 +24,7 @@ shieldColor = [0,0,255] # Default = [0,0,255] / Color of shield gauge
 fullShieldColor = [0,255,255] # Default = [0,255,255] / Color of active shield gauge
 fuelColor = [255,0,0] # Default = [255,0,0] / Color of fuel gauge
 fps = 60 # Default = 60
-timerSize = 75 * roundedScaler # Default = 75
+timerSize = 50 * roundedScaler # Default = 50
 timerColor = [255,255,255] # Default = [255,255,255]
 timerDelay = 1000 # Default = 1000
 
@@ -33,10 +33,10 @@ levelSize = 30 * roundedScaler # Default = 30
 levelColor = [255,255,255] # Default = [255,255,255]
 
 # SCORE
-scoreSize = 50 # Default = 50
+scoreSize = 50 * roundedScaler # Default = 50
 
 # POWER UPS
-pointSize = 25  # Default = 20
+pointSize = 25  # Default = 20 ( Waiting for assets )
 shieldChunkSize = screenSize[0]/40
 boostCooldownTime = 2000 # Default = 2000 / Activates when fuel runs out to allow regen
 shieldPiecesNeeded = 10 # Default = 10 / Pieces needed for an extra life
