@@ -127,7 +127,7 @@ obstacleSpeed = 4 *scaler  # Default = 4
 obstacleSize = 30 *scaler  # Default = 30
 maxObstacles = 12 *scaler  # Default = 12
 obstacleBoundaries = "KILL" # Default = "KILL"
-aggro = True # Default = True / Removes restriction on obstacle movement - False = more difficult
+aggro = True # Default = True / Removes restriction on obstacle movement - (False more difficult)
 spinSpeed = 1 # Default = 1
 obstacleWipe = False # Default = False / Wipe before level
 
@@ -158,7 +158,7 @@ stageTwoLevels = [stageTwoLevelOne,stageTwoLevelTwo,stageTwoLevelThree,stageTwoL
 stageList = [stageOneLevels, stageTwoLevels] # List of stages
 
 #----------------------------------------------------------------------------------------------------------------------
-# FOR EXE RESOURCES
+# FOR EXE/APP RESOURCES
 def resources(relative):
     try: base = sys._MEIPASS
     except Exception: base = os.path.abspath(".")
@@ -697,9 +697,10 @@ class Game:
 
         # DRAW OBSTACLES
         for obs in obstacles:
-            newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
-            screen.blit(newBlit[0],newBlit[1]) # Blit obstacles
-            obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle
+            if obs.active:
+                newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
+                screen.blit(newBlit[0],newBlit[1]) # Blit obstacles
+                obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle
 
         musicLoop() # Loop music
 
