@@ -625,7 +625,7 @@ class Game:
             if self.thisPoint.powerUp == "Red":
                 player.fuel += player.maxFuel/4 # Replenish quarter tank
                 if player.fuel > player.maxFuel: player.fuel = player.maxFuel
-    
+
             elif self.thisPoint.powerUp == "Blue": player.shieldUp()
             self.score += 1
             self.thisPoint.kill()
@@ -1734,7 +1734,7 @@ class Obstacle(pygame.sprite.Sprite):
         spins = [-1,1]
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
         self.active = False
-        
+
     def activate(self):
         if self.rect.right >= 0 or self.rect.left <= screenSize[0] or self.rect.top <= 0 or self.rect.bottom >= screenSize[1]: self.active = True
 
@@ -1801,7 +1801,6 @@ class Explosion:
         screen.blit(self.image,self.rect)
 
 
-
 # POWER UPS
 class Point(pygame.sprite.Sprite):
     def __init__(self,player):
@@ -1835,6 +1834,7 @@ class Icon:
         self.image = pygame.transform.scale(self.image, (size, size)).convert_alpha()
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
         self.angle = 0
+        self.active = False
 
 
     def move(self):
@@ -1842,6 +1842,7 @@ class Icon:
         if "S" in self.direction: self.rect.centery += self.speed
         if "E" in self.direction: self.rect.centerx += self.speed
         if "W" in self.direction: self.rect.centerx -= self.speed
+        self.activate()
 
         if self.angle >= 360 or self.angle <= -360: self.angle = 0
 
@@ -1852,7 +1853,7 @@ class Icon:
         randomTimerLX = -1 * random.randint(screenSize[0], screenSize[0] * 3)
         randomTimerLY = -1 * random.randint(screenSize[0], screenSize[1] * 3)
 
-        if (self.rect.centery > randomTimerUY) or (self.rect.centery < randomTimerLY) or (self.rect.centerx> randomTimerUX) or (self.rect.centerx < randomTimerLX):
+        if self.active and ( (self.rect.centery > randomTimerUY) or (self.rect.centery < randomTimerLY) or (self.rect.centerx> randomTimerUX) or (self.rect.centerx < randomTimerLX) ):
             self.movement = getMovement(False)
             self.direction = self.movement[1]
             self.image = menuList[random.randint(5,len(menuList)-1)]
@@ -1862,9 +1863,14 @@ class Icon:
             self.image = pygame.transform.scale(self.image, (size, size))
 
 
+    def activate(self):
+        if self.rect.right >= 0 or self.rect.left <= screenSize[0] or self.rect.top <= 0 or self.rect.bottom >= screenSize[1]: self.active = True
+
+
     def draw(self):
         drawing, drawee = rotateImage(self.image,self.rect,self.angle)
         screen.blit(drawing,drawee)
+
 
 # BACKGROUND SHIPS
 class BackgroundShip:
