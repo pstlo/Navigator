@@ -75,13 +75,24 @@ stageUpCloudSpeed = 8 * roundedScaler # Default = 8
 # CREDITS
 creditsFontSize = 55 * roundedScaler # Default = 55
 creditsColor = [255,255,255] # Default = [255,255,255]
+mainCreditsSpeed = 1
+extraCreditsSize = 30 * roundedScaler # background ships text size
+extraCreditsColor = [0,0,0]
+maxExtras = 3 # Default = 3 # max background ships
+minBackgroundShipSpeed = 1 # Default = 1
+maxBackgroundShipSpeed = 3 # Default = 3
+minBackgroundShipSize = 50 # Default = 50
+maxBackgroundShipSize = 150 # Default = 150
+backgroundShipDelay = 20 # Default = 20
+showBackgroundShips = True
+showSupporterNames = True
 
 # PLAYER
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
 
 # SOUNDS
 musicMuted = False # Default = False
-musicVolume = 35 # Default = 35 / Music volume / 100
+musicVolume = 15 # Default = 15 / Music volume / 100
 menuLoopStart = 1100 # Default = 1100
 menuLoopEnd = 12800 # Default = 12800
 musicLoopStart = 25000 # Default = 25000
@@ -136,10 +147,10 @@ stageList = [stageOneLevels, stageTwoLevels] # List of stages
 
 #----------------------------------------------------------------------------------------------------------------------
 # FOR EXE
-def resource_path(relative_path):
-    try: base_path = sys._MEIPASS
-    except Exception: base_path = os.path.abspath(".")
-    return os.path.join(base_path, relative_path)
+def resources(relative):
+    try: base = sys._MEIPASS
+    except Exception: base = os.path.abspath(".")
+    return os.path.join(base, relative)
 
 # GET SCREEN SIZE
 displayInfo = pygame.display.Info()
@@ -177,13 +188,13 @@ def toggleMusic(game):
     else: pygame.mixer.music.set_volume(0)
 
 # ASSET DIRECTORY
-currentDirectory = resource_path('Assets')
+currentDirectory = resources('Assets')
 
 # INITIALIZE SCREEN
 screen = getScreen()
 
 # WINDOW
-windowIcon = pygame.image.load(resource_path(os.path.join(currentDirectory,'Icon.png'))).convert_alpha()
+windowIcon = pygame.image.load(resources(os.path.join(currentDirectory,'Icon.png'))).convert_alpha()
 pygame.display.set_caption('Navigator')
 pygame.display.set_icon(windowIcon)
 screenColor = [0,0,0] # Screen fill color
@@ -246,26 +257,27 @@ menuDirectory = os.path.join(currentDirectory, 'MainMenu') # Start menu asset di
 explosionDirectory = os.path.join(currentDirectory, 'Explosion') # Explosion animation directory
 pointsDirectory = os.path.join(currentDirectory, 'Points') # Point image directory
 soundDirectory = os.path.join(currentDirectory, 'Sounds') # Sound assets directory
+supportersDirectory = os.path.join(currentDirectory,'Supporters') # Supporters directory
 
 # FONT
 gameFont = os.path.join(currentDirectory, 'Font.ttf')
 
 # STAGE WIPE CLOUD
-stageCloudImg = pygame.image.load(resource_path(os.path.join(currentDirectory,'StageCloud.png') ) ).convert_alpha()
+stageCloudImg = pygame.image.load(resources(os.path.join(currentDirectory,'StageCloud.png') ) ).convert_alpha()
 
 # METEOR ASSETS
 meteorList = []
 for filename in sorted(os.listdir(meteorDirectory)):
     if filename.endswith('.png'):
         path = os.path.join(meteorDirectory, filename)
-        meteorList.append(pygame.image.load(resource_path(path)).convert_alpha())
+        meteorList.append(pygame.image.load(resources(path)).convert_alpha())
 
 # UFO ASSETS
 ufoList = []
 for filename in sorted(os.listdir(ufoDirectory)):
     if filename.endswith('.png'):
         path = os.path.join(ufoDirectory, filename)
-        ufoList.append(pygame.image.load(resource_path(path)).convert_alpha())
+        ufoList.append(pygame.image.load(resources(path)).convert_alpha())
 
 # ALL OBSTACLE ASSETS
 obstacleImages = [meteorList,ufoList] # Seperated by stage
@@ -281,12 +293,12 @@ for filename in sorted(os.listdir(backgroundDirectory)):
         stageCloudPath = os.path.join(bgPath,'Cloud.png')
 
         if screenSize != [800,800]: # Stretching resolution
-            bg = pygame.transform.scale(pygame.image.load(resource_path(stageBgPath)).convert_alpha(), (screenSize[0], screenSize[1]))
-            cloud = pygame.transform.scale(pygame.image.load(resource_path(stageCloudPath)).convert_alpha(), (screenSize[0], screenSize[1]))
+            bg = pygame.transform.scale(pygame.image.load(resources(stageBgPath)).convert_alpha(), (screenSize[0], screenSize[1]))
+            cloud = pygame.transform.scale(pygame.image.load(resources(stageCloudPath)).convert_alpha(), (screenSize[0], screenSize[1]))
 
         else:
-            bg = pygame.image.load(resource_path(stageBgPath)).convert_alpha()
-            cloud = pygame.image.load(resource_path(stageCloudPath)).convert_alpha()
+            bg = pygame.image.load(resources(stageBgPath)).convert_alpha()
+            cloud = pygame.image.load(resources(stageCloudPath)).convert_alpha()
 
         bgList.append([bg,cloud])
 
@@ -295,7 +307,7 @@ explosionList = []
 for filename in sorted(os.listdir(explosionDirectory)):
     if filename.endswith('.png'):
         path = os.path.join(explosionDirectory, filename)
-        explosionList.append(pygame.image.load(resource_path(path)).convert_alpha())
+        explosionList.append(pygame.image.load(resources(path)).convert_alpha())
 
 
 # POINTS ASSETS
@@ -305,7 +317,7 @@ for filename in sorted(os.listdir(pointsDirectory)):
     if filename.endswith('png'):
 
         path = os.path.join(pointsDirectory, filename)
-        pointPng = pygame.image.load(resource_path(path))
+        pointPng = pygame.image.load(resources(path))
 
         if filename == 'default.png': pointPng.set_colorkey([0,0,0])
         else: pointPng.set_colorkey([255,255,255])
@@ -331,38 +343,38 @@ for levelFolder in sorted(os.listdir(shipDirectory)):
 
                     if imageAsset.endswith('.png'):
                         imageAssetPath = os.path.join(shipAssetPath,imageAsset)
-                        imageAssetPng = pygame.image.load(resource_path((imageAssetPath)))
+                        imageAssetPng = pygame.image.load(resources((imageAssetPath)))
                         if imageAsset in toRemoveBackground: imageAssetPng.set_colorkey([255,255,255]) # Remove white background if specified in list
                         assetList.append(imageAssetPng.convert_alpha())
 
                 shipLevelList.append(assetList)
 
             elif shipAsset == 'Laser.png':
-                laserPng = pygame.image.load(resource_path(shipAssetPath))
+                laserPng = pygame.image.load(resources(shipAssetPath))
                 laserPng.set_colorkey([255,255,255])
                 shipLevelList.append(laserPng.convert_alpha())
 
         spaceShipList.append(shipLevelList) # Add to main list
 
 # MUSIC ASSET
-pygame.mixer.music.load(resource_path(os.path.join(soundDirectory,"Soundtrack.mp3")))
+pygame.mixer.music.load(resources(os.path.join(soundDirectory,"Soundtrack.mp3")))
 
 # LICENSE FREE SOUND ASSETS
 
 # EXPLOSION NOISE ASSET
-explosionNoise = pygame.mixer.Sound(resource_path(os.path.join(soundDirectory,"Explosion.wav")))
+explosionNoise = pygame.mixer.Sound(resources(os.path.join(soundDirectory,"Explosion.wav")))
 explosionNoise.set_volume(sfxVolume/100)
 
 # POINT NOISE ASSET
-powerUpNoise = pygame.mixer.Sound(resource_path(os.path.join(soundDirectory,"Point.wav")))
+powerUpNoise = pygame.mixer.Sound(resources(os.path.join(soundDirectory,"Point.wav")))
 powerUpNoise.set_volume(sfxVolume/100)
 
 # LASER NOISE ASSET
-laserNoise = pygame.mixer.Sound(resource_path(os.path.join(soundDirectory,"Laser.wav")))
+laserNoise = pygame.mixer.Sound(resources(os.path.join(soundDirectory,"Laser.wav")))
 laserNoise.set_volume(sfxVolume/100)
 
 # LASER IMPACT NOISE ASSET
-impactNoise = pygame.mixer.Sound(resource_path(os.path.join(soundDirectory,"Impact.wav")))
+impactNoise = pygame.mixer.Sound(resources(os.path.join(soundDirectory,"Impact.wav")))
 impactNoise.set_volume(sfxVolume/100)
 
 
@@ -392,19 +404,19 @@ for i in range(len(spaceShipList)): spaceShipList[i].append(shipConstants[i])
 
 # MAIN MENU ASSETS
 menuList = []
-menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'A.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'O.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'big.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'left.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'right.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'dblue.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'lblue.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'lgreen.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'dgreen.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'orange.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'red.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'white.png'))).convert_alpha())
-menuList.append(pygame.image.load(resource_path(os.path.join(menuDirectory,'yellow.png'))).convert_alpha())
+menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'A.png'))).convert_alpha())
+menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'O.png'))).convert_alpha())
+menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'big.png'))).convert_alpha())
+menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'left.png'))).convert_alpha())
+menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'right.png'))).convert_alpha())
+menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'dblue.png'))).convert_alpha())
+menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'lblue.png'))).convert_alpha())
+menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'lgreen.png'))).convert_alpha())
+menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'dgreen.png'))).convert_alpha())
+menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'orange.png'))).convert_alpha())
+menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'red.png'))).convert_alpha())
+menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'white.png'))).convert_alpha())
+menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'yellow.png'))).convert_alpha())
 
 # possible errors
 recordsLoaded = False
@@ -413,7 +425,7 @@ cannotSave = False
 
 # LOAD GAME RECORDS
 if platform.system().lower() == 'windows' or platform.system().lower == 'linux': recordsPath = './gameRecords.txt' # For windows and linux
-else: recordsPath = resource_path('gameRecords.txt') # For MacOS
+else: recordsPath = resources('gameRecords.txt') # For MacOS
 try:
     with open(recordsPath,'rb') as file:
         gameRecords = pickle.load(file)
@@ -429,13 +441,29 @@ except:
 # LOAD DONATION RECORDS
 donations = {}
 try:
-    path = os.path.join(currentDirectory,'Supporters.txt')
+    path = os.path.join(supportersDirectory,'Supporters.txt')
     with open(path,'r') as file:
         for line in file:
             key,value = line.strip().split(':')
             donations[key] = value
         donationsLoaded = True
 except: donationsLoaded = False
+
+if len(donations) == 0: donationsLoaded = False
+if donationsLoaded:
+    maxDon = max(donations.values())
+    lowDon = min(donations.values())
+else:
+    maxDon,lowDon = None,None
+
+# LOAD DONATION SHIP ASSETS
+donationShips = []
+if donationsLoaded:
+    donationShipsDir = os.path.join(supportersDirectory,'Images')
+    for filename in sorted(os.listdir(donationShipsDir)):
+        if filename.endswith('.png'):
+            path = os.path.join(donationShipsDir, filename)
+            donationShips.append(pygame.image.load(resources(path)).convert_alpha())
 
 timerFont = pygame.font.Font(gameFont, timerSize)
 
@@ -489,15 +517,15 @@ class Game:
             stageConstants = []
             for settings in stage:
                 levelDict = {
-                                "START" : settings[0],
-                                "TIME" : settings[1],
-                                "bound" : settings[2],
-                                "speedMult" : settings[3],
-                                "obsSizeMult" : settings[4],
-                                "maxObsMult" : settings[5],
-                                "spinSpeed" : settings[6],
-                                "aggro" : settings[7],
-                                "wipe" : settings[8]
+                    "START" : settings[0],
+                    "TIME" : settings[1],
+                    "bound" : settings[2],
+                    "speedMult" : settings[3],
+                    "obsSizeMult" : settings[4],
+                    "maxObsMult" : settings[5],
+                    "spinSpeed" : settings[6],
+                    "aggro" : settings[7],
+                    "wipe" : settings[8]
                     }
                 stageConstants.append(levelDict)
             contantList.append(stageConstants)
@@ -793,7 +821,6 @@ class Game:
         fuelRect = pygame.Rect(screenSize[0]/3, 0, fuelRectWidth, 5)
         if player.boostDrain > 0 or player.laserCost > 0: pygame.draw.rect(screen, fuelColor,fuelRect)
 
-
         # TIMER DISPLAY
         timerDisplay = timerFont.render(str(self.gameClock), True, timerColor)
         timerRect = timerDisplay.get_rect(topright = screen.get_rect().topright)
@@ -949,7 +976,6 @@ class Menu:
                         screen.fill(screenColor)
                         screen.blit(bgList[game.currentStage - 1][0],(0,0))
                         screen.blit(player.image, (player.rect.x,player.rect.y + iconPosition)) # Current spaceship
-
                         pygame.display.update()
 
                         if startDelayCounter >= startDelay: iconPosition-=1
@@ -1259,6 +1285,24 @@ class Menu:
         bounceCount = 0
         direction = randomEightDirection()
 
+        # random select names and contributions from dictionary
+        if donationsLoaded:
+            if len(donations) < maxExtras: extrasCap = len(donations)
+            else: extrasCap = maxExtras
+            extras = []
+            if extrasCap == 1:
+                extra = list(donations.items())[0]
+                extras.append(extra)
+                del donations[extra[0]]
+            else:
+                for i in range(extrasCap):
+                    extra = random.choice(list(donations.items()))
+                    extras.append(extra) # add to list
+                    del donations[extra[0]] # pop from dictionary
+
+            bgShips = []
+            for ship in extras: bgShips.append(BackgroundShip(ship[0],ship[1]))
+
         while rollCredits:
 
             menuMusicLoop()
@@ -1284,6 +1328,30 @@ class Menu:
             screen.fill(screenColor)
             screen.blit(bgList[game.currentStage - 1][0],(0,0))
             screen.blit(bgList[game.currentStage-1][1],(0,game.cloudPos))
+
+            if donationsLoaded:
+
+                for ship in bgShips:
+                    ship.draw()
+                    ship.move()
+                    # off screen, add name back to pool and remove
+                    if ship.offScreen():
+                        bgShips.remove(ship)
+                        donations[ship.text] = ship.scale
+                        for i in extras:
+                            if i[0] == ship.text:
+                                extras.remove(i)
+                                break
+
+                for newShip in range(maxExtras-len(bgShips)):
+                    # get name from pool
+                    if len(donations)==0:break
+                    elif len(donations) == 1: extra = list(donations.items())[0]
+                    else: extra = random.choice(list(donations.items()))
+                    extras.append(extra)
+                    del donations[extra[0]]
+                    bgShips.append(BackgroundShip(extra[0],extra[1]))
+
             screen.blit(createdByDisplay,createdByRect)
             screen.blit(creditsDisplay,creditsRect)
             screen.blit(musicCreditsDisplay,musicCreditsRect)
@@ -1297,27 +1365,32 @@ class Menu:
 
             if bounceCount == 0:
                 if "N" in direction:
-                    createdByRect.centery-= 1
-                    creditsRect.centery-= 1
-                    musicCreditsRect.centery-= 1
+                    createdByRect.centery-= mainCreditsSpeed
+                    creditsRect.centery-= mainCreditsSpeed
+                    musicCreditsRect.centery-= mainCreditsSpeed
 
                 if "S" in direction:
-                    createdByRect.centery+= 1
-                    creditsRect.centery+= 1
-                    musicCreditsRect.centery+= 1
+                    createdByRect.centery+= mainCreditsSpeed
+                    creditsRect.centery+= mainCreditsSpeed
+                    musicCreditsRect.centery+= mainCreditsSpeed
 
                 if "E" in direction:
-                    createdByRect.centerx+= 1
-                    creditsRect.centerx+= 1
-                    musicCreditsRect.centerx+= 1
+                    createdByRect.centerx+= mainCreditsSpeed
+                    creditsRect.centerx+= mainCreditsSpeed
+                    musicCreditsRect.centerx+= mainCreditsSpeed
 
                 if "W" in direction:
-                    createdByRect.centerx-= 1
-                    creditsRect.centerx-= 1
-                    musicCreditsRect.centerx-= 1
+                    createdByRect.centerx-= mainCreditsSpeed
+                    creditsRect.centerx-= mainCreditsSpeed
+                    musicCreditsRect.centerx-= mainCreditsSpeed
 
             bounceCount +=1
             if bounceCount >= 10: bounceCount = 0
+
+        # Refill donation list
+        if donationsLoaded:
+            for supporter, contribution in extras:
+                donations.update({supporter:contribution})
 
 
 # PLAYER
@@ -1708,7 +1781,7 @@ class Icon:
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
         self.image = menuList[random.randint(5,len(menuList)-1)]
         size = random.randint(minIconSize,maxIconSize)
-        self.image = pygame.transform.scale(self.image, (size, size))
+        self.image = pygame.transform.scale(self.image, (size, size)).convert_alpha()
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
         self.angle = 0
 
@@ -1743,6 +1816,55 @@ class Icon:
         screen.blit(drawing,drawee)
 
 
+class BackgroundShip:
+    def __init__(self,text,scale):
+        self.scale = scale
+        self.size = int(valueScaler(scale,maxBackgroundShipSize,lowDon,maxDon))
+        if self.size <= minBackgroundShipSize:
+            self.size = minBackgroundShipSize
+            self.speed = maxBackgroundShipSpeed
+        elif self.size >= maxBackgroundShipSize:
+            self.size = minBackgroundShipSize
+            self.speed = minBackgroundShipSpeed
+        elif self.size >= maxBackgroundShipSize * 2/3: self.speed = int(maxBackgroundShipSpeed * 1/3)
+        elif self.size >= maxBackgroundShipSize * 1/3: self.speed = int(maxBackgroundShipSpeed * 2/3)
+        else: self.speed = maxBackgroundShipSpeed
+        self.movement = getMovement(False)
+        self.direction = self.movement[1]
+        self.angle = getAngle(self.direction)
+        self.text = text
+        self.image = pygame.transform.scale(donationShips[random.randint(0, len(donationShips) - 1)], (self.size, self.size) ).convert_alpha()
+        self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
+        self.count = 0
+        self.font = pygame.font.Font(gameFont, int(self.size * 2/3))
+        self.display = self.font.render(self.text, True, extraCreditsColor)
+        self.displayRect = self.display.get_rect(center = self.rect.center)
+
+    def move(self):
+        if self.count >= backgroundShipDelay:
+            if "N" in self.direction: self.rect.centery -= self.speed
+            if "S" in self.direction: self.rect.centery += self.speed
+            if "E" in self.direction: self.rect.centerx += self.speed
+            if "W" in self.direction: self.rect.centerx -= self.speed
+            self.displayRect.center = self.rect.center
+            self.count = 0
+        self.count +=1
+
+    def draw(self):
+        if not showBackgroundShips and not showSupporterNames: return
+        drawing, drawee = rotateImage(self.image,self.rect,self.angle)
+        supporterRect = self.display.get_rect(center = drawee.center)
+        if showBackgroundShips: screen.blit(drawing,drawee)
+        if showSupporterNames: screen.blit(self.display,supporterRect)
+
+    def offScreen(self):
+        if showSupporterNames and not showBackgroundShips:
+            if self.displayRect.bottom < 0 or self.displayRect.top > screenSize[1] or self.displayRect.left > screenSize[0] or self.displayRect.right < 0:return True
+        else:
+            if self.rect.bottom < 0 or self.rect.top > screenSize[1] or self.rect.left > screenSize[0] or self.rect.right < 0: return True
+
+
+
 # ROTATE IMAGE
 def rotateImage(image, rect, angle):
     rotated = pygame.transform.rotate(image, angle)
@@ -1762,6 +1884,7 @@ def movementReverse(direction):
     elif direction == "SW": return "NE"
 
 
+# GET RANDOM DIRECTION - included diagonal
 def randomEightDirection():
     directions = ["N","S","E","W","NW","SW","NE","SE"]
     direction = directions[random.randint(0, len(directions)-1)]
@@ -1837,7 +1960,7 @@ def bounceObstacle(obstacles):
 # OBSTACLE WRAPPING
 def wrapObstacle(obstacles):
     for obs in obstacles:
-        if obs.rect.centery  > screenSize[1]: obs.rect.centery = 0
+        if obs.rect.centery > screenSize[1]: obs.rect.centery = 0
         if obs.rect.centery < 0: obs.rect.centery = screenSize[1]
         if obs.rect.centerx > screenSize[0]: obs.rect.centerx = 0
         if obs.rect.centerx < 0: obs.rect.centerx = screenSize[0]
@@ -1851,6 +1974,29 @@ def positionGenerator():
     xNum = random.randint(xRange[0],xRange[1])
     yNum = random.randint(yRange[0],yRange[1])
     return [xNum,yNum]
+
+
+# GET ANGLE
+def getAngle(direction):
+    if direction == "N": return 0
+    elif direction == "S": return 180
+    elif direction == "E": return -90
+    elif direction == "W": return 90
+    elif direction == "NW": return 45
+    elif direction == "NE": return -45
+    elif direction == "SE": return 135
+    elif direction == "SW": return -135
+
+
+# GET SCALED VALUE
+def valueScaler(amount,maximum,bottom,top):
+    if bottom is None or top is None: return 1
+    else:
+        factor = (int(top)-int(bottom))/int(maximum)
+        if factor <= 0: return 1
+        else:
+            scaled = (int(amount) - int(bottom))/factor
+            return min(max(scaled, 0), maximum)
 
 
 game = Game() # Initialize game
