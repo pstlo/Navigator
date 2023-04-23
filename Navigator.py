@@ -17,7 +17,7 @@ version = "v0.4.5"
 #------------------GAME CONSTANTS--------------------------------------------------------------------------
 # SCREEN
 screenSize = [800,800] # Default = [800,800]
-scaler = (screenSize[0] + screenSize[1])  / 1600 # Default = x + y / 2  / 800 == 1
+scaler = (screenSize[0] + screenSize[1]) / 1600 # Default = x + y / 2  / 800 == 1
 roundedScaler = int(round(scaler)) # Assure scaled values are whole numbers
 fullScreen = False # Default = False
 fps = 60 # Default = 60
@@ -26,7 +26,7 @@ fps = 60 # Default = 60
 shieldColor = [0,0,255] # Default = [0,0,255] / Color of shield gauge
 fullShieldColor = [0,255,255] # Default = [0,255,255] / Color of active shield gauge
 fuelColor = [255,0,0] # Default = [255,0,0] / Color of fuel gauge
-timerSize = 50 * roundedScaler # Default = 50
+timerSize = 30 * roundedScaler # Default = 50
 timerColor = [255,255,255] # Default = [255,255,255]
 timerDelay = 1000 # Default = 1000
 
@@ -35,7 +35,7 @@ levelSize = 30 * roundedScaler # Default = 30
 levelColor = [255,255,255] # Default = [255,255,255]
 
 # SCORE
-scoreSize = 50 * roundedScaler # Default = 50
+scoreSize = 30 * roundedScaler # Default = 50
 
 # POWER UPS
 spawnRange = [0.1, 0.9]
@@ -93,7 +93,7 @@ minBackgroundShipSize = 50 # Default = 50
 maxBackgroundShipSize = 150 # Default = 150
 backgroundShipDelay = 20 # Default = 20
 showBackgroundShips = False # Default = True / Waiting for assets
-showSupporterNames = True # Default = True
+showSupporterNames = False # Default = True / Not started yet
 
 # PLAYER
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
@@ -119,7 +119,10 @@ oldReliableAttributes = [ 4,   10,  15,     0.05,        50,            6,      
 
 shipAttributes = [defaultShipAttributes,gunShipAttributes,laserShipAttributes,hyperYachtAttributes,oldReliableAttributes]
 
-# OBSTACLE STARTING VALUES
+# OBSTACLES
+explosionDelay = 1 # Default = 1
+obstacleSpawnRange = [0,1] # Default = [0,1]
+# Starting values
 obstacleSpeed = 4 *scaler  # Default = 4
 obstacleSize = 30 *scaler  # Default = 30
 maxObstacles = 12 *scaler  # Default = 12
@@ -127,7 +130,6 @@ obstacleBoundaries = "KILL" # Default = "KILL"
 aggro = True # Default = True / Removes restriction on obstacle movement - False = more difficult
 spinSpeed = 1 # Default = 1
 obstacleWipe = False # Default = False / Wipe before level
-explosionDelay = 1 # Default = 1
 
 # LEVELS
 levelTimer = 15 # Default = 15 / Time (seconds) between levels
@@ -612,6 +614,7 @@ class Game:
         if self.cloudPos < screenSize[1]: self.cloudPos += self.cloudSpeed
         else: self.cloudPos = cloudStart
 
+        # SHOW POINT SPAWN AREA
         if showSpawnArea: pygame.draw.polygon(screen, (255, 0, 0), spawnAreaPoints,1)
 
         # HUD
@@ -622,7 +625,7 @@ class Game:
             if self.thisPoint.powerUp == "Red":
                 player.fuel += player.maxFuel/4 # Replenish quarter tank
                 if player.fuel > player.maxFuel: player.fuel = player.maxFuel
-
+    
             elif self.thisPoint.powerUp == "Blue": player.shieldUp()
             self.score += 1
             self.thisPoint.kill()
@@ -1723,13 +1726,17 @@ class Obstacle(pygame.sprite.Sprite):
         self.spinSpeed = game.spinSpeed
         self.movement = getMovement(self.aggro)
         self.direction = self.movement[1]
-        try: self.image = obstacleImages[game.currentStage - 1][game.currentLevel-1].convert_alpha()
+        try: self.image = obstacleImages[game.currentStage - 1][game.currentLevel-1]
         except: self.image = meteorList[random.randint(0,len(meteorList)-1)]
-        self.image = pygame.transform.scale(self.image, (self.size, self.size))
+        self.image = pygame.transform.scale(self.image, (self.size, self.size)).convert_alpha()
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
         self.angle = 0
         spins = [-1,1]
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
+        self.active = False
+        
+    def activate(self):
+        if self.rect.right >= 0 or self.rect.left <= screenSize[0] or self.rect.top <= 0 or self.rect.bottom >= screenSize[1]: self.active = True
 
 
 # LASERS
@@ -1936,7 +1943,6 @@ def randomEightDirection():
     direction = directions[random.randint(0, len(directions)-1)]
     return direction
 
-
 # OBSTACLE POSITION GENERATION
 def getMovement(eightDirections):
     top,bottom,left,right = [],[],[],[]
@@ -1946,10 +1952,10 @@ def getMovement(eightDirections):
     X = random.randint(0, screenSize[0])
     Y = random.randint(0, screenSize[1])
 
-    lowerX = random.randint(0, screenSize[0] * 0.05)
-    upperX =  random.randint(screenSize[0] * 0.95, screenSize[0])
-    lowerY  = random.randint(0, screenSize[1] * 0.05)
-    upperY = random.randint(screenSize[1] * 0.95, screenSize[1])
+    lowerX = random.randint(-obstacleSpawnRange[1],obstacleSpawnRange[0])
+    upperX =  random.randint(screenSize[0], screenSize[0] + obstacleSpawnRange[1])
+    lowerY  = random.randint(-obstacleSpawnRange[1],obstacleSpawnRange[0])
+    upperY = random.randint(screenSize[1],screenSize[1]+obstacleSpawnRange[1])
 
     topDirection = top[random.randint(0, len(top) - 1)]
     leftDirection = left[random.randint(0, len(left) - 1)]
@@ -1978,19 +1984,20 @@ def obstacleMove(obstacles):
         if "S" in obs.direction: obs.rect.centery += obs.speed
         if "E" in obs.direction: obs.rect.centerx += obs.speed
         if "W" in obs.direction: obs.rect.centerx -= obs.speed
+        obs.activate()
 
 
 # OFF SCREEN OBSTACLE REMOVAL
 def obstacleRemove(obstacles):
     for obs in obstacles:
+        if obs.active:
+            if obs.rect.centerx > screenSize[0] or obs.rect.centerx < 0:
+                obstacles.remove(obs)
+                obs.kill()
 
-        if obs.rect.centerx > screenSize[0] or obs.rect.centerx < 0:
-            obstacles.remove(obs)
-            obs.kill()
-
-        elif obs.rect.centery > screenSize[1] or obs.rect.centery < 0:
-            obs.kill()
-            obstacles.remove(obs)
+            elif obs.rect.centery > screenSize[1] or obs.rect.centery < 0:
+                obs.kill()
+                obstacles.remove(obs)
 
 
 # OBSTACLE BOUNCING
