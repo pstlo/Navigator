@@ -1833,7 +1833,6 @@ class BackgroundShip:
         if self.speed > maxBackgroundShipSpeed: self.speed = maxBackgroundShipSpeed
         elif self.speed < minBackgroundShipSpeed: self.speed = minBackgroundShipSpeed
 
-        print(self.size)
         self.movement = getMovement(False)
         self.direction = self.movement[1]
         self.angle = getAngle(self.direction)
