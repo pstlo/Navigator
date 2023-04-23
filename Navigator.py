@@ -19,11 +19,12 @@ screenSize = [800,800] # Default = [800,800]
 scaler = (screenSize[0] + screenSize[1])  / 1600 # Default = x + y / 2  / 800 == 1
 roundedScaler = int(round(scaler)) # Assure scaled values are whole numbers
 fullScreen = False # Default = False
+fps = 60 # Default = 60
 
+# HUD
 shieldColor = [0,0,255] # Default = [0,0,255] / Color of shield gauge
 fullShieldColor = [0,255,255] # Default = [0,255,255] / Color of active shield gauge
 fuelColor = [255,0,0] # Default = [255,0,0] / Color of fuel gauge
-fps = 60 # Default = 60
 timerSize = 50 * roundedScaler # Default = 50
 timerColor = [255,255,255] # Default = [255,255,255]
 timerDelay = 1000 # Default = 1000
@@ -37,7 +38,7 @@ scoreSize = 50 * roundedScaler # Default = 50
 
 # POWER UPS
 pointSize = 25  # Default = 20 ( Waiting for assets )
-shieldChunkSize = screenSize[0]/40
+shieldChunkSize = screenSize[0]/40 # Default = screen width / 40
 boostCooldownTime = 2000 # Default = 2000 / Activates when fuel runs out to allow regen
 shieldPiecesNeeded = 10 # Default = 10 / Pieces needed for an extra life
 
@@ -148,26 +149,31 @@ stageTwoLevels = [stageTwoLevelOne,stageTwoLevelTwo,stageTwoLevelThree,stageTwoL
 stageList = [stageOneLevels, stageTwoLevels] # List of stages
 
 #----------------------------------------------------------------------------------------------------------------------
-# FOR EXE
+# FOR EXE RESOURCES
 def resources(relative):
     try: base = sys._MEIPASS
     except Exception: base = os.path.abspath(".")
     return os.path.join(base, relative)
+
 
 # GET SCREEN SIZE
 displayInfo = pygame.display.Info()
 displayInfo = displayInfo.current_w,displayInfo.current_h
 displayInfo = pygame.Rect(0, 0, displayInfo[0], displayInfo[1]).center
 
+
+# GET SCREEN
 def getScreen():
     if fullScreen: return pygame.display.set_mode(screenSize,pygame.FULLSCREEN + pygame.SCALED)
     else: return pygame.display.set_mode(screenSize)
+
 
 # TOGGLE FULLSCREEN
 def toggleScreen():
     global fullScreen
     fullScreen = not fullScreen
     return getScreen()
+
 
 # MENU MUSIC LOOP
 def menuMusicLoop():
@@ -176,6 +182,7 @@ def menuMusicLoop():
         pygame.mixer.music.set_pos(menuLoopStart)
         pygame.mixer.music.play()
 
+
 # GAMEPLAY MUSIC LOOP
 def musicLoop():
     if pygame.mixer.music.get_pos() >= musicLoopEnd:
@@ -183,11 +190,13 @@ def musicLoop():
         pygame.mixer.music.set_pos(musicLoopStart)
         pygame.mixer.music.play()
 
+
 # TOGGLE MUSIC MUTE
 def toggleMusic(game):
     game.musicMuted = not game.musicMuted
     if pygame.mixer.music.get_volume() == 0: pygame.mixer.music.set_volume(musicVolume/100)
     else: pygame.mixer.music.set_volume(0)
+
 
 # ASSET DIRECTORY
 currentDirectory = resources('Assets')
@@ -201,6 +210,7 @@ pygame.display.set_caption('Navigator')
 pygame.display.set_icon(windowIcon)
 screenColor = [0,0,0] # Screen fill color
 
+
 # Get dictionary from plain text
 def readTxt(filename):
     namesList = {}
@@ -210,6 +220,7 @@ def readTxt(filename):
             key, val = line.strip().split(':')
             namesList[key] = val
     return namesList
+
 
 # Draw labels from formatted list of rects and displays, first 4 lines arranged based on truth value of two booleans
 def drawGameOverLabels(textList, conditionOne, conditionTwo):
@@ -450,8 +461,7 @@ if len(donations) == 0: donationsLoaded = False
 if donationsLoaded:
     maxDon = max(donations.values())
     lowDon = min(donations.values())
-else:
-    maxDon,lowDon = None,None
+else: maxDon,lowDon = None,None
 
 # LOAD DONATION SHIP ASSETS
 donationShips = []
@@ -462,7 +472,7 @@ if donationsLoaded:
             path = os.path.join(donationShipsDir, filename)
             donationShips.append(pygame.image.load(resources(path)).convert_alpha())
 
-if len(donationShips)==0: donationsLoaded = False
+if len(donationShips)==0: donationsLoaded = False # Asset folder is empty, proceed without
 
 timerFont = pygame.font.Font(gameFont, timerSize)
 
@@ -1187,7 +1197,7 @@ class Menu:
         wastedRect = timeWastedDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 +statsOffsetY +statsSpacingY * 7))
         exitRect = exitDisplay.get_rect(center =(screenSize[0]/2, screenSize[1]/3 + 2* statsOffsetY +statsSpacingY * 8))
 
-        # [display,rect]
+        # [display,rect] lists
         scoreText = scoreDisplay,scoreRect
         highScoreText = highScoreDisplay,highScoreRect
         newHighScoreText = newHighScoreDisplay,newHighScoreRect
@@ -1260,6 +1270,7 @@ class Menu:
                     gameLoop()
 
 
+    # CREDITS
     def creditScreen(self):
         global screen
         rollCredits = True
@@ -1328,8 +1339,8 @@ class Menu:
             screen.blit(bgList[game.currentStage - 1][0],(0,0))
             screen.blit(bgList[game.currentStage-1][1],(0,game.cloudPos))
 
+            # Load donations
             if donationsLoaded:
-
                 for ship in bgShips:
                     ship.draw()
                     ship.move()
@@ -1342,6 +1353,7 @@ class Menu:
                                 extras.remove(i)
                                 break
 
+                # Assign a background ship object
                 for newShip in range(maxExtras-len(bgShips)):
                     # get name from pool
                     if len(donations)==0:break
@@ -1814,7 +1826,7 @@ class Icon:
         drawing, drawee = rotateImage(self.image,self.rect,self.angle)
         screen.blit(drawing,drawee)
 
-
+# BACKGROUND SHIPS
 class BackgroundShip:
     def __init__(self,text,scale):
         self.scale = scale
@@ -1858,9 +1870,10 @@ class BackgroundShip:
         if showBackgroundShips: screen.blit(drawing,drawee)
         if showSupporterNames: screen.blit(self.display,supporterRect)
 
+    # Returns true if off screen
     def offScreen(self):
         if showSupporterNames and not showBackgroundShips:
-            if self.displayRect.bottom < 0 or self.displayRect.top > screenSize[1] or self.displayRect.left > screenSize[0] or self.displayRect.right < 0:return True
+            if self.displayRect.bottom < 0 or self.displayRect.top > screenSize[1] or self.displayRect.left > screenSize[0] or self.displayRect.right < 0: return True
         else:
             if self.rect.bottom < 0 or self.rect.top > screenSize[1] or self.rect.left > screenSize[0] or self.rect.right < 0: return True
 
@@ -1872,7 +1885,7 @@ def rotateImage(image, rect, angle):
     return rotated,rotatedRect
 
 
-# REVERSE OBSTACLE MOVEMENT DIRECTION
+# GET INVERSE MOVEMENT DIRECTION
 def movementReverse(direction):
     if direction == "N": return "S"
     elif direction == "S": return "N"
@@ -1884,7 +1897,7 @@ def movementReverse(direction):
     elif direction == "SW": return "NE"
 
 
-# GET RANDOM DIRECTION - included diagonal
+# GET RANDOM DIRECTION - include diagonal
 def randomEightDirection():
     directions = ["N","S","E","W","NW","SW","NE","SE"]
     direction = directions[random.randint(0, len(directions)-1)]
