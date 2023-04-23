@@ -13,6 +13,7 @@ pygame.mixer.init()
 
 pygame.mouse.set_visible(False)
 
+version = "v0.4.5"
 #------------------GAME CONSTANTS--------------------------------------------------------------------------
 # SCREEN
 screenSize = [800,800] # Default = [800,800]
@@ -66,6 +67,8 @@ startSize = 120 * roundedScaler # Default = 120
 startColor = [0,255,0] # Default = [0,255,0]
 minIconSize = 30 * roundedScaler # Default = 30
 maxIconSize = 100 * roundedScaler # Default = 100
+versionSize = 25
+versionColor = [255,255,255]
 
 # STAGE UP
 stageUpColor = [0,255,0] # Default = [0,255,0]
@@ -939,6 +942,10 @@ class Menu:
 
         leftRect = menuList[3].get_rect(center = (screenSize[0] * 0.2 , screenSize[1]/3) )
         rightRect = menuList[4].get_rect(center = (screenSize[0] * 0.8 , screenSize[1]/3) )
+        
+        versionFont = pygame.font.Font(gameFont,versionSize)
+        versionDisplay = versionFont.render(version,True,versionColor)
+        versionRect = versionDisplay.get_rect(topright = (startRect.right-versionSize,startRect.bottom-versionSize))
 
         bounceDelay = 5
         bounceCount = 0
@@ -1039,6 +1046,7 @@ class Menu:
                 icon.draw()
 
             screen.blit(startDisplay,startRect) # Menu Logo
+            screen.blit(versionDisplay,versionRect)
             screen.blit(startHelpDisplay, startHelpRect) # Game controls
 
             # SHOW SHIP CONTROLS
