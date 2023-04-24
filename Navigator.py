@@ -929,12 +929,14 @@ class Game:
             unlockTime = totalTime
             prevUnlockIndex = 0
             unlockNum = 0
-            for unlock in range(numSkins):
+            for unlock in range(numSkins-1):
                 if self.savedLongestRun >= unlockTime: return numSkins - prevUnlockIndex + 1
                 else:
                     prevUnlockIndex +=1
                     unlockTime -= time
-            if unlockNum < 0: return 0
+            if unlockNum <= 0:
+                if game.savedLongestRun >= time: return 1
+                else: return 0
             else: return unlockNum
 
 
@@ -1026,7 +1028,7 @@ class Menu:
         bounceCount = 0
 
         game.unlockNumber = game.skinsUnlocked(game.savedShipLevel)
-        for imageNum in range(game.unlockNumber-1): player.nextSkin() # Gets highest unlocked ship by default
+        for imageNum in range(game.unlockNumber): player.nextSkin() # Gets highest unlocked ship by default
 
         startOffset = 100
         startDelay = 1
@@ -1117,7 +1119,6 @@ class Menu:
             if unlockTimePerLevels[game.savedShipLevel] != None and game.savedLongestRun >= unlockTimePerLevels[game.savedShipLevel] and len(spaceShipList[game.savedShipLevel][2]) > 1: screen.blit(skinHelpDisplay,skinHelpRect) # Show switch skin controls
             screen.blit(shipHelpDisplay,shipHelpRect)
             screen.blit(player.image, (player.rect.x,player.rect.y + startOffset)) # Current spaceship
-
             # LOGO LETTERS
             screen.blit(menuList[0],(-14 + startRect.left + menuList[0].get_width() - menuList[0].get_width()/8,screenSize[1]/2 - 42)) # "A" symbol
             screen.blit(menuList[1],(-42 + screenSize[0] - startRect.centerx + menuList[1].get_width() * 2,screenSize[1]/2 - 42)) # "O" symbol
@@ -1661,7 +1662,7 @@ class Player(pygame.sprite.Sprite):
         # GET NEXT SKIN
         def nextSkin(self):
             if self.currentImageNum + 1 < len(spaceShipList[game.savedShipLevel][2]):
-                if self.currentImageNum + 1 >= game.unlockNumber:
+                if self.currentImageNum + 1 > game.unlockNumber:
                     self.image = spaceShipList[game.savedShipLevel][2][0]
                     self.currentImageNum = 0
                 else:
@@ -1684,10 +1685,10 @@ class Player(pygame.sprite.Sprite):
                     self.image = spaceShipList[game.savedShipLevel][2][game.unlockNumber]
                     self.currentImageNum = game.unlockNumber
                 elif game.unlockNumber > 0:
-                    self.image = spaceShipList[game.savedShipLevel][2][game.unlockNumber-1]
-                    self.currentImageNum = game.unlockNumber-1
+                    self.image = spaceShipList[game.savedShipLevel][2][game.unlockNumber]
+                    self.currentImageNum = game.unlockNumber
                 else:
-                    self.image = spaceShipList[game.savedShipLevel][2][len(spaceShipList[game.savedShipLevel][2]) - 1]
+                    self.image = spaceShipList[game.savedShipLevel][2][len(spaceShipList[game.savedShipLevel][2])]
                     self.currentImageNum = len(spaceShipList[game.savedShipLevel][2]) - 1
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
