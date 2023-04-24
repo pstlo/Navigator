@@ -41,7 +41,7 @@ shieldChunkSize = screenSize[0]/40 # Default = screen width / 40
 boostCooldownTime = 2000 # Default = 2000 / Activates when fuel runs out to allow regen
 shieldPiecesNeeded = 10 # Default = 10 / Pieces needed for an extra life
 showSpawnArea = False # Default = False
-powerUpList = ["Blue", "Red", "White","White"] # Red/White/Blue, chances of spawn
+powerUpList = ["Shield", "Fuel", "Default","Default"] # Shield/Fuel/Default, chances of spawn
 playerShieldSize = 48 # Default = 64 / Shield visual size
 shieldVisualDuration = 250 # Default = 250 / Shield visual duration
 
@@ -630,11 +630,11 @@ class Game:
 
         # PLAYER/POWERUP COLLISION DETECTION
         if pygame.sprite.collide_rect(player,self.thisPoint):
-            if self.thisPoint.powerUp == "Red":
+            if self.thisPoint.powerUp == "Fuel":
                 player.fuel += player.maxFuel/4 # Replenish quarter tank
                 if player.fuel > player.maxFuel: player.fuel = player.maxFuel
 
-            elif self.thisPoint.powerUp == "Blue": player.shieldUp()
+            elif self.thisPoint.powerUp == "Shield": player.shieldUp()
             self.score += 1
             self.thisPoint.kill()
             if not self.musicMuted: powerUpNoise.play()
@@ -850,9 +850,14 @@ class Game:
     # HUD
     def showHUD(self,player):
 
+        # BORDER
+        barBorder = pygame.Rect(screenSize[0]/3, 0, (screenSize[0]/3), 10)
+        pygame.draw.rect(screen,[0,0,0],barBorder)
+
         # SHIELDS DISPLAY
-        shieldRectWidth = shieldChunkSize * player.shieldPieces
-        if player.shields > 0: shieldRectWidth = shieldChunkSize * player.shieldPiecesNeeded
+        currentShieldPieces = player.shieldPieces/player.shieldPiecesNeeded
+        shieldRectWidth = (0.9*barBorder.width) * currentShieldPieces
+        if player.shields > 0: shieldRectWidth =  barBorder.width*0.9
         shieldRect = pygame.Rect(screenSize[0]/3, 5, shieldRectWidth, 5)
         fullShieldRectWidth = shieldChunkSize * player.shieldPiecesNeeded
 
@@ -862,8 +867,8 @@ class Game:
         else: fullShieldRectWidth = shieldChunkSize * 10
 
         # FUEL DISPLAY
-        widthMultiplier = fullShieldRectWidth / (screenSize[0]/4)
-        fuelRectWidth  = (screenSize[0]/4) * (player.fuel / player.maxFuel) * widthMultiplier
+        currentFuel = player.fuel/player.maxFuel
+        fuelRectWidth = currentFuel * (0.9*barBorder.width)
         fuelRect = pygame.Rect(screenSize[0]/3, 0, fuelRectWidth, 5)
         if player.boostDrain > 0 or player.laserCost > 0: pygame.draw.rect(screen, fuelColor,fuelRect)
 
@@ -1855,16 +1860,15 @@ class Point(pygame.sprite.Sprite):
     def __init__(self,player):
         super().__init__()
         self.powerUp = ''
-        if not player or (not player.hasShields and player.boostDrain == 0 and player.laserCost == 0  and player.baseSpeed == player.boostSpeed): self.powerUp = "White"
+        if not player or (not player.hasShields and player.boostDrain == 0 and player.laserCost == 0  and player.baseSpeed == player.boostSpeed): self.powerUp = "Default"
         else:
             powerUps = powerUpList
-            if not player.hasShields and "Blue" in powerUps: powerUps.remove("Blue")
-            if not player.hasGuns and player.baseSpeed == player.boostSpeed and "Red" in powerUps: powerUps.remove("Red")
+            if not player.hasShields and "Shield" in powerUps: powerUps.remove("Shield")
+            if not player.hasGuns and player.baseSpeed == player.boostSpeed and "Fuel" in powerUps: powerUps.remove("Fuel")
             self.powerUp = powerUps[random.randint(0,len(powerUps)-1)]
-
-        if self.powerUp == "Blue": self.image = pointsList[2]
-        elif self.powerUp == "Red": self.image = pointsList[1]
-        elif self.powerUp == "White": self.image = pointsList[0]
+        if self.powerUp == "Shield": self.image = pointsList[2]
+        elif self.powerUp == "Fuel": self.image = pointsList[1]
+        elif self.powerUp == "Default": self.image = pointsList[0]
         self.image = pygame.transform.scale(self.image, (pointSize, pointSize))
         self.rect = self.image.get_rect(center = positionGenerator())
         self.mask = pygame.mask.from_surface(self.image)
