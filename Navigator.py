@@ -80,14 +80,17 @@ stageUpCloudSpeed = 8 * roundedScaler # Default = 8
 creditsFontSize = 55 * roundedScaler # Default = 55
 creditsColor = [255,255,255] # Default = [255,255,255]
 mainCreditsSpeed = 1
+mainCreditsDelay = 10
 extraCreditsSize = 30 * roundedScaler # background ships text size
 extraCreditsColor = [0,0,0]
 maxExtras = 3 # Default = 3 # max background ships
-minBackgroundShipSpeed = 1 # Default = 1
+minBackgroundShipSpeed = 2 # Default = 1
 maxBackgroundShipSpeed = 3 # Default = 3
 minBackgroundShipSize = 50 # Default = 50
-maxBackgroundShipSize = 150 # Default = 150
-backgroundShipDelay = 20 # Default = 20
+maxBackgroundShipSize = 100 # Default = 150
+backgroundShipDelay = 20 # Default = 20 / Higher is slower
+minBackgroundShipSpawnDelay = 500 # / Min delay (ms) before a ship spawns
+maxBackgroundShipSpawnDelay = 3000 # / Max delay (ms) before a ship spawns
 showBackgroundShips = False # Default = True / Waiting for assets
 showSupporterNames = True # Default = True / Not started yet
 
@@ -1322,23 +1325,15 @@ class Menu:
         bounceCount = 0
         direction = randomEightDirection()
 
-        # random select names and contributions from dictionary
         if donationsLoaded:
+            # Variables only accessible when donationsLoaded is true
             if len(donations) < maxExtras: extrasCap = len(donations)
             else: extrasCap = maxExtras
             extras = []
-            if extrasCap == 1:
-                extra = list(donations.items())[0]
-                extras.append(extra)
-                del donations[extra[0]]
-            else:
-                for i in range(extrasCap):
-                    extra = random.choice(list(donations.items()))
-                    extras.append(extra) # add to list
-                    del donations[extra[0]] # pop from dictionary
-
             bgShips = []
-            for ship in extras: bgShips.append(BackgroundShip(ship[0],ship[1]))
+            waitToSpawn = True
+            backGroundShipSpawnEvent = pygame.USEREVENT + 5
+            pygame.time.set_timer(backGroundShipSpawnEvent, random.randint(minBackgroundShipSpawnDelay,maxBackgroundShipSpawnDelay))
 
         while rollCredits:
 
@@ -1355,6 +1350,11 @@ class Menu:
                     pygame.mouse.set_visible(False)
                     screen = toggleScreen()
 
+                # SHIP SPAWN DELAY
+                if donationsLoaded and event.type == backGroundShipSpawnEvent:
+                    pygame.time.set_timer(backGroundShipSpawnEvent, random.randint(minBackgroundShipSpawnDelay,maxBackgroundShipSpawnDelay))
+                    waitToSpawn = False
+
                 # MUTE
                 elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_m): toggleMusic(game)
 
@@ -1366,29 +1366,27 @@ class Menu:
             screen.blit(bgList[game.currentStage - 1][0],(0,0))
             screen.blit(bgList[game.currentStage-1][1],(0,game.cloudPos))
 
-            # Load donations
             if donationsLoaded:
                 for ship in bgShips:
-                    ship.draw()
                     ship.move()
-                    # off screen, add name back to pool and remove
-                    if ship.offScreen():
-                        bgShips.remove(ship)
-                        donations[ship.text] = ship.scale
-                        for i in extras:
-                            if i[0] == ship.text:
-                                extras.remove(i)
-                                break
-
+                    if ship.active:
+                        ship.draw()
+                        # off screen, add name back to pool and remove
+                        if ship.offScreen():
+                            bgShips.remove(ship)
+                            for i in extras:
+                                if i[0] == ship.text:
+                                    extras.remove(i)
+                                    break
+                                    
                 # Assign a background ship object
-                for newShip in range(maxExtras-len(bgShips)):
+                if not waitToSpawn and maxExtras-len(bgShips) > 0:
                     # get name from pool
-                    if len(donations)==0:break
-                    elif len(donations) == 1: extra = list(donations.items())[0]
+                    if len(donations) == 1: extra = list(donations.items())[0]
                     else: extra = random.choice(list(donations.items()))
                     extras.append(extra)
-                    del donations[extra[0]]
                     bgShips.append(BackgroundShip(extra[0],extra[1]))
+                    waitToSpawn = True
 
             screen.blit(createdByDisplay,createdByRect)
             screen.blit(creditsDisplay,creditsRect)
@@ -1423,12 +1421,7 @@ class Menu:
                     musicCreditsRect.centerx-= mainCreditsSpeed
 
             bounceCount +=1
-            if bounceCount >= 10: bounceCount = 0
-
-        # Refill donation list
-        if donationsLoaded:
-            for supporter, contribution in extras:
-                donations.update({supporter:contribution})
+            if bounceCount >= mainCreditsDelay: bounceCount = 0
 
 
 # PLAYER
@@ -1733,7 +1726,8 @@ class Obstacle(pygame.sprite.Sprite):
         self.active = False
 
     def activate(self):
-        if self.rect.right >= 0 or self.rect.left <= screenSize[0] or self.rect.top <= 0 or self.rect.bottom >= screenSize[1]: self.active = True
+        if not self.active:
+            if self.rect.right >= 0 or self.rect.left <= screenSize[0] or self.rect.top <= 0 or self.rect.bottom >= screenSize[1]: self.active = True
 
 
 # LASERS
@@ -1861,7 +1855,8 @@ class Icon:
 
 
     def activate(self):
-        if self.rect.right >= 0 or self.rect.left <= screenSize[0] or self.rect.top <= 0 or self.rect.bottom >= screenSize[1]: self.active = True
+        if not self.active:
+            if self.rect.right >= 0 or self.rect.left <= screenSize[0] or self.rect.top <= 0 or self.rect.bottom >= screenSize[1]: self.active = True
 
 
     def draw(self):
@@ -1896,6 +1891,7 @@ class BackgroundShip:
         self.font = pygame.font.Font(gameFont, int(self.size * 2/3))
         self.display = self.font.render(self.text, True, extraCreditsColor)
         self.displayRect = self.display.get_rect(center = self.rect.center)
+        self.active = False
 
     def move(self):
         if self.count >= backgroundShipDelay:
@@ -1906,13 +1902,15 @@ class BackgroundShip:
             self.displayRect.center = self.rect.center
             self.count = 0
         self.count +=1
+        self.activate()
 
     def draw(self):
         if not showBackgroundShips and not showSupporterNames: return
-        drawing, drawee = rotateImage(self.image,self.rect,self.angle)
-        supporterRect = self.display.get_rect(center = drawee.center)
-        if showBackgroundShips: screen.blit(drawing,drawee)
-        if showSupporterNames: screen.blit(self.display,supporterRect)
+        if self.active:
+            drawing, drawee = rotateImage(self.image,self.rect,self.angle)
+            supporterRect = self.display.get_rect(center = drawee.center)
+            if showBackgroundShips: screen.blit(drawing,drawee)
+            if showSupporterNames: screen.blit(self.display,supporterRect)
 
     # Returns true if off screen
     def offScreen(self):
@@ -1921,6 +1919,9 @@ class BackgroundShip:
         else:
             if self.rect.bottom < 0 or self.rect.top > screenSize[1] or self.rect.left > screenSize[0] or self.rect.right < 0: return True
 
+    def activate(self):
+        if not self.active:
+            if not self.offScreen(): self.active = True
 
 # ROTATE IMAGE
 def rotateImage(image, rect, angle):
