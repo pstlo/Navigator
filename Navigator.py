@@ -111,12 +111,12 @@ musicLoopStart = 25000 # Default = 25000
 musicLoopEnd = 76000 # Default = 76000
 
 # SHIP CONSTANTS
-#                       [speed,fuel,maxFuel,fuelRegenNum,fuelRegenDelay,boostSpeed,hasGuns,laserCost,laserSpeed,laserFireRate,boostDrain,lasersStop,hasShields,piecesNeeded]
-defaultShipAttributes = [ 5,    1,  20,     0.05,        50,            7,         False,   0,        0,         0,           0.4,       True,      True,      10          ]
-gunShipAttributes =     [ 3,   10,  20,     0.05,        50,            10,        True,    0.4,      10,        250,         0.3,       True,      False,      0          ]
-laserShipAttributes =   [ 2,   1,   1,      0,           0,             2,         True,    0,        10,        50,          0,         True,      False,      0          ]
-hyperYachtAttributes =  [ 3,   20,  30,     0.1,         25,            12,        False,   0,        0,         0,           0.25,      True,      False,      0          ]
-oldReliableAttributes = [ 4,   10,  15,     0.05,        50,            6,         True,    1,        5,         1000,        0.25,      False,     False,      0          ]
+#                       [speed,fuel,maxFuel,regen,delay,boostSpeed,hasGuns,laserCost,laserSpeed,fireRate,boostDrain,collats,hasShields,shields,shieldPieces,piecesNeeded]
+defaultShipAttributes = [ 5,    1,  20,     0.05, 50,   7,         False,  0,        0,         0,       0.4,        True,  True,       0,      0,           5          ]
+gunShipAttributes =     [ 3,   10,  20,     0.05, 50,   10,        True,   0.4,      10,        250,     0.3,        True,  False,      0,      0,           0          ]
+laserShipAttributes =   [ 2,   1,   1,      0,    0,    2,         True,   0,        10,        50,      0,          True,  False,      0,      0,           0          ]
+hyperYachtAttributes =  [ 3,   20,  30,     0.1,  25,   12,        False,  0,        0,         0,       0.25,       True,  False,      0,      0,           0          ]
+oldReliableAttributes = [ 4,   10,  15,     0.05, 50,   6,         True,   1,        5,         1000,    0.25,       False, False,      0,      0,           0          ]
 
 shipAttributes = [defaultShipAttributes,gunShipAttributes,laserShipAttributes,hyperYachtAttributes,oldReliableAttributes]
 
@@ -339,12 +339,7 @@ for filename in sorted(os.listdir(pointsDirectory)):
     if filename.endswith('png'):
 
         path = os.path.join(pointsDirectory, filename)
-        pointPng = pygame.image.load(resources(path))
-
-        if filename == 'default.png': pointPng.set_colorkey([0,0,0]) # Will change with asset updates
-        else: pointPng.set_colorkey([255,255,255])
-
-        pointsList.append(pointPng.convert_alpha())
+        pointsList.append(pygame.image.load(resources(path)).convert_alpha())
 
 
 # SPACESHIP ASSETS
@@ -420,7 +415,9 @@ for i in shipAttributes:
     "boostDrain" : i[10],
     "laserCollat" : i[11],
     "hasShields" : i[12],
-    "piecesNeeded" : i[13]
+    "startingShields" : i[13],
+    "startingShieldPieces" : i[14],
+    "piecesNeeded" : i[15]
     }
     shipConstants.append(levelConstantsDict)
 
@@ -477,6 +474,19 @@ for filename in sorted(os.listdir(donationShipsDir)):
         path = os.path.join(donationShipsDir, filename)
         donationShips.append(pygame.image.load(resources(path)).convert_alpha())
 
+# TIME BASED UNLOCKS
+unlockTimePerLevels = []
+totalLevels = 0
+
+for stage in stageList: totalLevels += len(stage) # Get total number of levels
+totalTime = totalLevels * levelTimer # multiply by time per level
+
+# Calculate time per unlock for each ship level
+for shipInd in range(len(spaceShipList)):
+    timePerUnlock = totalTime/len(spaceShipList[shipInd][2])
+    if timePerUnlock == totalTime: unlockTimePerLevels.append(None) # No other skins for this level
+    else: unlockTimePerLevels.append(int(timePerUnlock))
+
 timerFont = pygame.font.Font(gameFont, timerSize)
 
 # SPAWN AREA
@@ -485,6 +495,7 @@ spawnHeight = int(screenSize[1] * (spawnRange[1] - spawnRange[0]))
 spawnOffsetX = int((screenSize[0] - spawnWidth) / 2)
 spawnOffsetY = int((screenSize[1] - spawnHeight) / 2)
 spawnAreaPoints = []
+
 for i in range(spawnVertices):
     angle = i * 2 * 3.14159 / spawnVertices + (3.14159 / spawnVertices)
     x = screenSize[0]/2 + (spawnWidth / 2) * math.cos(angle)
@@ -527,9 +538,9 @@ class Game:
         self.mainMenu = True # Assures start menu only runs when called
         self.sessionLongRun = 0 # Longest run this session
         self.gameConstants = []
-        self.savedShipNum = 0
-        self.savedShipLevel = 0
-        self.unlockNumber = 0
+        self.savedSkin = 0 # Saved ship skin
+        self.savedShipLevel = 0 # Saved ship type
+        self.unlockNumber = 0 # Number of unlocked skins for current ship
         self.spinSpeed = spinSpeed
         self.cloudPos = cloudStart
         self.wipe = obstacleWipe
@@ -843,7 +854,7 @@ class Game:
         shieldRectWidth = shieldChunkSize * player.shieldPieces
         if player.shields > 0: shieldRectWidth = shieldChunkSize * player.shieldPiecesNeeded
         shieldRect = pygame.Rect(screenSize[0]/3, 5, shieldRectWidth, 5)
-        fullShieldRectWidth = shieldChunkSize * player.shieldPiecesNeeded
+        fullShieldRectWidth = shieldChunkSize * player.shieldPiecesNeeded * 2
 
         if player.hasShields:
             if player.shields > 0: pygame.draw.rect(screen,fullShieldColor,shieldRect)
@@ -893,12 +904,41 @@ class Game:
                 obstacle = Obstacle(self.aggro)
                 obstacles.add(obstacle)
 
+
+    # Update all lasers
     def laserUpdate(self,lasers,player):
         for laser in lasers:
             laser.move(player)
             screen.blit(laser.image,laser.rect)
 
+
+    # Reset gameclock to 0
     def resetClock(self): self.gameClock = 0
+
+
+    # Gets number of skins unlocked
+    def getUnlocks(self,numSkins,time):
+        if time == None: return 0
+        else:
+            unlockTime = totalTime
+            prevUnlockIndex = 0
+            unlockNum = 0
+            for unlock in range(numSkins):
+                if self.savedLongestRun >= unlockTime: return numSkins - prevUnlockIndex + 1
+                else:
+                    prevUnlockIndex +=1
+                    unlockTime -= time
+            if unlockNum < 0: return 0
+            else: return unlockNum
+
+
+    # Get number of skins in a specified ship level
+    def skinsPerLevel(self,level):return len(spaceShipList[level][2])
+
+
+    # Get number of skins unlocked for a level number
+    def skinsUnlocked(self,level): return self.getUnlocks(self.skinsPerLevel(level),unlockTimePerLevels[level])
+
 
 
 # GAME EVENTS
@@ -980,20 +1020,7 @@ class Menu:
         bounceDelay = 5
         bounceCount = 0
 
-        # DEFAULT SHIP SKIN UNLOCKS   ( spaceShipList[0] )
-        if game.savedLongestRun >= 330: game.unlockNumber = len(spaceShipList[0][2])
-        elif game.savedLongestRun >= 300: game.unlockNumber = len(spaceShipList[0][2]) - 1
-        elif game.savedLongestRun >= 270: game.unlockNumber = len(spaceShipList[0][2]) - 2
-        elif game.savedLongestRun >= 240: game.unlockNumber = len(spaceShipList[0][2]) - 3
-        elif game.savedLongestRun >= 210: game.unlockNumber = len(spaceShipList[0][2]) - 4
-        elif game.savedLongestRun >= 180: game.unlockNumber = len(spaceShipList[0][2]) - 5
-        elif game.savedLongestRun >= 150: game.unlockNumber = len(spaceShipList[0][2]) - 6
-        elif game.savedLongestRun >= 120: game.unlockNumber = len(spaceShipList[0][2]) - 7
-        elif game.savedLongestRun >= 90: game.unlockNumber = len(spaceShipList[0][2]) - 8
-        elif game.savedLongestRun >= 60: game.unlockNumber = len(spaceShipList[0][2]) - 9
-        elif game.savedLongestRun >= 30: game.unlockNumber = len(spaceShipList[0][2]) - 10
-
-        if game.unlockNumber < 0: game.unlockNumber = 0
+        game.unlockNumber = game.skinsUnlocked(game.savedShipLevel)
         for imageNum in range(game.unlockNumber-1): player.nextSkin() # Gets highest unlocked ship by default
 
         startOffset = 100
@@ -1011,7 +1038,7 @@ class Menu:
                 # START
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
 
-                    game.savedShipNum = player.currentImageNum
+                    game.savedSkin = player.currentImageNum
 
                     while iconPosition > 0:
 
@@ -1044,11 +1071,11 @@ class Menu:
 
                 # NEXT SHIP TYPE
                 elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_w or event.key == pygame.K_UP):
-                    player.toggleSpaceShip(game,True,game.unlockNumber)
+                    player.toggleSpaceShip(game,True)
 
                 # PREVIOUS SHIP TYPE
                 elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_s or event.key == pygame.K_DOWN):
-                    player.toggleSpaceShip(game,False,game.unlockNumber)
+                    player.toggleSpaceShip(game,False)
 
                 # MUTE
                 elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_m): toggleMusic(game)
@@ -1082,7 +1109,7 @@ class Menu:
             # SHOW SHIP CONTROLS
             if player.hasGuns: screen.blit(shootHelp,shootHelpRect)
             if player.boostSpeed > player.baseSpeed: screen.blit(boostHelp,boostHelpRect)
-            if game.savedLongestRun >= 30 and len(spaceShipList[game.savedShipLevel][2]) > 1: screen.blit(skinHelpDisplay,skinHelpRect) # Show switch skin controls
+            if unlockTimePerLevels[game.savedShipLevel] != None and game.savedLongestRun >= unlockTimePerLevels[game.savedShipLevel] and len(spaceShipList[game.savedShipLevel][2]) > 1: screen.blit(skinHelpDisplay,skinHelpRect) # Show switch skin controls
             screen.blit(shipHelpDisplay,shipHelpRect)
             screen.blit(player.image, (player.rect.x,player.rect.y + startOffset)) # Current spaceship
 
@@ -1096,6 +1123,7 @@ class Menu:
             screen.blit(menuList[4],rightRect) # Right UFO
 
             pygame.display.update()
+
 
     # PAUSE SCREEN
     def pause(self,game,player,obstacles,lasers):
@@ -1342,7 +1370,7 @@ class Menu:
         extras = []
         bgShips = []
         waitToSpawn = True
-        backGroundShipSpawnEvent = pygame.USEREVENT + 5
+        backGroundShipSpawnEvent = pygame.USEREVENT + 6
         pygame.time.set_timer(backGroundShipSpawnEvent, random.randint(minBackgroundShipSpawnDelay,maxBackgroundShipSpawnDelay))
 
         if len(donations) == 0: extrasCap = maxExtras
@@ -1368,7 +1396,6 @@ class Menu:
 
                 # SHIP SPAWN DELAY
                 if event.type == backGroundShipSpawnEvent:
-                    pygame.time.set_timer(backGroundShipSpawnEvent, random.randint(minBackgroundShipSpawnDelay,maxBackgroundShipSpawnDelay))
                     waitToSpawn = False
 
                 # MUTE
@@ -1389,6 +1416,7 @@ class Menu:
                     else: ship.draw(showBackgroundShips,showSupporterNames)
                     # off screen, add name back to pool and remove
                     if ship.offScreen():
+                        pygame.time.set_timer(backGroundShipSpawnEvent, random.randint(minBackgroundShipSpawnDelay,maxBackgroundShipSpawnDelay))
                         bgShips.remove(ship)
                         for i in extras:
                             if i[0] == ship.text:
@@ -1401,12 +1429,14 @@ class Menu:
                     if len(bgShips)==0:
                         bgShips.append(BackgroundShip(version,1))
                         waitToSpawn = True
+                        pygame.time.set_timer(backGroundShipSpawnEvent, random.randint(minBackgroundShipSpawnDelay,maxBackgroundShipSpawnDelay))
 
                 elif len(donations) == 1:
                     if len(bgShips) == 0:
                         name,value = list(donations.items())[0]
                         bgShips.append(BackgroundShip(name,value))
                         waitToSpawn = True
+                        pygame.time.set_timer(backGroundShipSpawnEvent, random.randint(minBackgroundShipSpawnDelay,maxBackgroundShipSpawnDelay))
 
                 else:
                     pool = list(donations.keys())
@@ -1420,6 +1450,7 @@ class Menu:
                         extras.append(extra)
                         bgShips.append(BackgroundShip(extra[0],extra[1]))
                         waitToSpawn = True
+                        pygame.time.set_timer(backGroundShipSpawnEvent, random.randint(minBackgroundShipSpawnDelay,maxBackgroundShipSpawnDelay))
 
             screen.blit(createdByDisplay,createdByRect)
             screen.blit(creditsDisplay,creditsRect)
@@ -1622,57 +1653,50 @@ class Player(pygame.sprite.Sprite):
             if self.rect.centerx < 0: self.rect.centerx = screenSize[0]
 
 
-        # GET NEXT SPACESHIP IMAGE
+        # GET NEXT SKIN
         def nextSkin(self):
-
             if self.currentImageNum + 1 < len(spaceShipList[game.savedShipLevel][2]):
-
-                if (game.savedShipLevel == 0 and self.currentImageNum + 1 >= game.unlockNumber):
+                if self.currentImageNum + 1 >= game.unlockNumber:
                     self.image = spaceShipList[game.savedShipLevel][2][0]
                     self.currentImageNum = 0
-
                 else:
-                    self.image = spaceShipList[game.savedShipLevel][2][self.currentImageNum + 1]
+                    self.image = spaceShipList[game.savedShipLevel][2][self.currentImageNum+1]
                     self.currentImageNum+=1
-
             else:
                 self.image = spaceShipList[game.savedShipLevel][2][0]
                 self.currentImageNum = 0
-
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
 
 
-        # GET PREVIOUS SPACESHIP IMAGE
+        # GET PREVIOUS SKIN
         def lastSkin(self):
             if self.currentImageNum >= 1:
                 self.image = spaceShipList[game.savedShipLevel][2][self.currentImageNum - 1]
                 self.currentImageNum-=1
-
             else:
-                if game.savedShipLevel == 0 and game.unlockNumber == 0:
-                    self.image = spaceShipList[0][2][game.unlockNumber]
+                if game.unlockNumber == 0:
+                    self.image = spaceShipList[game.savedShipLevel][2][game.unlockNumber]
                     self.currentImageNum = game.unlockNumber
-                elif game.savedShipLevel == 0 and game.unlockNumber > 0:
-                    self.image = spaceShipList[0][2][game.unlockNumber-1]
+                elif game.unlockNumber > 0:
+                    self.image = spaceShipList[game.savedShipLevel][2][game.unlockNumber-1]
                     self.currentImageNum = game.unlockNumber-1
                 else:
                     self.image = spaceShipList[game.savedShipLevel][2][len(spaceShipList[game.savedShipLevel][2]) - 1]
                     self.currentImageNum = len(spaceShipList[game.savedShipLevel][2]) - 1
-
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
 
+
         # SWITCH SHIP TYPE
-        def toggleSpaceShip(self,game,toggleDirection,skinUnlocks): # Skin unlocks == True -> next ship, False -> Last
+        def toggleSpaceShip(self,game,toggleDirection): # toggleDirection == True -> next ship / False -> last ship
             if toggleDirection:
                 if game.savedShipLevel + 1 < len(spaceShipList): game.savedShipLevel +=1
                 else: game.savedShipLevel = 0
-
             else:
                 if game.savedShipLevel - 1 < 0: game.savedShipLevel = len(spaceShipList) - 1
                 else: game.savedShipLevel -=1
-
+            game.unlockNumber = game.skinsUnlocked(game.savedShipLevel)
             self.updatePlayerConstants(game)
 
 
@@ -1695,6 +1719,8 @@ class Player(pygame.sprite.Sprite):
             self.hasGuns = spaceShipList[game.savedShipLevel][3]["hasGuns"]
             self.laserCollat = spaceShipList[game.savedShipLevel][3]["laserCollat"]
             self.hasShields = spaceShipList[game.savedShipLevel][3]["hasShields"]
+            self.shields = spaceShipList[game.savedShipLevel][3]["startingShields"]
+            self.shieldPieces = spaceShipList[game.savedShipLevel][3]["startingShieldPieces"]
             self.shieldPiecesNeeded = spaceShipList[game.savedShipLevel][3]["piecesNeeded"]
 
 
@@ -2124,7 +2150,7 @@ def gameLoop():
 
     if game.mainMenu: menu.home(game,player)
     else:
-        for i in range(game.savedShipNum): player.nextSkin()
+        for i in range(game.savedSkin): player.nextSkin()
     if game.savedShipLevel > 0: player.updatePlayerConstants(game)
 
     events = Event() # Initialize events
