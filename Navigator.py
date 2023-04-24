@@ -994,7 +994,7 @@ class Menu:
         elif game.savedLongestRun >= 30: game.unlockNumber = len(spaceShipList[0][2]) - 10
 
         if game.unlockNumber < 0: game.unlockNumber = 0
-        for imageNum in range(game.unlockNumber-1): player.nextSpaceShip() # Gets highest unlocked ship by default
+        for imageNum in range(game.unlockNumber-1): player.nextSkin() # Gets highest unlocked ship by default
 
         startOffset = 100
         startDelay = 1
@@ -1036,11 +1036,11 @@ class Menu:
 
                 # NEXT SPACESHIP SKIN
                 elif event.type == pygame.KEYDOWN and (event.key == pygame.K_d or event.key == pygame.K_RIGHT):
-                    player.nextSpaceShip()
+                    player.nextSkin()
 
                 # PREVIOUS SPACESHIP SKIN
                 elif event.type == pygame.KEYDOWN and (event.key == pygame.K_a or event.key == pygame.K_LEFT):
-                    player.lastSpaceShip()
+                    player.lastSkin()
 
                 # NEXT SHIP TYPE
                 elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_w or event.key == pygame.K_UP):
@@ -1623,7 +1623,7 @@ class Player(pygame.sprite.Sprite):
 
 
         # GET NEXT SPACESHIP IMAGE
-        def nextSpaceShip(self):
+        def nextSkin(self):
 
             if self.currentImageNum + 1 < len(spaceShipList[game.savedShipLevel][2]):
 
@@ -1644,7 +1644,7 @@ class Player(pygame.sprite.Sprite):
 
 
         # GET PREVIOUS SPACESHIP IMAGE
-        def lastSpaceShip(self):
+        def lastSkin(self):
             if self.currentImageNum >= 1:
                 self.image = spaceShipList[game.savedShipLevel][2][self.currentImageNum - 1]
                 self.currentImageNum-=1
@@ -2124,7 +2124,7 @@ def gameLoop():
 
     if game.mainMenu: menu.home(game,player)
     else:
-        for i in range(game.savedShipNum): player.nextSpaceShip()
+        for i in range(game.savedShipNum): player.nextSkin()
     if game.savedShipLevel > 0: player.updatePlayerConstants(game)
 
     events = Event() # Initialize events
