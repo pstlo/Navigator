@@ -41,7 +41,9 @@ shieldChunkSize = screenSize[0]/40 # Default = screen width / 40
 boostCooldownTime = 2000 # Default = 2000 / Activates when fuel runs out to allow regen
 shieldPiecesNeeded = 10 # Default = 10 / Pieces needed for an extra life
 showSpawnArea = False # Default = False
-powerUpList = ["Blue", "Red", "White", "White", "White", "White"] # Red/White/Blue, chances of spawn
+powerUpList = ["Blue", "Red", "White","White"] # Red/White/Blue, chances of spawn
+playerShieldSize = 48 # Default = 64 / Shield visual size
+shieldVisualDuration = 250 # Default = 250 / Shield visual duration
 
 # BACKGROUND CLOUD
 cloudSpeed = 1 # Default = 1
@@ -68,7 +70,7 @@ startColor = [0,255,0] # Default = [0,255,0]
 minIconSize = 30 * roundedScaler # Default = 30
 maxIconSize = 100 * roundedScaler # Default = 100
 versionSize = 25
-versionColor = [255,255,255]
+versionColor = [0,255,0]
 
 # STAGE UP
 stageUpColor = [0,255,0] # Default = [0,255,0]
@@ -88,7 +90,7 @@ minBackgroundShipSpeed = 2 # Default = 1
 maxBackgroundShipSpeed = 3 # Default = 3
 minBackgroundShipSize = 50 # Default = 50
 maxBackgroundShipSize = 100 # Default = 150
-backgroundShipDelay = 20 # Default = 20 / Higher is slower
+backgroundShipDelay = 15 # Default = 15 / Higher is slower
 minBackgroundShipSpawnDelay = 500 # / Min delay (ms) before a ship spawns
 maxBackgroundShipSpawnDelay = 3000 # / Max delay (ms) before a ship spawns
 showBackgroundShips = True # Default = True / Waiting for assets
@@ -339,7 +341,7 @@ for filename in sorted(os.listdir(pointsDirectory)):
         path = os.path.join(pointsDirectory, filename)
         pointPng = pygame.image.load(resources(path))
 
-        if filename == 'default.png': pointPng.set_colorkey([0,0,0])
+        if filename == 'default.png': pointPng.set_colorkey([0,0,0]) # Will change with asset updates
         else: pointPng.set_colorkey([255,255,255])
 
         pointsList.append(pointPng.convert_alpha())
@@ -375,6 +377,9 @@ for levelFolder in sorted(os.listdir(shipDirectory)):
                 shipLevelList.append(laserPng.convert_alpha())
 
         spaceShipList.append(shipLevelList) # Add to main list
+
+# PLAYER SHIELD ASSET
+playerShield = pygame.transform.scale(pygame.image.load(resources(os.path.join(currentDirectory,"Shield.png"))),(playerShieldSize,playerShieldSize)).convert_alpha()
 
 # MUSIC ASSET
 pygame.mixer.music.load(resources(os.path.join(soundDirectory,"Soundtrack.mp3")))
@@ -596,6 +601,9 @@ class Game:
             # BOOST COOLDOWN
             if event.type == events.boostCooldown: player.boostReady = True
 
+            # SHIELD VISUAL
+            if event.type == events.shieldVisualDuration: player.showShield = False
+
         # BACKGROUND ANIMATION
         screen.fill(screenColor)
         screen.blit(bgList[self.currentStage - 1][0], (0,0) )
@@ -623,7 +631,7 @@ class Game:
 
         # OBSTACLE/PLAYER COLLISION DETECTION
         if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask):
-            if player.shields > 0: player.shieldDown()
+            if player.shields > 0: player.shieldDown(events)
             else:
                 player.explode(game,obstacles) # Animation
                 if not self.musicMuted: explosionNoise.play()
@@ -675,6 +683,11 @@ class Game:
 
         # DRAW EXHAST
         if game.savedShipLevel != 1: screen.blit(newExhaustBlit[0],newExhaustBlit[1])
+
+        # DRAW SHIELD
+        if player.showShield:
+            shieldImg,shieldImgRect = rotateImage(playerShield, player.rect, player.angle)
+            screen.blit(shieldImg,shieldImgRect)
 
         # UPDATE BOOST ANIMATION / currently only 3 frames
         player.lastThreeExhaustPos[2] = player.lastThreeExhaustPos[1]
@@ -907,6 +920,10 @@ class Event:
         # BOOST COOLDOWN
         self.boostCooldown = pygame.USEREVENT + 4
 
+        # PLAYER SHIELD VISUAL DURATION
+        self.shieldVisualDuration = pygame.USEREVENT + 5
+
+
     # SETS EVENTS
     def set(self,player):
         pygame.time.set_timer(self.timerEvent, timerDelay)
@@ -921,6 +938,8 @@ class Event:
         pygame.time.set_timer(self.boostCooldown, boostCooldownTime)
         player.boostReady = False
 
+    def showShield(self):
+        pygame.time.set_timer(self.shieldVisualDuration,shieldVisualDuration)
 
 # MENUS
 class Menu:
@@ -1106,6 +1125,11 @@ class Menu:
             game.showHUD(player)
             screen.blit(game.thisPoint.image, game.thisPoint.rect)
             screen.blit(playerBlit[0],playerBlit[1])
+
+            if player.showShield:
+                shieldImg,shieldImgRect = rotateImage(playerShield, player.rect, player.angle)
+                screen.blit(shieldImg,shieldImgRect)
+
             pygame.mixer.music.pause()
 
             for obs in obstacles: # Draw obstacles
@@ -1460,8 +1484,7 @@ class Player(pygame.sprite.Sprite):
             self.hasGuns, self.laserReady, self.boostReady = spaceShipList[game.savedShipLevel][3]["hasGuns"], True, True
             self.hasShields = spaceShipList[game.savedShipLevel][3]["hasShields"]
             self.shieldPiecesNeeded,self.shieldPieces,self.shields = spaceShipList[game.savedShipLevel][3]["piecesNeeded"],0,0
-            self.shieldPieces = 0
-            self.shields = 0
+            self.shieldPieces,self.shields,self.showShield = 0,0,False
 
 
         # PLAYER MOVEMENT
@@ -1593,7 +1616,7 @@ class Player(pygame.sprite.Sprite):
 
         # WRAP AROUND SCREEN
         def wrapping(self):
-            if self.rect.centery  > screenSize[1]: self.rect.centery = 0
+            if self.rect.centery > screenSize[1]: self.rect.centery = 0
             if self.rect.centery < 0: self.rect.centery = screenSize[1]
             if self.rect.centerx > screenSize[0]: self.rect.centerx = 0
             if self.rect.centerx < 0: self.rect.centerx = screenSize[0]
@@ -1710,8 +1733,10 @@ class Player(pygame.sprite.Sprite):
                 self.shields += 1
 
 
-        def shieldDown(self):
+        def shieldDown(self,events):
             self.shields -= 1
+            self.showShield = True
+            events.showShield()
             # Waiting for assets
 
 
@@ -1809,8 +1834,8 @@ class Point(pygame.sprite.Sprite):
         if not player or (not player.hasShields and player.boostDrain == 0 and player.laserCost == 0  and player.baseSpeed == player.boostSpeed): self.powerUp = "White"
         else:
             powerUps = powerUpList
-            if not player.hasShields: powerUps.remove("Blue")
-            if not player.hasGuns and player.baseSpeed == player.boostSpeed: powerUps.remove("Red")
+            if not player.hasShields and "Blue" in powerUps: powerUps.remove("Blue")
+            if not player.hasGuns and player.baseSpeed == player.boostSpeed and "Red" in powerUps: powerUps.remove("Red")
             self.powerUp = powerUps[random.randint(0,len(powerUps)-1)]
 
         if self.powerUp == "Blue": self.image = pointsList[2]
@@ -1957,6 +1982,7 @@ def randomEightDirection():
     directions = ["N","S","E","W","NW","SW","NE","SE"]
     direction = directions[random.randint(0, len(directions)-1)]
     return direction
+
 
 # OBSTACLE POSITION GENERATION
 def getMovement(eightDirections):
