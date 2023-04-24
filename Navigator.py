@@ -939,7 +939,6 @@ class Game:
     def skinsUnlocked(self,level): return self.getUnlocks(self.skinsPerLevel(level),unlockTimePerLevels[level])
 
 
-
 # GAME EVENTS
 class Event:
     def __init__(self):
