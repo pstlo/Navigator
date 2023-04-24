@@ -859,7 +859,6 @@ class Game:
         if player.hasShields:
             if player.shields > 0: pygame.draw.rect(screen,fullShieldColor,shieldRect)
             elif player.shieldPieces > 0: pygame.draw.rect(screen,shieldColor,shieldRect)
-
         else: fullShieldRectWidth = shieldChunkSize * 10
 
         # FUEL DISPLAY
