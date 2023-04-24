@@ -854,7 +854,7 @@ class Game:
         shieldRectWidth = shieldChunkSize * player.shieldPieces
         if player.shields > 0: shieldRectWidth = shieldChunkSize * player.shieldPiecesNeeded
         shieldRect = pygame.Rect(screenSize[0]/3, 5, shieldRectWidth, 5)
-        fullShieldRectWidth = shieldChunkSize * player.shieldPiecesNeeded * 2
+        fullShieldRectWidth = shieldChunkSize * player.shieldPiecesNeeded
 
         if player.hasShields:
             if player.shields > 0: pygame.draw.rect(screen,fullShieldColor,shieldRect)
