@@ -938,8 +938,8 @@ class Event:
         pygame.time.set_timer(self.boostCooldown, boostCooldownTime)
         player.boostReady = False
 
-    def showShield(self):
-        pygame.time.set_timer(self.shieldVisualDuration,shieldVisualDuration)
+    def showShield(self): pygame.time.set_timer(self.shieldVisualDuration,shieldVisualDuration)
+
 
 # MENUS
 class Menu:
@@ -1076,7 +1076,7 @@ class Menu:
                 icon.draw()
 
             screen.blit(startDisplay,startRect) # Menu Logo
-            screen.blit(versionDisplay,versionRect)
+            screen.blit(versionDisplay,versionRect) # Version info
             screen.blit(startHelpDisplay, startHelpRect) # Game controls
 
             # SHOW SHIP CONTROLS
