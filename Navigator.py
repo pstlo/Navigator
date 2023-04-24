@@ -44,6 +44,8 @@ showSpawnArea = False # Default = False
 powerUpList = ["Shield", "Fuel", "Default","Default"] # Shield/Fuel/Default, chances of spawn
 playerShieldSize = 48 # Default = 64 / Shield visual size
 shieldVisualDuration = 250 # Default = 250 / Shield visual duration
+minDistanceToPoint = (screenSize[0] + screenSize[1]) / 16 # Default = 100
+maxRandomAttempts = 100 # For random generator distances
 
 # BACKGROUND CLOUD
 cloudSpeed = 1 # Default = 1
@@ -112,7 +114,7 @@ musicLoopEnd = 76000 # Default = 76000
 
 # SHIP CONSTANTS
 #                       [speed,fuel,maxFuel,regen,delay,boostSpeed,hasGuns,laserCost,laserSpeed,fireRate,boostDrain,collats,hasShields,shields,shieldPieces,piecesNeeded]
-defaultShipAttributes = [ 5,    1,  20,     0.05, 50,   7,         False,  0,        0,         0,       0.4,        True,  True,       0,      0,           5          ]
+defaultShipAttributes = [ 5,    1,  20,     0.05, 50,   7,         False,  0,        0,         0,       0.4,        True,  True,       0,     0,            5          ]
 gunShipAttributes =     [ 3,   10,  20,     0.05, 50,   10,        True,   0.4,      10,        250,     0.3,        True,  False,      0,      0,           0          ]
 laserShipAttributes =   [ 2,   1,   1,      0,    0,    2,         True,   0,        10,        50,      0,          True,  False,      0,      0,           0          ]
 hyperYachtAttributes =  [ 3,   20,  30,     0.1,  25,   12,        False,  0,        0,         0,       0.25,       True,  False,      0,      0,           0          ]
@@ -521,7 +523,8 @@ class Game:
         self.currentLevel = 1
         self.currentStage = 1
         self.score = 0
-        self.thisPoint = Point(None)
+        self.thisPoint = Point(None,None)
+        self.lastPointPos = self.thisPoint.rect.center
         self.gameClock = 1
         self.pauseCount = 0
         self.clk = pygame.time.Clock()
@@ -638,7 +641,8 @@ class Game:
             self.score += 1
             self.thisPoint.kill()
             if not self.musicMuted: powerUpNoise.play()
-            self.thisPoint = Point(player)
+            self.lastPointPos = self.thisPoint.rect.center
+            self.thisPoint = Point(player,self.lastPointPos)
 
         # OBSTACLE/PLAYER COLLISION DETECTION
         if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask):
@@ -649,11 +653,11 @@ class Game:
                 menu.gameOver(self,player,obstacles) # Game over
 
         # OBSTACLE/LASER COLLISION DETECTION
-        for laser in lasers:
-            if pygame.sprite.spritecollide(laser,obstacles,True,pygame.sprite.collide_mask):
-                if player.laserCollat: laser.kill()
+        for obs in obstacles:
+            if pygame.sprite.spritecollide(obs,lasers,player.laserCollat,pygame.sprite.collide_mask):
+                if player.laserCollat: obs.kill()
                 if not self.musicMuted: impactNoise.play()
-                self.explosions.append(Explosion(self,laser))
+                self.explosions.append(Explosion(self,obs))
 
         # DRAW OBSTACLE EXPLOSIONS
         for debris in self.explosions:
@@ -1197,7 +1201,7 @@ class Menu:
     def gameOver(self,game,player,obstacles):
         global screen
         gameOver = True
-        game.thisPoint = Point(None)
+        game.thisPoint = Point(None,None)
         pygame.mixer.music.stop()
 
         # Update game records
@@ -1520,8 +1524,10 @@ class Player(pygame.sprite.Sprite):
             self.laserCollat = spaceShipList[game.savedShipLevel][3]["laserCollat"]
             self.hasGuns, self.laserReady, self.boostReady = spaceShipList[game.savedShipLevel][3]["hasGuns"], True, True
             self.hasShields = spaceShipList[game.savedShipLevel][3]["hasShields"]
-            self.shieldPiecesNeeded,self.shieldPieces,self.shields = spaceShipList[game.savedShipLevel][3]["piecesNeeded"],0,0
-            self.shieldPieces,self.shields,self.showShield = 0,0,False
+            self.shields = spaceShipList[game.savedShipLevel][3]["startingShields"]
+            self.shieldPieces = spaceShipList[game.savedShipLevel][3]["startingShieldPieces"]
+            self.shieldPiecesNeeded = spaceShipList[game.savedShipLevel][3]["piecesNeeded"]
+            self.showShield = False
 
 
         # PLAYER MOVEMENT
@@ -1796,6 +1802,8 @@ class Obstacle(pygame.sprite.Sprite):
             if self.rect.right >= 0 or self.rect.left <= screenSize[0] or self.rect.top <= 0 or self.rect.bottom >= screenSize[1]: self.active = True
 
 
+
+
 # LASERS
 class Laser(pygame.sprite.Sprite):
     def __init__(self,player):
@@ -1860,7 +1868,7 @@ class Explosion:
 
 # POWER UPS
 class Point(pygame.sprite.Sprite):
-    def __init__(self,player):
+    def __init__(self,player,lastPos):
         super().__init__()
         self.powerUp = ''
         if not player or (not player.hasShields and player.boostDrain == 0 and player.laserCost == 0  and player.baseSpeed == player.boostSpeed): self.powerUp = "Default"
@@ -1873,7 +1881,8 @@ class Point(pygame.sprite.Sprite):
         elif self.powerUp == "Fuel": self.image = pointsList[1]
         elif self.powerUp == "Default": self.image = pointsList[0]
         self.image = pygame.transform.scale(self.image, (pointSize, pointSize))
-        self.rect = self.image.get_rect(center = positionGenerator())
+        if lastPos == None: self.rect = self.image.get_rect(center = positionGenerator())
+        else:self.rect = self.image.get_rect(center = spacedPositionGenerator(lastPos))
         self.mask = pygame.mask.from_surface(self.image)
 
 
@@ -2110,10 +2119,20 @@ def pointValid(point):
 
 # GET POSITION IN SPAWN AREA
 def positionGenerator():
+    attempts = 0
     while True:
         point = getPosition()
-        if pointValid(point):
-            return point
+        if attempts < maxRandomAttempts and pointValid(point):return point
+        else: attempts+=1
+
+
+# Get new position at valid distance from last position
+def spacedPositionGenerator(lastPos):
+    attempts = 0
+    while True:
+        point = positionGenerator()
+        if attempts < maxRandomAttempts and math.dist(point,lastPos) >= minDistanceToPoint: return point
+        else: attempts+=1
 
 
 # GET ANGLE
