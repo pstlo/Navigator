@@ -858,7 +858,7 @@ class Game:
         if player.hasShields:
             currentShieldPieces = player.shieldPieces/player.shieldPiecesNeeded
             shieldRectWidth = (0.9*barBorder.width) * currentShieldPieces
-            if player.shields > 0: shieldRectWidth = barBorder.width*0.95
+            if player.shields > 0: shieldRectWidth = barBorder.width*0.99
             shieldRect = pygame.Rect(screenSize[0]/3, 5, shieldRectWidth, 5)
             shieldRect.centerx = barBorder.centerx
             fullShieldRectWidth = shieldChunkSize * player.shieldPiecesNeeded
@@ -866,11 +866,13 @@ class Game:
             elif player.shieldPieces > 0: pygame.draw.rect(screen,shieldColor,shieldRect)
 
         # FUEL DISPLAY
-        currentFuel = player.fuel/player.maxFuel
-        fuelRectWidth = currentFuel * (0.95*barBorder.width)
-        fuelRect = pygame.Rect(screenSize[0]/3, 0, fuelRectWidth, 5)
-        fuelRect.centerx = barBorder.centerx
-        if player.boostDrain > 0 or player.laserCost > 0: pygame.draw.rect(screen, fuelColor,fuelRect)
+        if player.boostDrain > 0 or player.laserCost > 0:
+            currentFuel = player.fuel/player.maxFuel
+            fuelRectWidth = currentFuel * (0.99*barBorder.width)
+            fuelRect = pygame.Rect(screenSize[0]/3, 0, fuelRectWidth, 5)
+            if player.hasShields:fuelRect.centerx = barBorder.centerx
+            else: fuelRect.center = barBorder.center
+            pygame.draw.rect(screen, fuelColor,fuelRect)
 
         # TIMER DISPLAY
         timerDisplay = timerFont.render(str(self.gameClock), True, timerColor)
