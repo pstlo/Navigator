@@ -523,6 +523,7 @@ restrictedBottomDir = ["N", "NE", "NW"]
 restrictedRightDir = ["NW", "SW", "W"]
 
 
+
 # GAME
 class Game:
     def __init__(self):
@@ -958,6 +959,7 @@ class Game:
     def skinsUnlocked(self,level): return self.getUnlocks(self.skinsPerLevel(level),unlockTimePerLevels[level])
 
 
+
 # GAME EVENTS
 class Event:
     def __init__(self):
@@ -996,6 +998,7 @@ class Event:
         player.boostReady = False
 
     def showShield(self): pygame.time.set_timer(self.shieldVisualDuration,shieldVisualDuration)
+
 
 
 # MENUS
@@ -1517,6 +1520,7 @@ class Menu:
             if bounceCount >= mainCreditsDelay: bounceCount = 0
 
 
+
 # PLAYER
 class Player(pygame.sprite.Sprite):
         def __init__(self,game):
@@ -1794,6 +1798,7 @@ class Player(pygame.sprite.Sprite):
             # Waiting for assets
 
 
+
 # OBSTACLES
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self,aggro):
@@ -1816,7 +1821,6 @@ class Obstacle(pygame.sprite.Sprite):
     def activate(self):
         if not self.active:
             if self.rect.right >= 0 or self.rect.left <= screenSize[0] or self.rect.top <= 0 or self.rect.bottom >= screenSize[1]: self.active = True
-
 
 
 
@@ -1860,6 +1864,7 @@ class Laser(pygame.sprite.Sprite):
         if self.rect.centerx > screenSize[0] or self.rect.centery > screenSize[1] or self.rect.centerx < 0 or self.rect.centery < 0: self.kill()
 
 
+
 # EXPLOSIONS
 class Explosion:
     def __init__(self,game,laser):
@@ -1882,6 +1887,7 @@ class Explosion:
         screen.blit(self.image,self.rect)
 
 
+
 # POWER UPS
 class Point(pygame.sprite.Sprite):
     def __init__(self,player,lastPos):
@@ -1900,6 +1906,7 @@ class Point(pygame.sprite.Sprite):
         if lastPos == None: self.rect = self.image.get_rect(center = positionGenerator())
         else:self.rect = self.image.get_rect(center = spacedPositionGenerator(lastPos))
         self.mask = pygame.mask.from_surface(self.image)
+
 
 
 # MENU METEOR ICONS
@@ -1953,6 +1960,7 @@ class Icon:
         if self.active:
             drawing, drawee = rotateImage(self.image,self.rect,self.angle)
             screen.blit(drawing,drawee)
+
 
 
 # BACKGROUND SHIPS
