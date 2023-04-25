@@ -21,8 +21,8 @@ scaler = (screenSize[0] + screenSize[1]) / 1600 # Default = x + y / 2  / 800 == 
 roundedScaler = int(round(scaler)) # Assure scaled values are whole numbers
 fullScreen = False # Default = False
 fps = 60 # Default = 60
-performanceMode = True # Overrules qualityMode
-qualityMode = True
+performanceMode = False # Overrules qualityMode
+qualityMode = False
 
 # HUD
 shieldColor = [0,0,255] # Default = [0,0,255] / Color of shield gauge
@@ -181,12 +181,12 @@ displayInfo = pygame.Rect(0, 0, displayInfo[0], displayInfo[1]).center
 # GET SCREEN
 def getScreen():
     if performanceMode:
-        if fullScreen: return pygame.display.set_mode(screenSize, pygame.FULLSCREEN | pygame.SCALED , depth = 16)
+        if fullScreen: return pygame.display.set_mode(screenSize, pygame.FULLSCREEN | pygame.DOUBLEBUF | pygame.SCALED , depth = 16)
         else: return pygame.display.set_mode(screenSize,depth=16)
 
     elif qualityMode:
         if fullScreen: return pygame.display.set_mode(screenSize, pygame.FULLSCREEN | pygame.SCALED | pygame.SRCALPHA,depth = 64)
-        else: return pygame.display.set_mode(screenSize,pygame.SRCALPHA,depth = 64)
+        else: return pygame.display.set_mode(screenSize, pygame.NOFRAME | pygame.SRCALPHA,depth = 64)
 
     else:
         if fullScreen: return pygame.display.set_mode(screenSize,pygame.FULLSCREEN | pygame.SCALED)
@@ -1938,7 +1938,7 @@ class Icon:
         self.movement = getMovement(False)
         self.direction = self.movement[1]
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
-        self.image = menuList[random.randint(4,len(menuList)-1)]
+        self.image = menuList[random.randint(5,len(menuList)-1)]
         size = random.randint(minIconSize,maxIconSize)
         self.image = pygame.transform.scale(self.image, (size, size)).convert_alpha()
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
