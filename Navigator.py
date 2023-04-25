@@ -1,4 +1,4 @@
-# Navigator v0.4.5
+# Navigator v0.4.6
 # Copyright (c) 2023 Mike Pistolesi
 # All rights reserved
 
