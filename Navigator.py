@@ -1054,7 +1054,8 @@ class Menu:
         if defaultToHighSkin:
             for i in range(game.skinUnlockNumber): player.nextSkin() # Gets highest unlocked skin by default
         if defaultToHighShip:
-            for i in range(game.shipUnlockNumber): player.toggleSpaceShip(game,True) # Gets highest unlocked ship by default
+            if game.savedShipLevel != game.shipUnlockNumber:
+                for i in range(game.shipUnlockNumber): player.toggleSpaceShip(game,True) # Gets highest unlocked ship by default
 
         startOffset = 100
         startDelay = 1
