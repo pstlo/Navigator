@@ -13,7 +13,7 @@ pygame.mixer.init()
 
 pygame.mouse.set_visible(False)
 
-version = "v0.4.5"
+version = "v0.4.6"
 #------------------GAME CONSTANTS--------------------------------------------------------------------------
 # SCREEN
 screenSize = [800,800] # Default = [800,800]
@@ -21,10 +21,11 @@ scaler = (screenSize[0] + screenSize[1]) / 1600 # Default = x + y / 2  / 800 == 
 roundedScaler = int(round(scaler)) # Assure scaled values are whole numbers
 fullScreen = False # Default = False
 fps = 60 # Default = 60
-performanceMode = False # Overrules qualityMode
-qualityMode = False
+performanceMode = False # Default = False / Overrules quality mode
+qualityMode = False # Default = False
 
 # HUD
+showHUD = True
 shieldColor = [0,0,255] # Default = [0,0,255] / Color of shield gauge
 fullShieldColor = [0,255,255] # Default = [0,255,255] / Color of active shield gauge
 fuelColor = [255,0,0] # Default = [255,0,0] / Color of fuel gauge
@@ -102,8 +103,9 @@ showSupporterNames = True # Default = True / Not started yet
 
 # PLAYER
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
-defaultToHighSkin = True # Default = True
-defaultToHighShip = False # Default = False
+defaultToHighSkin = True # Default = True / Default to highest skin unlocked on game launch
+defaultToHighShip = False # Default = False / Default to highest ship unlocked on game launch
+
 # SOUNDS
 musicMuted = False # Default = False
 musicVolume = 10 # Default = 10 / Music volume / 100
@@ -171,6 +173,9 @@ def resources(relative):
     except Exception: base = os.path.abspath(".")
     return os.path.join(base, relative)
 
+if qualityMode: updateNotFlip = False # use update instead of flip for display updates
+else: updateNotFlip = True
+
 
 # GET SCREEN SIZE
 displayInfo = pygame.display.Info()
@@ -180,21 +185,25 @@ displayInfo = pygame.Rect(0, 0, displayInfo[0], displayInfo[1]).center
 
 # GET SCREEN
 def getScreen():
+    # Potentially better performance
     if performanceMode:
         if fullScreen: return pygame.display.set_mode(screenSize, pygame.FULLSCREEN | pygame.DOUBLEBUF | pygame.SCALED , depth = 16)
-        else: return pygame.display.set_mode(screenSize,depth=16)
+        else: return pygame.display.set_mode(screenSize,pygame.DOUBLEBUF,depth=16)
 
+    # Possibly higher quality
     elif qualityMode:
-        if fullScreen: return pygame.display.set_mode(screenSize, pygame.FULLSCREEN | pygame.SCALED | pygame.SRCALPHA,depth = 64)
-        else: return pygame.display.set_mode(screenSize, pygame.NOFRAME | pygame.SRCALPHA,depth = 64)
+        if fullScreen: return pygame.display.set_mode(screenSize, pygame.FULLSCREEN| pygame.NOFRAME | pygame.SCALED | pygame.SRCALPHA,depth = 32)
+        else: return pygame.display.set_mode(screenSize, pygame.NOFRAME | pygame.SRCALPHA,depth = 32)
 
+    # Default
     else:
-        if fullScreen: return pygame.display.set_mode(screenSize,pygame.FULLSCREEN | pygame.SCALED)
-        else: return pygame.display.set_mode(screenSize)
+        if fullScreen: return pygame.display.set_mode(screenSize,pygame.FULLSCREEN | pygame.SCALED, depth = 0)
+        else: return pygame.display.set_mode(screenSize,depth = 0)
 
 
+# UPDATE DISPLAY
 def displayUpdate():
-    if performanceMode: pygame.display.flip()
+    if not updateNotFlip: pygame.display.flip()
     else: pygame.display.update()
 
 
@@ -565,6 +574,7 @@ class Game:
         self.mainMenu = True # Assures start menu only runs when called
         self.sessionLongRun = 0 # Longest run this session
         self.gameConstants = []
+        self.skipAutoSkinSelect = False # For re-entering home menu from game over screen
         self.savedSkin = 0 # Saved ship skin
         self.savedShipLevel = 0 # Saved ship type
         self.shipUnlockNumber = 0 # Number of unlocked ships
@@ -654,7 +664,7 @@ class Game:
         if showSpawnArea: pygame.draw.polygon(screen, (255, 0, 0), spawnAreaPoints,1)
 
         # HUD
-        self.showHUD(player)
+        if showHUD: self.showHUD(player)
 
         # PLAYER/POWERUP COLLISION DETECTION
         if pygame.sprite.collide_rect(player,self.thisPoint):
@@ -744,7 +754,7 @@ class Game:
                 if obs.angle < 0: obs.angle +=360
                 newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
                 screen.blit(newBlit[0],newBlit[1]) # Blit obstacles
-                
+
 
         musicLoop() # Loop music
 
@@ -752,10 +762,7 @@ class Game:
         player.lastAngle = player.angle # Save recent player orientation
         player.angle = 0 # Reset player orientation
         displayUpdate()
-        self.tick()
-
-
-    def tick(self): self.clk.tick(fps)
+        self.clk.tick(fps)
 
 
     # SET GAME CONSTANTS TO DEFAULT
@@ -816,7 +823,7 @@ class Game:
                     screen.blit(img,imgRect) # Draw player
                     displayUpdate()
                     stageUpRect.centery += stageUpCloudSpeed
-                    self.tick()
+                    self.clk.tick(fps)
 
                     if stageUpRect.centery >= screenSize[1]/2 and stageWipe:
                         self.currentStage += 1
@@ -852,7 +859,7 @@ class Game:
 
                             if levelUpRect.top >= screenSize[1]: levelUp = False
 
-                            self.tick()
+                            self.clk.tick(fps)
 
                     levelDict["START"] = True
                     self.obstacleBoundaries = levelDict["bound"]
@@ -961,7 +968,7 @@ class Game:
             prevUnlockIndex = 0
             unlockNum = 0
             for unlock in range(numSkins-1):
-                if self.savedLongestRun >= unlockTime: return numSkins - prevUnlockIndex + 1
+                if self.savedLongestRun >= unlockTime: return numSkins - prevUnlockIndex
                 else:
                     prevUnlockIndex +=1
                     unlockTime -= time
@@ -1071,8 +1078,10 @@ class Menu:
 
         game.skinUnlockNumber = game.skinsUnlocked(game.savedShipLevel)
 
-        if defaultToHighSkin:
-            for i in range(game.savedSkin): player.nextSkin() # Gets highest unlocked skin by default
+        if defaultToHighSkin and not game.skipAutoSkinSelect:
+            for i in range(game.skinUnlockNumber): player.nextSkin() # Gets highest unlocked skin by default
+        elif game.skipAutoSkinSelect:
+            for i in range(game.savedSkin): player.nextSkin()
         if defaultToHighShip:
             if game.savedShipLevel != game.shipUnlockNumber:
                 for i in range(game.shipUnlockNumber): player.toggleSpaceShip(game,True) # Gets highest unlocked ship by default
@@ -1378,6 +1387,7 @@ class Menu:
                     game.resetAllLevels()
                     game.attemptNumber += 1
                     game.mainMenu = True
+                    game.skipAutoSkinSelect = True
                     gameLoop()
 
                 elif (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE):
@@ -1800,7 +1810,7 @@ class Player(pygame.sprite.Sprite):
                 screen.blit(img,imgRect)
                 screen.blit(explosionList[self.explosionState],self.rect)
                 displayUpdate()
-                game.tick()
+                game.clk.tick(fps)
                 self.explosionState += 1
                 self.finalImg,self.finalRect = img,imgRect
 
@@ -2234,4 +2244,3 @@ def gameLoop():
 
 
 if __name__ == '__main__': gameLoop()
-
