@@ -951,12 +951,8 @@ class Game:
             else: return unlockNum
 
 
-    # Get number of skins in a specified ship level
-    def skinsPerLevel(self,level): return len(spaceShipList[level][2])
-
-
     # Get number of skins unlocked for a level number
-    def skinsUnlocked(self,level): return self.getUnlocks(self.skinsPerLevel(level),unlockTimePerLevels[level])
+    def skinsUnlocked(self,level): return self.getUnlocks(len(spaceShipList[level][2]),unlockTimePerLevels[level])
 
 
 
@@ -1045,9 +1041,11 @@ class Menu:
         else:
             if game.savedHighScore == pointsForUnlock or game.savedHighScore < 2 * pointsForUnlock: game.shipUnlockNumber = 1
             else:
+                game.shipUnlockNumber = 0
                 startPoints = pointsForUnlock
                 for i in range(totalShipTypes):
-                    if game.savedHighScore >= startPoints: game.shipUnlockNumber += 1
+                    if game.savedHighScore >= startPoints:
+                        game.shipUnlockNumber += 1
                     else: break
                     startPoints += pointsForUnlock
 
@@ -1901,7 +1899,7 @@ class Point(pygame.sprite.Sprite):
             powerUps = powerUpList
             if not player.hasShields and "Shield" in powerUps: powerUps.remove("Shield")
             if not player.hasGuns and player.baseSpeed == player.boostSpeed and "Fuel" in powerUps: powerUps.remove("Fuel")
-            self.powerUp = powerUps[random.randint(0,len(powerUps)-1)]
+            self.powerUp = random.choice(powerUps)
         if self.powerUp == "Shield": self.image = pointsList[2]
         elif self.powerUp == "Fuel": self.image = pointsList[1]
         elif self.powerUp == "Default": self.image = pointsList[0]
