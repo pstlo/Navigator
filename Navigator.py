@@ -21,6 +21,8 @@ scaler = (screenSize[0] + screenSize[1]) / 1600 # Default = x + y / 2  / 800 == 
 roundedScaler = int(round(scaler)) # Assure scaled values are whole numbers
 fullScreen = False # Default = False
 fps = 60 # Default = 60
+performanceMode = True
+qualityMode = False
 
 # HUD
 shieldColor = [0,0,255] # Default = [0,0,255] / Color of shield gauge
@@ -41,7 +43,7 @@ shieldChunkSize = screenSize[0]/40 # Default = screen width / 40
 boostCooldownTime = 2000 # Default = 2000 / Activates when fuel runs out to allow regen
 shieldPiecesNeeded = 10 # Default = 10 / Pieces needed for an extra life
 showSpawnArea = False # Default = False
-powerUpList = ["Shield", "Fuel", "Default","Default"] # Shield/Fuel/Default, chances of spawn
+powerUpList = ["Shield", "Fuel", "Default", "Default"] # Shield/Fuel/Default, chances of spawn
 playerShieldSize = 48 # Default = 64 / Shield visual size
 shieldVisualDuration = 250 # Default = 250 / Shield visual duration
 minDistanceToPoint = (screenSize[0] + screenSize[1]) / 16 # Default = 100
@@ -126,6 +128,7 @@ shipAttributes = [defaultShipAttributes,gunShipAttributes,laserShipAttributes,hy
 # OBSTACLES
 explosionDelay = 1 # Default = 1
 obstacleSpawnRange = [0,1] # Default = [0,1]
+
 # Starting values
 obstacleSpeed = 4 *scaler  # Default = 4
 obstacleSize = 30 *scaler  # Default = 30
@@ -177,8 +180,22 @@ displayInfo = pygame.Rect(0, 0, displayInfo[0], displayInfo[1]).center
 
 # GET SCREEN
 def getScreen():
-    if fullScreen: return pygame.display.set_mode(screenSize,pygame.FULLSCREEN + pygame.SCALED)
-    else: return pygame.display.set_mode(screenSize)
+    if performanceMode:
+        if fullScreen: return pygame.display.set_mode(screenSize, pygame.FULLSCREEN | pygame.SCALED , depth = 16)
+        else: return pygame.display.set_mode(screenSize,depth=16)
+
+    elif qualityMode:
+        if fullScreen: return pygame.display.set_mode(screenSize, pygame.FULLSCREEN | pygame.SCALED | pygame.SRCALPHA,depth = 64)
+        else: return pygame.display.set_mode(screenSize,pygame.SRCALPHA,depth = 64)
+
+    else:
+        if fullScreen: return pygame.display.set_mode(screenSize,pygame.FULLSCREEN | pygame.SCALED)
+        else: return pygame.display.set_mode(screenSize)
+
+
+def displayUpdate():
+    if performanceMode: pygame.display.flip()
+    else: pygame.display.update()
 
 
 # TOGGLE FULLSCREEN
@@ -731,7 +748,7 @@ class Game:
         # UPDATE SCREEN
         player.lastAngle = player.angle # Save recent player orientation
         player.angle = 0 # Reset player orientation
-        pygame.display.flip()
+        displayUpdate()
         self.tick()
 
 
@@ -794,7 +811,7 @@ class Game:
                     screen.blit(stageUpDisplay,(stageUpRect.centerx - screenSize[0]/5, stageUpRect.centery)) # Draw "STAGE UP" text
                     game.showHUD(player)
                     screen.blit(img,imgRect) # Draw player
-                    pygame.display.flip()
+                    displayUpdate()
                     stageUpRect.centery += stageUpCloudSpeed
                     self.tick()
 
@@ -827,7 +844,7 @@ class Game:
                             screen.blit(levelUpCloud,levelUpRect) # Draw cloud
                             game.showHUD(player)
                             screen.blit(img,imgRect) # Draw player
-                            pygame.display.flip()
+                            displayUpdate()
                             levelUpRect.centery += levelUpCloudSpeed
 
                             if levelUpRect.top >= screenSize[1]: levelUp = False
@@ -1083,7 +1100,7 @@ class Menu:
                         screen.fill(screenColor)
                         screen.blit(bgList[game.currentStage - 1][0],(0,0))
                         screen.blit(player.image, (player.rect.x,player.rect.y + iconPosition)) # Current spaceship
-                        pygame.display.update()
+                        displayUpdate()
 
                         if startDelayCounter >= startDelay: iconPosition-=1
 
@@ -1155,7 +1172,7 @@ class Menu:
             screen.blit(menuList[3],leftRect) # Left UFO
             screen.blit(menuList[4],rightRect) # Right UFO
 
-            pygame.display.update()
+            displayUpdate()
 
 
     # PAUSE SCREEN
@@ -1201,7 +1218,7 @@ class Menu:
 
             screen.blit(pauseDisplay, pauseRect)
             screen.blit(pausedDisplay,pausedRect)
-            pygame.display.flip()
+            displayUpdate()
             for event in pygame.event.get():
 
                 # EXIT
@@ -1328,7 +1345,7 @@ class Menu:
             screen.blit(gameOverDisplay,gameOverRect)
             drawGameOverLabels(displayTextList,newHighScore,newLongRun)
             screen.blit(exitDisplay,exitRect)
-            pygame.display.flip()
+            displayUpdate()
 
             for event in pygame.event.get():
 
@@ -1488,7 +1505,7 @@ class Menu:
             screen.blit(createdByDisplay,createdByRect)
             screen.blit(creditsDisplay,creditsRect)
             screen.blit(musicCreditsDisplay,musicCreditsRect)
-            pygame.display.flip()
+            displayUpdate()
 
             # BOUNCE OFF EDGES
             if createdByRect.right > screenSize[0]: direction = rightDir[random.randint(0, len(rightDir) - 1)]
@@ -1779,7 +1796,7 @@ class Player(pygame.sprite.Sprite):
 
                 screen.blit(img,imgRect)
                 screen.blit(explosionList[self.explosionState],self.rect)
-                pygame.display.update()
+                displayUpdate()
                 game.tick()
                 self.explosionState += 1
                 self.finalImg,self.finalRect = img,imgRect
