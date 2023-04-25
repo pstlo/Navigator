@@ -100,7 +100,8 @@ showSupporterNames = True # Default = True / Not started yet
 
 # PLAYER
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
-
+defaultToHighSkin = True # Default = True
+defaultToHighShip = True # Default = False
 # SOUNDS
 musicMuted = False # Default = False
 musicVolume = 10 # Default = 10 / Music volume / 100
@@ -478,7 +479,6 @@ for filename in sorted(os.listdir(donationShipsDir)):
 
 # UNLOCKS
 unlockTimePerLevels = [] # For time based unlocks
-totalShipTypes = len(spaceShipList) # For score based unlocks
 totalLevels = 0
 
 for stage in stageList: totalLevels += len(stage) # Get total number of levels
@@ -489,6 +489,11 @@ for shipInd in range(len(spaceShipList)):
     timePerUnlock = totalTime/len(spaceShipList[shipInd][2])
     if timePerUnlock == totalTime: unlockTimePerLevels.append(None) # No other skins for this level
     else: unlockTimePerLevels.append(int(timePerUnlock))
+
+expectedPointsPerLevel = 12
+totalShipTypes = len(spaceShipList) # For score based unlocks
+totalPointsForUnlock = totalLevels * expectedPointsPerLevel # Points in game for all unlocks
+pointsForUnlock = int(totalPointsForUnlock/expectedPointsPerLevel)
 
 timerFont = pygame.font.Font(gameFont, timerSize)
 
@@ -544,6 +549,7 @@ class Game:
         self.gameConstants = []
         self.savedSkin = 0 # Saved ship skin
         self.savedShipLevel = 0 # Saved ship type
+        self.shipUnlockNumber = 0 # Number of unlocked ships
         self.skinUnlockNumber = 0 # Number of unlocked skins for current ship
         self.spinSpeed = spinSpeed
         self.cloudPos = cloudStart
@@ -626,7 +632,7 @@ class Game:
         if self.cloudPos < screenSize[1]: self.cloudPos += self.cloudSpeed
         else: self.cloudPos = cloudStart
 
-        # SHOW POINT SPAWN AREA
+        # SHOW POINT SPAWN AREA (TEST)
         if showSpawnArea: pygame.draw.polygon(screen, (255, 0, 0), spawnAreaPoints,1)
 
         # HUD
@@ -664,7 +670,6 @@ class Game:
         for debris in self.explosions:
             if debris.finished: self.explosions.remove(debris)
             else: debris.update()
-
 
         # DRAW AND MOVE SPRITES
         player.movement()
@@ -946,7 +951,7 @@ class Game:
 
 
     # Get number of skins in a specified ship level
-    def skinsPerLevel(self,level):return len(spaceShipList[level][2])
+    def skinsPerLevel(self,level): return len(spaceShipList[level][2])
 
 
     # Get number of skins unlocked for a level number
@@ -1031,9 +1036,22 @@ class Menu:
 
         bounceDelay = 5
         bounceCount = 0
+        if game.savedHighScore < pointsForUnlock: game.shipUnlockNumber = 0
+        else:
+            if game.savedHighScore == pointsForUnlock or game.savedHighScore < 2 * pointsForUnlock: game.shipUnlockNumber = 1
+            else:
+                startPoints = pointsForUnlock
+                for i in range(totalShipTypes):
+                    if game.savedHighScore >= startPoints: game.shipUnlockNumber += 1
+                    else: break
+                    startPoints += pointsForUnlock
 
         game.skinUnlockNumber = game.skinsUnlocked(game.savedShipLevel)
-        for imageNum in range(game.skinUnlockNumber): player.nextSkin() # Gets highest unlocked ship by default
+
+        if defaultToHighSkin:
+            for i in range(game.skinUnlockNumber): player.nextSkin() # Gets highest unlocked skin by default
+        if defaultToHighShip:
+            for i in range(game.shipUnlockNumber): player.toggleSpaceShip(game,True) # Gets highest unlocked ship by default
 
         startOffset = 100
         startDelay = 1
@@ -1688,26 +1706,26 @@ class Player(pygame.sprite.Sprite):
                 self.image = spaceShipList[game.savedShipLevel][2][self.currentImageNum - 1]
                 self.currentImageNum-=1
             else:
-                if game.skinUnlockNumber == 0:
-                    self.image = spaceShipList[game.savedShipLevel][2][0]
-                    self.currentImageNum = 0
+                if game.skinUnlockNumber == 0:return
                 else:
-                    self.image = spaceShipList[game.savedShipLevel][2][len(spaceShipList[game.savedShipLevel][2])-1]
-                    self.currentImageNum = len(spaceShipList[game.savedShipLevel][2]) - 1
+                    self.image = spaceShipList[game.savedShipLevel][2][game.skinUnlockNumber]
+                    self.currentImageNum = game.skinUnlockNumber
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
 
 
         # SWITCH SHIP TYPE
         def toggleSpaceShip(self,game,toggleDirection): # toggleDirection == True -> next ship / False -> last ship
-            if toggleDirection:
-                if game.savedShipLevel + 1 < len(spaceShipList): game.savedShipLevel +=1
-                else: game.savedShipLevel = 0
+            if game.shipUnlockNumber == 0: return
             else:
-                if game.savedShipLevel - 1 < 0: game.savedShipLevel = len(spaceShipList) - 1
-                else: game.savedShipLevel -=1
-            game.skinUnlockNumber = game.skinsUnlocked(game.savedShipLevel)
-            self.updatePlayerConstants(game)
+                if toggleDirection:
+                    if game.savedShipLevel + 1 <= game.shipUnlockNumber: game.savedShipLevel +=1
+                    else: game.savedShipLevel = 0
+                else:
+                    if game.savedShipLevel - 1 < 0: game.savedShipLevel = game.shipUnlockNumber
+                    else: game.savedShipLevel -=1
+                game.skinUnlockNumber = game.skinsUnlocked(game.savedShipLevel) # Get skin unlocks for new ship type
+                self.updatePlayerConstants(game) # Update attributes
 
 
         def updatePlayerConstants(self,game):
