@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Mike Pistolesi
 # All rights reserved
 
-import random,math,sys,platform,os,json
+import random,math,sys,platform,os,pickle
 from os import environ
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
@@ -471,12 +471,12 @@ if platform.system().lower() == 'windows' or platform.system().lower == 'linux':
 else: recordsPath = resources('gameRecords.txt') # For MacOS
 try:
     with open(recordsPath,'rb') as file:
-        gameRecords = json.load(file)
+        gameRecords = pickle.load(file)
 except:
     gameRecords = {'highScore':0, 'longestRun':0, 'attempts':0, 'timePlayed':0}
     try:
         with open(recordsPath,'wb') as file:
-            json.dump(gameRecords, file) # Try overwriting records
+            pickle.dump(gameRecords, file) # Try overwriting records
     except: pass # Continue game without saving
 
 # LOAD DONATION RECORDS
@@ -1264,7 +1264,7 @@ class Menu:
         newHighScore = False
 
         try:
-            with open(recordsPath,'rb') as file: outdatedRecords = json.load(file) # Load old records
+            with open(recordsPath,'rb') as file: outdatedRecords = pickle.load(file) # Load old records
         except: outdatedRecords = gameRecords # Continue with outdated records
 
         savedClock = outdatedRecords["timePlayed"] + game.gameClock # Update total time played
@@ -1282,7 +1282,7 @@ class Menu:
             updatedRecordsDict["highScore"] = game.score
 
         try:
-            with open(recordsPath,'wb') as file: json.dump(updatedRecordsDict,file) # Save updated records
+            with open(recordsPath,'wb') as file: pickle.dump(updatedRecordsDict,file) # Save updated records
         except: pass
 
         statsOffsetY = screenSize[1]/10
