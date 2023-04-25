@@ -7,7 +7,7 @@
 -Very much a work in progress, and any suggestions or feedback would be welcome. This is my first real attempt at making software, so bear with me! :)
 
 #### Latest Releases:   
-Windows: https://github.com/pstlo/Navigator/releases/download/v0.4.5/NavigatorWindows.zip \
+Windows: https://github.com/pstlo/Navigator/releases/download/v0.4.6/NavigatorWindows.zip \
 MacOS (Apple Silicon): https://github.com/pstlo/Navigator/releases/download/v0.4.5/NavigatorMacOS.zip \
 MacOS (Intel Based): Coming soon \
 Linux*: https://github.com/pstlo/Navigator/releases/download/v0.4.1/NavigatorLinux.zip *Does not save score
