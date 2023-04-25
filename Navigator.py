@@ -21,8 +21,8 @@ scaler = (screenSize[0] + screenSize[1]) / 1600 # Default = x + y / 2  / 800 == 
 roundedScaler = int(round(scaler)) # Assure scaled values are whole numbers
 fullScreen = False # Default = False
 fps = 60 # Default = 60
-performanceMode = True
-qualityMode = False
+performanceMode = True # Overrules qualityMode
+qualityMode = True
 
 # HUD
 shieldColor = [0,0,255] # Default = [0,0,255] / Color of shield gauge
@@ -739,9 +739,12 @@ class Game:
         # DRAW OBSTACLES
         for obs in obstacles:
             if obs.active:
+                obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle
+                if obs.angle >= 360: obs.angle = -360
+                if obs.angle < 0: obs.angle +=360
                 newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
                 screen.blit(newBlit[0],newBlit[1]) # Blit obstacles
-                obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle
+                
 
         musicLoop() # Loop music
 
@@ -1935,7 +1938,7 @@ class Icon:
         self.movement = getMovement(False)
         self.direction = self.movement[1]
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
-        self.image = menuList[random.randint(5,len(menuList)-1)]
+        self.image = menuList[random.randint(4,len(menuList)-1)]
         size = random.randint(minIconSize,maxIconSize)
         self.image = pygame.transform.scale(self.image, (size, size)).convert_alpha()
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
@@ -2207,6 +2210,7 @@ if not game.musicMuted: pygame.mixer.music.set_volume(musicVolume / 100)
 else: pygame.mixer.music.set_volume(0)
 
 
+# START GAME LOOP
 def gameLoop():
     pygame.mixer.music.play()
     game.resetGameConstants() # Reset level settings
