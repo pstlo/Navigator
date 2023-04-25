@@ -101,7 +101,7 @@ showSupporterNames = True # Default = True / Not started yet
 # PLAYER
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
 defaultToHighSkin = True # Default = True
-defaultToHighShip = True # Default = False
+defaultToHighShip = False # Default = False
 # SOUNDS
 musicMuted = False # Default = False
 musicVolume = 10 # Default = 10 / Music volume / 100
@@ -1039,6 +1039,8 @@ class Menu:
 
         bounceDelay = 5
         bounceCount = 0
+
+        # UPDATE UNLOCKS
         if game.savedHighScore < pointsForUnlock: game.shipUnlockNumber = 0
         else:
             if game.savedHighScore == pointsForUnlock or game.savedHighScore < 2 * pointsForUnlock: game.shipUnlockNumber = 1
@@ -1052,7 +1054,7 @@ class Menu:
         game.skinUnlockNumber = game.skinsUnlocked(game.savedShipLevel)
 
         if defaultToHighSkin:
-            for i in range(game.skinUnlockNumber): player.nextSkin() # Gets highest unlocked skin by default
+            for i in range(game.savedSkin): player.nextSkin() # Gets highest unlocked skin by default
         if defaultToHighShip:
             if game.savedShipLevel != game.shipUnlockNumber:
                 for i in range(game.shipUnlockNumber): player.toggleSpaceShip(game,True) # Gets highest unlocked ship by default
