@@ -51,6 +51,7 @@ minDistanceToPoint = (screenSize[0] + screenSize[1]) / 16 # Default = 100
 maxRandomAttempts = 100 # For random generator distances
 
 # BACKGROUND CLOUD
+showBackgroundCloud = True # Default = True
 cloudSpeed = 1 # Default = 1
 cloudStart = -1000 # Default = -1000
 cloudSpeedAdder = 0.5 # Default = 0.5
@@ -656,8 +657,9 @@ class Game:
         # BACKGROUND ANIMATION
         screen.fill(screenColor)
         screen.blit(bgList[self.currentStage - 1][0], (0,0) )
-        screen.blit(bgList[self.currentStage - 1][1], (0,self.cloudPos) )
-        if self.cloudPos < screenSize[1]: self.cloudPos += self.cloudSpeed
+        if self.cloudPos < screenSize[1]:
+            if showBackgroundCloud: screen.blit(bgList[self.currentStage - 1][1], (0,self.cloudPos)) # Draw cloud
+            self.cloudPos += self.cloudSpeed
         else: self.cloudPos = cloudStart
 
         # SHOW POINT SPAWN AREA (TEST)
@@ -778,13 +780,14 @@ class Game:
         self.cloudPos = cloudStart
 
 
+    # Draw frame outside of main game loop
     def alternateUpdate(self,player,obstacles,events):
         player.alternateMovement()
         player.movement()
         player.wrapping()
         screen.fill(screenColor)
         screen.blit(bgList[self.currentStage-1][0],(0,0)) # Draw background
-        screen.blit(bgList[self.currentStage-1][1],(0,self.cloudPos)) # Draw background cloud
+        if showBackgroundCloud: screen.blit(bgList[self.currentStage-1][1],(0,self.cloudPos)) # Draw background cloud
         self.cloudPos += self.cloudSpeed
         obstacleMove(obstacles)
 
@@ -1211,7 +1214,7 @@ class Menu:
         while paused:
             screen.fill(screenColor)
             screen.blit(bgList[game.currentStage-1][0],(0,0))
-            screen.blit(cloud,(0,game.cloudPos))
+            if showBackgroundCloud: screen.blit(cloud,(0,game.cloudPos))
             game.showHUD(player)
             screen.blit(game.thisPoint.image, game.thisPoint.rect)
             screen.blit(playerBlit[0],playerBlit[1])
@@ -1350,7 +1353,7 @@ class Menu:
             # Background
             screen.fill(screenColor)
             screen.blit(bgList[game.currentStage - 1][0],(0,0))
-            screen.blit(bgList[game.currentStage-1][1],(0,game.cloudPos))
+            if showBackgroundCloud: screen.blit(bgList[game.currentStage-1][1],(0,game.cloudPos))
             screen.blit(player.finalImg,player.finalRect) # Explosion
 
             pygame.draw.rect(screen, screenColor, [gameOverRect.x - 12,gameOverRect.y + 4,gameOverRect.width + 16, gameOverRect.height - 16],0,10)
@@ -1470,7 +1473,7 @@ class Menu:
 
             screen.fill(screenColor)
             screen.blit(bgList[game.currentStage - 1][0],(0,0))
-            screen.blit(bgList[game.currentStage-1][1],(0,game.cloudPos))
+            if showBackgroundCloud: screen.blit(bgList[game.currentStage-1][1],(0,game.cloudPos))
 
             for ship in bgShips:
                 ship.move()
@@ -1797,7 +1800,7 @@ class Player(pygame.sprite.Sprite):
                 height = explosionList[self.explosionState].get_height()
                 width = explosionList[self.explosionState].get_width()
                 screen.blit(bgList[game.currentStage-1][0],(0,0))
-                screen.blit(bgList[game.currentStage-1][1],(0,game.cloudPos))
+                if showBackgroundCloud: screen.blit(bgList[game.currentStage-1][1],(0,game.cloudPos))
                 obstacleMove(obstacles)
 
                 for obs in obstacles:
