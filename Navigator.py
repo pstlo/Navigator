@@ -168,8 +168,8 @@ stageTwoLevels = [stageTwoLevelOne,stageTwoLevelTwo,stageTwoLevelThree,stageTwoL
 stageList = [stageOneLevels, stageTwoLevels] # List of stages
 
 # SAVING
-encryptGameRecords = True
-invalidKeyMessage = "Get a key to save progress :)"
+encryptGameRecords = True # Hide game records from user to prevent manual unlocks
+invalidKeyMessage = "Get a key to save progress :)" # Saved to game records file if encryptGameRecords == True and key is invalid
 #----------------------------------------------------------------------------------------------------------------------
 # FOR EXE/APP RESOURCES
 def resources(relative):
