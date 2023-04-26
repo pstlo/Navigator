@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="author" content="Mike Pistolesi">
@@ -8,31 +9,40 @@
 	<title>Navigator</title>
 	<link rel="shortcut icon" href="https://raw.githubusercontent.com/pstlo/Navigator/main/Assets/Icon.png" type="image/png">
 	<style>
+		@font-face {
+			font-family: RetroFont;
+			src: url("https://github.com/pstlo/Navigator/blob/main/Assets/Font.ttf?raw=true")format('truetype');
+		}
+		
 		body {
 			margin: auto;
-			padding: 100px; 
-			max-width: 100%; 
-			overflow-x: hidden; 
+			padding: 100px;
+			max-width: 100%;
+			overflow-x: hidden;
+			overflow-y: hidden;
 			background-color: #7203ad;
 			background-image: url("https://github.com/pstlo/Navigator/blob/main/Assets/Backgrounds/Stage1/Background.png?raw=true");
 			background-size: cover;
+			background-attachment: fixed;
 			background-repeat: no-repeat;
-			font-family: Arial, sans-serif;
+			font-family: RetroFont, sans-serif;
 			font-size: 18px;
 			line-height: 1.5;
 			display: flex;
 			flex-direction: column;
-			justify-content: center;
+			justify-content: flex-start;
 			align-items: center;
-			height:100vh;
 		}
 
 		h1 {
 			margin-top: 0px;
-			color: #4feb34;
+			color: #07e821;
 			text-align: center;
-			font-size: 50px;
 			margin-bottom: 20px;
+			font-size: 64px;
+			letter-spacing: 2px;
+			font-weight: normal;
+			text-transform: uppercase;
 		}
 
 		h2 {
@@ -43,20 +53,22 @@
 
 		h3 {
 			margin-top: 10px;
-			color: #000000;
+			color: #07e821;
 			text-align:center;
 			font-size: 22px;
 			margin-bottom: 0px;
 		}
 
 		p {
-		
-			margin-top:20px;
-			color: #000000;
-			text-align:center;
-			font-size: 18px;
-			padding: 0px;
-			margin-bottom: 10px;
+
+			margin-top: 16px;
+			margin-bottom: 16px;
+			text-align: center;
+			font-size: 20px;
+			line-height: 1.5;
+			max-width: 800px;
+			font-weight: normal;
+			color:#ffffff;
 		}
 
 		ul {
@@ -78,23 +90,44 @@
 			border-bottom: 1px solid blue;
 		}
 
-
+		.text{
+		position:absolute;
+		}
 	</style>
+	<script>
+		function switchPage() {
+			var currentPage = document.getElementById("page1")
+			var downloadsPage = document.getElementById("page2")
+			if (currentPage.style.display === "none") {
+				currentPage.style.display = "block";
+				downloadsPage.style.display = "none";
+			} else {
+				currentPage.style.display = "none";
+				downloadsPage.style.display = "block";
+			}
+		}
+	</script>
 </head>
 <body style="text-align: center;">
-	<h1>Navigator</h1>
-	<p><strong>The game is not rocket science, despite the theme. Navigate between randomly placed tokens like the game "Snake", with the twist of avoiding increasingly unforgiving asteroids- and whatever else may be out there... this is very much a work in progress, and any suggestions or feedback would be welcome:)</strong></p>
-	<h2>Latest Releases:</h2>
-	<ul>
-		<li><strong>Windows:</strong><a href="https://github.com/pstlo/Navigator/releases/download/v0.4.6/NavigatorWindows.zip">v0.4.6</a></li>
-		<li><strong>Windows (Cython):</strong><a href="https://github.com/pstlo/Navigator/releases/download/v0.4.6/NavigatorWindowsC.zip">v0.4.6</a></li>
-		<li><strong>MacOS (Apple Silicon):</strong><a href="https://github.com/pstlo/Navigator/releases/download/v0.4.6/NavigatorMacOS.zip">v0.4.5</a></li>
-		<li><strong>MacOS (Intel Based):</strong> Coming soon!</li>
-		<li><strong>Linux:</strong><a href="https://github.com/pstlo/Navigator/releases/download/v0.4.1/NavigatorWindows.zip">v0.4.1</a>*Does not save records</li>
-	</ul>
+	<div id="page1">
+		<h1><strong>Navigator</strong></h1>
+		<p>The game is not rocket science, despite the theme. Navigate between randomly placed tokens like the game "Snake", with the twist of avoiding increasingly unforgiving asteroids- and whatever else may be out there... this is very much a work in progress, and any suggestions or feedback would be welcome:)</p>
+		<button onclick="switchPage()">Latest releases</button>
+		<h3><strong>Created by Mike Pistolesi.</strong></h3>
+		<a href=https://paypal.me/mikepistolesi?country.x=US&locale.x=en_US>Donate with PayPal</a>
+	</div>
 
-	<p><strong>To get started, download and extract the latest release above or run the game directly from the </strong><a href="https://github.com/pstlo/Navigator/archive/refs/heads/main.zip">source code</a>.</p>
-	<h3><strong>Created by Mike Pistolesi.</strong></h3>
-	<a href=https://paypal.me/mikepistolesi?country.x=US&locale.x=en_US>Donate with PayPal</a>
+	<div id="page2" style="display: none;">
+		<h1>Downloads</h1>
+		<ul>
+			<li><strong>Windows:</strong><a href="https://github.com/pstlo/Navigator/releases/download/v0.4.6/NavigatorWindows.zip">v0.4.6</a></li>
+			<li><strong>Windows (Cython):</strong><a href="https://github.com/pstlo/Navigator/releases/download/v0.4.6/NavigatorWindowsC.zip">v0.4.6</a></li>
+			<li><strong>MacOS (Apple Silicon):</strong><a href="https://github.com/pstlo/Navigator/releases/download/v0.4.6/NavigatorMacOS.zip">v0.4.5</a></li>
+			<li><strong>MacOS (Intel Based):</strong> Coming soon!</li>
+			<li><strong>Linux:</strong><a href="https://github.com/pstlo/Navigator/releases/download/v0.4.1/NavigatorWindows.zip">v0.4.1</a>*Does not save records</li>
+		</ul>
+		<p><strong>To get started, download and extract the latest release above or run the game directly from the </strong><a href="https://github.com/pstlo/Navigator/archive/refs/heads/main.zip">source code</a></p>
+		<button onclick="switchPage()">Go back</button>
+	</div>
 </body>
 </html>
