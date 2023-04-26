@@ -2,9 +2,9 @@
 # Copyright (c) 2023 Mike Pistolesi
 # All rights reserved
 
-import random,math,sys,platform,os,pickle
-from os import environ
-environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+import os,sys,random,math,platform,json,base64
+from cryptography.fernet import Fernet
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
 
 pygame.display.init()
@@ -120,7 +120,7 @@ musicLoopEnd = 76000 # Default = 76000
 
 # SHIP CONSTANTS
 #                       [speed,fuel,maxFuel,regen,delay,boostSpeed,hasGuns,laserCost,laserSpeed,fireRate,boostDrain,collats,hasShields,shields,shieldPieces,piecesNeeded]
-defaultShipAttributes = [ 5,    1,  20,     0.05, 50,   7,         False,  0,        0,         0,       0.4,        True,  True,       0,     0,            5          ]
+defaultShipAttributes = [ 5,    1,  20,     0.05, 50,   7,         False,  0,        0,         0,       0.4,        True,  True,       0,      0,           5          ]
 gunShipAttributes =     [ 3,   10,  20,     0.05, 50,   10,        True,   0.4,      10,        250,     0.3,        True,  False,      0,      0,           0          ]
 laserShipAttributes =   [ 2,   1,   1,      0,    0,    2,         True,   0,        10,        50,      0,          True,  False,      0,      0,           0          ]
 hyperYachtAttributes =  [ 3,   20,  30,     0.1,  25,   12,        False,  0,        0,         0,       0.25,       True,  False,      0,      0,           0          ]
@@ -167,13 +167,18 @@ stageTwoLevels = [stageTwoLevelOne,stageTwoLevelTwo,stageTwoLevelThree,stageTwoL
 # STORE IN LIST
 stageList = [stageOneLevels, stageTwoLevels] # List of stages
 
+# SAVING
+encryptGameRecords = True
+invalidKeyMessage = "Get a key to save progress :)"
 #----------------------------------------------------------------------------------------------------------------------
 # FOR EXE/APP RESOURCES
 def resources(relative):
-    try: base = sys._MEIPASS
-    except Exception: base = os.path.abspath(".")
+    try: base = sys._MEIPASS # Running from EXE
+    except Exception: base = os.path.abspath(".") # Running fron script
     return os.path.join(base, relative)
 
+
+# SPECIFY UPDATE SCREEN UPDATE METHOD
 if qualityMode: updateNotFlip = False # use update instead of flip for display updates
 else: updateNotFlip = True
 
@@ -251,17 +256,6 @@ pygame.display.set_icon(windowIcon)
 screenColor = [0,0,0] # Screen fill color
 
 
-# Get dictionary from plain text
-def readTxt(filename):
-    namesList = {}
-    path = os.path.join(os.getcwd(),filename+'.txt')
-    with open(path,'r') as file:
-        for line in file:
-            key, val = line.strip().split(':')
-            namesList[key] = val
-    return namesList
-
-
 # Draw labels from formatted list of rects and displays, first 4 lines arranged based on truth value of two booleans
 def drawGameOverLabels(textList, conditionOne, conditionTwo):
     statsSpacingY = 50
@@ -299,6 +293,12 @@ def drawGameOverLabels(textList, conditionOne, conditionTwo):
             else: skipped+=1
 
 
+# Based on OS
+def getRecordsPath():
+    if platform.system().lower() == 'windows' or platform.system().lower == 'linux': return './gameRecords.txt' # For windows and linux
+    else: return resources('gameRecords.txt') # For MacOS
+
+
 # ASSET LOADING
 obstacleDirectory = os.path.join(currentDirectory, 'Obstacles') # Obstacle asset directory
 meteorDirectory = os.path.join(obstacleDirectory, 'Meteors') # Meteor asset directory
@@ -310,6 +310,62 @@ explosionDirectory = os.path.join(currentDirectory, 'Explosion') # Explosion ani
 pointsDirectory = os.path.join(currentDirectory, 'Points') # Point image directory
 soundDirectory = os.path.join(currentDirectory, 'Sounds') # Sound assets directory
 supportersDirectory = os.path.join(currentDirectory,'Supporters') # Supporters directory
+
+recordsPath = getRecordsPath()
+keyPath = resources(os.path.join(currentDirectory,'Key.txt'))
+
+
+# GET KEY
+def getKey():
+    try:
+        with open(keyPath,'rb') as file: key = file.read()
+        return base64.b64decode(key)
+    except: return None # Could not load key
+
+
+# STORE GAME RECORDS
+def storeRecords(records):
+    # No encryption
+    if not encryptGameRecords:
+        try:
+            with open(recordsPath, 'w') as file: file.write(json.dumps(records))
+        except: return # Continue without saving game records
+    # With encryption
+    else:
+        if getKey() is None:
+            with open(recordsPath,'w') as file: file.write(invalidKeyMessage)
+            return # No key, continue without saving
+        else:
+            try:
+                encrypted = Fernet(getKey()).encrypt(json.dumps(records).encode())
+                with open(recordsPath,'wb') as file: file.write(encrypted)
+            except:
+                return # Failed to load encrypted records, continue without saving
+
+
+# LOAD GAME RECORDS
+def loadRecords():
+    # No encryption
+    if not encryptGameRecords:
+        try:
+            with open(recordsPath,'r') as file: return json.load(file)
+        except:
+            # Could not load records, try overwrite with default values
+            gameRecords = {'highScore':0, 'longestRun':0, 'attempts':0, 'timePlayed':0}
+            storeRecords(gameRecords)
+            return gameRecords
+    # With encryption
+    else:
+        try:
+            # Return dictionary from encrypted records file
+            with open(recordsPath,'rb') as file: encrypted = file.read()
+            return json.loads(Fernet(getKey()).decrypt(encrypted))
+        except:
+            # Failed to load records
+            gameRecords = {'highScore':0, 'longestRun':0, 'attempts':0, 'timePlayed':0}
+            storeRecords(gameRecords) # Try creating new encrypted records file
+            return gameRecords
+
 
 # FONT
 gameFont = os.path.join(currentDirectory, 'Font.ttf')
@@ -466,19 +522,6 @@ menuMeteorDir = os.path.join(menuDirectory,'FlyingObjects')
 
 for objPath in sorted(os.listdir(menuMeteorDir)): menuList.append(pygame.image.load(resources(os.path.join(menuMeteorDir,objPath))).convert_alpha())
 
-# LOAD GAME RECORDS
-if platform.system().lower() == 'windows' or platform.system().lower == 'linux': recordsPath = './gameRecords.txt' # For windows and linux
-else: recordsPath = resources('gameRecords.txt') # For MacOS
-try:
-    with open(recordsPath,'rb') as file:
-        gameRecords = pickle.load(file)
-except:
-    gameRecords = {'highScore':0, 'longestRun':0, 'attempts':0, 'timePlayed':0}
-    try:
-        with open(recordsPath,'wb') as file:
-            pickle.dump(gameRecords, file) # Try overwriting records
-    except: pass # Continue game without saving
-
 # LOAD DONATION RECORDS
 donations = {}
 try:
@@ -553,7 +596,7 @@ restrictedRightDir = ["NW", "SW", "W"]
 
 # GAME
 class Game:
-    def __init__(self):
+    def __init__(self,records):
         self.currentLevel = 1
         self.currentStage = 1
         self.score = 0
@@ -562,9 +605,7 @@ class Game:
         self.gameClock = 1
         self.pauseCount = 0
         self.clk = pygame.time.Clock()
-        self.savedHighScore = gameRecords["highScore"]
-        self.savedLongestRun = gameRecords["longestRun"]
-        self.savedTotalAttempts = gameRecords["attempts"]
+        self.records = records # Game records dictionary
         self.obstacleSpeed = obstacleSpeed
         self.obstacleSize = obstacleSize
         self.maxObstacles = maxObstacles
@@ -971,12 +1012,12 @@ class Game:
             prevUnlockIndex = 0
             unlockNum = 0
             for unlock in range(numSkins-1):
-                if self.savedLongestRun >= unlockTime: return numSkins - prevUnlockIndex
+                if self.records["longestRun"] >= unlockTime: return numSkins - prevUnlockIndex
                 else:
                     prevUnlockIndex +=1
                     unlockTime -= time
             if unlockNum <= 0:
-                if game.savedLongestRun >= time: return 1
+                if self.records["longestRun"] >= time: return 1
                 else: return 0
             else: return unlockNum
 
@@ -1067,14 +1108,14 @@ class Menu:
         bounceCount = 0
 
         # UPDATE UNLOCKS
-        if game.savedHighScore < pointsForUnlock: game.shipUnlockNumber = 0
+        if game.records["highScore"] < pointsForUnlock: game.shipUnlockNumber = 0
         else:
-            if game.savedHighScore == pointsForUnlock or game.savedHighScore < 2 * pointsForUnlock: game.shipUnlockNumber = 1
+            if game.records["highScore"] == pointsForUnlock or game.records["highScore"] < 2 * pointsForUnlock: game.shipUnlockNumber = 1
             else:
                 game.shipUnlockNumber = 0
                 startPoints = pointsForUnlock
                 for i in range(totalShipTypes):
-                    if game.savedHighScore >= startPoints:
+                    if game.records["highScore"] >= startPoints:
                         game.shipUnlockNumber += 1
                     else: break
                     startPoints += pointsForUnlock
@@ -1175,7 +1216,7 @@ class Menu:
             # SHOW SHIP CONTROLS
             if player.hasGuns: screen.blit(shootHelp,shootHelpRect)
             if player.boostSpeed > player.baseSpeed: screen.blit(boostHelp,boostHelpRect)
-            if unlockTimePerLevels[game.savedShipLevel] != None and game.savedLongestRun >= unlockTimePerLevels[game.savedShipLevel] and len(spaceShipList[game.savedShipLevel][2]) > 1: screen.blit(skinHelpDisplay,skinHelpRect) # Show switch skin controls
+            if unlockTimePerLevels[game.savedShipLevel] != None and game.records["longestRun"] >= unlockTimePerLevels[game.savedShipLevel] and len(spaceShipList[game.savedShipLevel][2]) > 1: screen.blit(skinHelpDisplay,skinHelpRect) # Show switch skin controls
             if game.shipUnlockNumber > 0: screen.blit(shipHelpDisplay,shipHelpRect)
             screen.blit(player.image, (player.rect.x,player.rect.y + startOffset)) # Current spaceship
             # LOGO LETTERS
@@ -1263,27 +1304,18 @@ class Menu:
         newLongRun = False
         newHighScore = False
 
-        try:
-            with open(recordsPath,'rb') as file: outdatedRecords = pickle.load(file) # Load old records
-        except: outdatedRecords = gameRecords # Continue with outdated records
+        game.records["timePlayed"] += game.gameClock # Update total time played
+        game.records["attempts"] += 1 # Update total attempts
 
-        savedClock = outdatedRecords["timePlayed"] + game.gameClock # Update total time played
-        game.savedTotalAttempts += 1 # Update total attempts
-
-        updatedRecordsDict = {"highScore":game.savedHighScore, "longestRun":game.savedLongestRun, "attempts":game.savedTotalAttempts,"timePlayed":savedClock} # Updated records
-        if game.sessionLongRun > game.savedLongestRun:
+        if game.sessionLongRun > game.records["longestRun"]:
             newLongRun = True
-            game.savedLongestRun = game.sessionLongRun
-            updatedRecordsDict["longestRun"] = game.sessionLongRun
+            game.records["longestRun"] = game.sessionLongRun
 
-        if game.score > game.savedHighScore:
+        if game.score > game.records["highScore"]:
             newHighScore = True
-            game.savedHighScore = game.score
-            updatedRecordsDict["highScore"] = game.score
+            game.records["highScore"] = game.score
 
-        try:
-            with open(recordsPath,'wb') as file: pickle.dump(updatedRecordsDict,file) # Save updated records
-        except: pass
+        storeRecords(game.records)
 
         statsOffsetY = screenSize[1]/10
         statsSpacingY = screenSize[1]/20
@@ -1301,14 +1333,14 @@ class Menu:
 
         # Text
         scoreLine = "Score " + str(game.score)
-        highScoreLine = "High Score " + str(game.savedHighScore)
+        highScoreLine = "High Score " + str(game.records["highScore"])
         newHighScoreLine = "New High Score! " + str(game.score)
         survivedLine = "Survived for " + str(game.gameClock) + " seconds"
-        overallLongestRunLine = "Longest run  =  " + str(game.savedLongestRun) + " seconds"
+        overallLongestRunLine = "Longest run  =  " + str(game.records["longestRun"]) + " seconds"
         newLongestRunLine = "New longest run! " + str(game.sessionLongRun) + " seconds"
         levelLine = "Died at stage " + str(game.currentStage) + "  -  level " + str(game.currentLevel)
-        attemptLine = str(game.attemptNumber) + " attempts this session, " + str(game.savedTotalAttempts) + " overall"
-        timeWasted = "Time played = " + str(savedClock) + " seconds"
+        attemptLine = str(game.attemptNumber) + " attempts this session, " + str(game.records["attempts"]) + " overall"
+        timeWasted = "Time played = " + str(game.records["timePlayed"]) + " seconds"
 
         # Display
         scoreDisplay = statFont.render(scoreLine, True, finalScoreColor)
@@ -2216,7 +2248,7 @@ def valueScaler(amount, minimum, maximum, bottom, top):
         return min(max(scaled, minimum), maximum)
 
 
-game = Game() # Initialize game
+game = Game(loadRecords()) # Initialize game with records loaded
 menu = Menu() # Initialize menus
 
 if not game.musicMuted: pygame.mixer.music.set_volume(musicVolume / 100)
