@@ -8,6 +8,7 @@
 
 #### Latest Releases:   
 Windows: https://github.com/pstlo/Navigator/releases/download/v0.4.6/NavigatorWindows.zip \
+Windows (Cython): https://github.com/pstlo/Navigator/releases/download/v0.4.6/NavigatorWindowsC.zip \
 MacOS (Apple Silicon): https://github.com/pstlo/Navigator/releases/download/v0.4.5/NavigatorMacOS.zip \
 MacOS (Intel Based): Coming soon \
 Linux*: https://github.com/pstlo/Navigator/releases/download/v0.4.1/NavigatorLinux.zip *Does not save score
