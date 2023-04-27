@@ -12,7 +12,7 @@ body {
 	overflow-x: hidden;
 	overflow-y: hidden;
 	background-color: #7203ad;
-	background-image: url("Assets/Backgrounds/Stage1/Background.png");
+	background-image: url("./Assets/Backgrounds/Stage1/Background.png");
 	background-size: cover;
 	background-attachment: fixed;
 	background-repeat: no-repeat;
