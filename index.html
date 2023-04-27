@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="author" content="Mike Pistolesi">
@@ -11,17 +10,15 @@
 	<link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
 	<link rel="shortcut icon" href="./Assets/Icon.png" type="image/png">
 	<style>
-		img {
-			position: absolute;
-			top: -1%;
-			left: -1%;
-			animation: move 10s linear infinite;
-		}
-
 		body {
 			margin: auto;
 			padding: 100px;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
 			max-width: 100%;
+			max-height: 100%;
 			overflow-x: hidden;
 			overflow-y: hidden;
 			background-color: #7203ad;
@@ -31,11 +28,23 @@
 			background-repeat: no-repeat;
 			font-family:  'Open Sans', sans-serif;
 			font-size: 18px;
+		}
+
+		#meteor {
+			position: absolute;
+		}
+
+		#page1 {
 			line-height: 1.5;
-			display: flex;
-			flex-direction: column;
-			justify-content: flex-start;
-			align-items: center;
+			text-align: center;
+			z-index:2;
+
+		}
+
+		#page2 {
+			line-height: 1.5;
+			text-align: center;
+			display: none;
 		}
 
 		h1 {
@@ -48,55 +57,55 @@
 			letter-spacing: 2px;
 			font-weight: normal;
 			text-transform: uppercase;
+			z-index:2;
+			position:relative;
 		}
 
 		h2 {
-			margin-top: 0px;
-			color: #4feb34;
-			margin-bottom: 0px;
-		}
-
-		h3 {
 			margin-top: 10px;
 			color: #07e821;
 			text-align:center;
 			font-size: 22px;
 			margin-bottom: 0px;
+			z-index:2;
+			position:relative;
 		}
 
 		p {
-
 			margin-top: 16px;
 			margin-bottom: 16px;
+			margin-left: 100px;
+			margin-right: 100px;
 			text-align: center;
 			font-size: 20px;
 			line-height: 1.5;
 			max-width: 800px;
 			font-weight: normal;
 			color:#ffffff;
+			z-index:2;
+			position:relative;
 		}
 
 		ul {
 			list-style-type: none;
+			z-index:2;
 		}
 
 		li {
 			color: #4feb34;
+			z-index:2;
 		}
 
 		a {
 			color: #07b8e0;
-			text-decoration: none;
+			z-index:2;
 		}
 
 		a:hover {
 			text-decoration: underline;
 			color: blue;
 			border-bottom: 1px solid blue;
-		}
-
-		.text{
-		position:absolute;
+			z-index:2;
 		}
 	</style>
 	<script>
@@ -106,57 +115,24 @@
 			if (currentPage.style.display === "none") {
 				currentPage.style.display = "block";
 				downloadsPage.style.display = "none";
-			} else {
+			}
+			else {
 				currentPage.style.display = "none";
 				downloadsPage.style.display = "block";
 			}
 		}
 	</script>
 </head>
-<body style="text-align: center;">
+<body>
 	<div id="page1">
 		<h1><strong>Navigator</strong></h1>
-		<p>The game is not rocket science, despite the theme. Navigate between randomly placed tokens like the game "Snake", with the twist of avoiding increasingly unforgiving asteroids- and whatever else may be out there... this is very much a work in progress, and any suggestions or feedback would be welcome:)</p>
+		<p>The game is not rocket science, despite the theme. Navigate between randomly placed tokens like the game "Snake", with the twist of avoiding increasingly unforgiving asteroids- and whatever else may be out there... this is very much a work in progress, and any suggestions or feedback would be welcome  :)</p>
 		<button onclick="switchPage()">Latest releases</button>
-		<h3><strong>Created by Mike Pistolesi.</strong></h3>
+		<h2><strong>Created by Mike Pistolesi.</strong></h2>
 		<a href=https://paypal.me/mikepistolesi?country.x=US&locale.x=en_US>Donate with PayPal</a>
 	</div>
-	<div id="animations">
-		<script>
-			function getRandomPosition() {
-				var x = Math.floor(Math.random() * window.innerWidth);
-				var y = Math.floor(Math.random() * window.innerHeight);
-				return [x, y];
-			}
-
-			var img = new Image();
-			img.onload = function() {
-				var position = getRandomPosition();
-				img.style.top = position[1] + 'px';
-				img.style.left = position[0] + 'px';
-				document.getElementById('animations').appendChild(img);
-				animate();
-			}
-			img.src = "./Assets/Obstacles/Meteors/Meteor.png";
-
-			function animate() {
-				var pos = 0;
-				var id = setInterval(frame, 10);
-
-				function frame() {
-					if (pos >= window.innerHeight) {
-						clearInterval(id);
-						img.parentNode.removeChild(img);
-					} else {
-						pos += 2;
-						img.style.top = pos + 'px';
-					}
-				}
-			}
-		</script>
-	</div>
-	<div id="page2" style="display: none;">
-		<h1>Downloads</h1>
+	<div id="page2">
+		<h2>Downloads</h2>
 		<ul>
 			<li><strong>Windows:</strong><a href="https://github.com/pstlo/Navigator/releases/download/v0.4.6/NavigatorWindows.zip">v0.4.6</a></li>
 			<li><strong>Windows (Cython):</strong><a href="https://github.com/pstlo/Navigator/releases/download/v0.4.6/NavigatorWindowsC.zip">v0.4.6</a></li>
@@ -167,5 +143,6 @@
 		<p><strong>To get started, download and extract the latest release above or run the game directly from the </strong><a href="https://github.com/pstlo/Navigator/archive/refs/heads/main.zip">source code</a></p>
 		<button onclick="switchPage()">Go back</button>
 	</div>
+	<div id="meteor"></div>
 </body>
 </html>
