@@ -21,13 +21,19 @@ body {
 }
 
 #home {
+	display: flex;
+	flex-direction: column;
 	line-height: 1.5;
 	text-align: center;
 	z-index:2;
+	max-width: 500px;
+	align-items:center;
 
 }
 
 #downloads {
+	display: flex;
+	flex-direction: column;
 	line-height: 1.5;
 	text-align: center;
 	display: none;
@@ -40,65 +46,6 @@ body {
 	text-align: center;
 	display:none;
 	z-index:2;
-}
-
-#img {
-	position:relative;
-	top: 120px;
-	left: 50px;
-	z-index:2;
-}
-
-#donateButton {
-	font-size:12px;
-	display: inline-block;
-	padding: 5px;
-	background-color: blue;
-	color: white;
-	text-decoration: none;
-	border-radius: 10px;
-}
-
-#donateButton:hover {
-	background-color:lightblue;
-	cursor: pointer;
-}
-
-#latestReleasesButton {
-	font-family: 'Press Start 2P', sans-serif;
-	letter-spacing: 0px;
-	background-color: blue;
-	font-size:20px;
-	padding: 20px;
-	display: inline-block;
-	background-color: #4CAF50;
-	color: white;
-	text-decoration: none;
-	border-radius: 10px;
-
-}
-
-#latestReleasesButton:hover {
-	background-color:lightgreen;
-	cursor: pointer;
-}
-
-#backButton {
-	font-family: 'Press Start 2P', sans-serif;
-	letter-spacing: 0px;
-	background-color: blue;
-	font-size:20px;
-	padding: 20px;
-	display: inline-block;
-	background-color: #4CAF50;
-	color: white;
-	text-decoration: none;
-	border-radius: 10px;
-}
-
-#backButton:hover{
-	background-color:lightgreen;
-	cursor: pointer;
 }
 
 h1 {
@@ -141,8 +88,6 @@ h3 {
 p {
 	margin-top: 16px;
 	margin-bottom: 16px;
-	margin-left: 100px;
-	margin-right: 100px;
 	text-align: center;
 	font-size: 20px;
 	line-height: 1.5;
@@ -173,4 +118,81 @@ a:hover {
 	color: blue;
 	border-bottom: 1px solid blue;
 	z-index:2;
+}
+
+
+
+#img {
+	position:relative;
+	top: 120px;
+	left: 50px;
+	z-index:2;
+}
+
+#donateButton {
+	font-size:12px;
+	display: inline-block;
+	padding: 5px;
+	background-color: blue;
+	color: white;
+	text-decoration: none;
+	border-radius: 10px;
+	margin-bottom:10px;
+}
+
+#repositoryButton {
+	font-size:12px;
+	display: inline-block;
+	padding: 5px;
+	background-color: #ab34eb;
+	color: white;
+	text-decoration: none;
+	border-radius: 10px;
+}
+
+#repositoryButton:hover {
+	background-color:#ca84f0;
+	cursor: pointer;
+}
+
+#donateButton:hover {
+	background-color:lightblue;
+	cursor: pointer;
+}
+
+#latestReleasesButton {
+	font-family: 'Press Start 2P', sans-serif;
+	letter-spacing: 0px;
+	background-color: blue;
+	font-size:20px;
+	padding: 20px;
+	display: inline-block;
+	background-color: #4CAF50;
+	color: white;
+	text-decoration: none;
+	border-radius: 10px;
+
+}
+
+#latestReleasesButton:hover {
+	background-color:lightgreen;
+	cursor: pointer;
+}
+
+#backButton {
+	font-family: 'Press Start 2P', sans-serif;
+	letter-spacing: 0px;
+	background-color: blue;
+	font-size:20px;
+	padding: 20px;
+	display: inline-block;
+	background-color: #4CAF50;
+	color: white;
+	text-decoration: none;
+	border-radius: 10px;
+}
+
+#backButton:hover{
+	background-color:lightgreen;
+	cursor: pointer;
 }

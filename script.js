@@ -7,7 +7,8 @@ function switchPage(page) {
     var supportPage = document.getElementById("support");
 
     if (page === "home") {
-        homePage.style.display = "block";
+        homePage.style.display = "flex";
+		homePage.style.flexDirection = "column";
         downloadsPage.style.display = "none";
         supportPage.style.display = "none";
     } else if (page === "downloads") {
