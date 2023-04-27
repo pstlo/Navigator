@@ -121,7 +121,7 @@
 		<h3><strong>Created by Mike Pistolesi.</strong></h3>
 		<a href=https://paypal.me/mikepistolesi?country.x=US&locale.x=en_US>Donate with PayPal</a>
 	</div>
-	<div id="game-container">
+	<div id="animations">
 		<script>
 			function getRandomPosition() {
 				var x = Math.floor(Math.random() * window.innerWidth);
@@ -134,10 +134,10 @@
 				var position = getRandomPosition();
 				img.style.top = position[1] + 'px';
 				img.style.left = position[0] + 'px';
-				document.getElementById('game-container').appendChild(img);
+				document.getElementById('animations').appendChild(img);
 				animate();
 			}
-			img.src = "./Assets/Obstacles/Meteors/meteor.png";
+			img.src = "./Assets/Obstacles/Meteors/Meteor.png";
 
 			function animate() {
 				var pos = 0;
