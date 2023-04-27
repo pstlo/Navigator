@@ -31,10 +31,15 @@ body {
 	line-height: 1.5;
 	text-align: center;
 	display: none;
+	flex-direction: column;
+	z-index:2;
 }
 
 #support {
+	line-height: 1.5;
+	text-align: center;
 	display:none;
+	z-index:2;
 }
 
 #img {
@@ -52,7 +57,6 @@ body {
 	color: white;
 	text-decoration: none;
 	border-radius: 10px;
-
 }
 
 #donateButton:hover {
@@ -75,6 +79,24 @@ body {
 }
 
 #latestReleasesButton:hover {
+	background-color:lightgreen;
+	cursor: pointer;
+}
+
+#backButton {
+	font-family: 'Press Start 2P', sans-serif;
+	letter-spacing: 0px;
+	background-color: blue;
+	font-size:20px;
+	padding: 20px;
+	display: inline-block;
+	background-color: #4CAF50;
+	color: white;
+	text-decoration: none;
+	border-radius: 10px;
+}
+
+#backButton:hover{
 	background-color:lightgreen;
 	cursor: pointer;
 }

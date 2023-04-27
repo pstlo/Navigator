@@ -17,7 +17,8 @@ function switchPage(page) {
     } else if (page === "support") {
         homePage.style.display = "none";
         downloadsPage.style.display = "none";
-        supportPage.style.display = "block";
+        supportPage.style.display = "flex";
+		supportPage.style.flexDirection = "column";
     }
 }
 
