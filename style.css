@@ -39,6 +39,7 @@ body {
 	display: none;
 	flex-direction: column;
 	z-index:2;
+	align-items:center;
 }
 
 #support {
@@ -46,13 +47,13 @@ body {
 	text-align: center;
 	display:none;
 	z-index:2;
+	align-items:center;
 }
 
 h1 {
 	font-family: 'Press Start 2P', sans-serif;
 	margin-top: 0px;
 	color: #07e821;
-	text-align: center;
 	margin-bottom: 20px;
 	font-size: 64px;
 	letter-spacing: 1px;
@@ -66,7 +67,6 @@ h2 {
 	font-family: 'Press Start 2P', sans-serif;
 	margin-top: 0px;
 	color: #07e821;
-	text-align: center;
 	margin-bottom: 20px;
 	font-size: 30px;
 	letter-spacing: 0px;
@@ -78,7 +78,6 @@ h2 {
 h3 {
 	margin-top: 10px;
 	color: #07e821;
-	text-align:center;
 	font-size: 22px;
 	margin-bottom: 10px;
 	z-index:2;
@@ -141,9 +140,9 @@ a:hover {
 }
 
 #repositoryButton {
-	font-size:12px;
+	font-size:16px;
 	display: inline-block;
-	padding: 5px;
+	padding: 16px;
 	background-color: #ab34eb;
 	color: white;
 	text-decoration: none;
@@ -195,4 +194,20 @@ a:hover {
 #backButton:hover{
 	background-color:lightgreen;
 	cursor: pointer;
+}
+
+video::-webkit-media-controls {
+	display:none;
+}
+
+video::-webkit-media-controls-enclosure {
+	display:none;
+}
+
+video::-webkit-media-controls-panel {
+	display:none;
+}
+
+video::-webkit-media-controls-play-button {
+	display:none;
 }
