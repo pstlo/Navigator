@@ -1959,12 +1959,13 @@ class Point(pygame.sprite.Sprite):
     def __init__(self,player,lastPos):
         super().__init__()
         self.powerUp = ''
+        pointChoices = powerUpList[:]
         if not player or (not player.hasShields and player.boostDrain == 0 and player.laserCost == 0  and player.baseSpeed == player.boostSpeed): self.powerUp = "Default"
         else:
-            powerUps = powerUpList
-            if not player.hasShields and "Shield" in powerUps: powerUps.remove("Shield")
-            if not player.hasGuns and player.baseSpeed == player.boostSpeed and "Fuel" in powerUps: powerUps.remove("Fuel")
-            self.powerUp = random.choice(powerUps)
+            powerUps = pointChoices
+            if not player.hasShields and "Shield" in powerUps: pointChoices.remove("Shield")
+            if not player.hasGuns and player.baseSpeed == player.boostSpeed and "Fuel" in powerUps: pointChoices.remove("Fuel")
+            self.powerUp = random.choice(pointChoices)
         if self.powerUp == "Shield": self.image = pointsList[2]
         elif self.powerUp == "Fuel": self.image = pointsList[1]
         elif self.powerUp == "Default": self.image = pointsList[0]
