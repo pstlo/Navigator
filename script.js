@@ -1,19 +1,24 @@
 // Navigator page backend
 
-// Toggle between pages
-function switchPage() {
-	var currentPage = document.getElementById("home")
-	var downloadsPage = document.getElementById("downloads")
-	if (currentPage.style.display === "none")
-	{
-		currentPage.style.display = "block";
-		downloadsPage.style.display = "none";
-	}
-	else
-	{
-		currentPage.style.display = "none";
-		downloadsPage.style.display = "block";
-	}
+// Switch between pages
+function switchPage(page) {
+    var homePage = document.getElementById("home");
+    var downloadsPage = document.getElementById("downloads");
+    var supportPage = document.getElementById("support");
+
+    if (page === "home") {
+        homePage.style.display = "block";
+        downloadsPage.style.display = "none";
+        supportPage.style.display = "none";
+    } else if (page === "downloads") {
+        homePage.style.display = "none";
+        downloadsPage.style.display = "block";
+        supportPage.style.display = "none";
+    } else if (page === "support") {
+        homePage.style.display = "none";
+        downloadsPage.style.display = "none";
+        supportPage.style.display = "block";
+    }
 }
 
 // Animate

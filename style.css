@@ -33,6 +33,9 @@ body {
 	display: none;
 }
 
+#support {
+	display:none;
+}
 #img {
 	position:relative;
 	top: 120px;
