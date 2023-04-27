@@ -10,15 +10,18 @@
 	<link href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap" rel="stylesheet">
 	<link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
 	<link rel="shortcut icon" href="./Assets/Icon.png" type="image/png">
-	<script src="script.js"></script>
+
 </head>
 <body>
+	<img id="img" src ="Assets/Obstacles/Meteors/meteor.png">
+	<script src="script.js"></script>
 	<div id="home">
 		<h1><strong>Navigator</strong></h1>
 		<p>The game is not rocket science, despite the theme. Navigate between randomly placed tokens like the game "Snake", with the twist of avoiding increasingly unforgiving asteroids- and whatever else may be out there... this is very much a work in progress, and any suggestions or feedback would be welcome  :)</p>
-		<button onclick="switchPage()">Latest releases</button>
-		<h2><strong>Created by Mike Pistolesi</strong></h2>
-		<a href=https://paypal.me/mikepistolesi?country.x=US&locale.x=en_US>Donate with PayPal</a>
+		<button class="latestReleasesButton" onclick="switchPage()">Latest releases</button>
+		<h3><strong>Created by Mike Pistolesi</strong></h2>
+		<a href="https://paypal.me/mikepistolesi?country.x=US&locale.x=en_US" class="donateButton">Donate with PayPal</a>
+
 	</div>
 	<div id="downloads">
 		<h2>Downloads</h2>
@@ -32,6 +35,6 @@
 		<p><strong>To get started, download and extract the latest release above or run the game directly from the </strong><a href="https://github.com/pstlo/Navigator/archive/refs/heads/main.zip">source code</a></p>
 		<button onclick="switchPage()">Back</button>
 	</div>
-	<div id="meteor"></div>
+
 </body>
 </html>

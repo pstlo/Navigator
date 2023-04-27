@@ -33,6 +33,48 @@ body {
 	display: none;
 }
 
+#img {
+	position:relative;
+	top: 120px;
+	left: 50px;
+	z-index:2;
+}
+
+.donateButton {
+	font-size:12px;
+	display: inline-block;
+	padding: 5px;
+	background-color: blue;
+	color: white;
+	text-decoration: none;
+	border-radius: 10px;
+
+}
+
+.donateButton:hover {
+	background-color:lightblue;
+	cursor: pointer;
+}
+
+.latestReleasesButton {
+	font-family: 'Press Start 2P', sans-serif;
+	letter-spacing: 0px;
+	background-color: blue;
+	font-size:20px;
+	padding: 20px;
+	display: inline-block;
+	background-color: #4CAF50;
+	color: white;
+	text-decoration: none;
+	border-radius: 10px;
+
+}
+
+.latestReleasesButton:hover {
+	background-color:lightgreen;
+	cursor: pointer;
+}
+
 h1 {
 	font-family: 'Press Start 2P', sans-serif;
 	margin-top: 0px;
@@ -40,7 +82,7 @@ h1 {
 	text-align: center;
 	margin-bottom: 20px;
 	font-size: 64px;
-	letter-spacing: 2px;
+	letter-spacing: 1px;
 	font-weight: normal;
 	text-transform: uppercase;
 	z-index:2;
@@ -48,11 +90,24 @@ h1 {
 }
 
 h2 {
+	font-family: 'Press Start 2P', sans-serif;
+	margin-top: 0px;
+	color: #07e821;
+	text-align: center;
+	margin-bottom: 20px;
+	font-size: 30px;
+	letter-spacing: 0px;
+	font-weight: normal;
+	z-index:2;
+	position:relative;
+}
+
+h3 {
 	margin-top: 10px;
 	color: #07e821;
 	text-align:center;
 	font-size: 22px;
-	margin-bottom: 0px;
+	margin-bottom: 10px;
 	z-index:2;
 	position:relative;
 }
