@@ -1,0 +1,213 @@
+/* Navigator page stylesheet*/
+
+body {
+	margin: auto;
+	padding: 100px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	max-width: 100%;
+	max-height: 100%;
+	overflow-x: hidden;
+	overflow-y: hidden;
+	background-color: #7203ad;
+	background-image: url("../Assets/Backgrounds/Stage1/Background.png");
+	background-size: cover;
+	background-attachment: fixed;
+	background-repeat: no-repeat;
+	font-family:  'Open Sans', sans-serif;
+	font-size: 18px;
+}
+
+#home {
+	display: flex;
+	flex-direction: column;
+	line-height: 1.5;
+	text-align: center;
+	z-index:2;
+	max-width: 500px;
+	align-items:center;
+
+}
+
+#downloads {
+	display: flex;
+	flex-direction: column;
+	line-height: 1.5;
+	text-align: center;
+	display: none;
+	flex-direction: column;
+	z-index:2;
+	align-items:center;
+}
+
+#support {
+	line-height: 1.5;
+	text-align: center;
+	display:none;
+	z-index:2;
+	align-items:center;
+}
+
+h1 {
+	font-family: 'Press Start 2P', sans-serif;
+	margin-top: 0px;
+	color: #07e821;
+	margin-bottom: 20px;
+	font-size: 64px;
+	letter-spacing: 1px;
+	font-weight: normal;
+	text-transform: uppercase;
+	z-index:2;
+	position:relative;
+}
+
+h2 {
+	font-family: 'Press Start 2P', sans-serif;
+	margin-top: 0px;
+	color: #07e821;
+	margin-bottom: 20px;
+	font-size: 30px;
+	letter-spacing: 0px;
+	font-weight: normal;
+	z-index:2;
+	position:relative;
+}
+
+h3 {
+	margin-top: 10px;
+	color: #07e821;
+	font-size: 22px;
+	margin-bottom: 10px;
+	z-index:2;
+	position:relative;
+}
+
+p {
+	margin-top: 16px;
+	margin-bottom: 16px;
+	text-align: center;
+	font-size: 20px;
+	line-height: 1.5;
+	max-width: 800px;
+	font-weight: normal;
+	color:#ffffff;
+	z-index:2;
+	position:relative;
+}
+
+ul {
+	list-style-type: none;
+	z-index:2;
+}
+
+li {
+	color: #4feb34;
+	z-index:2;
+}
+
+a {
+	color: #07b8e0;
+	z-index:2;
+}
+
+a:hover {
+	text-decoration: underline;
+	color: blue;
+	border-bottom: 1px solid blue;
+	z-index:2;
+}
+
+
+
+#img {
+	position:relative;
+	top: 120px;
+	left: 50px;
+	z-index:2;
+}
+
+#donateButton {
+	font-size:12px;
+	display: inline-block;
+	padding: 5px;
+	background-color: blue;
+	color: white;
+	text-decoration: none;
+	border-radius: 10px;
+	margin-bottom:10px;
+}
+
+#repositoryButton {
+	font-size:16px;
+	display: inline-block;
+	padding: 16px;
+	background-color: #ab34eb;
+	color: white;
+	text-decoration: none;
+	border-radius: 10px;
+}
+
+#repositoryButton:hover {
+	background-color:#ca84f0;
+	cursor: pointer;
+}
+
+#donateButton:hover {
+	background-color:lightblue;
+	cursor: pointer;
+}
+
+#latestReleasesButton {
+	font-family: 'Press Start 2P', sans-serif;
+	letter-spacing: 0px;
+	background-color: blue;
+	font-size:20px;
+	padding: 20px;
+	display: inline-block;
+	background-color: #4CAF50;
+	color: white;
+	text-decoration: none;
+	border-radius: 10px;
+
+}
+
+#latestReleasesButton:hover {
+	background-color:lightgreen;
+	cursor: pointer;
+}
+
+#backButton {
+	font-family: 'Press Start 2P', sans-serif;
+	letter-spacing: 0px;
+	background-color: blue;
+	font-size:20px;
+	padding: 20px;
+	display: inline-block;
+	background-color: #4CAF50;
+	color: white;
+	text-decoration: none;
+	border-radius: 10px;
+}
+
+#backButton:hover{
+	background-color:lightgreen;
+	cursor: pointer;
+}
+
+video::-webkit-media-controls {
+	display:none;
+}
+
+video::-webkit-media-controls-enclosure {
+	display:none;
+}
+
+video::-webkit-media-controls-panel {
+	display:none;
+}
+
+video::-webkit-media-controls-play-button {
+	display:none;
+}
