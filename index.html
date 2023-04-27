@@ -7,13 +7,17 @@
 	<meta name="author" content="Mike Pistolesi">
 	<meta name="description" content="Simple and addictive arcade game">
 	<title>Navigator</title>
+	<link href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
 	<link rel="shortcut icon" href="./Assets/Icon.png" type="image/png">
 	<style>
-		@font-face {
-			font-family: RetroFont;
-			 src: url("./Assets/Font.ttf")format('truetype');
+		img {
+			position: absolute;
+			top: -1%;
+			left: -1%;
+			animation: move 10s linear infinite;
 		}
-		
+
 		body {
 			margin: auto;
 			padding: 100px;
@@ -25,7 +29,7 @@
 			background-size: cover;
 			background-attachment: fixed;
 			background-repeat: no-repeat;
-			font-family: RetroFont, sans-serif;
+			font-family:  'Open Sans', sans-serif;
 			font-size: 18px;
 			line-height: 1.5;
 			display: flex;
@@ -35,6 +39,7 @@
 		}
 
 		h1 {
+			font-family: 'Press Start 2P', sans-serif;
 			margin-top: 0px;
 			color: #07e821;
 			text-align: center;
@@ -116,7 +121,40 @@
 		<h3><strong>Created by Mike Pistolesi.</strong></h3>
 		<a href=https://paypal.me/mikepistolesi?country.x=US&locale.x=en_US>Donate with PayPal</a>
 	</div>
+	<div id="game-container">
+		<script>
+			function getRandomPosition() {
+				var x = Math.floor(Math.random() * window.innerWidth);
+				var y = Math.floor(Math.random() * window.innerHeight);
+				return [x, y];
+			}
 
+			var img = new Image();
+			img.onload = function() {
+				var position = getRandomPosition();
+				img.style.top = position[1] + 'px';
+				img.style.left = position[0] + 'px';
+				document.getElementById('game-container').appendChild(img);
+				animate();
+			}
+			img.src = "./Assets/Obstacles/Meteors/Meteor.png";
+
+			function animate() {
+				var pos = 0;
+				var id = setInterval(frame, 10);
+
+				function frame() {
+					if (pos >= window.innerHeight) {
+						clearInterval(id);
+						img.parentNode.removeChild(img);
+					} else {
+						pos += 2;
+						img.style.top = pos + 'px';
+					}
+				}
+			}
+		</script>
+	</div>
 	<div id="page2" style="display: none;">
 		<h1>Downloads</h1>
 		<ul>
