@@ -86,7 +86,7 @@ h3 {
 
 p {
 	margin-top: 16px;
-	margin-bottom: 16px;
+	margin-bottom: 100px;
 	text-align: center;
 	font-size: 20px;
 	line-height: 1.5;
@@ -119,33 +119,24 @@ a:hover {
 	z-index:2;
 }
 
-
-
-#img {
-	position:relative;
-	top: 120px;
-	left: 50px;
-	z-index:2;
-}
-
-#donateButton {
-	font-size:12px;
-	display: inline-block;
-	padding: 5px;
-	background-color: blue;
-	color: white;
-	text-decoration: none;
-	border-radius: 10px;
-	margin-bottom:10px;
+#bouncingIcon {
+	position:absolute;
+	top: 0px;
+	left: 0px;
+	z-index:1;
+	height:100px;
+	width:100px;
 }
 
 #repositoryButton {
-	font-size:16px;
-	display: inline-block;
-	padding: 16px;
+	width:300px;
+	font-family: 'Press Start 2P', sans-serif;
+	letter-spacing: 0px;
+	font-size:20px;
+	padding: 10px;
+	text-decoration: none;
 	background-color: #ab34eb;
 	color: white;
-	text-decoration: none;
 	border-radius: 10px;
 }
 
@@ -154,18 +145,29 @@ a:hover {
 	cursor: pointer;
 }
 
+#donateButton {
+	width:300px;
+	font-family: 'Press Start 2P', sans-serif;
+	letter-spacing: 0px;
+	font-size:20px;
+	padding: 10px;
+	text-decoration: none;
+	background-color: blue;
+	color: white;
+	border-radius: 10px;
+}
+
 #donateButton:hover {
-	background-color:lightblue;
+	background-color:#4166fa;
 	cursor: pointer;
 }
 
 #latestReleasesButton {
+	width:300px;
 	font-family: 'Press Start 2P', sans-serif;
 	letter-spacing: 0px;
-	background-color: blue;
 	font-size:20px;
-	padding: 20px;
-	display: inline-block;
+	padding: 10px;
 	background-color: #4CAF50;
 	color: white;
 	text-decoration: none;
@@ -179,15 +181,15 @@ a:hover {
 }
 
 #backButton {
+	width:300px;
 	font-family: 'Press Start 2P', sans-serif;
 	letter-spacing: 0px;
-	background-color: blue;
 	font-size:20px;
 	padding: 20px;
-	display: inline-block;
+	text-decoration: none;
 	background-color: #4CAF50;
 	color: white;
-	text-decoration: none;
+
 	border-radius: 10px;
 }
 
