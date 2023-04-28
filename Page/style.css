@@ -65,7 +65,7 @@ h1 {
 
 h2 {
 	font-family: 'Press Start 2P', sans-serif;
-	margin-top: 0px;
+	margin-top: 50px;
 	color: #07e821;
 	margin-bottom: 20px;
 	font-size: 300%;
@@ -140,6 +140,7 @@ a:hover {
 #repositoryButton:hover {
 	background-color:#ca84f0;
 	cursor: pointer;
+	transition: background-color 0.25s linear;
 }
 
 #donateButton {
@@ -157,6 +158,7 @@ a:hover {
 #donateButton:hover {
 	background-color:#4166fa;
 	cursor: pointer;
+	transition: background-color 0.25s linear;
 }
 
 #latestReleasesButton {
@@ -175,6 +177,7 @@ a:hover {
 #latestReleasesButton:hover {
 	background-color:lightgreen;
 	cursor: pointer;
+	transition: background-color 0.25s linear;
 }
 
 #backButton {
@@ -192,6 +195,7 @@ a:hover {
 #backButton:hover{
 	background-color:lightgreen;
 	cursor: pointer;
+	transition: background-color 0.25s linear;
 }
 
 video::-webkit-media-controls {
