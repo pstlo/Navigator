@@ -25,13 +25,11 @@ function switchPage(page) {
     }
 }
 
-
 // Spaceship animation
 var bouncingIcon = document.getElementById("bouncingIcon");
-bouncingIcon.style.height = '50px';
-bouncingIcon.style.width = '50px';
 var posX = 0;
-var posY = 0;
+var posX = window.innerWidth / 2;
+var posY = window.innerHeight/2;
 var dirX = Math.random() * 2 - 1;
 var dirY = Math.random() * 2 - 1;
 var speed = 2;
@@ -47,8 +45,26 @@ function moveImage() {
 	var angle = Math.atan2(dirY, dirX) * 180 / Math.PI;
 	bouncingIcon.style.transform = "rotate(" + (angle +90) + "deg)";
 
-	if (posX + bouncingIcon.width/2 > window.innerWidth/2 || posX + bouncingIcon.width/2 <= window.innerWidth/-2) {dirX *= -1;}
-	if (posY + (1.5*bouncingIcon.height) > window.innerHeight || posY + (1.5*bouncingIcon.height) < 0) {dirY *= -1;}
+	if (posX < 0) {
+		posX = 0;
+		dirX *= -1;
+	}
+
+	if (50 +posX > window.innerWidth) {
+		posX = window.innerWidth-50;
+		dirX *= -1;
+	}
+
+	if (posY < 0) {
+		posY = 0;
+		dirY *= -1;
+	}
+
+	if (50 + posY > window.innerHeight) {
+		posY = window.innerHeight-50;
+		dirY *= -1;
+	}
+
 }
 
 
@@ -86,7 +102,7 @@ function moveDiag(numIcons) {
   for (let i = 0; i < numIcons; i++) {
     const diagIcon = document.createElement('img');
     let dPosX = window.innerWidth;
-    let dPosY = 0;
+    let dPosY = window.innerHeight*0.25+0.25;
     let dDirX = Math.random() * -1;
     let dDirY = Math.random()/2;
     let dSpeed = Math.random() * 5 + 2;
@@ -118,7 +134,7 @@ function moveDiag(numIcons) {
 			icon.element.style.left = icon.posX + "px";
 			icon.element.style.top = icon.posY + "px";
 
-			if (icon.posX < 0 || icon.posY > 1.5*window.innerHeight) {
+			if (icon.posX < 0 || icon.posY > window.innerHeight) {
 				icon.posX = window.innerWidth;
 				icon.posY = Math.random() * window.innerHeight;
 				icon.element.src = selectRandomImage();
