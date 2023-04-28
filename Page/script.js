@@ -25,15 +25,17 @@ function switchPage(page) {
     }
 }
 
-/// Bounce animation
+
+// Spaceship animation
 var bouncingIcon = document.getElementById("bouncingIcon");
+bouncingIcon.style.height = '50px';
+bouncingIcon.style.width = '50px';
 var posX = 0;
 var posY = 0;
 var dirX = Math.random() * 2 - 1;
 var dirY = Math.random() * 2 - 1;
-var speed = 5;
+var speed = 2;
 
-// Set the image to face upright by default
 bouncingIcon.style.transform = "rotate(-90deg)";
 
 function moveImage() {
@@ -42,15 +44,15 @@ function moveImage() {
 	bouncingIcon.style.left = posX + "px";
 	bouncingIcon.style.top = posY + "px";
 
-	// Calculate angle of rotation based on direction of movement
 	var angle = Math.atan2(dirY, dirX) * 180 / Math.PI;
 	bouncingIcon.style.transform = "rotate(" + (angle +90) + "deg)";
 
-	// Bounce off walls
 	if (posX + bouncingIcon.width/2 > window.innerWidth/2 || posX + bouncingIcon.width/2 <= window.innerWidth/-2) {dirX *= -1;}
 	if (posY + (1.5*bouncingIcon.height) > window.innerHeight || posY + (1.5*bouncingIcon.height) < 0) {dirY *= -1;}
 }
 
+
+// Meteor shower animation
 function moveDiag(numIcons) {
   const images = [
     'Assets/Obstacles/Meteors/bluem.png',
@@ -67,14 +69,13 @@ function moveDiag(numIcons) {
 		const randomNum = Math.random();
 		if (randomNum < 0.9) {
 			return 'Assets/Obstacles/Meteors/meteor.png';
-		} 
+		}
 		else {
 			const index = Math.floor(Math.random() * (images.length - 1) + 1);
 			return images[index];
 		}
 	}
 
-  // Create a new parent container element
   const parentContainer = document.createElement('div');
   parentContainer.style.position = 'fixed';
   parentContainer.style.width = '100%';
@@ -84,15 +85,21 @@ function moveDiag(numIcons) {
   const icons = [];
   for (let i = 0; i < numIcons; i++) {
     const diagIcon = document.createElement('img');
-    diagIcon.src = selectRandomImage();
-    diagIcon.style.position = 'absolute';
-    parentContainer.appendChild(diagIcon);
-
     let dPosX = window.innerWidth;
-    let dPosY = 0
+    let dPosY = 0;
     let dDirX = Math.random() * -1;
     let dDirY = Math.random()/2;
-    let dSpeed = Math.random() * 5 + 5;
+    let dSpeed = Math.random() * 5 + 2;
+	let dSize = 100/dSpeed;
+
+	diagIcon.src = selectRandomImage();
+    diagIcon.style.position = 'absolute';
+
+	diagIcon.style.height = dSize+'px';
+	diagIcon.style.width = dSize+'px';
+
+
+    parentContainer.appendChild(diagIcon);
 
     icons.push({
       element: diagIcon,
@@ -123,4 +130,4 @@ function moveDiag(numIcons) {
 }
 
 setInterval(moveImage, 5);
-moveDiag(20);
+moveDiag(30);
