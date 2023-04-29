@@ -32,7 +32,7 @@ jobs:
           pip install cryptography
       - name: Create Windows executable
         run: |
-            pyinstaller --name NavigatorWindows --onefile --noconsole --add-data "${{ github.workspace }}/Navigator/Assets:Navigator/Assets" -i "%GITHUB_WORKSPACE%\Navigator\Icon.ico" --version-file %GITHUB_WORKSPACE%\Navigator\version.txt %GITHUB_WORKSPACE%\Navigator\Navigator.py
+            pyinstaller --name NavigatorWindows --onefile --noconsole --add-data Assets;Assets -i "Icon.ico" --version-file version.txt Navigator.py
 
   build-macos:
     runs-on: macos-latest
