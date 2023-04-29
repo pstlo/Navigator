@@ -32,7 +32,7 @@ jobs:
 
       - name: Create Windows executable
         run: |
-          pyinstaller --name NavigatorWindows --onefile --noconsole --add-data Assets;Assets -i="Icon.ico" --version-file version.txt Navigator.py
+          pyinstaller --name NavigatorWindows --onefile --noconsole --add-data Assets;\Assets -i="Icon.ico" --version-file version.txt Navigator.py
 
   build-macos:
     runs-on: macos-latest
