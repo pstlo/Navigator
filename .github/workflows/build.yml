@@ -24,15 +24,22 @@ jobs:
         with:
           python-version: 3.9
 
-      - name: Install prerequesites on Windows
+      - name: Install prerequisites on Windows
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller
           pip install pygame
           pip install cryptography
+
       - name: Create Windows executable
         run: |
             pyinstaller --name NavigatorWindows --onefile --noconsole --add-data "${{ github.workspace }}/Assets;Assets" -i "${{ github.workspace }}\Icon.ico" --version-file "${{ github.workspace }}\version.txt" "${{ github.workspace }}\Navigator.py"
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: Navigator-Windows
+          path: dist/NavigatorWindows.exe
 
   build-macos:
     runs-on: macos-latest
@@ -50,15 +57,23 @@ jobs:
         with:
           python-version: 3.9
 
-      - name: Install prerequesites on MacOS
+      - name: Install prerequisites on MacOS
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller
           pip install pygame
           pip install cryptography
+
       - name: Create MacOS App
         run: |
           pyinstaller --name NavigatorMacOS --noconsole --add-data Assets:Assets -i "Icon.icns" Navigator.py
+
+      - name: Upload MacOS artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: Navigator-MacOS
+          path: dist/NavigatorMacOS.app
+
   build-linux:
     runs-on: ubuntu-latest
     name: Build Navigator for Linux
@@ -75,12 +90,19 @@ jobs:
         with:
           python-version: 3.9
 
-      - name: Install prerequesites on Linux
+      - name: Install prerequisites on Linux
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller
           pip install pygame
           pip install cryptography
+
       - name: Create Linux executable
         run: |
           pyinstaller --name NavigatorLinux --onefile --noconsole --add-data Assets:Assets Navigator.py
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: Navigator-Linux
+          path: dist/NavigatorLinux
