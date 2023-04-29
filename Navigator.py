@@ -29,7 +29,7 @@ showHUD = True
 shieldColor = [0,0,255] # Default = [0,0,255] / Color of shield gauge
 fullShieldColor = [0,255,255] # Default = [0,255,255] / Color of active shield gauge
 fuelColor = [255,0,0] # Default = [255,0,0] / Color of fuel gauge
-timerSize = 30 * roundedScaler # Default = 30
+timerSize = 30 * roundedScaler # Default = 30 
 timerColor = [255,255,255] # Default = [255,255,255]
 timerDelay = 1000 # Default = 1000
 levelSize = 30 * roundedScaler # Default = 30
