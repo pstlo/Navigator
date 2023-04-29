@@ -55,7 +55,7 @@ jobs:
 
       - name: Create MacOS App
         run: |
-          pyinstaller --name NavigatorMacOS --noconsole --add-data Assets:Assets -i "Icon.icns" --osx-bundle-version=${{env.versionNum}} Navigator.py
+          pyinstaller --name NavigatorMacOS --noconsole --add-data Assets:Assets -i "Icon.icns" Navigator.py
 
   build-linux:
     runs-on: ubuntu-latest
@@ -78,4 +78,4 @@ jobs:
 
       - name: Create Linux executable
         run: |
-          pyinstaller --name NavigatorLinux --onefile --noconsole --add-data Assets:Assets -i "Icon.ico" --version-file version.txt Navigator.py
+          pyinstaller --name NavigatorLinux --onefile --noconsole --add-data Assets:Assets -i "Icon.ico" Navigator.py
