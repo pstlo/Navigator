@@ -38,7 +38,7 @@ scoreSize = 30 * roundedScaler # Default = 30
 
 # POWER UPS
 spawnRange = [0.15, 0.85]
-spawnVertices = 8 # Default = 8 / Vertices in shape of point spawn area ( Octagon )
+spawnVertices = 8 # Default = 8 / Vertices in shape of point spawn area (Octagon)
 pointSize = 25  # Default = 20
 shieldChunkSize = screenSize[0]/40 # Default = screen width / 40
 boostCooldownTime = 2000 # Default = 2000 / Activates when fuel runs out to allow regen
