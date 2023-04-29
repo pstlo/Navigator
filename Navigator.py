@@ -6,7 +6,7 @@ import os,sys,random,math,platform,json,base64
 from cryptography.fernet import Fernet
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
- 
+
 pygame.display.init()
 pygame.font.init()
 pygame.mixer.init()
