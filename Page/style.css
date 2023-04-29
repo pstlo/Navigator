@@ -60,6 +60,7 @@ body {
 	height: 500px;
 	overflow-y: auto;
 	margin-bottom: 5%;
+	max-width: 800px
 }
 
 #changeLog td {text-align:left;}
@@ -110,7 +111,7 @@ h2 {
 
 h3 {
 	font-family: 'VT323', monospace;
-	margin-top: 10px;
+	margin-top: 0px;
 	color: #07e821;
 	font-size: 350%;
 	margin-bottom: 10px;
@@ -125,11 +126,12 @@ h4 {
 }
 
 p {
-	max-width:80%;
+	font-family: 'Press Start 2P', sans-serif;
+	max-width:70%;
 	margin-top: 0px;
 	margin-bottom: 16px;
 	text-align: center;
-	font-size: 150%;
+	font-size: 110%;
 	line-height: 1.5;
 	font-weight: normal;
 	color:#ffffff;
