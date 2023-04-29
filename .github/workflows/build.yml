@@ -29,11 +29,9 @@ jobs:
           pip install pyinstaller
           pip install pygame
           pip install cryptography
-
       - name: Create Windows executable
         run: |
-          pyinstaller --name NavigatorWindows --onefile --noconsole --add-data D:/a/Navigator/Assets;Assets -i "D:/a/Navigator/Icon.ico" --version-file D:/a/Navigator/version.txt Navigator.py
-
+          pyinstaller --name NavigatorWindows --onefile --noconsole --add-data src/Assets;Assets -i "src/Icon.ico" --version-file src/version.txt src/Navigator.py
   build-macos:
     runs-on: macos-latest
     name: Build Navigator for macOS
@@ -52,11 +50,9 @@ jobs:
           pip install pyinstaller
           pip install pygame
           pip install cryptography
-
       - name: Create MacOS App
         run: |
           pyinstaller --name NavigatorMacOS --noconsole --add-data Assets:Assets -i "Icon.icns" Navigator.py
-
   build-linux:
     runs-on: ubuntu-latest
     name: Build Navigator for Linux
@@ -75,7 +71,6 @@ jobs:
           pip install pyinstaller
           pip install pygame
           pip install cryptography
-
       - name: Create Linux executable
         run: |
           pyinstaller --name NavigatorLinux --onefile --noconsole --add-data Assets:Assets -i "Icon.ico" Navigator.py
