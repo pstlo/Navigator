@@ -171,7 +171,6 @@ a:hover {
 	color: white;
 	text-decoration: none;
 	border-radius: 10px;
-
 }
 
 #latestReleasesButton:hover {
@@ -271,14 +270,12 @@ td {
 		width:200px;
 		font-size:20px;
 		padding: 10px;
-
 	}
 	#backButton {
 		width:200px;
 		font-size:20px;
 		padding: 20px;
 	}
-
 }
 
 @media only screen and (max-width: 400px) {
