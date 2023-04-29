@@ -32,8 +32,7 @@ jobs:
           pip install cryptography
       - name: Create Windows executable
         run: |
-            echo ${{ github.workspace }}
-            pyinstaller --name NavigatorWindows --onefile --noconsole --add-data ${{ github.workspace }}\Assets;Assets -i "${{ github.workspace }}\Icon.ico" --version-file ${{ github.workspace }}\version.txt Navigator.py
+            pyinstaller --name NavigatorWindows --onefile --noconsole --add-data "${{ github.workspace }}/Assets;Assets" -i "${{ github.workspace }}\Icon.ico" --version-file ${{ github.workspace }}\version.txt Navigator.py
 
   build-macos:
     runs-on: macos-latest
@@ -84,4 +83,4 @@ jobs:
           pip install cryptography
       - name: Create Linux executable
         run: |
-          pyinstaller --name NavigatorLinux --onefile --noconsole --add-data Assets:Assets -i "Icon.ico" Navigator.py
+          pyinstaller --name NavigatorLinux --onefile --noconsole --add-data Assets:Assets Navigator.py
