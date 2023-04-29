@@ -7,9 +7,6 @@ on:
     paths:
       - 'Navigator.py'
 
-env:
-  versionNum: 'v0.4.6'
-
 jobs:
   build-windows:
     runs-on: windows-latest
