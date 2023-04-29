@@ -1,7 +1,7 @@
 # Navigator v0.4.6
 # Copyright (c) 2023 Mike Pistolesi
 # All rights reserved
-
+ 
 import os,sys,random,math,platform,json,base64
 from cryptography.fernet import Fernet
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
