@@ -10,7 +10,7 @@ import pygame
 pygame.display.init()
 pygame.font.init()
 pygame.mixer.init()
-
+ 
 pygame.mouse.set_visible(False)
 
 version = "v0.4.6"
