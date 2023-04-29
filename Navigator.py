@@ -37,9 +37,9 @@ levelColor = [255,255,255] # Default = [255,255,255]
 scoreSize = 30 * roundedScaler # Default = 30
 
 # POWER UPS
-spawnRange = [0.1, 0.9]
+spawnRange = [0.15, 0.85]
 spawnVertices = 8 # Default = 8 / Vertices in shape of point spawn area ( Octagon )
-pointSize = 25  # Default = 20 ( Waiting for assets )
+pointSize = 25  # Default = 20
 shieldChunkSize = screenSize[0]/40 # Default = screen width / 40
 boostCooldownTime = 2000 # Default = 2000 / Activates when fuel runs out to allow regen
 shieldPiecesNeeded = 10 # Default = 10 / Pieces needed for an extra life
@@ -48,7 +48,7 @@ powerUpList = ["Shield", "Fuel", "Default", "Default"] # Shield/Fuel/Default, ch
 playerShieldSize = 48 # Default = 64 / Shield visual size
 shieldVisualDuration = 250 # Default = 250 / Shield visual duration
 minDistanceToPoint = (screenSize[0] + screenSize[1]) / 16 # Default = 100
-maxRandomAttempts = 100 # For random generator distances
+maxRandomAttempts = 100 # For random generator distances / max random attempts at finding a valid point
 
 # BACKGROUND CLOUD
 showBackgroundCloud = True # Default = True
@@ -75,8 +75,8 @@ startSize = 120 * roundedScaler # Default = 120
 startColor = [0,255,0] # Default = [0,255,0]
 minIconSize = 30 * roundedScaler # Default = 30
 maxIconSize = 100 * roundedScaler # Default = 100
-versionSize = 25
-versionColor = [0,255,0]
+versionSize = 25 # Default = 25
+versionColor = [0,255,0] # Default = [0,255,0]
 
 # STAGE UP
 stageUpColor = [0,255,0] # Default = [0,255,0]
@@ -87,10 +87,10 @@ stageUpCloudSpeed = 8 * roundedScaler # Default = 8
 # CREDITS
 creditsFontSize = 55 * roundedScaler # Default = 55
 creditsColor = [255,255,255] # Default = [255,255,255]
-mainCreditsSpeed = 1
-mainCreditsDelay = 10
-extraCreditsSize = 30 * roundedScaler # background ships text size
-extraCreditsColor = [0,0,0]
+mainCreditsSpeed = 1 # Default = 1
+mainCreditsDelay = 10 # Default = 10
+extraCreditsSize = 30 * roundedScaler # Default = 30 / background ships text size
+extraCreditsColor = [0,0,0] # Background ships text color
 maxExtras = 3 # Default = 3 # max background ships
 minBackgroundShipSpeed = 2 # Default = 1
 maxBackgroundShipSpeed = 3 # Default = 3
@@ -99,8 +99,8 @@ maxBackgroundShipSize = 100 # Default = 150
 backgroundShipDelay = 15 # Default = 15 / Higher is slower
 minBackgroundShipSpawnDelay = 500 # / Min delay (ms) before a ship spawns
 maxBackgroundShipSpawnDelay = 3000 # / Max delay (ms) before a ship spawns
-showBackgroundShips = True # Default = True / Waiting for assets
-showSupporterNames = True # Default = True / Not started yet
+showBackgroundShips = True # Default = True
+showSupporterNames = True # Default = True
 
 # PLAYER
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
@@ -191,16 +191,12 @@ displayInfo = pygame.Rect(0, 0, displayInfo[0], displayInfo[1]).center
 
 # GET SCREEN
 def getScreen():
-    # Potentially better performance
     if performanceMode:
         if fullScreen: return pygame.display.set_mode(screenSize, pygame.FULLSCREEN | pygame.DOUBLEBUF | pygame.SCALED , depth = 16)
         else: return pygame.display.set_mode(screenSize,pygame.DOUBLEBUF,depth=16)
-
-    # Possibly higher quality
     elif qualityMode:
         if fullScreen: return pygame.display.set_mode(screenSize, pygame.FULLSCREEN| pygame.NOFRAME | pygame.SCALED | pygame.SRCALPHA,depth = 32)
         else: return pygame.display.set_mode(screenSize, pygame.NOFRAME | pygame.SRCALPHA,depth = 32)
-
     # Default
     else:
         if fullScreen: return pygame.display.set_mode(screenSize,pygame.FULLSCREEN | pygame.SCALED, depth = 0)
@@ -730,45 +726,17 @@ class Game:
                 if not self.musicMuted: explosionNoise.play()
                 menu.gameOver(self,player,obstacles) # Game over
 
-        # OBSTACLE/LASER COLLISION DETECTION
-        for obs in obstacles:
-            if pygame.sprite.spritecollide(obs,lasers,player.laserCollat,pygame.sprite.collide_mask):
-                if player.laserCollat: obs.kill()
-                if not self.musicMuted: impactNoise.play()
-                self.explosions.append(Explosion(self,obs))
-
-        # DRAW OBSTACLE EXPLOSIONS
-        for debris in self.explosions:
-            if debris.finished: self.explosions.remove(debris)
-            else: debris.update()
-
-        # DRAW AND MOVE SPRITES
+        # UPDATE PLAYER
         player.movement()
         player.shoot(self,lasers,events)
         player.boost(events)
         player.wrapping()
-        self.spawner(obstacles)
-        obstacleMove(obstacles)
-
-        # UPDATE HIGH SCORE
-        if self.gameClock > self.sessionLongRun: self.sessionLongRun = self.gameClock
-
-        # OBSTACLE HANDLING
-        if self.obstacleBoundaries == "KILL": obstacleRemove(obstacles)
-        if self.obstacleBoundaries == "BOUNCE": bounceObstacle(obstacles)
-        if self.obstacleBoundaries == "WRAP": wrapObstacle(obstacles)
-
-        # LEVEL UP
-        self.levelUpdater(player,obstacles,events)
 
         # ROTATE PLAYER
         newBlit = rotateImage(player.image,player.rect,player.angle)
 
         # ROTATE EXHAUST
         newExhaustBlit = rotateImage(spaceShipList[game.savedShipLevel][0][player.exhaustState-1],player.rect,player.angle)
-
-        # DRAW POINT
-        screen.blit(self.thisPoint.image, self.thisPoint.rect)
 
         # DRAW PLAYER
         screen.blit(newBlit[0],newBlit[1])
@@ -789,16 +757,69 @@ class Game:
         # DRAW LASERS
         self.laserUpdate(lasers,player)
 
-        # DRAW OBSTACLES
+        # DRAW POINT
+        screen.blit(self.thisPoint.image, self.thisPoint.rect)
+
+        # UPDATE OBSTACLES
         for obs in obstacles:
+            position = obs.rect.center
+            if "N" in obs.direction: obs.rect.centery -= obs.speed
+            if "S" in obs.direction: obs.rect.centery += obs.speed
+            if "E" in obs.direction: obs.rect.centerx += obs.speed
+            if "W" in obs.direction: obs.rect.centerx -= obs.speed
+            obs.activate()# Activate if on screen
+            
             if obs.active:
-                obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle
-                if obs.angle >= 360: obs.angle = -360
-                if obs.angle < 0: obs.angle +=360
-                newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
-                screen.blit(newBlit[0],newBlit[1]) # Blit obstacles
+                # OBSTACLE/LASER COLLISION DETECTION
+                if pygame.sprite.spritecollide(obs,lasers,player.laserCollat,pygame.sprite.collide_mask):
+                    if player.laserCollat: obs.kill()
+                    if not self.musicMuted: impactNoise.play()
+                    self.explosions.append(Explosion(self,obs))
 
+                # ROTATE OBSTACLE
+                if not performanceMode:
+                    obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle
+                    if obs.angle >= 360: obs.angle = -360
+                    if obs.angle < 0: obs.angle +=360
+                    newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
+                    screen.blit(newBlit[0],newBlit[1]) # Blit obstacles
 
+                # OBSTACLE BOUNDARY HANDLING
+                if self.obstacleBoundaries == "KILL":
+                    if obs.rect.centerx > screenSize[0] or obs.rect.centerx < 0:
+                        obstacles.remove(obs)
+                        obs.kill()
+                    elif obs.rect.centery > screenSize[1] or obs.rect.centery < 0:
+                        obstacles.remove(obs)
+                        obs.kill()
+
+                if self.obstacleBoundaries == "BOUNCE":
+                    direction = obs.direction
+                    if obs.rect.centery  > screenSize[1]: obs.direction = movementReverse(direction)
+                    if obs.rect.centery < 0: obs.direction = movementReverse(direction)
+                    if obs.rect.centerx > screenSize[0]: obs.direction = movementReverse(direction)
+                    if obs.rect.centerx < 0: obs.direction = movementReverse(direction)
+
+                if self.obstacleBoundaries == "WRAP":
+                    if obs.rect.centery > screenSize[1]: obs.rect.centery = 0
+                    if obs.rect.centery < 0: obs.rect.centery = screenSize[1]
+                    if obs.rect.centerx > screenSize[0]: obs.rect.centerx = 0
+                    if obs.rect.centerx < 0: obs.rect.centerx = screenSize[0]
+
+        if performanceMode:obstacles.draw(screen)
+
+        # DRAW OBSTACLE EXPLOSIONS
+        for debris in self.explosions:
+            if debris.finished: self.explosions.remove(debris)
+            else: debris.update()
+
+        # UPDATE HIGH SCORE
+        if self.gameClock > self.sessionLongRun: self.sessionLongRun = self.gameClock
+
+        # LEVEL UP
+        self.levelUpdater(player,obstacles,events)
+
+        self.spawner(obstacles) # Spawn obstacles
         musicLoop() # Loop music
 
         # UPDATE SCREEN
@@ -1266,9 +1287,11 @@ class Menu:
 
             pygame.mixer.music.pause()
 
-            for obs in obstacles: # Draw obstacles
-                newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
-                screen.blit(newBlit[0],newBlit[1])
+            if not performanceMode:
+                for obs in obstacles: # Draw obstacles
+                    newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
+                    screen.blit(newBlit[0],newBlit[1])
+            else: obstacles.draw(screen)
 
             lasers.draw(screen)
 
@@ -1861,7 +1884,6 @@ class Player(pygame.sprite.Sprite):
             self.shields -= 1
             self.showShield = True
             events.showShield()
-            # Waiting for assets
 
 
 
@@ -2148,7 +2170,7 @@ def getMovement(eightDirections):
     return move
 
 
-# OBSTACLE MOVEMENT
+# ALTERNATE OBSTACLE MOVEMENT
 def obstacleMove(obstacles):
     for obs in obstacles:
         position = obs.rect.center
@@ -2157,38 +2179,6 @@ def obstacleMove(obstacles):
         if "E" in obs.direction: obs.rect.centerx += obs.speed
         if "W" in obs.direction: obs.rect.centerx -= obs.speed
         obs.activate()
-
-
-# OFF SCREEN OBSTACLE REMOVAL
-def obstacleRemove(obstacles):
-    for obs in obstacles:
-        if obs.active:
-            if obs.rect.centerx > screenSize[0] or obs.rect.centerx < 0:
-                obstacles.remove(obs)
-                obs.kill()
-
-            elif obs.rect.centery > screenSize[1] or obs.rect.centery < 0:
-                obs.kill()
-                obstacles.remove(obs)
-
-
-# OBSTACLE BOUNCING
-def bounceObstacle(obstacles):
-    for obs in obstacles:
-        direction = obs.direction
-        if obs.rect.centery  > screenSize[1]: obs.direction = movementReverse(direction)
-        if obs.rect.centery < 0: obs.direction = movementReverse(direction)
-        if obs.rect.centerx > screenSize[0]: obs.direction = movementReverse(direction)
-        if obs.rect.centerx < 0: obs.direction = movementReverse(direction)
-
-
-# OBSTACLE WRAPPING
-def wrapObstacle(obstacles):
-    for obs in obstacles:
-        if obs.rect.centery > screenSize[1]: obs.rect.centery = 0
-        if obs.rect.centery < 0: obs.rect.centery = screenSize[1]
-        if obs.rect.centerx > screenSize[0]: obs.rect.centerx = 0
-        if obs.rect.centerx < 0: obs.rect.centerx = screenSize[0]
 
 
 # POINT POSITION GENERATION
