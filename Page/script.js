@@ -17,7 +17,7 @@ function switchPage(page) {
     } else if (page === "downloads") {
         homePage.style.display = "none";
         downloadsPage.style.display = "flex";
-		downloadsPage.style.display = "column";
+		downloadsPage.style.flexDirection = "column";
         supportPage.style.display = "none";
     } else if (page === "support") {
         homePage.style.display = "none";
@@ -150,6 +150,7 @@ function moveDiag(numIcons) {
 	}
 	animate();
 }
+
 
 setInterval(moveImage, 5);
 moveDiag(30);

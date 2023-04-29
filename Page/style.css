@@ -32,26 +32,54 @@ body {
 }
 
 #downloads {
-	display: flex;
-	flex-direction: column;
+	display: none;
 	line-height: 1;
 	text-align: center;
-	display: none;
 	z-index:2;
 	align-items:center;
 	max-width:80%;
 }
 
 #support {
+	display:none;
 	line-height: 1.5;
 	text-align: center;
-	display:none;
 	z-index:2;
 	align-items:center;
 }
 
 #changes {
+	z-index:2;
+	height:800px;
 	display: none;
+	align-items:center;
+	text-align:center;
+}
+
+#changeLog {
+	height: 500px;
+	overflow-y: auto;
+	margin-bottom: 5%;
+}
+
+#changeLog td {text-align:left;}
+
+#changeLog::-webkit-scrollbar {
+  width: 10px;
+}
+
+#changeLog::-webkit-scrollbar-thumb {
+  background-color: #555;
+  border-radius: 10px;
+}
+
+#changeLog::-webkit-scrollbar-track {
+  background-color: #79e091;
+  border-radius: 10px;
+}
+
+#changeLog::-webkit-scrollbar-corner {
+  background-color: #79e091;
 }
 
 h1 {
@@ -108,7 +136,6 @@ p {
 	z-index:2;
 	position:relative;
 }
-
 
 a {
 	color: #07b8e0;
@@ -237,7 +264,7 @@ table {
 	width: auto;
 	z-index:2;
 	background-color: #07e821;
-	}
+}
 
 thead {
 	font-family: 'Press Start 2P', sans-serif;
@@ -258,7 +285,9 @@ td {
 	background-color:#442294;
 	border: 1px solid black;
 	color: #07e821;
+	height:auto;
 }
+
 
 @media only screen and (max-width: 767px) {
 	body{
@@ -289,6 +318,12 @@ td {
 		padding: 10px;
 	}
 	#backButton {
+		width:200px;
+		font-size:20px;
+		padding: 20px;
+	}
+
+	#changesButton {
 		width:200px;
 		font-size:20px;
 		padding: 20px;
