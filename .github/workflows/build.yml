@@ -41,39 +41,6 @@ jobs:
           name: NavigatorWindows
           path: dist/NavigatorWindows.exe
 
-  build-macos-applesilicon:
-    runs-on: macos-arm64-latest
-    name: Build Navigator for MacOS (Apple Silicon)
-
-    steps:
-      - name: Download code on MacOS (Apple Silicon)
-        uses: actions/checkout@v3
-        with:
-          repository: pstlo/Navigator
-          ref: main
-
-      - name: Set up Python on MacOS (Apple Silicon)
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-
-      - name: Install prerequisites on MacOS (Apple Silicon)
-        run: |
-          python -m pip install --upgrade pip
-          pip install pyinstaller
-          pip install pygame
-          pip install cryptography
-
-      - name: Create MacOS App (Apple Silicon)
-        run: |
-          pyinstaller --name NavigatorMacOS --noconsole --add-data Assets:Assets -i "Icon.icns" Navigator.py
-
-      - name: Upload MacOS artifact (Apple Silicon)
-        uses: actions/upload-artifact@v3
-        with:
-          name: NavigatorMacOS
-          path: dist/NavigatorMacOS.app
-
   build-macos-intel:
     runs-on: macos-latest
     name: Build Navigator for MacOS (Intel Based)
