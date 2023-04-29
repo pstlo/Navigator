@@ -1,0 +1,81 @@
+name: Build Navigator
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Navigator.py'
+
+env:
+  versionNum: 'v0.4.6'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    name: Build Navigator for Windows
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python on Windows
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install prerequesites on Windows
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          pip install pygame
+          pip install cryptography
+
+      - name: Create Windows executable
+        run: |
+          pyinstaller --name NavigatorWindows --onefile --noconsole --add-data Assets;Assets -i="Icon.ico" --version-file version.txt Navigator.py
+
+  build-macos:
+    runs-on: macos-latest
+    name: Build Navigator for macOS
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python on MacOS
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install prerequesites on MacOS
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          pip install pygame
+          pip install cryptography
+
+      - name: Create MacOS App
+        run: |
+          pyinstaller --name NavigatorMacOS --noconsole --add-data Assets:Assets -i "Icon.icns" --osx-bundle-version=${{env.versionNum}} Navigator.py
+
+  build-linux:
+    runs-on: ubuntu-latest
+    name: Build Navigator for Linux
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python on Linux
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install prerequesites on Linux
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          pip install pygame
+          pip install cryptography
+
+      - name: Create Linux executable
+        run: |
+          pyinstaller --name NavigatorLinux --onefile --noconsole --add-data Assets:Assets -i "Icon.ico" --version-file version.txt Navigator.py
