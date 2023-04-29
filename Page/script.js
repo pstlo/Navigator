@@ -6,12 +6,14 @@ function switchPage(page) {
     var homePage = document.getElementById("home");
     var downloadsPage = document.getElementById("downloads");
     var supportPage = document.getElementById("support");
+	var changesPage = document.getElementById("changes");
 
     if (page === "home") {
         homePage.style.display = "flex";
 		homePage.style.flexDirection = "column";
         downloadsPage.style.display = "none";
         supportPage.style.display = "none";
+		changesPage.style.display = "none";
     } else if (page === "downloads") {
         homePage.style.display = "none";
         downloadsPage.style.display = "flex";
@@ -22,7 +24,11 @@ function switchPage(page) {
         downloadsPage.style.display = "none";
         supportPage.style.display = "flex";
 		supportPage.style.flexDirection = "column";
-    }
+    } else if (page === "changes") {
+		homePage.style.display = "none";
+		changesPage.style.display = "flex";
+		changesPage.style.flexDirection ="column";
+	}
 }
 
 // Spaceship animation
