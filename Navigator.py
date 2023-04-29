@@ -43,7 +43,7 @@ pointSize = 25  # Default = 20
 shieldChunkSize = screenSize[0]/40 # Default = screen width / 40
 boostCooldownTime = 2000 # Default = 2000 / Activates when fuel runs out to allow regen
 shieldPiecesNeeded = 10 # Default = 10 / Pieces needed for an extra life
-showSpawnArea = False # Default = False
+showSpawnArea = False # Default = False 
 powerUpList = ["Shield", "Fuel", "Default", "Default"] # Shield/Fuel/Default, chances of spawn
 playerShieldSize = 48 # Default = 64 / Shield visual size
 shieldVisualDuration = 250 # Default = 250 / Shield visual duration
