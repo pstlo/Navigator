@@ -46,18 +46,18 @@ jobs:
     name: Build Navigator for MacOS (Intel Based)
 
     steps:
-      - name: Download code on MacOS
+      - name: Download code on MacOS (Intel Based)
         uses: actions/checkout@v3
         with:
           repository: pstlo/Navigator
           ref: main
 
-      - name: Set up Python on MacOS
+      - name: Set up Python on MacOS (Intel Based)
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      - name: Install prerequisites on MacOS
+      - name: Install prerequisites on MacOS (Intel Based)
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller
@@ -71,7 +71,7 @@ jobs:
       - name: Upload MacOS artifact
         uses: actions/upload-artifact@v3
         with:
-          name: NavigatorMacOS
+          name: NavigatorMacOSIntel
           path: dist/NavigatorMacOSIntel.app
 
   build-linux:
