@@ -14,13 +14,13 @@ jobs:
 
     steps:
       - name: Download code on Windows
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: pstlo/Navigator
           ref: main
 
       - name: Set up Python on Windows
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.9
 
@@ -36,7 +36,7 @@ jobs:
             pyinstaller --name NavigatorWindows --onefile --noconsole --add-data "${{ github.workspace }}/Assets;Assets" -i "${{ github.workspace }}\Icon.ico" --version-file "${{ github.workspace }}\version.txt" "${{ github.workspace }}\Navigator.py"
 
       - name: Upload Windows artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: Navigator-Windows
           path: dist/NavigatorWindows.exe
@@ -47,13 +47,13 @@ jobs:
 
     steps:
       - name: Download code on MacOS
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: pstlo/Navigator
           ref: main
 
       - name: Set up Python on MacOS
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.9
 
@@ -69,7 +69,7 @@ jobs:
           pyinstaller --name NavigatorMacOS --noconsole --add-data Assets:Assets -i "Icon.icns" Navigator.py
 
       - name: Upload MacOS artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: Navigator-MacOS
           path: dist/NavigatorMacOS.app
@@ -80,13 +80,13 @@ jobs:
 
     steps:
       - name: Download code on Linux
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: pstlo/Navigator
           ref: main
 
       - name: Set up Python on Linux
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.9
 
@@ -102,7 +102,7 @@ jobs:
           pyinstaller --name NavigatorLinux --onefile --noconsole --add-data Assets:Assets Navigator.py
 
       - name: Upload Linux artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: Navigator-Linux
           path: dist/NavigatorLinux
