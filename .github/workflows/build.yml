@@ -22,7 +22,7 @@ jobs:
       - name: Set up Python on Windows
         uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: '3.10'
 
       - name: Install prerequisites on Windows
         run: |
@@ -38,7 +38,7 @@ jobs:
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v3
         with:
-          name: Navigator-Windows
+          name: NavigatorWindows
           path: dist/NavigatorWindows.exe
 
   build-macos:
@@ -55,7 +55,7 @@ jobs:
       - name: Set up Python on MacOS
         uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: '3.10'
 
       - name: Install prerequisites on MacOS
         run: |
@@ -71,7 +71,7 @@ jobs:
       - name: Upload MacOS artifact
         uses: actions/upload-artifact@v3
         with:
-          name: Navigator-MacOS
+          name: NavigatorMacOS
           path: dist/NavigatorMacOS.app
 
   build-linux:
@@ -88,7 +88,7 @@ jobs:
       - name: Set up Python on Linux
         uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: '3.10'
 
       - name: Install prerequisites on Linux
         run: |
@@ -104,5 +104,5 @@ jobs:
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v3
         with:
-          name: Navigator-Linux
+          name: NavigatorLinux
           path: dist/NavigatorLinux
