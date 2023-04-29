@@ -32,7 +32,6 @@ jobs:
           pip install cryptography
       - name: Create Windows executable
         run: |
-          run: |
             pyinstaller --name NavigatorWindows --onefile --noconsole --add-data $HOME\Navigator\Assets;Assets -i "$HOME\Navigator\Icon.ico" --version-file $HOME\Navigator\version.txt $HOME\Navigator\Navigator.py
 
   build-macos:
