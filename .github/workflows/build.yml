@@ -33,7 +33,7 @@ jobs:
 
       - name: Create Windows executable
         run: |
-            pyinstaller --name NavigatorWindows --onefile --noconsole --add-data "${{ github.workspace }}/Assets;Assets" -i "${{ github.workspace }}\Icon.ico" --version-file "${{ github.workspace }}\version.txt" "${{ github.workspace }}\Navigator.py"
+            pyinstaller --name NavigatorWindows --onefile --noconsole --add-data "${{ github.workspace }}/Assets;Assets" -i "${{ github.workspace }}\.github\Icon.ico" --version-file "${{ github.workspace }}\.github\version.txt" "${{ github.workspace }}\Navigator.py"
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v3
@@ -66,7 +66,7 @@ jobs:
 
       - name: Create MacOS App (Intel Based)
         run: |
-          pyinstaller --name NavigatorMacOSIntel --noconsole --add-data Assets:Assets -i "Icon.icns" Navigator.py
+          pyinstaller --name NavigatorMacOSIntel --noconsole --add-data Assets:Assets -i ".github/Icon.icns" Navigator.py
 
       - name: Upload MacOS artifact
         uses: actions/upload-artifact@v3
