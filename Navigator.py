@@ -629,6 +629,7 @@ class Game:
         self.cloudPos = cloudStart # Background cloud position
         self.wipe = obstacleWipe # Old obstacle handling
         self.explosions = []
+        self.cave = None # For cave levels
         self.musicMuted = musicMuted
 
         contantList = []
@@ -716,7 +717,7 @@ class Game:
         if showHUD: self.showHUD(player)
 
         # PLAYER/POWERUP COLLISION DETECTION
-        if pygame.sprite.collide_rect(player,self.thisPoint):
+        if pygame.sprite.collide_mask(player,self.thisPoint):
             if self.thisPoint.powerUp == "Fuel": # Fuel cell collected
                 player.fuel += player.maxFuel/4 # Replenish quarter tank
                 if player.fuel > player.maxFuel: player.fuel = player.maxFuel
@@ -826,8 +827,18 @@ class Game:
                 else: debris.update()
 
         # CAVES
-        # elif self.levelType == "CAVE":
-            # self.cave = Cave()
+        elif self.levelType == "CAVE":
+            if self.cave is none:self.cave = Cave()
+            if self.rect.bottom >= 0 and self.rect.top <= screenSize[1]: 
+                screen.blit(self.image,self.rect) # Draw
+                # Collision detection
+                if pygame.sprite.collide_mask(player,self.cave): 
+                    if player.shields > 0: player.shieldDown(events)
+                else:
+                    player.explode(game,obstacles) # Animation
+                    if not self.musicMuted: explosionNoise.play()
+                    menu.gameOver(self,player,obstacles) # Game over
+
 
         # UPDATE HIGH SCORE
         if self.gameClock > self.sessionLongRun: self.sessionLongRun = self.gameClock
@@ -1873,21 +1884,22 @@ class Player(pygame.sprite.Sprite):
                 width = explosionList[self.explosionState].get_width()
                 screen.blit(bgList[game.currentStage-1][0],(0,0))
                 if showBackgroundCloud: screen.blit(bgList[game.currentStage-1][1],(0,game.cloudPos))
+                if game.cave is not None: screen.blit(game.cave.image,game.cave.rect) # Draw cave
+                # Draw obstacles during explosion
                 obstacleMove(obstacles)
-
                 for obs in obstacles:
                     newBlit = rotateImage(obs.image,obs.rect,obs.angle)
                     screen.blit(newBlit[0],newBlit[1])
 
-                img = pygame.transform.scale(explosionList[self.explosionState], (height * self.explosionState, width * self.explosionState))
-                img, imgRect = rotateImage(img, self.rect, self.lastAngle)
+                img = pygame.transform.scale(explosionList[self.explosionState], (height * self.explosionState, width * self.explosionState)) # Blow up explosion 
+                img, imgRect = rotateImage(img, self.rect, self.lastAngle) # Rotate
 
-                screen.blit(img,imgRect)
+                screen.blit(img,imgRect) # Draw explosion
                 screen.blit(explosionList[self.explosionState],self.rect)
                 displayUpdate()
                 game.clk.tick(fps)
                 self.explosionState += 1
-                self.finalImg,self.finalRect = img,imgRect
+                self.finalImg,self.finalRect = img,imgRect # Explosion effect on game over screen
 
 
         def shieldUp(self):
@@ -1936,11 +1948,13 @@ class Caves(pygame.sprite.Sprite):
         self.image = caveImages[index]
         self.rect = self.image.get_rect(center = (screenSize[0]/2,caveStartPos))
         self.mask = pygame.mask.from_surface(self.image)
+        self.leave = False # Mark cave for exit
+
 
     def update(self):
-        # Move
-        # Draw
-        if self.rect.bottom >= 0: screen.blit(self.image,self.rect)
+        self.rect.bottom += self.speed # Move
+        if not self.leave and self.rect.top >= screenSize[1]: self.rect.bottom = 0 # Wrap
+
 
 # LASERS
 class Laser(pygame.sprite.Sprite):
