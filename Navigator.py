@@ -132,6 +132,10 @@ shipAttributes = [defaultShipAttributes,gunShipAttributes,laserShipAttributes,hy
 explosionDelay = 1 # Default = 1
 obstacleSpawnRange = [0,1] # Default = [0,1]
 
+# CAVES
+caveStartPos = screenSize[1] * -2 # Default = -1600 / Cave start Y coordinate
+caveSpeed = 10 # Default = 10 / Cave flyby speed
+
 # LEVELS
 # Initial values
 obstacleSpeed = 4 *scaler  # Default = 4
@@ -141,7 +145,7 @@ obstacleBoundaries = "KILL" # Default = "KILL"
 aggro = True # Default = True / Removes restriction on obstacle movement - (False more difficult)
 spinSpeed = 1 # Default = 1
 obstacleWipe = False # Default = False / Wipe before level
-levelType = "OBS" # Default = False / Level type ( Obstacle -> OBS , ...)
+levelType = "OBS" # Default = "OBS" / Level type ( Obstacle -> OBS , ...)
 
 levelTimer = 15 # Default = 15 / Time (seconds) between levels
 levelUpCloudSpeed = 25 # Default = 25 / Only affects levels preceded by wipe
@@ -301,6 +305,7 @@ obstacleDirectory = os.path.join(currentDirectory, 'Obstacles') # Obstacle asset
 meteorDirectory = os.path.join(obstacleDirectory, 'Meteors') # Meteor asset directory
 ufoDirectory = os.path.join(obstacleDirectory, 'UFOs') # UFO asset directory
 shipDirectory = os.path.join(currentDirectory, 'Spaceships') # Spaceship asset directory
+caveDirectory = os.path.join(currentDirectory,'Caves') # Cave asset directory
 backgroundDirectory = os.path.join(currentDirectory, 'Backgrounds') # Background asset directory
 menuDirectory = os.path.join(currentDirectory, 'MainMenu') # Start menu asset directory
 explosionDirectory = os.path.join(currentDirectory, 'Explosion') # Explosion animation directory
@@ -387,6 +392,11 @@ for filename in sorted(os.listdir(ufoDirectory)):
 # ALL OBSTACLE ASSETS
 obstacleImages = [meteorList,ufoList] # Seperated by stage
 
+# CAVE ASSETS
+caveList = []
+for filename in sorted(os.listdir(caveDirectory)):
+    if filename.endswith('.png'): caveList.append(pygame.image.load(resources(os.path.join(caveDirectory,filename))).convert_alpha())
+
 # BACKGROUND ASSETS
 bgList = []
 for filename in sorted(os.listdir(backgroundDirectory)):
@@ -414,16 +424,12 @@ for filename in sorted(os.listdir(explosionDirectory)):
         path = os.path.join(explosionDirectory, filename)
         explosionList.append(pygame.image.load(resources(path)).convert_alpha())
 
-
 # POINTS ASSETS
 pointsList = []
 for filename in sorted(os.listdir(pointsDirectory)):
-
     if filename.endswith('png'):
-
         path = os.path.join(pointsDirectory, filename)
         pointsList.append(pygame.image.load(resources(path)).convert_alpha())
-
 
 # SPACESHIP ASSETS
 spaceShipList = []
@@ -716,7 +722,7 @@ class Game:
                 if player.fuel > player.maxFuel: player.fuel = player.maxFuel
 
             elif self.thisPoint.powerUp == "Shield": player.shieldUp() # Shield piece collected
-            self.score += 1 
+            self.score += 1
             self.thisPoint.kill()
             if not self.musicMuted: powerUpNoise.play()
             self.lastPointPos = self.thisPoint.rect.center # Save last points position
@@ -765,7 +771,7 @@ class Game:
                     player.explode(game,obstacles) # Animation
                     if not self.musicMuted: explosionNoise.play()
                     menu.gameOver(self,player,obstacles) # Game over
-            
+
             # Obstacle movement
             for obs in obstacles:
                 position = obs.rect.center
@@ -819,6 +825,10 @@ class Game:
                 if debris.finished: self.explosions.remove(debris)
                 else: debris.update()
 
+        # CAVES
+        # elif self.levelType == "CAVE":
+            # self.cave = Cave()
+
         # UPDATE HIGH SCORE
         if self.gameClock > self.sessionLongRun: self.sessionLongRun = self.gameClock
 
@@ -845,6 +855,7 @@ class Game:
         self.spinSpeed = self.savedConstants["spinSpeed"]
         self.aggro = self.savedConstants["aggro"]
         self.wipe = self.savedConstants["wipe"]
+        self.levelType = self.savedConstants["type"]
         self.cloudPos = cloudStart
 
 
@@ -1904,7 +1915,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.movement = getMovement(self.aggro)
         self.direction = self.movement[1]
         try: self.image = obstacleImages[game.currentStage - 1][game.currentLevel-1]
-        except: self.image = meteorList[random.randint(0,len(meteorList)-1)]
+        except: self.image = meteorList[random.randint(0,len(meteorList)-1)] # Not enough assets for this level yet
         self.image = pygame.transform.scale(self.image, (self.size, self.size)).convert_alpha()
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
         self.angle = 0
@@ -1917,6 +1928,19 @@ class Obstacle(pygame.sprite.Sprite):
             if self.rect.right >= 0 or self.rect.left <= screenSize[0] or self.rect.top <= 0 or self.rect.bottom >= screenSize[1]: self.active = True
 
 
+# CAVES
+class Caves(pygame.sprite.Sprite):
+    def __init__(self,index):
+        super().__init__()
+        self.speed = caveSpeed
+        self.image = caveImages[index]
+        self.rect = self.image.get_rect(center = (screenSize[0]/2,caveStartPos))
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def update(self):
+        # Move
+        # Draw
+        if self.rect.bottom >= 0: screen.blit(self.image,self.rect)
 
 # LASERS
 class Laser(pygame.sprite.Sprite):
