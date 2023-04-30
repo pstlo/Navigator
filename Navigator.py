@@ -1130,6 +1130,7 @@ class Menu:
 
         # UPDATE UNLOCKS
         if game.records["highScore"] < pointsForUnlock: game.shipUnlockNumber = 0
+        elif game.records["highScore"] >= totalPointsForUnlock: game.shipUnlockNumber = len(spaceShipList) - 1 
         else:
             if game.records["highScore"] == pointsForUnlock or game.records["highScore"] < 2 * pointsForUnlock: game.shipUnlockNumber = 1
             else:
