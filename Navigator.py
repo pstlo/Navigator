@@ -134,7 +134,7 @@ obstacleSpawnRange = [0,1] # Default = [0,1]
 
 # CAVES
 caveStartPos = screenSize[1] * -2 # Default = -1600 / Cave start Y coordinate
-caveSpeed = 10 # Default = 10 / Cave flyby speed
+caveSpeed = 1 # Default = 10 / Cave flyby speed
 
 # LEVELS
 # Initial values
@@ -145,7 +145,7 @@ obstacleBoundaries = "KILL" # Default = "KILL"
 aggro = True # Default = True / Removes restriction on obstacle movement - (False more difficult)
 spinSpeed = 1 # Default = 1
 obstacleWipe = False # Default = False / Wipe before level
-levelType = "OBS" # Default = "OBS" / Level type ( Obstacle -> OBS , ...)
+levelType = "OBS" # Default = "OBS" / Level type (OBS , CAVE)
 
 levelTimer = 15 # Default = 15 / Time (seconds) between levels
 levelUpCloudSpeed = 25 # Default = 25 / Only affects levels preceded by wipe
@@ -393,9 +393,9 @@ for filename in sorted(os.listdir(ufoDirectory)):
 obstacleImages = [meteorList,ufoList] # Seperated by stage
 
 # CAVE ASSETS
-caveList = []
+caveImages = []
 for filename in sorted(os.listdir(caveDirectory)):
-    if filename.endswith('.png'): caveList.append(pygame.image.load(resources(os.path.join(caveDirectory,filename))).convert_alpha())
+    if filename.endswith('.png'): caveImages.append(pygame.image.load(resources(os.path.join(caveDirectory,filename))).convert_alpha())
 
 # BACKGROUND ASSETS
 bgList = []
@@ -629,7 +629,7 @@ class Game:
         self.cloudPos = cloudStart # Background cloud position
         self.wipe = obstacleWipe # Old obstacle handling
         self.explosions = []
-        self.cave = None # For cave levels
+        self.cave,self.caveIndex = None, 0 # For cave levels
         self.musicMuted = musicMuted
 
         contantList = []
@@ -826,16 +826,20 @@ class Game:
                 if debris.finished: self.explosions.remove(debris)
                 else: debris.update()
 
-        # CAVES
-        elif self.levelType == "CAVE":
-            if self.cave is none:self.cave = Cave()
-            if self.rect.bottom >= 0 and self.rect.top <= screenSize[1]: 
-                screen.blit(self.image,self.rect) # Draw
+        # CAVES (Work in progress)
+        if self.levelType == "CAVE":
+            if self.cave is None:
+                self.cave = Caves(self.caveIndex)
+                if self.caveIndex + 1 < len(caveImages) - 1: self.caveIndex+=1
+            self.cave.update()
+            screen.blit(self.cave.image,self.cave.rect) # Draw
+            if self.cave.rect.bottom >= 0 and self.cave.rect.top <= screenSize[1]: 
+                
                 # Collision detection
-                if pygame.sprite.collide_mask(player,self.cave): 
+                if pygame.sprite.collide_mask(self.cave,player): 
                     if player.shields > 0: player.shieldDown(events)
                 else:
-                    player.explode(game,obstacles) # Animation
+                    player.explode(game,obstacles) # explosion 
                     if not self.musicMuted: explosionNoise.play()
                     menu.gameOver(self,player,obstacles) # Game over
 
@@ -846,7 +850,7 @@ class Game:
         # LEVEL UP
         self.levelUpdater(player,obstacles,events)
 
-        self.spawner(obstacles) # Spawn obstacles
+        if self.levelType == "OBS": self.spawner(obstacles) # Spawn obstacles
         musicLoop() # Loop music
 
         # UPDATE SCREEN
@@ -1437,6 +1441,7 @@ class Menu:
             screen.fill(screenColor)
             screen.blit(bgList[game.currentStage - 1][0],(0,0))
             if showBackgroundCloud: screen.blit(bgList[game.currentStage-1][1],(0,game.cloudPos))
+            if game.cave is not None: screen.blit(game.cave.image,game.cave.rect)
             screen.blit(player.finalImg,player.finalRect) # Explosion
 
             pygame.draw.rect(screen, screenColor, [gameOverRect.x - 12,gameOverRect.y + 4,gameOverRect.width + 16, gameOverRect.height - 16],0,10)
@@ -1468,6 +1473,7 @@ class Menu:
                     game.currentLevel = 1
                     game.currentStage = 1
                     game.score = 0
+                    game.cave = None
                     player.kill()
                     game.killAllObstacles(obstacles)
                     game.resetAllLevels()
@@ -1482,6 +1488,7 @@ class Menu:
                     game.currentLevel = 1
                     game.currentStage = 1
                     game.score = 0
+                    game.cave = None
                     player.kill()
                     player.updatePlayerConstants(game)
                     game.killAllObstacles(obstacles)
@@ -1940,19 +1947,19 @@ class Obstacle(pygame.sprite.Sprite):
             if self.rect.right >= 0 or self.rect.left <= screenSize[0] or self.rect.top <= 0 or self.rect.bottom >= screenSize[1]: self.active = True
 
 
-# CAVES
+# CAVES - Not showing?
 class Caves(pygame.sprite.Sprite):
     def __init__(self,index):
         super().__init__()
         self.speed = caveSpeed
         self.image = caveImages[index]
-        self.rect = self.image.get_rect(center = (screenSize[0]/2,caveStartPos))
+        self.rect = self.image.get_rect(topleft = (0,caveStartPos))
         self.mask = pygame.mask.from_surface(self.image)
         self.leave = False # Mark cave for exit
 
 
     def update(self):
-        self.rect.bottom += self.speed # Move
+        self.rect.centery += self.speed # Move
         if not self.leave and self.rect.top >= screenSize[1]: self.rect.bottom = 0 # Wrap
 
 
