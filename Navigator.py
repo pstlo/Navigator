@@ -939,6 +939,7 @@ class Game:
                     self.spinSpeed = levelDict["spinSpeed"]
                     self.aggro = levelDict["aggro"]
                     self.wipe = levelDict["wipe"]
+                    self.levelType = levelDict["type"]
                     self.cloudSpeed += cloudSpeedAdder
                     self.currentLevel += 1
 
