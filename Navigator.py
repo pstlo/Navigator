@@ -132,7 +132,8 @@ shipAttributes = [defaultShipAttributes,gunShipAttributes,laserShipAttributes,hy
 explosionDelay = 1 # Default = 1
 obstacleSpawnRange = [0,1] # Default = [0,1]
 
-# Starting values
+# LEVELS
+# Initial values
 obstacleSpeed = 4 *scaler  # Default = 4
 obstacleSize = 30 *scaler  # Default = 30
 maxObstacles = 12 *scaler  # Default = 12
@@ -140,25 +141,25 @@ obstacleBoundaries = "KILL" # Default = "KILL"
 aggro = True # Default = True / Removes restriction on obstacle movement - (False more difficult)
 spinSpeed = 1 # Default = 1
 obstacleWipe = False # Default = False / Wipe before level
+levelType = "OBS" # Default = False / Level type ( Obstacle -> OBS , ...)
 
-# LEVELS
 levelTimer = 15 # Default = 15 / Time (seconds) between levels
 levelUpCloudSpeed = 25 # Default = 25 / Only affects levels preceded by wipe
 
-# ADD LEVELS HERE:   [ STARTED, (level-1)Timer, BOUNDS, SPEED,       SIZE,       NUMBER,     SPIN, AGGRO, WIPE  ]
-levelTwo =           [ False,       levelTimer, "KILL", 5*scaler,    32*scaler,  16*scaler,  1,    True,  False ]
-levelThree =         [ False,   2 * levelTimer, "KILL", 5*scaler,    34*scaler,  16*scaler,  2,    True,  False ]
-levelFour =          [ False,   3 * levelTimer, "KILL", 5.5*scaler,  36*scaler,  16*scaler,  3,    True,  False ]
-levelFive =          [ False,   4 * levelTimer, "KILL", 6*scaler,    38*scaler,  16*scaler,  4,    True,  False ]
-levelSix =           [ False,   5 * levelTimer, "KILL", 6.5*scaler,  40*scaler,  18*scaler,  3,    True,  False ]
-levelSeven =         [ False,   6 * levelTimer, "KILL", 2.2*scaler,  50*scaler,  65*scaler,  1,    True,  False ]
-levelEight =         [ False,   7 * levelTimer, "KILL", 7*scaler,    44*scaler,  20*scaler,  4,    True,  True  ]
-levelNine =          [ False,   8 * levelTimer, "KILL", 7*scaler,    46*scaler,  21*scaler,  5,    True,  False ]
-levelTen =           [ False,   9 * levelTimer, "KILL", 7.5*scaler,  48*scaler,  22*scaler,  5,    True,  False ]
-stageTwoLevelOne =   [ False,  10 * levelTimer, "KILL", 7.5*scaler,  50*scaler,  23*scaler,  0,    False, False ]
-stageTwoLevelTwo =   [ False,  11 * levelTimer, "KILL", 8*scaler,    52*scaler,  24*scaler,  0,    False, False ]
-stageTwoLevelThree = [ False,  12 * levelTimer, "KILL", 8*scaler,    54*scaler,  25*scaler,  3,    False, False ]
-stageTwoLevelFour =  [ False,  13 * levelTimer, "KILL", 8.5*scaler,  56*scaler,  26*scaler,  0,    False, False ]
+# ADD LEVELS HERE:   [ STARTED, (level-1)Timer, BOUNDS, SPEED,       SIZE,       NUMBER,     SPIN, AGGRO, WIPE  , TYPE]
+levelTwo =           [ False,       levelTimer, "KILL", 5*scaler,    32*scaler,  16*scaler,  1,    True,  False, "OBS" ]
+levelThree =         [ False,   2 * levelTimer, "KILL", 5*scaler,    34*scaler,  16*scaler,  2,    True,  False, "OBS" ]
+levelFour =          [ False,   3 * levelTimer, "KILL", 5.5*scaler,  36*scaler,  16*scaler,  3,    True,  False, "OBS" ]
+levelFive =          [ False,   4 * levelTimer, "KILL", 6*scaler,    38*scaler,  16*scaler,  4,    True,  False, "OBS" ]
+levelSix =           [ False,   5 * levelTimer, "KILL", 6.5*scaler,  40*scaler,  18*scaler,  3,    True,  False, "OBS" ]
+levelSeven =         [ False,   6 * levelTimer, "KILL", 2.2*scaler,  50*scaler,  65*scaler,  1,    True,  False, "OBS" ]
+levelEight =         [ False,   7 * levelTimer, "KILL", 7*scaler,    44*scaler,  20*scaler,  4,    True,  True , "OBS" ]
+levelNine =          [ False,   8 * levelTimer, "KILL", 7*scaler,    46*scaler,  21*scaler,  5,    True,  False, "OBS" ]
+levelTen =           [ False,   9 * levelTimer, "KILL", 7.5*scaler,  48*scaler,  22*scaler,  5,    True,  False, "OBS" ]
+stageTwoLevelOne =   [ False,  10 * levelTimer, "KILL", 7.5*scaler,  50*scaler,  23*scaler,  0,    False, False, "OBS" ]
+stageTwoLevelTwo =   [ False,  11 * levelTimer, "KILL", 8*scaler,    52*scaler,  24*scaler,  0,    False, False, "OBS" ]
+stageTwoLevelThree = [ False,  12 * levelTimer, "KILL", 8*scaler,    54*scaler,  25*scaler,  3,    False, False, "OBS" ]
+stageTwoLevelFour =  [ False,  13 * levelTimer, "KILL", 8.5*scaler,  56*scaler,  26*scaler,  0,    False, False, "OBS" ]
 
 # DIVIDE INTO STAGES
 stageOneLevels = [levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight,levelNine,levelTen] # Stage 1
@@ -595,9 +596,9 @@ class Game:
     def __init__(self,records):
         self.currentLevel = 1
         self.currentStage = 1
-        self.score = 0
-        self.thisPoint = Point(None,None)
-        self.lastPointPos = self.thisPoint.rect.center
+        self.score = 0 # Points collected
+        self.thisPoint = Point(None,None) # Currently active point (starts with default)
+        self.lastPointPos = self.thisPoint.rect.center # Last point's position for spacing
         self.gameClock = 1
         self.pauseCount = 0
         self.clk = pygame.time.Clock()
@@ -606,7 +607,7 @@ class Game:
         self.obstacleSize = obstacleSize
         self.maxObstacles = maxObstacles
         self.aggro = aggro
-        self.obstacleBoundaries = obstacleBoundaries
+        self.obstacleBoundaries = obstacleBoundaries # Obstacle handling at screen border
         self.cloudSpeed = cloudSpeed
         self.attemptNumber = 1
         self.mainMenu = True # Assures start menu only runs when called
@@ -617,9 +618,10 @@ class Game:
         self.savedShipLevel = 0 # Saved ship type
         self.shipUnlockNumber = 0 # Number of unlocked ships
         self.skinUnlockNumber = 0 # Number of unlocked skins for current ship
-        self.spinSpeed = spinSpeed
-        self.cloudPos = cloudStart
-        self.wipe = obstacleWipe
+        self.levelType = levelType
+        self.spinSpeed = spinSpeed # Obstacle spin speed
+        self.cloudPos = cloudStart # Background cloud position
+        self.wipe = obstacleWipe # Old obstacle handling
         self.explosions = []
         self.musicMuted = musicMuted
 
@@ -636,7 +638,8 @@ class Game:
                     "maxObsMult" : settings[5],
                     "spinSpeed" : settings[6],
                     "aggro" : settings[7],
-                    "wipe" : settings[8]
+                    "wipe" : settings[8],
+                    "type":settings[9]
                     }
                 stageConstants.append(levelDict)
             contantList.append(stageConstants)
@@ -651,7 +654,8 @@ class Game:
                 "cloudSpeed" : self.cloudSpeed,
                 "spinSpeed" : self.spinSpeed,
                 "aggro" : self.aggro,
-                "wipe" : self.wipe
+                "wipe" : self.wipe,
+                "type":self.levelType
                 }
 
 
@@ -707,24 +711,16 @@ class Game:
 
         # PLAYER/POWERUP COLLISION DETECTION
         if pygame.sprite.collide_rect(player,self.thisPoint):
-            if self.thisPoint.powerUp == "Fuel":
+            if self.thisPoint.powerUp == "Fuel": # Fuel cell collected
                 player.fuel += player.maxFuel/4 # Replenish quarter tank
                 if player.fuel > player.maxFuel: player.fuel = player.maxFuel
 
-            elif self.thisPoint.powerUp == "Shield": player.shieldUp()
-            self.score += 1
+            elif self.thisPoint.powerUp == "Shield": player.shieldUp() # Shield piece collected
+            self.score += 1 
             self.thisPoint.kill()
             if not self.musicMuted: powerUpNoise.play()
-            self.lastPointPos = self.thisPoint.rect.center
-            self.thisPoint = Point(player,self.lastPointPos)
-
-        # OBSTACLE/PLAYER COLLISION DETECTION
-        if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask):
-            if player.shields > 0: player.shieldDown(events)
-            else:
-                player.explode(game,obstacles) # Animation
-                if not self.musicMuted: explosionNoise.play()
-                menu.gameOver(self,player,obstacles) # Game over
+            self.lastPointPos = self.thisPoint.rect.center # Save last points position
+            self.thisPoint = Point(player,self.lastPointPos) # spawn new point
 
         # UPDATE PLAYER
         player.movement()
@@ -761,57 +757,67 @@ class Game:
         screen.blit(self.thisPoint.image, self.thisPoint.rect)
 
         # UPDATE OBSTACLES
-        for obs in obstacles:
-            position = obs.rect.center
-            if "N" in obs.direction: obs.rect.centery -= obs.speed
-            if "S" in obs.direction: obs.rect.centery += obs.speed
-            if "E" in obs.direction: obs.rect.centerx += obs.speed
-            if "W" in obs.direction: obs.rect.centerx -= obs.speed
-            obs.activate() # Activate if on screen
+        if self.levelType == "OBS":
+            # OBSTACLE/PLAYER COLLISION DETECTION
+            if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask):
+                if player.shields > 0: player.shieldDown(events)
+                else:
+                    player.explode(game,obstacles) # Animation
+                    if not self.musicMuted: explosionNoise.play()
+                    menu.gameOver(self,player,obstacles) # Game over
+            
+            # Obstacle movement
+            for obs in obstacles:
+                position = obs.rect.center
+                if "N" in obs.direction: obs.rect.centery -= obs.speed
+                if "S" in obs.direction: obs.rect.centery += obs.speed
+                if "E" in obs.direction: obs.rect.centerx += obs.speed
+                if "W" in obs.direction: obs.rect.centerx -= obs.speed
+                obs.activate() # Activate if on screen
 
-            if obs.active:
-                # OBSTACLE/LASER COLLISION DETECTION
-                if pygame.sprite.spritecollide(obs,lasers,player.laserCollat,pygame.sprite.collide_mask):
-                    if player.laserCollat: obs.kill()
-                    if not self.musicMuted: impactNoise.play()
-                    self.explosions.append(Explosion(self,obs))
+                if obs.active:
+                    # OBSTACLE/LASER COLLISION DETECTION
+                    if pygame.sprite.spritecollide(obs,lasers,player.laserCollat,pygame.sprite.collide_mask):
+                        if player.laserCollat: obs.kill()
+                        if not self.musicMuted: impactNoise.play()
+                        self.explosions.append(Explosion(self,obs))
 
-                # ROTATE OBSTACLE
-                if not performanceMode:
-                    obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle
-                    if obs.angle >= 360: obs.angle = -360
-                    if obs.angle < 0: obs.angle +=360
-                    newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
-                    screen.blit(newBlit[0],newBlit[1]) # Blit obstacles
+                    # ROTATE OBSTACLE
+                    if not performanceMode:
+                        obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle
+                        if obs.angle >= 360: obs.angle = -360
+                        if obs.angle < 0: obs.angle +=360
+                        newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
+                        screen.blit(newBlit[0],newBlit[1]) # Blit obstacles
 
-                # OBSTACLE BOUNDARY HANDLING
-                if self.obstacleBoundaries == "KILL":
-                    if obs.rect.centerx > screenSize[0] or obs.rect.centerx < 0:
-                        obstacles.remove(obs)
-                        obs.kill()
-                    elif obs.rect.centery > screenSize[1] or obs.rect.centery < 0:
-                        obstacles.remove(obs)
-                        obs.kill()
+                    # OBSTACLE BOUNDARY HANDLING
+                    if self.obstacleBoundaries == "KILL":
+                        if obs.rect.centerx > screenSize[0] or obs.rect.centerx < 0:
+                            obstacles.remove(obs)
+                            obs.kill()
+                        elif obs.rect.centery > screenSize[1] or obs.rect.centery < 0:
+                            obstacles.remove(obs)
+                            obs.kill()
 
-                if self.obstacleBoundaries == "BOUNCE":
-                    direction = obs.direction
-                    if obs.rect.centery  > screenSize[1]: obs.direction = movementReverse(direction)
-                    if obs.rect.centery < 0: obs.direction = movementReverse(direction)
-                    if obs.rect.centerx > screenSize[0]: obs.direction = movementReverse(direction)
-                    if obs.rect.centerx < 0: obs.direction = movementReverse(direction)
+                    if self.obstacleBoundaries == "BOUNCE":
+                        direction = obs.direction
+                        if obs.rect.centery  > screenSize[1]: obs.direction = movementReverse(direction)
+                        if obs.rect.centery < 0: obs.direction = movementReverse(direction)
+                        if obs.rect.centerx > screenSize[0]: obs.direction = movementReverse(direction)
+                        if obs.rect.centerx < 0: obs.direction = movementReverse(direction)
 
-                if self.obstacleBoundaries == "WRAP":
-                    if obs.rect.centery > screenSize[1]: obs.rect.centery = 0
-                    if obs.rect.centery < 0: obs.rect.centery = screenSize[1]
-                    if obs.rect.centerx > screenSize[0]: obs.rect.centerx = 0
-                    if obs.rect.centerx < 0: obs.rect.centerx = screenSize[0]
+                    if self.obstacleBoundaries == "WRAP":
+                        if obs.rect.centery > screenSize[1]: obs.rect.centery = 0
+                        if obs.rect.centery < 0: obs.rect.centery = screenSize[1]
+                        if obs.rect.centerx > screenSize[0]: obs.rect.centerx = 0
+                        if obs.rect.centerx < 0: obs.rect.centerx = screenSize[0]
 
-        if performanceMode:obstacles.draw(screen)
+            if performanceMode:obstacles.draw(screen)
 
-        # DRAW OBSTACLE EXPLOSIONS
-        for debris in self.explosions:
-            if debris.finished: self.explosions.remove(debris)
-            else: debris.update()
+            # DRAW OBSTACLE EXPLOSIONS
+            for debris in self.explosions:
+                if debris.finished: self.explosions.remove(debris)
+                else: debris.update()
 
         # UPDATE HIGH SCORE
         if self.gameClock > self.sessionLongRun: self.sessionLongRun = self.gameClock
@@ -1010,7 +1016,7 @@ class Game:
     def spawner(self,obstacles):
             if len(obstacles) < self.maxObstacles:
                 obstacle = Obstacle(self.aggro) # Create new obstacle with specified spawn pattern
-                obstacles.add(obstacle) 
+                obstacles.add(obstacle)
 
 
     # Update all lasers
@@ -1129,7 +1135,7 @@ class Menu:
 
         # UPDATE UNLOCKS
         if game.records["highScore"] < pointsForUnlock: game.shipUnlockNumber = 0
-        elif game.records["highScore"] >= totalPointsForUnlock: game.shipUnlockNumber = len(spaceShipList) - 1 
+        elif game.records["highScore"] >= totalPointsForUnlock: game.shipUnlockNumber = len(spaceShipList) - 1
         else:
             if game.records["highScore"] == pointsForUnlock or game.records["highScore"] < 2 * pointsForUnlock: game.shipUnlockNumber = 1
             else:
