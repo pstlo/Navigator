@@ -133,8 +133,8 @@ explosionDelay = 1 # Default = 1
 obstacleSpawnRange = [0,1] # Default = [0,1]
 
 # CAVES
-caveStartPos = screenSize[1] * -2 # Default = -1600 / Cave start Y coordinate
-caveSpeed = 1 # Default = 10 / Cave flyby speed
+caveStartPos = screenSize[1]*-2 # Default = -1600 / Cave start Y coordinate
+caveSpeed = 10 # Default = 10 / Cave flyby speed
 
 # LEVELS
 # Initial values
@@ -831,17 +831,17 @@ class Game:
             if self.cave is None:
                 self.cave = Caves(self.caveIndex)
                 if self.caveIndex + 1 < len(caveImages) - 1: self.caveIndex+=1
+                    
             self.cave.update()
-            screen.blit(self.cave.image,self.cave.rect) # Draw
             if self.cave.rect.bottom >= 0 and self.cave.rect.top <= screenSize[1]: 
-                
+                screen.blit(self.cave.image,self.cave.rect) # Draw
                 # Collision detection
                 if pygame.sprite.collide_mask(self.cave,player): 
                     if player.shields > 0: player.shieldDown(events)
-                else:
-                    player.explode(game,obstacles) # explosion 
-                    if not self.musicMuted: explosionNoise.play()
-                    menu.gameOver(self,player,obstacles) # Game over
+                    else:
+                        player.explode(game,obstacles) # explosion 
+                        if not self.musicMuted: explosionNoise.play()
+                        menu.gameOver(self,player,obstacles) # Game over
 
 
         # UPDATE HIGH SCORE
@@ -1947,7 +1947,7 @@ class Obstacle(pygame.sprite.Sprite):
             if self.rect.right >= 0 or self.rect.left <= screenSize[0] or self.rect.top <= 0 or self.rect.bottom >= screenSize[1]: self.active = True
 
 
-# CAVES - Not showing?
+# CAVES
 class Caves(pygame.sprite.Sprite):
     def __init__(self,index):
         super().__init__()
@@ -1959,6 +1959,7 @@ class Caves(pygame.sprite.Sprite):
 
 
     def update(self):
+        pygame.draw.rect(screen,[0,0,0],self.rect)
         self.rect.centery += self.speed # Move
         if not self.leave and self.rect.top >= screenSize[1]: self.rect.bottom = 0 # Wrap
 
