@@ -9,7 +9,7 @@ body {
 	max-width: 100%;
 	max-height: 100%;
 	overflow-x: hidden;
-	overflow-y: hidden;
+	overflow-y: auto;
 	background-color: #7203ad;
 	background-image: url("../Assets/Backgrounds/Stage1/Background.png");
 	background-size: cover;
@@ -21,74 +21,9 @@ body {
 	font-size: 100%;
 }
 
-#home {
-	display: flex;
-	flex-direction: column;
-	line-height: 1.5;
-	text-align: center;
-	z-index:2;
-	max-width: 90%;
-	align-items:center;
-}
-
-#downloads {
-	display: flex;
-	flex-direction: column;
-	line-height: 1;
-	text-align: center;
-	z-index:2;
-	align-items:center;
-	max-width:80%;
-}
-
-#support {
-	display: flex;
-	flex-direction: column;
-	line-height: 1.5;
-	text-align: center;
-	z-index:2;
-	align-items:center;
-}
-
-#changes {
-	z-index:2;
-	height:800px;
-	display: flex;
-	flex-direction: column;
-	align-items:center;
-	text-align:center;
-}
-
-#changeLog {
-	height: 500px;
-	overflow-y: auto;
-	margin-bottom: 5%;
-	max-width: 800px
-}
-
-#changeLog td {text-align:left;}
-
-#changeLog::-webkit-scrollbar {
-  width: 10px;
-}
-
-#changeLog::-webkit-scrollbar-thumb {
-  background-color: #555;
-  border-radius: 10px;
-}
-
-#changeLog::-webkit-scrollbar-track {
-  background-color: #79e091;
-  border-radius: 10px;
-}
-
-#changeLog::-webkit-scrollbar-corner {
-  background-color: #79e091;
-}
-
 h1 {
 	font-family: 'Press Start 2P', sans-serif;
-	margin-top: 50px;
+	margin-top: 40px;
 	color: #07e821;
 	margin-bottom: 10px;
 	font-size: 450%;
@@ -152,6 +87,120 @@ a:hover {
 	color: blue;
 	border-bottom: 1px solid blue;
 	z-index:2;
+}
+
+table {
+	border-collapse: collapse;
+	text-align: center;
+	width: auto;
+	z-index:2;
+}
+
+thead {
+	top:0;
+	background-color: #07e821;
+	border-radius: 30px;
+	font-family: 'Press Start 2P', sans-serif;
+	text-transform: uppercase;
+	text-align: center;
+	position:sticky;
+}
+
+td,th {
+	padding-left: 10px;
+	padding-right: 10px;
+	padding-bottom: 10px;
+	padding-top: 10px;
+}
+
+
+td {
+	font-size: 25px;
+	font-family: 'VT323', monospace;
+	background-color:#442294;
+	border: 1px solid black;
+	color: #07e821;
+	height:auto;
+}
+
+#home {
+	display: flex;
+	flex-direction: column;
+	line-height: 1.5;
+	text-align: center;
+	z-index:2;
+	max-width: 90%;
+	align-items:center;
+}
+
+#downloads {
+	display: flex;
+	flex-direction: column;
+	line-height: 1;
+	text-align: center;
+	z-index:2;
+	align-items:center;
+	max-width:80%;
+}
+
+#support {
+	display: flex;
+	flex-direction: column;
+	line-height: 1.5;
+	text-align: center;
+	z-index:2;
+	align-items:center;
+}
+
+
+#changes {
+	z-index:2;
+	height:800px;
+	display: flex;
+	flex-direction: column;
+	align-items:center;
+	text-align:center;
+}
+
+
+#changeLog {
+	height: 500px;
+	overflow-y: auto;
+	margin-bottom: 1%;
+	max-width: 200%;
+	position:relative;
+}
+
+#changeLog td {text-align:left;}
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #06d10d;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: #49c94d;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #2f1970;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-corner {
+  background-color: #79e091;
+}
+
+#changeLog::-webkit-scrollbar-thumb {
+  background-color: #541df5;
+  border-radius: 10px;
+}
+
+#changeLog::-webkit-scrollbar-thumb:hover {
+  background-color: #7145f5;
 }
 
 #bouncingIcon {
@@ -260,37 +309,6 @@ video::-webkit-media-controls-panel {
 
 video::-webkit-media-controls-play-button {
 	display:none;
-}
-
-table {
-	border-collapse: collapse;
-	border-radius: 30px;
-	text-align: center;
-	width: auto;
-	z-index:2;
-	background-color: #07e821;
-}
-
-thead {
-	font-family: 'Press Start 2P', sans-serif;
-	text-transform: uppercase;
-}
-
-td,th {
-	padding-left: 10px;
-	padding-right: 10px;
-	padding-bottom: 10px;
-	padding-top: 10px;
-}
-
-
-td {
-	font-size: 30px;
-	font-family: 'VT323', monospace;
-	background-color:#442294;
-	border: 1px solid black;
-	color: #07e821;
-	height:auto;
 }
 
 
