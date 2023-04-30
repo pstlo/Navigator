@@ -1,7 +1,7 @@
 # Navigator v0.4.6
 # Copyright (c) 2023 Mike Pistolesi
 # All rights reserved
- 
+
 import os,sys,random,math,platform,json,base64
 from cryptography.fernet import Fernet
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
@@ -29,7 +29,7 @@ showHUD = True
 shieldColor = [0,0,255] # Default = [0,0,255] / Color of shield gauge
 fullShieldColor = [0,255,255] # Default = [0,255,255] / Color of active shield gauge
 fuelColor = [255,0,0] # Default = [255,0,0] / Color of fuel gauge
-timerSize = 30 * roundedScaler # Default = 30 
+timerSize = 30 * roundedScaler # Default = 30
 timerColor = [255,255,255] # Default = [255,255,255]
 timerDelay = 1000 # Default = 1000
 levelSize = 30 * roundedScaler # Default = 30
@@ -43,7 +43,7 @@ pointSize = 25  # Default = 20
 shieldChunkSize = screenSize[0]/40 # Default = screen width / 40
 boostCooldownTime = 2000 # Default = 2000 / Activates when fuel runs out to allow regen
 shieldPiecesNeeded = 10 # Default = 10 / Pieces needed for an extra life
-showSpawnArea = False # Default = False 
+showSpawnArea = False # Default = False
 powerUpList = ["Shield", "Fuel", "Default", "Default"] # Shield/Fuel/Default, chances of spawn
 playerShieldSize = 48 # Default = 64 / Shield visual size
 shieldVisualDuration = 250 # Default = 250 / Shield visual duration
@@ -768,7 +768,7 @@ class Game:
             if "E" in obs.direction: obs.rect.centerx += obs.speed
             if "W" in obs.direction: obs.rect.centerx -= obs.speed
             obs.activate()# Activate if on screen
-            
+
             if obs.active:
                 # OBSTACLE/LASER COLLISION DETECTION
                 if pygame.sprite.spritecollide(obs,lasers,player.laserCollat,pygame.sprite.collide_mask):
@@ -1255,6 +1255,7 @@ class Menu:
     # PAUSE SCREEN
     def pause(self,game,player,obstacles,lasers):
         global screen
+        pygame.mixer.music.pause()
         playerBlit = rotateImage(player.image,player.rect,player.lastAngle)
         paused = True
         pausedFont = pygame.font.Font(gameFont, pausedSize)
@@ -1285,8 +1286,6 @@ class Menu:
                 shieldImg,shieldImgRect = rotateImage(playerShield, player.rect, player.angle)
                 screen.blit(shieldImg,shieldImgRect)
 
-            pygame.mixer.music.pause()
-
             if not performanceMode:
                 for obs in obstacles: # Draw obstacles
                     newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
@@ -1298,8 +1297,8 @@ class Menu:
             screen.blit(pauseDisplay, pauseRect)
             screen.blit(pausedDisplay,pausedRect)
             displayUpdate()
-            for event in pygame.event.get():
 
+            for event in pygame.event.get():
                 # EXIT
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -1311,7 +1310,7 @@ class Menu:
                     screen = toggleScreen()
 
                 # UNPAUSE
-                elif event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_SPACE):
+                if event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_SPACE):
                     pygame.mixer.music.unpause()
                     paused = False
 
