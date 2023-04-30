@@ -767,7 +767,7 @@ class Game:
             if "S" in obs.direction: obs.rect.centery += obs.speed
             if "E" in obs.direction: obs.rect.centerx += obs.speed
             if "W" in obs.direction: obs.rect.centerx -= obs.speed
-            obs.activate()# Activate if on screen
+            obs.activate() # Activate if on screen
 
             if obs.active:
                 # OBSTACLE/LASER COLLISION DETECTION
@@ -863,9 +863,9 @@ class Game:
     def levelUpdater(self,player,obstacles,events):
 
         # UPDATES STAGE
-        if self.currentStage < len(self.gameConstants):
-            if self.gameConstants[self.currentStage][0]["TIME"] == self.gameClock and not self.gameConstants[self.currentStage][0]["START"]:
-                self.gameConstants[self.currentStage][0]["START"] = True
+        if self.currentStage < len(self.gameConstants): # Make sure there is a next stage
+            if self.gameConstants[self.currentStage][0]["TIME"] == self.gameClock and not self.gameConstants[self.currentStage][0]["START"]: # Next stage's first level's activation time reached
+                self.gameConstants[self.currentStage][0]["START"] = True # Mark as activated
                 stageUpCloud = stageCloudImg
                 stageUpFont = pygame.font.Font(gameFont, stageUpSize)
                 stageUpDisplay = stageUpFont.render("STAGE UP", True, stageUpColor)
@@ -910,7 +910,6 @@ class Game:
 
                         # LEVEL UP ANIMATION / Removes old obstacles
                         while levelUp:
-
                             img, imgRect = rotateImage(player.image, player.rect, player.angle)
                             self.alternateUpdate(player,obstacles,events)
                             for obs in obstacles:
@@ -950,7 +949,7 @@ class Game:
         for obstacle in obstacles: obstacle.kill()
 
 
-    # HUD
+    # HUD ( Needs optimization )
     def showHUD(self,player):
 
         # BORDER
@@ -1010,8 +1009,8 @@ class Game:
     # SPAWN OBSTACLES
     def spawner(self,obstacles):
             if len(obstacles) < self.maxObstacles:
-                obstacle = Obstacle(self.aggro)
-                obstacles.add(obstacle)
+                obstacle = Obstacle(self.aggro) # Create new obstacle with specified spawn pattern
+                obstacles.add(obstacle) 
 
 
     # Update all lasers
@@ -1043,7 +1042,7 @@ class Game:
             else: return unlockNum
 
 
-    # Get number of skins unlocked for a level number
+    # Get number of skins unlocked for a specified level number
     def skinsUnlocked(self,level): return self.getUnlocks(len(spaceShipList[level][2]),unlockTimePerLevels[level])
 
 
