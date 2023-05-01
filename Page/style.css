@@ -152,6 +152,18 @@ td {
 	align-items:center;
 }
 
+#support p {
+	padding-left: 10px;
+}
+
+#supportBox {
+	display:flex;
+	flex-direction:row;
+	max-width:500px;
+	max-height:400px;
+	font-size:80%;
+	padding-bottom: 5%;
+}
 
 #changes {
 	z-index:2;
@@ -162,6 +174,42 @@ td {
 	text-align:center;
 }
 
+#contact {
+	background-color:lightgrey;
+	display:flex;
+	flex-direction:column;
+	align-items:center;
+	margin-top:50px;
+	margin-bottom:50px;
+}
+
+#roadmap {
+	text-align:center;
+}
+
+#roadmapList {
+	padding-left: 20%;
+	padding-right:20%;
+	overflow-y:auto;
+}
+#roadmap li {
+	text-align:left;
+	font-family: 'Press Start 2P', sans-serif;
+	margin-top: 50px;
+	color: white;
+	margin:10px;
+	max-width:auto;
+}
+
+#roadmap del {
+	color: #07e821;
+}
+
+#roadmap p {
+	font-size:70%;
+	padding-left:15%;
+	padding-right:15%;
+}
 
 #changeLog {
 	height: 500px;
@@ -173,35 +221,28 @@ td {
 
 #changeLog td {text-align:left;}
 
-::-webkit-scrollbar {
-  width: 5px;
-}
+::-webkit-scrollbar {width: 5px;}
 
 ::-webkit-scrollbar-thumb {
   background-color: #06d10d;
   border-radius: 10px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background-color: #65c968;
-}
+
+::-webkit-scrollbar-thumb:hover {background-color: #65c968;}
 
 ::-webkit-scrollbar-track {
   background-color: #2f1970;
   border-radius: 10px;
 }
 
-::-webkit-scrollbar-corner {
-  background-color: #79e091;
-}
+::-webkit-scrollbar-corner {background-color: #79e091;}
 
 #changeLog::-webkit-scrollbar-thumb {
   background-color: #541df5;
   border-radius: 10px;
 }
 
-#changeLog::-webkit-scrollbar-thumb:hover {
-  background-color: #7145f5;
-}
+#changeLog::-webkit-scrollbar-thumb:hover {background-color: #7145f5;}
 
 #bouncingIcon {
 	position: fixed;
@@ -256,13 +297,13 @@ td {
 	font-size:20px;
 	padding: 10px;
 	text-decoration: none;
-	background-color: #e89535;
+	background-color: #f08b11;
 	color: white;
 	border-radius: 10px;
 }
 
 #contactButton:hover {
-	background-color:#e3b278;
+	background-color: #f2ad5a;
 	cursor:pointer;
 }
 
@@ -289,14 +330,31 @@ td {
 	letter-spacing: 0px;
 	font-size:20px;
 	padding: 10px;
-	background-color: #4CAF50;
+	background-color: #06c913;
 	color: white;
 	text-decoration: none;
 	border-radius: 10px;
 }
 
 #latestReleasesButton:hover {
-	background-color:#95e079;
+	background-color:#87d68c;
+	cursor: pointer;
+}
+
+#roadmapButton {
+	width:300px;
+	font-family: 'Press Start 2P', sans-serif;
+	letter-spacing: 0px;
+	font-size:20px;
+	padding: 20px;
+	text-decoration: none;
+	background-color: #3699eb;
+	color: white;
+	border-radius: 10px;
+}
+
+#roadmapButton:hover{
+	background-color:#7fc0f5;
 	cursor: pointer;
 }
 
@@ -314,6 +372,26 @@ td {
 
 #backButton:hover{
 	background-color:lightgreen;
+	cursor: pointer;
+}
+
+
+#greyBackButton {
+	font-family: 'Press Start 2P', sans-serif;
+	letter-spacing: 0px;
+	text-decoration: none;
+	color: white;
+	background-color:#98a69c;
+	border-radius: 10px;
+	padding:0;
+	margin:0;
+	width:100px;
+	height:40px;
+	font-size: 15px;
+}
+
+#greyBackButton:hover{
+	background-color: #bad6c2;
 	cursor: pointer;
 }
 
@@ -336,16 +414,19 @@ video::-webkit-media-controls-play-button {
 
 @media only screen and (max-height: 500px) {
 	body{
-		position:fixed;
+
 	}
 	#home {
 		font-size:80%;
 		max-width:100%;
-		position:relative;
 	}
 
-	p{
+	p {
 		max-width: 90%;
+	}
+
+	#support {
+
 	}
 
 	#homeButtons {
@@ -380,6 +461,14 @@ video::-webkit-media-controls-play-button {
 		padding: 5px;
 		font-size:8px;
 	}
+
+	#roadmapButton {
+		height:50px;
+		width:120px;
+		font-size:8px;
+		padding: 5px;
+	}
+
 	#contactButton {
 		width:120px;
 		height:50px;
@@ -405,47 +494,72 @@ video::-webkit-media-controls-play-button {
 		line-height:1.25;
 	}
 
+	#homeButtons{
+		position:sticky;
+		overflow:auto;
+	}
+
+	#support p {
+		margin:0;
+		padding:0;
+		padding-left:10px;
+		font-size:15px;
+	}
+
 	#donateButton {
-		width:200px;
-		font-size:10px;
+		width:100px;
+		font-size:8px;
 		padding: 10px;
 	}
 
 	#repositoryButton {
-		width:200px;
-		font-size:10px;
+		width:100px;
+		font-size:8px;
 		padding: 10px;
 	}
 
 	#latestReleasesButton {
-		width:200px;
-		font-size:10px;
+		width:100px;
+		font-size:8px;
 		padding: 10px;
 	}
 
 	#changesButton {
-		width:200px;
-		font-size:10px;
-		padding: 10px;
-	}
-	#backButton {
-		width:200px;
-		font-size:20px;
-		padding: 10px;
-	}
-	#contactButton {
-		width:200px;
-		font-size:10px;
+		width:100px;
+		font-size:8px;
 		padding: 10px;
 	}
 
+
+	#roadmapButton {
+		width:100px;
+		font-size:8px;
+		padding: 10px;
+	}
+
+	#contactButton {
+		width:100px;
+		font-size:8px;
+		padding: 10px;
+	}
+
+	#backButton {
+			width:100px;
+			font-size:20px;
+			padding: 10px;
+	}
 }
 
 @media only screen and (max-width: 400px) {
-
 	#home{
-		max-width:80%
+		max-width:80%;
 	}
+
+	#homeButtons{
+		position:sticky;
+		overflow:auto;
+	}
+
 	h1 {
 		font-size: 150%;
 	}
@@ -459,36 +573,60 @@ video::-webkit-media-controls-play-button {
 		font-size:100%;
 	}
 
-	#donateButton {
-		width:120px;
+	#support {
+		font-size:250%;
+	}
+
+	#support p {
+		margin:0;
+		padding:0;
+		padding-left:10px;
 		font-size:10px;
+	}
+
+	#donateButton {
+		height:40px;
+		width:120px;
+		font-size:7px;
 		padding: 10px;
 	}
 
 	#repositoryButton {
+		height:40px;
 		width:120px;
-		font-size:10px;
+		font-size:7px;
 		padding: 10px;
 	}
 
 	#latestReleasesButton {
+		height:40px;
 		width:120px;
-		font-size:10px;
-		padding: 10px;
-	}
-	#backButton {
-		width:120px;
-		font-size:10px;
+		font-size:7px;
 		padding: 10px;
 	}
 
 	#changesButton {
+		height:40px;
 		width:120px;
-		font-size:10px;
+		font-size:7px;
 		padding: 10px;
 	}
-	
+
 	#contactButton {
+		height:40px;
+		width:120px;
+		font-size:7px;
+		padding: 10px;
+	}
+
+	#roadmapButton {
+		height:40px;
+		width:120px;
+		font-size:7px;
+		padding: 10px;
+	}
+
+	#backButton {
 		width:120px;
 		font-size:10px;
 		padding: 10px;
