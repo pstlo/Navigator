@@ -17,8 +17,8 @@ version = "v0.4.6"
 #------------------GAME CONSTANTS--------------------------------------------------------------------------
 # SCREEN
 screenSize = [800,800] # Default = [800,800]
-scaler = (screenSize[0] + screenSize[1]) / 1600 # Default = x + y / 2  / 800 == 1
-roundedScaler = int(round(scaler)) # Assure scaled values are whole numbers
+scaler = (screenSize[0] + screenSize[1]) / 1600 # Default = x + y / 2  / 800 == 1 / Make game difficulty scale to screen size
+roundedScaler = int(round(scaler)) # For values that require whole numbers
 fullScreen = False # Default = False
 fps = 60 # Default = 60
 performanceMode = False # Default = False / Overrules quality mode
@@ -134,37 +134,37 @@ explosionDelay = 1 # Default = 1
 obstacleSpawnRange = [0,1] # Default = [0,1]
 
 # CAVES
-caveStartPos = screenSize[1]*-4 # Default = -1600 / Cave start Y coordinate
-caveSpeed = 10 # Default = 10 / Cave flyby speed
+caveStartPos = screenSize[1]*-2 # Default = -1600 / Cave start Y coordinate
+caveSpeed = 40 # Default = 20 / Cave flyby speed
 
 # LEVELS
-# Initial values
+# Initial values (Level 1)
 obstacleSpeed = 4 *scaler  # Default = 4
 obstacleSize = 30 *scaler  # Default = 30
 maxObstacles = 12 *scaler  # Default = 12
 obstacleBoundaries = "KILL" # Default = "KILL"
-aggro = True # Default = True / Removes restriction on obstacle movement - (False more difficult)
 spinSpeed = 1 # Default = 1
 obstacleWipe = False # Default = False / Wipe before level
-levelType = "OBS" # Default = "OBS" / Level type (OBS , CAVE)
+levelType = "OBS" # Default = "OBS" / Level type (OBS , CAVE , BOTH)
+spawnPattern = "ALL"  # Default = "ALL" / Removes restriction on obstacle movement/ (ALL,CAVE,RESTRICTED) restricted = most difficult
 
 levelTimer = 15 # Default = 15 / Time (seconds) between levels
 levelUpCloudSpeed = 25 # Default = 25 / Only affects levels preceded by wipe
 
-# ADD LEVELS HERE:   [ STARTED, (level-1)Timer, BOUNDS, SPEED,       SIZE,       NUMBER,     SPIN, AGGRO, WIPE  , TYPE]
-levelTwo =           [ False,       levelTimer, "KILL", 5*scaler,    32*scaler,  16*scaler,  1,    True,  False, "OBS" ]
-levelThree =         [ False,   2 * levelTimer, "KILL", 5*scaler,    34*scaler,  16*scaler,  2,    True,  False, "OBS" ]
-levelFour =          [ False,   3 * levelTimer, "KILL", 5.5*scaler,  36*scaler,  16*scaler,  3,    True,  False, "OBS" ]
-levelFive =          [ False,   4 * levelTimer, "KILL", 6*scaler,    38*scaler,  16*scaler,  4,    True,  False, "OBS" ]
-levelSix =           [ False,   5 * levelTimer, "KILL", 6.5*scaler,  40*scaler,  18*scaler,  3,    True,  False, "OBS" ]
-levelSeven =         [ False,   6 * levelTimer, "KILL", 2.2*scaler,  50*scaler,  65*scaler,  1,    True,  False, "OBS" ]
-levelEight =         [ False,   7 * levelTimer, "KILL", 7*scaler,    44*scaler,  20*scaler,  4,    True,  True , "OBS" ]
-levelNine =          [ False,   8 * levelTimer, "KILL", 7*scaler,    46*scaler,  21*scaler,  5,    True,  False, "OBS" ]
-levelTen =           [ False,   9 * levelTimer, "KILL", 7.5*scaler,  48*scaler,  22*scaler,  5,    True,  False, "OBS" ]
-stageTwoLevelOne =   [ False,  10 * levelTimer, "KILL", 7.5*scaler,  50*scaler,  23*scaler,  0,    False, False, "OBS" ]
-stageTwoLevelTwo =   [ False,  11 * levelTimer, "KILL", 8*scaler,    52*scaler,  24*scaler,  0,    False, False, "OBS" ]
-stageTwoLevelThree = [ False,  12 * levelTimer, "KILL", 8*scaler,    54*scaler,  25*scaler,  3,    False, False, "OBS" ]
-stageTwoLevelFour =  [ False,  13 * levelTimer, "KILL", 8.5*scaler,  56*scaler,  26*scaler,  0,    False, False, "OBS" ]
+# ADD LEVELS HERE:   [ STARTED, (level-1)Timer, BOUNDS, SPEED,       SIZE,       NUMBER,     SPIN, PATTERN,      WIPE,  TYPE]
+levelTwo =           [ False,       levelTimer, "KILL", 5*scaler,    32*scaler,  16*scaler,  1,    "ALL",        False, "OBS" ]
+levelThree =         [ False,   2 * levelTimer, "KILL", 5*scaler,    34*scaler,  16*scaler,  2,    "ALL",        False, "OBS" ]
+levelFour =          [ False,   3 * levelTimer, "KILL", 5.5*scaler,  36*scaler,  16*scaler,  3,    "ALL",        False, "OBS" ]
+levelFive =          [ False,   4 * levelTimer, "KILL", 6*scaler,    38*scaler,  16*scaler,  4,    "ALL",        False, "OBS" ]
+levelSix =           [ False,   5 * levelTimer, "KILL", 6.5*scaler,  40*scaler,  18*scaler,  3,    "ALL",        False, "OBS" ]
+levelSeven =         [ False,   6 * levelTimer, "KILL", 2.2*scaler,  50*scaler,  65*scaler,  1,    "ALL",        False, "OBS" ]
+levelEight =         [ False,   7 * levelTimer, "KILL", 7*scaler,    44*scaler,  20*scaler,  4,    "ALL",        True , "OBS" ]
+levelNine =          [ False,   8 * levelTimer, "KILL", 7*scaler,    46*scaler,  21*scaler,  5,    "ALL",        False, "OBS" ]
+levelTen =           [ False,   9 * levelTimer, "KILL", 7.5*scaler,  48*scaler,  22*scaler,  5,    "ALL",        False, "OBS" ]
+stageTwoLevelOne =   [ False,  10 * levelTimer, "KILL", 7.5*scaler,  50*scaler,  23*scaler,  0,    "RESTRICTED", False, "OBS" ]
+stageTwoLevelTwo =   [ False,  11 * levelTimer, "KILL", 8*scaler,    52*scaler,  24*scaler,  0,    "RESTRICTED", False, "OBS" ]
+stageTwoLevelThree = [ False,  12 * levelTimer, "KILL", 8*scaler,    54*scaler,  25*scaler,  3,    "RESTRICTED", False, "OBS" ]
+stageTwoLevelFour =  [ False,  13 * levelTimer, "KILL", 8.5*scaler,  56*scaler,  26*scaler,  0,    "RESTRICTED", False, "OBS" ]
 
 # DIVIDE INTO STAGES
 stageOneLevels = [levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight,levelNine,levelTen] # Stage 1
@@ -187,7 +187,6 @@ def resources(relative):
 # SPECIFY UPDATE SCREEN UPDATE METHOD
 if qualityMode: updateNotFlip = False # use update instead of flip for display updates
 else: updateNotFlip = True
-
 
 # GET SCREEN SIZE
 displayInfo = pygame.display.Info()
@@ -588,19 +587,11 @@ for i in range(spawnVertices):
     y = screenSize[1]/2 + (spawnHeight / 2) * math.sin(angle)
     spawnAreaPoints.append((x, y))
 
-# for not aggro
+# "ALL" Spawn pattern / also used for random bounces in credits screen
 topDir = ["S", "E", "W", "SE", "SW"]
 leftDir = ["E", "S", "N", "NE", "SE"]
 bottomDir = ["N", "W", "E", "NE", "NW"]
 rightDir = ["W", "N", "S", "NW", "SW"]
-
-# for aggro
-restrictedTopDir = ["SE", "SW", "S"]
-restrictedLeftDir = ["E", "NE", "SE"]
-restrictedBottomDir = ["N", "NE", "NW"]
-restrictedRightDir = ["NW", "SW", "W"]
-
-
 
 # GAME
 class Game:
@@ -617,7 +608,7 @@ class Game:
         self.obstacleSpeed = obstacleSpeed
         self.obstacleSize = obstacleSize
         self.maxObstacles = maxObstacles
-        self.aggro = aggro
+        self.spawnPattern = spawnPattern
         self.obstacleBoundaries = obstacleBoundaries # Obstacle handling at screen border
         self.cloudSpeed = cloudSpeed
         self.attemptNumber = 1
@@ -649,7 +640,7 @@ class Game:
                     "obsSizeMult" : settings[4],
                     "maxObsMult" : settings[5],
                     "spinSpeed" : settings[6],
-                    "aggro" : settings[7],
+                    "pattern" : settings[7],
                     "wipe" : settings[8],
                     "type":settings[9]
                     }
@@ -665,7 +656,7 @@ class Game:
                 "obstacleBoundaries" : self.obstacleBoundaries,
                 "cloudSpeed" : self.cloudSpeed,
                 "spinSpeed" : self.spinSpeed,
-                "aggro" : self.aggro,
+                "pattern" : self.spawnPattern,
                 "wipe" : self.wipe,
                 "type":self.levelType
                 }
@@ -724,12 +715,12 @@ class Game:
 
         # CAVES
         if self.levelType == "CAVE" or self.levelType == "BOTH":
-            if self.cave is None:
+            if self.cave is None: # SPAWN A CAVE
                 self.cave = Caves(self.caveIndex)
                 if self.caveIndex + 1 < len(caveImages) - 1: self.caveIndex+=1
 
             self.cave.update()
-            if self.cave.rect.bottom+screenSize[1] >= 0 and self.cave.rect.top  <= screenSize[1]:
+            if self.cave.rect.top <= screenSize[1] and self.cave.rect.bottom >= 0:
                 screen.blit(self.cave.image,self.cave.rect) # Draw
                 # Collision detection
                 if pygame.sprite.collide_mask(self.cave,player):
@@ -738,6 +729,15 @@ class Game:
                         player.explode(game,obstacles) # explosion
                         if not self.musicMuted: explosionNoise.play()
                         menu.gameOver(self,player,obstacles) # Game over
+
+        # EXITING CAVE
+        elif self.cave is not None and self.cave.leave:
+            if self.cave.rect.top > screenSize[1]:
+                self.cave.kill()
+                self.cave = None
+            else:
+                self.cave.update()
+                screen.blit(self.cave.image,self.cave.rect)
 
         # HUD
         if showHUD: self.showHUD(player)
@@ -817,6 +817,12 @@ class Game:
                         if not self.musicMuted: impactNoise.play()
                         self.explosions.append(Explosion(self,obs))
 
+                    # OBSTACLE/CAVE COLLISION DETECTION
+                    elif self.cave is not None and pygame.sprite.collide_mask(obs,self.cave):
+                        if not self.musicMuted: impactNoise.play()
+                        self.explosions.append(Explosion(self,obs))
+                        obs.kill()
+
                     # ROTATE OBSTACLE
                     if not performanceMode:
                         obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle
@@ -860,7 +866,8 @@ class Game:
         # LEVEL UP
         self.levelUpdater(player,obstacles,events)
 
-        if self.levelType == "OBS": self.spawner(obstacles) # Spawn obstacles
+        if self.levelType == "OBS" or self.levelType == "BOTH": self.spawner(obstacles) # Spawn obstacles
+
         musicLoop() # Loop music
 
         # UPDATE SCREEN
@@ -878,7 +885,7 @@ class Game:
         self.obstacleBoundaries = self.savedConstants["obstacleBoundaries"]
         self.cloudSpeed = self.savedConstants["cloudSpeed"]
         self.spinSpeed = self.savedConstants["spinSpeed"]
-        self.aggro = self.savedConstants["aggro"]
+        self.spawnPattern = self.savedConstants["pattern"]
         self.wipe = self.savedConstants["wipe"]
         self.levelType = self.savedConstants["type"]
         self.cloudPos = cloudStart
@@ -925,7 +932,7 @@ class Game:
                     self.alternateUpdate(player,obstacles,events)
 
                     for obs in obstacles:
-                        if obs.rect.centery <= stageUpRect.centery: obs.kill()
+                        if obs.rect.top <= stageUpRect.bottom: obs.kill()
 
                     screen.blit(stageUpCloud,stageUpRect) # Draw cloud
                     screen.blit(stageUpDisplay,(stageUpRect.centerx - screenSize[0]/5, stageUpRect.centery)) # Draw "STAGE UP" text
@@ -976,9 +983,10 @@ class Game:
                     self.maxObstacles = levelDict["maxObsMult"]
                     self.obstacleSize = levelDict["obsSizeMult"]
                     self.spinSpeed = levelDict["spinSpeed"]
-                    self.aggro = levelDict["aggro"]
+                    self.spawnPattern = levelDict["pattern"]
                     self.wipe = levelDict["wipe"]
                     self.levelType = levelDict["type"]
+                    if self.cave is not None: self.cave.leave = True # Set cave for exit
                     self.cloudSpeed += cloudSpeedAdder
                     self.currentLevel += 1
 
@@ -1055,7 +1063,7 @@ class Game:
     # SPAWN OBSTACLES
     def spawner(self,obstacles):
             if len(obstacles) < self.maxObstacles:
-                obstacle = Obstacle(self.aggro) # Create new obstacle with specified spawn pattern
+                obstacle = Obstacle(self.spawnPattern) # Create new obstacle with specified spawn pattern
                 obstacles.add(obstacle)
 
 
@@ -1329,6 +1337,9 @@ class Menu:
                 cloudRect = cloudImg.get_rect(center = (screenSize[0]/2,game.cloudPos))
                 if cloudRect.bottom >= 0 and cloudRect.top <= screenSize[1]: screen.blit(cloudImg, cloudRect) # Draw cloud
 
+            if game.levelType == "CAVE" or game.levelType == "BOTH":
+                screen.blit(game.cave.image,game.cave.rect)
+
             game.showHUD(player)
             screen.blit(game.thisPoint.image, game.thisPoint.rect)
             screen.blit(playerBlit[0],playerBlit[1])
@@ -1463,7 +1474,7 @@ class Menu:
                 cloudRect = cloudImg.get_rect(center = (screenSize[0]/2,game.cloudPos))
                 if cloudRect.bottom >= 0 and cloudRect.top <= screenSize[1]: screen.blit(cloudImg, cloudRect) # Draw cloud
 
-            if game.cave is not None: screen.blit(game.cave.image,game.cave.rect)
+            if game.levelType == "CAVE" or game.levelType == "BOTH": screen.blit(game.cave.image,game.cave.rect)
             screen.blit(player.finalImg,player.finalRect) # Explosion
 
             pygame.draw.rect(screen, screenColor, [gameOverRect.x - 12,gameOverRect.y + 4,gameOverRect.width + 16, gameOverRect.height - 16],0,10)
@@ -1921,7 +1932,7 @@ class Player(pygame.sprite.Sprite):
                     cloudRect = cloudImg.get_rect(center = (screenSize[0]/2,game.cloudPos))
                     if cloudRect.bottom >= 0 and cloudRect.top <= screenSize[1]: screen.blit(cloudImg, cloudRect) # Draw cloud
 
-                if game.cave is not None: screen.blit(game.cave.image,game.cave.rect) # Draw cave
+                if game.levelType == "CAVE" or game.levelType == "BOTH": screen.blit(game.cave.image,game.cave.rect) # Draw cave
                 # Draw obstacles during explosion
                 obstacleMove(obstacles)
                 for obs in obstacles:
@@ -1955,13 +1966,13 @@ class Player(pygame.sprite.Sprite):
 
 # OBSTACLES
 class Obstacle(pygame.sprite.Sprite):
-    def __init__(self,aggro):
+    def __init__(self,spawnPattern):
         super().__init__()
-        self.aggro = aggro
+        self.spawnPattern = spawnPattern
         self.speed = game.obstacleSpeed
         self.size = game.obstacleSize
         self.spinSpeed = game.spinSpeed
-        self.movement = getMovement(self.aggro)
+        self.movement = getMovement(self.spawnPattern)
         self.direction = self.movement[1]
         try: self.image = obstacleImages[game.currentStage - 1][game.currentLevel-1]
         except: self.image = meteorList[random.randint(0,len(meteorList)-1)] # Not enough assets for this level yet
@@ -2085,7 +2096,7 @@ class Icon:
     def __init__(self):
         spins = [-1,1]
         self.speed = random.randint(1,maxIconSpeed)
-        self.movement = getMovement(False)
+        self.movement = getMovement("ALL")
         self.direction = self.movement[1]
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
         self.image = menuList[random.randint(5,len(menuList)-1)]
@@ -2113,7 +2124,7 @@ class Icon:
         randomTimerLY = -1 * random.randint(screenSize[0], screenSize[1] * 3)
 
         if self.active and ( (self.rect.centery > randomTimerUY) or (self.rect.centery < randomTimerLY) or (self.rect.centerx> randomTimerUX) or (self.rect.centerx < randomTimerLX) ):
-            self.movement = getMovement(False)
+            self.movement = getMovement("ALL")
             self.direction = self.movement[1]
             self.image = menuList[random.randint(5,len(menuList)-1)]
             self.speed = random.randint(1,maxIconSpeed)
@@ -2150,7 +2161,7 @@ class BackgroundShip:
         if self.speed > maxBackgroundShipSpeed: self.speed = maxBackgroundShipSpeed
         elif self.speed < minBackgroundShipSpeed: self.speed = minBackgroundShipSpeed
 
-        self.movement = getMovement(False)
+        self.movement = getMovement("ALL")
         self.direction = self.movement[1]
         self.angle = getAngle(self.direction)
         self.text = text
@@ -2219,12 +2230,13 @@ def randomEightDirection():
     return direction
 
 
-# OBSTACLE POSITION GENERATION
-def getMovement(eightDirections):
+# MOVEMENT AND POSITION GENERATION
+def getMovement(spawnPattern):
     top,bottom,left,right = [],[],[],[]
+    if spawnPattern == "RESTRICTED": top, bottom, left, right, = ["SE", "SW", "S"], ["N", "NE", "NW"], ["E", "NE", "SE"], ["NW", "SW", "W"]
+    elif spawnPattern == "CAVE": top = ["SE", "SW", "S"]
+    else: top, bottom, left, right = topDir, bottomDir, leftDir, rightDir
 
-    if eightDirections: top, bottom, left, right = topDir, bottomDir, leftDir, rightDir
-    else: top, bottom, left, right, = restrictedTopDir, restrictedBottomDir, restrictedLeftDir, restrictedRightDir
     X = random.randint(0, screenSize[0])
     Y = random.randint(0, screenSize[1])
 
@@ -2234,6 +2246,8 @@ def getMovement(eightDirections):
     upperY = random.randint(screenSize[1],screenSize[1]+obstacleSpawnRange[1])
 
     topDirection = top[random.randint(0, len(top) - 1)]
+    if len(bottom) == 0 or len(left) == 0 or len(right) == 0: return [[X,lowerY],topDirection] # Early exit for cave obstacle spawn
+
     leftDirection = left[random.randint(0, len(left) - 1)]
     bottomDirection = bottom[random.randint(0, len(bottom) - 1)]
     rightDirection = right[random.randint(0, len(right) - 1)]
@@ -2252,7 +2266,7 @@ def getMovement(eightDirections):
     return move
 
 
-# ALTERNATE OBSTACLE MOVEMENT
+# OBSTACLE MOVEMENT (outside of main game loop)
 def obstacleMove(obstacles):
     for obs in obstacles:
         position = obs.rect.center
