@@ -2,19 +2,6 @@
 
 ### Simple and addictive arcade game written in Python with PyGame ###
 
--The game is not rocket science, despite the theme. Navigate between randomly placed tokens like the game "Snake", with the twist of avoiding increasingly unforgiving asteroids- and whatever else may be out there.
-
--Very much a work in progress, and any suggestions or feedback would be welcome :)
-
-#### Latest Releases:   
-Windows: https://github.com/pstlo/Navigator/releases/download/v0.4.6/NavigatorWindows.zip \
-Windows (Cython): https://github.com/pstlo/Navigator/releases/download/v0.4.6/NavigatorWindowsC.zip \
-MacOS (Apple Silicon): https://github.com/pstlo/Navigator/releases/download/v0.4.5/NavigatorMacOS.zip \
-MacOS (Intel Based): Coming soon \
-Linux*: https://github.com/pstlo/Navigator/releases/download/v0.4.1/NavigatorLinux.zip *Does not save score
- 
-To get started, either download, extract, and run the latest release above, or run it directly from the source code
-
 Created by Mike Pistolesi \
 with art by Collin Guetta & music by Dylan Kusenko \
 Subject to change without notice.
