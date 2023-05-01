@@ -1,7 +1,7 @@
 # Navigator
 # Copyright (c) 2023 Mike Pistolesi
 # All rights reserved
- 
+
 import os,sys,random,math,platform,json,base64,time,pypresence
 from cryptography.fernet import Fernet
 from dotenv import load_dotenv
