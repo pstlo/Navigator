@@ -7,7 +7,7 @@ from cryptography.fernet import Fernet
 from dotenv import load_dotenv
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
- 
+
 pygame.display.init()
 pygame.font.init()
 pygame.mixer.init()
@@ -179,6 +179,7 @@ encryptGameRecords = True # Hide game records from user to prevent manual unlock
 invalidKeyMessage = "Get a key to save progress :)" # Saved to game records file if encryptGameRecords == True and key is invalid
 #----------------------------------------------------------------------------------------------------------------------
 
+
 # FOR EXE/APP RESOURCES
 def resources(relative):
     try: base = sys._MEIPASS # Running from EXE
@@ -199,6 +200,7 @@ displayInfo = pygame.Rect(0, 0, displayInfo[0], displayInfo[1]).center
 if performanceMode:
     showBackgroundCloud = False
     drawExhaust = False
+
 
 # GET SCREEN
 def getScreen():
@@ -603,6 +605,8 @@ topDir = ["S", "E", "W", "SE", "SW"]
 leftDir = ["E", "S", "N", "NE", "SE"]
 bottomDir = ["N", "W", "E", "NE", "NW"]
 rightDir = ["W", "N", "S", "NW", "SW"]
+
+
 
 # GAME
 class Game:
@@ -1963,6 +1967,7 @@ class Player(pygame.sprite.Sprite):
             events.showShield()
 
 
+
 # OBSTACLES
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self,spawnPattern):
@@ -1987,6 +1992,7 @@ class Obstacle(pygame.sprite.Sprite):
             if self.rect.right >= 0 or self.rect.left <= screenSize[0] or self.rect.top <= 0 or self.rect.bottom >= screenSize[1]: self.active = True
 
 
+
 # CAVES
 class Caves(pygame.sprite.Sprite):
     def __init__(self,index):
@@ -2002,6 +2008,7 @@ class Caves(pygame.sprite.Sprite):
         self.rect.centery += self.speed # Move
         if not self.leave and self.rect.top + screenSize[1] >= screenSize[1]:
             self.rect.bottom = screenSize[1] # Wrap
+
 
 
 # LASERS
@@ -2044,6 +2051,7 @@ class Laser(pygame.sprite.Sprite):
         if self.rect.centerx > screenSize[0] or self.rect.centery > screenSize[1] or self.rect.centerx < 0 or self.rect.centery < 0: self.kill()
 
 
+
 # EXPLOSIONS
 class Explosion:
     def __init__(self,game,laser):
@@ -2066,6 +2074,7 @@ class Explosion:
         screen.blit(self.image,self.rect)
 
 
+
 # POWER UPS
 class Point(pygame.sprite.Sprite):
     def __init__(self,player,lastPos):
@@ -2085,6 +2094,7 @@ class Point(pygame.sprite.Sprite):
         if lastPos == None: self.rect = self.image.get_rect(center = positionGenerator())
         else:self.rect = self.image.get_rect(center = spacedPositionGenerator(lastPos))
         self.mask = pygame.mask.from_surface(self.image)
+
 
 
 # MENU METEOR ICONS
@@ -2138,6 +2148,7 @@ class Icon:
         if self.active:
             drawing, drawee = rotateImage(self.image,self.rect,self.angle)
             screen.blit(drawing,drawee)
+
 
 
 # BACKGROUND SHIPS
@@ -2198,6 +2209,7 @@ class BackgroundShip:
     def activate(self):
         if not self.active:
             if not self.offScreen(): self.active = True
+
 
 # ROTATE IMAGE
 def rotateImage(image, rect, angle):
