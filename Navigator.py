@@ -106,6 +106,7 @@ showSupporterNames = True # Default = True
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
 defaultToHighSkin = True # Default = True / Default to highest skin unlocked on game launch
 defaultToHighShip = False # Default = False / Default to highest ship unlocked on game launch
+drawExhaust = True # Default = True
 
 # SOUNDS
 musicMuted = False # Default = False
@@ -133,7 +134,7 @@ explosionDelay = 1 # Default = 1
 obstacleSpawnRange = [0,1] # Default = [0,1]
 
 # CAVES
-caveStartPos = screenSize[1]*-2 # Default = -1600 / Cave start Y coordinate
+caveStartPos = screenSize[1]*-4 # Default = -1600 / Cave start Y coordinate
 caveSpeed = 10 # Default = 10 / Cave flyby speed
 
 # LEVELS
@@ -193,6 +194,10 @@ displayInfo = pygame.display.Info()
 displayInfo = displayInfo.current_w,displayInfo.current_h
 displayInfo = pygame.Rect(0, 0, displayInfo[0], displayInfo[1]).center
 
+# PERFORMANCE SETTINGS
+if performanceMode:
+    showBackgroundCloud = False
+    drawExhaust = False
 
 # GET SCREEN
 def getScreen():
@@ -702,16 +707,37 @@ class Game:
             # SHIELD VISUAL
             if event.type == events.shieldVisualDuration: player.showShield = False
 
-        # BACKGROUND ANIMATION
+        # BACKGROUND
         screen.fill(screenColor)
         screen.blit(bgList[self.currentStage - 1][0], (0,0) )
-        if self.cloudPos < screenSize[1]:
-            if showBackgroundCloud: screen.blit(bgList[self.currentStage - 1][1], (0,self.cloudPos)) # Draw cloud
-            self.cloudPos += self.cloudSpeed
-        else: self.cloudPos = cloudStart
 
-        # SHOW POINT SPAWN AREA (TEST)
+        # CLOUD ANIMATION *should be a function
+        if showBackgroundCloud:
+            cloudImg = bgList[self.currentStage - 1][1]
+            cloudRect = cloudImg.get_rect(center = (screenSize[0]/2,self.cloudPos))
+            if cloudRect.bottom >= 0 and cloudRect.top <= screenSize[1]: screen.blit(cloudImg, cloudRect) # Draw cloud
+            elif cloudRect.top > screenSize[1]: self.cloudPos = cloudStart
+            self.cloudPos += self.cloudSpeed
+
+        # SHOW POINT SPAWN AREA (Testing)
         if showSpawnArea: pygame.draw.polygon(screen, (255, 0, 0), spawnAreaPoints,1)
+
+        # CAVES
+        if self.levelType == "CAVE" or self.levelType == "BOTH":
+            if self.cave is None:
+                self.cave = Caves(self.caveIndex)
+                if self.caveIndex + 1 < len(caveImages) - 1: self.caveIndex+=1
+
+            self.cave.update()
+            if self.cave.rect.bottom+screenSize[1] >= 0 and self.cave.rect.top  <= screenSize[1]:
+                screen.blit(self.cave.image,self.cave.rect) # Draw
+                # Collision detection
+                if pygame.sprite.collide_mask(self.cave,player):
+                    if player.shields > 0: player.shieldDown(events)
+                    else:
+                        player.explode(game,obstacles) # explosion
+                        if not self.musicMuted: explosionNoise.play()
+                        menu.gameOver(self,player,obstacles) # Game over
 
         # HUD
         if showHUD: self.showHUD(player)
@@ -739,13 +765,14 @@ class Game:
         newBlit = rotateImage(player.image,player.rect,player.angle)
 
         # ROTATE EXHAUST
-        newExhaustBlit = rotateImage(spaceShipList[game.savedShipLevel][0][player.exhaustState-1],player.rect,player.angle)
+        if drawExhaust: newExhaustBlit = rotateImage(spaceShipList[game.savedShipLevel][0][player.exhaustState-1],player.rect,player.angle)
 
         # DRAW PLAYER
         screen.blit(newBlit[0],newBlit[1])
 
         # DRAW EXHAST
-        if game.savedShipLevel != 1: screen.blit(newExhaustBlit[0],newExhaustBlit[1])
+        if drawExhaust:
+            if game.savedShipLevel != 1: screen.blit(newExhaustBlit[0],newExhaustBlit[1])
 
         # DRAW SHIELD
         if player.showShield:
@@ -753,9 +780,10 @@ class Game:
             screen.blit(shieldImg,shieldImgRect)
 
         # UPDATE BOOST ANIMATION / currently only 3 frames
-        player.lastThreeExhaustPos[2] = player.lastThreeExhaustPos[1]
-        player.lastThreeExhaustPos[1] = player.lastThreeExhaustPos[0]
-        player.lastThreeExhaustPos[0] =  newExhaustBlit
+        if drawExhaust:
+            player.lastThreeExhaustPos[2] = player.lastThreeExhaustPos[1]
+            player.lastThreeExhaustPos[1] = player.lastThreeExhaustPos[0]
+            player.lastThreeExhaustPos[0] =  newExhaustBlit
 
         # DRAW LASERS
         self.laserUpdate(lasers,player)
@@ -764,7 +792,7 @@ class Game:
         screen.blit(self.thisPoint.image, self.thisPoint.rect)
 
         # UPDATE OBSTACLES
-        if self.levelType == "OBS":
+        if self.levelType == "OBS" or self.levelType == "BOTH":
             # OBSTACLE/PLAYER COLLISION DETECTION
             if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask):
                 if player.shields > 0: player.shieldDown(events)
@@ -826,24 +854,6 @@ class Game:
                 if debris.finished: self.explosions.remove(debris)
                 else: debris.update()
 
-        # CAVES (Work in progress)
-        if self.levelType == "CAVE":
-            if self.cave is None:
-                self.cave = Caves(self.caveIndex)
-                if self.caveIndex + 1 < len(caveImages) - 1: self.caveIndex+=1
-                    
-            self.cave.update()
-            if self.cave.rect.bottom >= 0 and self.cave.rect.top <= screenSize[1]: 
-                screen.blit(self.cave.image,self.cave.rect) # Draw
-                # Collision detection
-                if pygame.sprite.collide_mask(self.cave,player): 
-                    if player.shields > 0: player.shieldDown(events)
-                    else:
-                        player.explode(game,obstacles) # explosion 
-                        if not self.musicMuted: explosionNoise.play()
-                        menu.gameOver(self,player,obstacles) # Game over
-
-
         # UPDATE HIGH SCORE
         if self.gameClock > self.sessionLongRun: self.sessionLongRun = self.gameClock
 
@@ -881,8 +891,11 @@ class Game:
         player.wrapping()
         screen.fill(screenColor)
         screen.blit(bgList[self.currentStage-1][0],(0,0)) # Draw background
-        if showBackgroundCloud: screen.blit(bgList[self.currentStage-1][1],(0,self.cloudPos)) # Draw background cloud
-        self.cloudPos += self.cloudSpeed
+        if showBackgroundCloud:
+            cloudImg = bgList[self.currentStage - 1][1]
+            cloudRect = cloudImg.get_rect(center = (screenSize[0]/2,self.cloudPos))
+            if cloudRect.bottom >= 0 and cloudRect.top <= screenSize[1]: screen.blit(cloudImg, cloudRect) # Draw cloud
+
         obstacleMove(obstacles)
 
         for obs in obstacles:
@@ -1310,7 +1323,12 @@ class Menu:
         while paused:
             screen.fill(screenColor)
             screen.blit(bgList[game.currentStage-1][0],(0,0))
-            if showBackgroundCloud: screen.blit(cloud,(0,game.cloudPos))
+
+            if showBackgroundCloud:
+                cloudImg = bgList[game.currentStage - 1][1]
+                cloudRect = cloudImg.get_rect(center = (screenSize[0]/2,game.cloudPos))
+                if cloudRect.bottom >= 0 and cloudRect.top <= screenSize[1]: screen.blit(cloudImg, cloudRect) # Draw cloud
+
             game.showHUD(player)
             screen.blit(game.thisPoint.image, game.thisPoint.rect)
             screen.blit(playerBlit[0],playerBlit[1])
@@ -1434,13 +1452,17 @@ class Menu:
 
         displayTextList = [scoreText, highScoreText, newHighScoreText, survivedText, longestRunText, newLongestRunText, levelText, attemptText, wastedText]
 
-
         while gameOver:
 
             # Background
             screen.fill(screenColor)
             screen.blit(bgList[game.currentStage - 1][0],(0,0))
-            if showBackgroundCloud: screen.blit(bgList[game.currentStage-1][1],(0,game.cloudPos))
+
+            if showBackgroundCloud:
+                cloudImg = bgList[game.currentStage - 1][1]
+                cloudRect = cloudImg.get_rect(center = (screenSize[0]/2,game.cloudPos))
+                if cloudRect.bottom >= 0 and cloudRect.top <= screenSize[1]: screen.blit(cloudImg, cloudRect) # Draw cloud
+
             if game.cave is not None: screen.blit(game.cave.image,game.cave.rect)
             screen.blit(player.finalImg,player.finalRect) # Explosion
 
@@ -1563,7 +1585,10 @@ class Menu:
 
             screen.fill(screenColor)
             screen.blit(bgList[game.currentStage - 1][0],(0,0))
-            if showBackgroundCloud: screen.blit(bgList[game.currentStage-1][1],(0,game.cloudPos))
+            if showBackgroundCloud:
+                cloudImg = bgList[game.currentStage - 1][1]
+                cloudRect = cloudImg.get_rect(center = (screenSize[0]/2,game.cloudPos))
+                if cloudRect.bottom >= 0 and cloudRect.top <= screenSize[1]: screen.blit(cloudImg, cloudRect) # Draw cloud
 
             for ship in bgShips:
                 ship.move()
@@ -1890,7 +1915,12 @@ class Player(pygame.sprite.Sprite):
                 height = explosionList[self.explosionState].get_height()
                 width = explosionList[self.explosionState].get_width()
                 screen.blit(bgList[game.currentStage-1][0],(0,0))
-                if showBackgroundCloud: screen.blit(bgList[game.currentStage-1][1],(0,game.cloudPos))
+
+                if showBackgroundCloud:
+                    cloudImg = bgList[game.currentStage - 1][1]
+                    cloudRect = cloudImg.get_rect(center = (screenSize[0]/2,game.cloudPos))
+                    if cloudRect.bottom >= 0 and cloudRect.top <= screenSize[1]: screen.blit(cloudImg, cloudRect) # Draw cloud
+
                 if game.cave is not None: screen.blit(game.cave.image,game.cave.rect) # Draw cave
                 # Draw obstacles during explosion
                 obstacleMove(obstacles)
@@ -1898,7 +1928,7 @@ class Player(pygame.sprite.Sprite):
                     newBlit = rotateImage(obs.image,obs.rect,obs.angle)
                     screen.blit(newBlit[0],newBlit[1])
 
-                img = pygame.transform.scale(explosionList[self.explosionState], (height * self.explosionState, width * self.explosionState)) # Blow up explosion 
+                img = pygame.transform.scale(explosionList[self.explosionState], (height * self.explosionState, width * self.explosionState)) # Blow up explosion
                 img, imgRect = rotateImage(img, self.rect, self.lastAngle) # Rotate
 
                 screen.blit(img,imgRect) # Draw explosion
@@ -1953,15 +1983,15 @@ class Caves(pygame.sprite.Sprite):
         super().__init__()
         self.speed = caveSpeed
         self.image = caveImages[index]
-        self.rect = self.image.get_rect(topleft = (0,caveStartPos))
+        self.rect = self.image.get_rect(bottomleft = (0,caveStartPos))
         self.mask = pygame.mask.from_surface(self.image)
         self.leave = False # Mark cave for exit
 
 
     def update(self):
-        pygame.draw.rect(screen,[0,0,0],self.rect)
         self.rect.centery += self.speed # Move
-        if not self.leave and self.rect.top >= screenSize[1]: self.rect.bottom = 0 # Wrap
+        if not self.leave and self.rect.top + screenSize[1] >= screenSize[1]:
+            self.rect.bottom = screenSize[1] # Wrap
 
 
 # LASERS
