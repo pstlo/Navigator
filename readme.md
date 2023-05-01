@@ -4,4 +4,3 @@
 
 Created by Mike Pistolesi \
 with art by Collin Guetta & music by Dylan Kusenko \
-Subject to change without notice.
