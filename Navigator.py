@@ -145,13 +145,13 @@ maxObstacles = 12 *scaler  # Default = 12
 obstacleBoundaries = "KILL" # Default = "KILL"
 spinSpeed = 1 # Default = 1
 obstacleWipe = False # Default = False / Wipe before level
-levelType = "OBS" # Default = "OBS" / Level type (OBS , CAVE , BOTH)
+levelType = "OBS" # Default = "OBS" / Level type (OBS,CAVE,BOTH)
 spawnPattern = "ALL"  # Default = "ALL" / Removes restriction on obstacle movement/ (ALL,CAVE,RESTRICTED) restricted = most difficult
 
-levelTimer = 15 # Default = 15 / Time (seconds) between levels
+levelTimer = 15 # Default = 15 / Time (seconds) between levels (can be overridden)
 levelUpCloudSpeed = 25 # Default = 25 / Only affects levels preceded by wipe
 
-# ADD LEVELS HERE:   [ STARTED, (level-1)Timer, BOUNDS, SPEED,       SIZE,       NUMBER,     SPIN, PATTERN,      WIPE,  TYPE]
+# ADD LEVELS HERE:   [ STARTED, START TIME,     BOUNDS, SPEED,       SIZE,       NUMBER,     SPIN, PATTERN,      WIPE,  TYPE  ]
 levelTwo =           [ False,       levelTimer, "KILL", 5*scaler,    32*scaler,  16*scaler,  1,    "ALL",        False, "OBS" ]
 levelThree =         [ False,   2 * levelTimer, "KILL", 5*scaler,    34*scaler,  16*scaler,  2,    "ALL",        False, "OBS" ]
 levelFour =          [ False,   3 * levelTimer, "KILL", 5.5*scaler,  36*scaler,  16*scaler,  3,    "ALL",        False, "OBS" ]
