@@ -380,6 +380,12 @@ video::-webkit-media-controls-play-button {
 		padding: 5px;
 		font-size:8px;
 	}
+	#contactButton {
+		width:120px;
+		height:50px;
+		font-size:8px;
+		padding: 5px;
+	}
 
 	#backButton {
 		width:200px;
@@ -427,7 +433,11 @@ video::-webkit-media-controls-play-button {
 		font-size:20px;
 		padding: 10px;
 	}
-
+	#contactButton {
+		width:200px;
+		font-size:10px;
+		padding: 10px;
+	}
 
 }
 
@@ -473,6 +483,12 @@ video::-webkit-media-controls-play-button {
 	}
 
 	#changesButton {
+		width:120px;
+		font-size:10px;
+		padding: 10px;
+	}
+	
+	#contactButton {
 		width:120px;
 		font-size:10px;
 		padding: 10px;
