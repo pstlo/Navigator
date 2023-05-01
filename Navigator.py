@@ -4,6 +4,7 @@
 
 import os,sys,random,math,platform,json,base64,time,pypresence
 from cryptography.fernet import Fernet
+from dotenv import load_dotenv
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
 
@@ -251,6 +252,7 @@ def toggleMusic(game):
 
 # ASSET DIRECTORY
 currentDirectory = resources('Assets')
+load_dotenv(os.path.join(currentDirectory,'.env'))
 
 # INITIALIZE SCREEN
 screen = getScreen()
@@ -262,10 +264,8 @@ pygame.display.set_icon(windowIcon)
 screenColor = [0,0,0] # Screen fill color
 
 # DISCORD PRESENCE
-tokenPath = resources(os.path.join(currentDirectory,"token.txt"))
 try:
-    with open(tokenPath) as file:token = json.load(file)['token']
-    presence = pypresence.Presence(token)
+    presence = pypresence.Presence(os.getenv('TOKEN'))
     presence.connect()
     presence.update(details='Playing Navigator', state='Navigating the depths of space', large_image='background', small_image = 'icon', buttons=[{'label': 'Play Navigator', 'url': 'https://pstlo.github.io/Navigator'}],start=int(time.time()))
 except: presence = None
@@ -333,16 +333,11 @@ explosionDirectory = os.path.join(currentDirectory, 'Explosion') # Explosion ani
 pointsDirectory = os.path.join(currentDirectory, 'Points') # Point image directory
 soundDirectory = os.path.join(currentDirectory, 'Sounds') # Sound assets directory
 supportersDirectory = os.path.join(currentDirectory,'Supporters') # Supporters directory
-
 recordsPath = getRecordsPath()
-keyPath = resources(os.path.join(currentDirectory,'Key.txt'))
-
 
 # GET KEY
 def getKey():
-    try:
-        with open(keyPath,'rb') as file: key = file.read()
-        return base64.b64decode(key)
+    try: return base64.b64decode(os.getenv('KEY'))
     except: return None # Could not load key
 
 
