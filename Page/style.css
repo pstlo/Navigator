@@ -249,6 +249,23 @@ td {
 	cursor: pointer;
 }
 
+#contactButton {
+	width:300px;
+	font-family: 'Press Start 2P', sans-serif;
+	letter-spacing: 0px;
+	font-size:20px;
+	padding: 10px;
+	text-decoration: none;
+	background-color: #e89535;
+	color: white;
+	border-radius: 10px;
+}
+
+#contactButton:hover {
+	background-color:#e3b278;
+	cursor:pointer;
+}
+
 #donateButton {
 	width:300px;
 	font-family: 'Press Start 2P', sans-serif;
@@ -326,7 +343,7 @@ video::-webkit-media-controls-play-button {
 		max-width:100%;
 		position:relative;
 	}
-	
+
 	p{
 		max-width: 90%;
 	}
@@ -399,7 +416,7 @@ video::-webkit-media-controls-play-button {
 		font-size:10px;
 		padding: 10px;
 	}
-	
+
 	#changesButton {
 		width:200px;
 		font-size:10px;
@@ -411,11 +428,11 @@ video::-webkit-media-controls-play-button {
 		padding: 10px;
 	}
 
-	
+
 }
 
 @media only screen and (max-width: 400px) {
-	
+
 	#home{
 		max-width:80%
 	}
