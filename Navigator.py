@@ -7,7 +7,7 @@ from cryptography.fernet import Fernet
 from dotenv import load_dotenv
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
-
+ 
 pygame.display.init()
 pygame.font.init()
 pygame.mixer.init()
