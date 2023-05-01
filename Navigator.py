@@ -1,4 +1,4 @@
-# Navigator v0.4.6
+# Navigator
 # Copyright (c) 2023 Mike Pistolesi
 # All rights reserved
 
@@ -13,7 +13,7 @@ pygame.mixer.init()
 
 pygame.mouse.set_visible(False)
 
-version = "v0.4.6"
+version = "v0.4.7"
 #------------------GAME CONSTANTS--------------------------------------------------------------------------
 # SCREEN
 screenSize = [800,800] # Default = [800,800]
