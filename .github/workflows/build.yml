@@ -19,6 +19,10 @@ jobs:
           repository: pstlo/Navigator
           ref: main
 
+      - name: Store data in Assets folder
+        run: |
+          echo "${{ secrets.ENV_FILE }}" > "${{ github.workspace }}/Assets/.env"
+
       - name: Set up Python on Windows
         uses: actions/setup-python@v4
         with:
@@ -30,16 +34,15 @@ jobs:
           pip install pyinstaller
           pip install pygame
           pip install cryptography
-
       - name: Create Windows executable
         run: |
             pyinstaller --name NavigatorWindows --onefile --noconsole --add-data "${{ github.workspace }}/Assets;Assets" -i "${{ github.workspace }}\.github\Icon.ico" --version-file "${{ github.workspace }}\.github\version.txt" "${{ github.workspace }}\Navigator.py"
-
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v3
         with:
           name: NavigatorWindows
           path: dist/NavigatorWindows.exe
+
 
   build-macos-intel:
     runs-on: macos-latest
@@ -51,6 +54,10 @@ jobs:
         with:
           repository: pstlo/Navigator
           ref: main
+          
+      - name: Store data in Assets folder
+        run: |
+          echo "${{ secrets.ENV_FILE }}" > "${{ github.workspace }}/Assets/.env"
 
       - name: Set up Python on MacOS (Intel Based)
         uses: actions/setup-python@v4
@@ -84,7 +91,11 @@ jobs:
         with:
           repository: pstlo/Navigator
           ref: main
-
+          
+      - name: Store data in Assets folder
+        run: |
+          echo "${{ secrets.ENV_FILE }}" > "${{ github.workspace }}/Assets/.env"
+          
       - name: Set up Python on Linux
         uses: actions/setup-python@v4
         with:
