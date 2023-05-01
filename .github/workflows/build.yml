@@ -21,7 +21,7 @@ jobs:
 
       - name: Store data in Assets folder
         run: |
-          echo "${{ secrets.ENV_FILE }}" > "${{ github.workspace }}/Assets/.env"
+          echo "${{ secrets.ENV }}" > "${{ github.workspace }}/Assets/.env"
 
       - name: Set up Python on Windows
         uses: actions/setup-python@v4
@@ -57,7 +57,7 @@ jobs:
           
       - name: Store data in Assets folder
         run: |
-          echo "${{ secrets.ENV_FILE }}" > "${{ github.workspace }}/Assets/.env"
+          echo "${{ secrets.ENV }}" > "${{ github.workspace }}/Assets/.env"
 
       - name: Set up Python on MacOS (Intel Based)
         uses: actions/setup-python@v4
@@ -94,7 +94,7 @@ jobs:
           
       - name: Store data in Assets folder
         run: |
-          echo "${{ secrets.ENV_FILE }}" > "${{ github.workspace }}/Assets/.env"
+          echo "${{ secrets.ENV }}" > "${{ github.workspace }}/Assets/.env"
           
       - name: Set up Python on Linux
         uses: actions/setup-python@v4
