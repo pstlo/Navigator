@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Mike Pistolesi
 # All rights reserved
 
-import os,sys,random,math,platform,json,base64
+import os,sys,random,math,platform,json,base64,time,pypresence
 from cryptography.fernet import Fernet
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
@@ -260,6 +260,22 @@ windowIcon = pygame.image.load(resources(os.path.join(currentDirectory,'Icon.png
 pygame.display.set_caption('Navigator')
 pygame.display.set_icon(windowIcon)
 screenColor = [0,0,0] # Screen fill color
+
+# DISCORD PRESENCE
+tokenPath = resources(os.path.join(currentDirectory,"token.txt"))
+try:
+    with open(tokenPath) as file:token = json.load(file)['token']
+    presence = pypresence.Presence(token)
+    presence.connect()
+    presence.update(details='Playing Navigator', state='Navigating the depths of space', large_image='background', small_image = 'icon', buttons=[{'label': 'Play Navigator', 'url': 'https://pstlo.github.io/Navigator'}],start=int(time.time()))
+except: presence = None
+
+
+# QUIT GAME
+def quitGame():
+    if presence is not None:presence.close()
+    pygame.quit()
+    sys.exit()
 
 
 # Draw labels from formatted list of rects and displays, first 4 lines arranged based on truth value of two booleans
@@ -669,8 +685,7 @@ class Game:
             # EXIT
             if (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE) or event.type == pygame.QUIT:
                 running = False
-                pygame.quit()
-                sys.exit()
+                quitGame()
 
             # INCREMENT TIMER
             if event.type == events.timerEvent: self.gameClock +=1
@@ -1266,9 +1281,7 @@ class Menu:
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_c: menu.creditScreen()
 
                 # QUIT
-                elif event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and  event.key == pygame.K_ESCAPE):
-                    pygame.quit()
-                    sys.exit()
+                elif event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and  event.key == pygame.K_ESCAPE): quitGame()
 
             # GET SHIP CONTROLS
             if player.hasGuns and player.boostSpeed > player.baseSpeed: # has guns and boost
@@ -1362,9 +1375,7 @@ class Menu:
 
             for event in pygame.event.get():
                 # EXIT
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+                if event.type == pygame.QUIT: quitGame()
 
                 # TOGGLE FULLSCREEN
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_f:
@@ -1486,9 +1497,7 @@ class Menu:
             for event in pygame.event.get():
 
                 # EXIT
-                if (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE) or event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+                if (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE) or event.type == pygame.QUIT: quitGame()
 
                 # TOGGLE FULLSCREEN
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_f:
@@ -1574,9 +1583,7 @@ class Menu:
 
             for event in pygame.event.get():
                 # EXIT
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+                if event.type == pygame.QUIT: quitGame()
 
                 # TOGGLE FULLSCREEN
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_f:
@@ -1808,9 +1815,7 @@ class Player(pygame.sprite.Sprite):
         # MOVEMENT DURING STAGE UP
         def alternateMovement(self):
             for event in pygame.event.get():
-                if (event.type == pygame.QUIT) or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-                    pygame.quit()
-                    sys.exit()
+                if (event.type == pygame.QUIT) or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE): quitGame()
 
                 if event.type == pygame.KEYDOWN and (event.key == pygame.K_w or event.key == pygame.K_UP):
                     self.rect.centery -=1
