@@ -528,7 +528,7 @@ for i in shipAttributes:
     shipConstants.append(levelConstantsDict)
 
 for i in range(len(spaceShipList)): spaceShipList[i].append(shipConstants[i])
-# [   ( [Exhaust frames],Laser Image,[Ship Skins],{Player Constants} )   ]
+# Stores as -> [ ( [Exhaust frames],Laser Image,[Ship Skins],{Player Constants} ) ]
 
 # MAIN MENU ASSETS
 menuList = []
@@ -539,7 +539,6 @@ menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'left.png
 menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'right.png'))).convert_alpha()) # Right icon
 
 menuMeteorDir = os.path.join(menuDirectory,'FlyingObjects')
-
 for objPath in sorted(os.listdir(menuMeteorDir)): menuList.append(pygame.image.load(resources(os.path.join(menuMeteorDir,objPath))).convert_alpha())
 
 # LOAD DONATION RECORDS
@@ -580,7 +579,7 @@ for shipInd in range(len(spaceShipList)):
     if timePerUnlock == totalTime: unlockTimePerLevels.append(None) # No other skins for this level
     else: unlockTimePerLevels.append(int(timePerUnlock))
 
-expectedPointsPerLevel = 12
+expectedPointsPerLevel = 12 # In testing
 totalShipTypes = len(spaceShipList) # For score based unlocks
 totalPointsForUnlock = totalLevels * expectedPointsPerLevel # Points in game for all unlocks
 pointsForUnlock = int(totalPointsForUnlock/expectedPointsPerLevel)
@@ -598,7 +597,7 @@ for i in range(spawnVertices):
     angle = i * 2 * 3.14159 / spawnVertices + (3.14159 / spawnVertices)
     x = screenSize[0]/2 + (spawnWidth / 2) * math.cos(angle)
     y = screenSize[1]/2 + (spawnHeight / 2) * math.sin(angle)
-    spawnAreaPoints.append((x, y))
+    spawnAreaPoints.append((x, y)) # Vertices of spawn area
 
 # "ALL" Spawn pattern / also used for random bounces in credits screen
 topDir = ["S", "E", "W", "SE", "SW"]
@@ -716,7 +715,7 @@ class Game:
         screen.fill(screenColor)
         screen.blit(bgList[self.currentStage - 1][0], (0,0) )
 
-        # CLOUD ANIMATION *should be a function
+        # CLOUD ANIMATION
         if showBackgroundCloud:
             cloudImg = bgList[self.currentStage - 1][1]
             cloudRect = cloudImg.get_rect(center = (screenSize[0]/2,self.cloudPos))
@@ -867,7 +866,7 @@ class Game:
                         if obs.rect.centerx > screenSize[0]: obs.rect.centerx = 0
                         if obs.rect.centerx < 0: obs.rect.centerx = screenSize[0]
 
-            if performanceMode:obstacles.draw(screen)
+            if performanceMode:obstacles.draw(screen) # Potential performance improvement
 
             # DRAW OBSTACLE EXPLOSIONS
             for debris in self.explosions:
@@ -905,6 +904,14 @@ class Game:
         self.cloudPos = cloudStart
 
 
+    # DRAW CLOUD OUTSIDE OF MAIN GAME LOOP
+    def showBackgroundCloud(self):
+        if showBackgroundCloud:
+            cloudImg = bgList[game.currentStage - 1][1]
+            cloudRect = cloudImg.get_rect(center = (screenSize[0]/2,game.cloudPos))
+            if cloudRect.bottom >= 0 and cloudRect.top <= screenSize[1]: screen.blit(cloudImg, cloudRect) # Draw cloud
+
+
     # Draw frame outside of main game loop
     def alternateUpdate(self,player,obstacles,events):
         player.alternateMovement()
@@ -912,10 +919,7 @@ class Game:
         player.wrapping()
         screen.fill(screenColor)
         screen.blit(bgList[self.currentStage-1][0],(0,0)) # Draw background
-        if showBackgroundCloud:
-            cloudImg = bgList[self.currentStage - 1][1]
-            cloudRect = cloudImg.get_rect(center = (screenSize[0]/2,self.cloudPos))
-            if cloudRect.bottom >= 0 and cloudRect.top <= screenSize[1]: screen.blit(cloudImg, cloudRect) # Draw cloud
+        self.showBackgroundCloud()
 
         obstacleMove(obstacles)
 
@@ -1343,11 +1347,7 @@ class Menu:
         while paused:
             screen.fill(screenColor)
             screen.blit(bgList[game.currentStage-1][0],(0,0))
-
-            if showBackgroundCloud:
-                cloudImg = bgList[game.currentStage - 1][1]
-                cloudRect = cloudImg.get_rect(center = (screenSize[0]/2,game.cloudPos))
-                if cloudRect.bottom >= 0 and cloudRect.top <= screenSize[1]: screen.blit(cloudImg, cloudRect) # Draw cloud
+            game.showBackgroundCloud()
 
             if game.levelType == "CAVE" or game.levelType == "BOTH":
                 screen.blit(game.cave.image,game.cave.rect)
@@ -1478,11 +1478,7 @@ class Menu:
             # Background
             screen.fill(screenColor)
             screen.blit(bgList[game.currentStage - 1][0],(0,0))
-
-            if showBackgroundCloud:
-                cloudImg = bgList[game.currentStage - 1][1]
-                cloudRect = cloudImg.get_rect(center = (screenSize[0]/2,game.cloudPos))
-                if cloudRect.bottom >= 0 and cloudRect.top <= screenSize[1]: screen.blit(cloudImg, cloudRect) # Draw cloud
+            game.showBackgroundCloud()
 
             if game.levelType == "CAVE" or game.levelType == "BOTH": screen.blit(game.cave.image,game.cave.rect)
             screen.blit(player.finalImg,player.finalRect) # Explosion
@@ -1602,10 +1598,7 @@ class Menu:
 
             screen.fill(screenColor)
             screen.blit(bgList[game.currentStage - 1][0],(0,0))
-            if showBackgroundCloud:
-                cloudImg = bgList[game.currentStage - 1][1]
-                cloudRect = cloudImg.get_rect(center = (screenSize[0]/2,game.cloudPos))
-                if cloudRect.bottom >= 0 and cloudRect.top <= screenSize[1]: screen.blit(cloudImg, cloudRect) # Draw cloud
+            game.showBackgroundCloud()
 
             for ship in bgShips:
                 ship.move()
@@ -1930,11 +1923,7 @@ class Player(pygame.sprite.Sprite):
                 height = explosionList[self.explosionState].get_height()
                 width = explosionList[self.explosionState].get_width()
                 screen.blit(bgList[game.currentStage-1][0],(0,0))
-
-                if showBackgroundCloud:
-                    cloudImg = bgList[game.currentStage - 1][1]
-                    cloudRect = cloudImg.get_rect(center = (screenSize[0]/2,game.cloudPos))
-                    if cloudRect.bottom >= 0 and cloudRect.top <= screenSize[1]: screen.blit(cloudImg, cloudRect) # Draw cloud
+                game.showBackgroundCloud()
 
                 if game.levelType == "CAVE" or game.levelType == "BOTH": screen.blit(game.cave.image,game.cave.rect) # Draw cave
                 # Draw obstacles during explosion
