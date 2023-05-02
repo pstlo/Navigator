@@ -185,7 +185,7 @@ showPresence = True # Default = True
 
 # FOR EXE/APP RESOURCES
 def resources(relative):
-    try: base = sys._MEIPASS # Running from EXE/APP
+    try: base = sys._MEIPASS # Running from EXE
     except Exception: base = os.path.abspath(".") # Running fron script
     return os.path.join(base, relative)
 
@@ -739,7 +739,6 @@ class Game:
             self.cave.update()
             if self.cave.rect.top <= screenSize[1] and self.cave.rect.bottom >= 0:
                 screen.blit(self.cave.image,self.cave.rect) # Draw
-
                 # Collision detection
                 if pygame.sprite.collide_mask(self.cave,player):
                     if player.shields > 0: player.shieldDown(events)
@@ -917,7 +916,7 @@ class Game:
             if cloudRect.bottom >= 0 and cloudRect.top <= screenSize[1]: screen.blit(cloudImg, cloudRect) # Draw cloud
 
 
-    # DRAW FRAME OUTSIDE OF MAIN GAME LOOP
+    # Draw frame outside of main game loop
     def alternateUpdate(self,player,obstacles,events):
         player.alternateMovement()
         player.movement()
@@ -1354,7 +1353,8 @@ class Menu:
             screen.blit(bgList[game.currentStage-1][0],(0,0))
             game.showBackgroundCloud()
 
-            if game.levelType == "CAVE" or game.levelType == "BOTH": screen.blit(game.cave.image,game.cave.rect)
+            if game.levelType == "CAVE" or game.levelType == "BOTH":
+                screen.blit(game.cave.image,game.cave.rect)
 
             game.showHUD(player)
             screen.blit(game.thisPoint.image, game.thisPoint.rect)
