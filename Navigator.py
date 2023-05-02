@@ -146,7 +146,7 @@ maxObstacles = 12 *scaler  # Default = 12
 obstacleBoundaries = "KILL" # Default = "KILL"
 spinSpeed = 1 # Default = 1
 obstacleWipe = False # Default = False / Wipe before level
-levelType = "BOTH" # Default = "OBS" / Level type (OBS,CAVE,BOTH)
+levelType = "OBS" # Default = "OBS" / Level type (OBS,CAVE,BOTH)
 spawnPattern = "ALL"  # Default = "ALL" / Removes restriction on obstacle movement/ (ALL,CAVE,RESTRICTED) restricted = most difficult
 
 levelTimer = 15 # Default = 15 / Time (seconds) between levels (can be overridden)
