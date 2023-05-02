@@ -177,6 +177,9 @@ stageList = [stageOneLevels, stageTwoLevels] # List of stages
 # SAVING
 encryptGameRecords = True # Hide game records from user to prevent manual unlocks
 invalidKeyMessage = "Get a key to save progress :)" # Saved to game records file if encryptGameRecords == True and key is invalid
+
+# DISCORD PRESENCE
+showPresence = True # Default = True
 #----------------------------------------------------------------------------------------------------------------------
 
 
@@ -188,8 +191,8 @@ def resources(relative):
 
 
 # SPECIFY UPDATE SCREEN UPDATE METHOD
-if qualityMode: updateNotFlip = False # use update instead of flip for display updates
-else: updateNotFlip = True
+if qualityMode: updateNotFlip = False
+else: updateNotFlip = True # use update instead of flip for display updates
 
 # GET SCREEN SIZE
 displayInfo = pygame.display.Info()
@@ -266,11 +269,14 @@ pygame.display.set_icon(windowIcon)
 screenColor = [0,0,0] # Screen fill color
 
 # DISCORD PRESENCE
-try:
-    presence = pypresence.Presence((Fernet(base64.b64decode(os.getenv('KEY1'))).decrypt(os.getenv('TOKEN'))).decode())
-    presence.connect()
-    presence.update(details='Playing Navigator', state='Navigating the depths of space', large_image='background', small_image = 'icon', buttons=[{'label': 'Play Navigator', 'url': 'https://pstlo.github.io/Navigator'}],start=int(time.time()))
-except: presence = None
+if showPresence:
+    try:
+        presence = pypresence.Presence((Fernet(base64.b64decode(os.getenv('KEY1'))).decrypt(os.getenv('TOKEN'))).decode())
+        presence.connect()
+        presence.update(details='Playing Navigator', state='Navigating the depths of space', large_image='background', small_image = 'icon', buttons=[{'label': 'Play Navigator', 'url': 'https://pstlo.github.io/Navigator'}],start=int(time.time()))
+    except: presence = None
+else: presence = None
+
 
 # QUIT GAME
 def quitGame():
@@ -485,8 +491,6 @@ playerShield = pygame.transform.scale(pygame.image.load(resources(os.path.join(c
 
 # MUSIC ASSET
 pygame.mixer.music.load(resources(os.path.join(soundDirectory,"Soundtrack.mp3")))
-
-# LICENSE FREE SOUND ASSETS
 
 # EXPLOSION NOISE ASSET
 explosionNoise = pygame.mixer.Sound(resources(os.path.join(soundDirectory,"Explosion.wav")))
@@ -814,8 +818,8 @@ class Game:
                     if not self.musicMuted: explosionNoise.play()
                     menu.gameOver(self,player,obstacles) # Game over
 
-            # Obstacle movement
             for obs in obstacles:
+                # Obstacle movement
                 position = obs.rect.center
                 if "N" in obs.direction: obs.rect.centery -= obs.speed
                 if "S" in obs.direction: obs.rect.centery += obs.speed
@@ -1889,6 +1893,7 @@ class Player(pygame.sprite.Sprite):
                 self.updatePlayerConstants(game) # Update attributes
 
 
+        # Update player attributes
         def updatePlayerConstants(self,game):
             self.image = spaceShipList[game.savedShipLevel][2][0]
             self.laserImage = spaceShipList[game.savedShipLevel][1]
@@ -2151,11 +2156,9 @@ class BackgroundShip:
         elif self.size > maxBackgroundShipSize:
             self.size = minBackgroundShipSize
             self.speed = minBackgroundShipSpeed
-
         self.speed = maxBackgroundShipSpeed/self.size
         if self.speed > maxBackgroundShipSpeed: self.speed = maxBackgroundShipSpeed
         elif self.speed < minBackgroundShipSpeed: self.speed = minBackgroundShipSpeed
-
         self.movement = getMovement("ALL")
         self.direction = self.movement[1]
         self.angle = getAngle(self.direction)
@@ -2168,6 +2171,7 @@ class BackgroundShip:
         self.displayRect = self.display.get_rect(center = self.rect.center)
         self.active = False
 
+
     def move(self):
         if self.count >= backgroundShipDelay:
             if "N" in self.direction: self.rect.centery -= self.speed
@@ -2179,6 +2183,7 @@ class BackgroundShip:
         self.count +=1
         self.activate()
 
+
     def draw(self,showImage,showText):
         if self.active:
             if not showImage and not showText: return
@@ -2188,6 +2193,7 @@ class BackgroundShip:
                 if showImage: screen.blit(drawing,drawee)
                 if showText: screen.blit(self.display,supporterRect)
 
+
     # Returns true if off screen
     def offScreen(self):
         if showSupporterNames and not showBackgroundShips:
@@ -2195,9 +2201,11 @@ class BackgroundShip:
         else:
             if self.rect.bottom < 0 or self.rect.top > screenSize[1] or self.rect.left > screenSize[0] or self.rect.right < 0: return True
 
+
     def activate(self):
         if not self.active:
             if not self.offScreen(): self.active = True
+
 
 
 # ROTATE IMAGE
@@ -2308,7 +2316,7 @@ def spacedPositionGenerator(lastPos):
         else: attempts+=1
 
 
-# GET ANGLE
+# GET ANGLE FOR CORRESPONDING DIRECTION
 def getAngle(direction):
     if direction == "N": return 0
     elif direction == "S": return 180
@@ -2331,9 +2339,11 @@ def valueScaler(amount, minimum, maximum, bottom, top):
         return min(max(scaled, minimum), maximum)
 
 
+# INITIALIZE GAME
 game = Game(loadRecords()) # Initialize game with records loaded
 menu = Menu() # Initialize menus
 
+# SET VOLUME
 if not game.musicMuted: pygame.mixer.music.set_volume(musicVolume / 100)
 else: pygame.mixer.music.set_volume(0)
 
