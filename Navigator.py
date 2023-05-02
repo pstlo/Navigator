@@ -146,7 +146,7 @@ maxObstacles = 12 *scaler  # Default = 12
 obstacleBoundaries = "KILL" # Default = "KILL"
 spinSpeed = 1 # Default = 1
 obstacleWipe = False # Default = False / Wipe before level
-levelType = "OBS" # Default = "OBS" / Level type (OBS,CAVE,BOTH)
+levelType = "BOTH" # Default = "OBS" / Level type (OBS,CAVE,BOTH)
 spawnPattern = "ALL"  # Default = "ALL" / Removes restriction on obstacle movement/ (ALL,CAVE,RESTRICTED) restricted = most difficult
 
 levelTimer = 15 # Default = 15 / Time (seconds) between levels (can be overridden)
@@ -185,7 +185,7 @@ showPresence = True # Default = True
 
 # FOR EXE/APP RESOURCES
 def resources(relative):
-    try: base = sys._MEIPASS # Running from EXE
+    try: base = sys._MEIPASS # Running from EXE/APP
     except Exception: base = os.path.abspath(".") # Running fron script
     return os.path.join(base, relative)
 
@@ -322,7 +322,7 @@ def drawGameOverLabels(textList, conditionOne, conditionTwo):
             else: skipped+=1
 
 
-# Based on OS
+# Get path to game records based on OS
 def getRecordsPath():
     if platform.system().lower() == 'windows' or platform.system().lower == 'linux': return './gameRecords.txt' # For windows and linux
     else: return resources('gameRecords.txt') # For MacOS
@@ -739,6 +739,7 @@ class Game:
             self.cave.update()
             if self.cave.rect.top <= screenSize[1] and self.cave.rect.bottom >= 0:
                 screen.blit(self.cave.image,self.cave.rect) # Draw
+
                 # Collision detection
                 if pygame.sprite.collide_mask(self.cave,player):
                     if player.shields > 0: player.shieldDown(events)
@@ -916,7 +917,7 @@ class Game:
             if cloudRect.bottom >= 0 and cloudRect.top <= screenSize[1]: screen.blit(cloudImg, cloudRect) # Draw cloud
 
 
-    # Draw frame outside of main game loop
+    # DRAW FRAME OUTSIDE OF MAIN GAME LOOP
     def alternateUpdate(self,player,obstacles,events):
         player.alternateMovement()
         player.movement()
@@ -1353,8 +1354,7 @@ class Menu:
             screen.blit(bgList[game.currentStage-1][0],(0,0))
             game.showBackgroundCloud()
 
-            if game.levelType == "CAVE" or game.levelType == "BOTH":
-                screen.blit(game.cave.image,game.cave.rect)
+            if game.levelType == "CAVE" or game.levelType == "BOTH": screen.blit(game.cave.image,game.cave.rect)
 
             game.showHUD(player)
             screen.blit(game.thisPoint.image, game.thisPoint.rect)
