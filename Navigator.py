@@ -267,11 +267,10 @@ screenColor = [0,0,0] # Screen fill color
 
 # DISCORD PRESENCE
 try:
-    presence = pypresence.Presence(os.getenv('TOKEN'))
+    presence = pypresence.Presence((Fernet(base64.b64decode(os.getenv('KEY1'))).decrypt(os.getenv('TOKEN'))).decode())
     presence.connect()
     presence.update(details='Playing Navigator', state='Navigating the depths of space', large_image='background', small_image = 'icon', buttons=[{'label': 'Play Navigator', 'url': 'https://pstlo.github.io/Navigator'}],start=int(time.time()))
 except: presence = None
-
 
 # QUIT GAME
 def quitGame():
@@ -336,6 +335,7 @@ pointsDirectory = os.path.join(currentDirectory, 'Points') # Point image directo
 soundDirectory = os.path.join(currentDirectory, 'Sounds') # Sound assets directory
 supportersDirectory = os.path.join(currentDirectory,'Supporters') # Supporters directory
 recordsPath = getRecordsPath()
+
 
 # GET KEY
 def getKey():
