@@ -2000,8 +2000,7 @@ class Caves(pygame.sprite.Sprite):
 
     def update(self):
         self.rect.centery += self.speed # Move
-        if not self.leave and self.rect.top + screenSize[1] >= screenSize[1]:
-            self.rect.bottom = screenSize[1] # Wrap
+        if not self.leave and self.rect.bottom > screenSize[1] * 2.5: self.rect.bottom = screenSize[1]*1.5
 
 
 
