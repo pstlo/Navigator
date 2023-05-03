@@ -104,12 +104,6 @@ maxBackgroundShipSpawnDelay = 3000 # / Max delay (ms) before a ship spawns
 showBackgroundShips = True # Default = True
 showSupporterNames = True # Default = True
 
-# PLAYER
-exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
-defaultToHighSkin = True # Default = True / Default to highest skin unlocked on game launch
-defaultToHighShip = False # Default = False / Default to highest ship unlocked on game launch
-drawExhaust = True # Default = True
-
 # SOUNDS
 musicMuted = False # Default = False
 musicVolume = 10 # Default = 10 / Music volume / 100
@@ -121,6 +115,11 @@ menuLoopEnd = 12800 # Default = 12800
 musicLoopStart = 25000 # Default = 25000
 musicLoopEnd = 76000 # Default = 76000
 
+# PLAYER
+exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
+defaultToHighSkin = True # Default = True / Default to highest skin unlocked on game launch
+defaultToHighShip = False # Default = False / Default to highest ship unlocked on game launch
+drawExhaust = True # Default = True
 # SHIP CONSTANTS
 #                       [speed,fuel,maxFuel,regen,delay,boostSpeed,hasGuns,laserCost,laserSpeed,fireRate,boostDrain,collats,hasShields,shields,shieldPieces,piecesNeeded]
 defaultShipAttributes = [ 5,    1,  20,     0.05, 50,   7,         False,  0,        0,         0,       0.4,        True,  True,       0,      0,           5          ]
@@ -131,17 +130,19 @@ oldReliableAttributes = [ 4,   10,  15,     0.05, 50,   6,         True,   1,   
 
 shipAttributes = [defaultShipAttributes,gunShipAttributes,laserShipAttributes,hyperYachtAttributes,oldReliableAttributes]
 
+
+
+# LEVELS
+levelTimer = 15 # Default = 15 / Time (seconds) between levels (can be overridden)
+levelUpCloudSpeed = 25 # Default = 25 / Only affects levels preceded by wipe
+
 # OBSTACLES
 explosionDelay = 1 # Default = 1
 obstacleSpawnRange = [0,1] # Default = [0,1]
 
 # CAVES
-caveStartPos = screenSize[1]*-2 # Default = -1600 / Cave start Y coordinate
-caveSpeed = 40 # Default = 20 / Cave flyby speed
-
-# LEVELS
-levelTimer = 15 # Default = 15 / Time (seconds) between levels (can be overridden)
-levelUpCloudSpeed = 25 # Default = 25 / Only affects levels preceded by wipe
+caveStartPos =  0 #screenSize[1]*-2 # Default = -1600 / Cave start Y coordinate
+caveSpeed = 10 # Default = 20 / Cave flyby speed
 
 # Type -> (OBS,CAVE,BOTH) / Pattern -> (ALL,AGGRO,TOP,VERT) / Bound -> (KILL,WIPE,BOUNCE)
 # ADD LEVELS HERE:   [ STARTED, START TIME,     BOUNDS, SPEED,      SIZE,       NUMBER,     SPIN, PATTERN, WIPE,  TYPE, ANGLE]
