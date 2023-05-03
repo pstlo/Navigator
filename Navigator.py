@@ -140,25 +140,25 @@ caveStartPos = screenSize[1]*-2 # Default = -1600 / Cave start Y coordinate
 caveSpeed = 40 # Default = 20 / Cave flyby speed
 
 # LEVELS
-
 levelTimer = 15 # Default = 15 / Time (seconds) between levels (can be overridden)
 levelUpCloudSpeed = 25 # Default = 25 / Only affects levels preceded by wipe
 
-# ADD LEVELS HERE:   [ STARTED, START TIME,     BOUNDS, SPEED,       SIZE,       NUMBER,     SPIN, PATTERN,      WIPE,  TYPE, ANGLE]
-levelOne =           [ False,       0,          "KILL", 4*scaler,    30*scaler,  12*scaler,  1,    "ALL",        False, "OBS", 0 ]
-levelTwo =           [ False,       levelTimer, "KILL", 5*scaler,    32*scaler,  16*scaler,  1,    "ALL",        False, "OBS", 0 ]
-levelThree =         [ False,   2 * levelTimer, "KILL", 5*scaler,    34*scaler,  16*scaler,  2,    "ALL",        False, "OBS", 0 ]
-levelFour =          [ False,   3 * levelTimer, "KILL", 5.5*scaler,  36*scaler,  16*scaler,  3,    "ALL",        False, "OBS", 0 ]
-levelFive =          [ False,   4 * levelTimer, "KILL", 6*scaler,    38*scaler,  16*scaler,  4,    "ALL",        False, "OBS", 0 ]
-levelSix =           [ False,   5 * levelTimer, "KILL", 6.5*scaler,  40*scaler,  18*scaler,  3,    "ALL",        False, "OBS", 0 ]
-levelSeven =         [ False,   6 * levelTimer, "KILL", 2.2*scaler,  50*scaler,  65*scaler,  1,    "ALL",        False, "OBS", 0 ]
-levelEight =         [ False,   7 * levelTimer, "KILL", 7*scaler,    44*scaler,  20*scaler,  4,    "ALL",        True , "OBS", 0 ]
-levelNine =          [ False,   8 * levelTimer, "KILL", 7*scaler,    46*scaler,  21*scaler,  5,    "ALL",        False, "OBS", 0 ]
-levelTen =           [ False,   9 * levelTimer, "KILL", 7.5*scaler,  48*scaler,  22*scaler,  5,    "ALL",        False, "OBS", 0 ]
-stageTwoLevelOne =   [ False,  10 * levelTimer, "KILL", 7.5*scaler,  50*scaler,  23*scaler,  0,    "RESTRICTED", False, "OBS", 0 ]
-stageTwoLevelTwo =   [ False,  11 * levelTimer, "KILL", 8*scaler,    52*scaler,  24*scaler,  0,    "RESTRICTED", False, "OBS", 0 ]
-stageTwoLevelThree = [ False,  12 * levelTimer, "KILL", 8*scaler,    54*scaler,  25*scaler,  3,    "RESTRICTED", False, "OBS", 0 ]
-stageTwoLevelFour =  [ False,  13 * levelTimer, "KILL", 8.5*scaler,  56*scaler,  26*scaler,  0,    "RESTRICTED", False, "OBS", 0 ]
+# Type -> (OBS,CAVE,BOTH) / Pattern -> (ALL,AGGRO,TOP,VERT) / Bound -> (KILL,WIPE,BOUNCE)
+# ADD LEVELS HERE:   [ STARTED, START TIME,     BOUNDS, SPEED,      SIZE,       NUMBER,     SPIN, PATTERN, WIPE,  TYPE, ANGLE]
+levelOne =           [ False,       0,          "KILL", 4*scaler,   30*scaler,  12*scaler,  1,    "ALL",   False, "OBS", 0   ]
+levelTwo =           [ False,       levelTimer, "KILL", 5*scaler,   32*scaler,  16*scaler,  1,    "ALL",   False, "OBS", 0   ]
+levelThree =         [ False,   2 * levelTimer, "KILL", 5*scaler,   34*scaler,  16*scaler,  2,    "ALL",   False, "OBS", 0   ]
+levelFour =          [ False,   3 * levelTimer, "KILL", 5.5*scaler, 36*scaler,  16*scaler,  3,    "ALL",   False, "OBS", 0   ]
+levelFive =          [ False,   4 * levelTimer, "KILL", 6*scaler,   38*scaler,  16*scaler,  4,    "ALL",   False, "OBS", 0   ]
+levelSix =           [ False,   5 * levelTimer, "KILL", 6.5*scaler, 40*scaler,  18*scaler,  3,    "ALL",   False, "OBS", 0   ]
+levelSeven =         [ False,   6 * levelTimer, "KILL", 2.2*scaler, 50*scaler,  65*scaler,  1,    "ALL",   False, "OBS", 0   ]
+levelEight =         [ False,   7 * levelTimer, "KILL", 6.5*scaler, 44*scaler,  20*scaler,  4,    "ALL",   True , "OBS", 0   ]
+levelNine =          [ False,   8 * levelTimer, "KILL", 6.5*scaler, 46*scaler,  21*scaler,  5,    "ALL",   False, "OBS", 0   ]
+levelTen =           [ False,   9 * levelTimer, "KILL", 7*scaler,   48*scaler,  22*scaler,  5,    "ALL",   False, "OBS", 0   ]
+stageTwoLevelOne =   [ False,  10 * levelTimer, "KILL", 7*scaler,   50*scaler,  23*scaler,  0,    "AGGRO", False, "OBS", 0   ]
+stageTwoLevelTwo =   [ False,  11 * levelTimer, "KILL", 7.5*scaler, 52*scaler,  24*scaler,  0,    "AGGRO", False, "OBS", 0   ]
+stageTwoLevelThree = [ False,  12 * levelTimer, "KILL", 7.5*scaler, 54*scaler,  25*scaler,  3,    "AGGRO", False, "OBS", 0   ]
+stageTwoLevelFour =  [ False,  13 * levelTimer, "KILL", 8*scaler,   56*scaler,  26*scaler,  0,    "AGGRO", False, "OBS", 0   ]
 
 # DIVIDE INTO STAGES
 stageOneLevels = [levelOne,levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight,levelNine,levelTen] # Stage 1
@@ -2242,9 +2242,10 @@ def randomEightDirection():
 # MOVEMENT AND POSITION GENERATION
 def getMovement(spawnPattern):
     top,bottom,left,right = [],[],[],[]
-    if spawnPattern == "RESTRICTED": top, bottom, left, right, = ["SE", "SW", "S"], ["N", "NE", "NW"], ["E", "NE", "SE"], ["NW", "SW", "W"]
-    elif spawnPattern == "CAVE": top = ["SE", "SW", "S"]
-    else: top, bottom, left, right = topDir, bottomDir, leftDir, rightDir
+    if spawnPattern == "AGGRO": top, bottom, left, right, = ["SE", "SW", "S"], ["N", "NE", "NW"], ["E", "NE", "SE"], ["NW", "SW", "W"]
+    elif spawnPattern == "TOP": top = ["SE", "SW", "S"]
+    elif spawnPattern == "VERT": top, bottom = ["SE", "SW", "S"], ["N", "NE", "NW"]
+    else: top, bottom, left, right = topDir, bottomDir, leftDir, rightDir # Default / "All"
 
     X = random.randint(0, screenSize[0])
     Y = random.randint(0, screenSize[1])
@@ -2254,21 +2255,13 @@ def getMovement(spawnPattern):
     lowerY  = random.randint(-obstacleSpawnRange[1],obstacleSpawnRange[0])
     upperY = random.randint(screenSize[1],screenSize[1]+obstacleSpawnRange[1])
 
-    topDirection = top[random.randint(0, len(top) - 1)]
-    if len(bottom) == 0 or len(left) == 0 or len(right) == 0: return [[X,lowerY],topDirection] # Early exit for cave obstacle spawn
+    possible = []
+    if len(top) != 0: possible.append([X, lowerY, top[random.randint(0, len(top) - 1)]])
+    if len(bottom) != 0: possible.append([X, upperY, bottom[random.randint(0, len(bottom) - 1)]])
+    if len(left) != 0: possible.append([lowerX, Y, left[random.randint(0, len(left) - 1)]])
+    if len(right) != 0: possible.append([upperX, Y, right[random.randint(0, len(right) - 1)]])
 
-    leftDirection = left[random.randint(0, len(left) - 1)]
-    bottomDirection = bottom[random.randint(0, len(bottom) - 1)]
-    rightDirection = right[random.randint(0, len(right) - 1)]
-
-    topBound = [X, lowerY, topDirection]
-    leftBound = [lowerX, Y, leftDirection]
-    bottomBound = [X, upperY, bottomDirection]
-    rightBound = [upperX, Y, rightDirection]
-
-    possible = [topBound, leftBound, rightBound, bottomBound]
     movement = possible[ random.randint(0, len(possible) - 1) ]
-
     position = [movement[0], movement[1]]
     direction = movement[2]
     move = [position,direction]
