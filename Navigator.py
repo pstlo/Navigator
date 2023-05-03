@@ -739,6 +739,9 @@ class Game:
         # SHOW POINT SPAWN AREA (Testing)
         if showSpawnArea: pygame.draw.polygon(screen, (255, 0, 0), spawnAreaPoints,1)
 
+        # DRAW POINT
+        screen.blit(self.thisPoint.image, self.thisPoint.rect)
+
         # CAVES
         if self.levelType == "CAVE" or self.levelType == "BOTH":
             if self.cave is None: # SPAWN A CAVE
@@ -755,7 +758,6 @@ class Game:
                         player.explode(game,obstacles) # explosion
                         if not self.musicMuted: explosionNoise.play()
                         menu.gameOver(self,player,obstacles) # Game over
-
         # EXITING CAVE
         elif self.cave is not None and self.cave.leave:
             if self.cave.rect.top > screenSize[1]:
@@ -814,8 +816,7 @@ class Game:
         # DRAW LASERS
         self.laserUpdate(lasers,player)
 
-        # DRAW POINT
-        screen.blit(self.thisPoint.image, self.thisPoint.rect)
+
 
         # UPDATE OBSTACLES
         if self.levelType == "OBS" or self.levelType == "BOTH":
