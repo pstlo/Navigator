@@ -982,44 +982,43 @@ class Game:
 
         # UPDATES LEVEL
         for levelDict in self.gameConstants[self.currentStage-1]:
-            if levelDict["TIME"] == self.gameClock and ( (self.currentLevel > 1 or self.currentStage > 1) or self.gameClock >= self.gameConstants[0][1]["TIME"]):
-                if not levelDict["START"]:
-                    if self.gameConstants[self.currentStage-1][self.currentLevel-1]["wipe"]:
-                        levelUpCloud = stageCloudImg
-                        levelUpRect = levelUpCloud.get_rect()
-                        levelUpRect.center = (screenSize[0]/2, stageUpCloudStartPos)
-                        levelUp = True
+            if levelDict["TIME"] == self.gameClock and not levelDict["START"] and ( (self.currentLevel > 1 or self.currentStage > 1) or (len(self.gameConstants[0]) > 1 and self.gameClock >= self.gameConstants[0][1]["TIME"]) ):
+                if self.gameConstants[self.currentStage-1][self.currentLevel-1]["wipe"]:
+                    levelUpCloud = stageCloudImg
+                    levelUpRect = levelUpCloud.get_rect()
+                    levelUpRect.center = (screenSize[0]/2, stageUpCloudStartPos)
+                    levelUp = True
 
-                        # LEVEL UP ANIMATION / Removes old obstacles
-                        while levelUp:
-                            img, imgRect = rotateImage(player.image, player.rect, player.angle)
-                            self.alternateUpdate(self,player,obstacles,events)
-                            for obs in obstacles:
-                                if obs.rect.centery <= levelUpRect.centery: obs.kill()
+                    # LEVEL UP ANIMATION / Removes old obstacles
+                    while levelUp:
+                        img, imgRect = rotateImage(player.image, player.rect, player.angle)
+                        self.alternateUpdate(self,player,obstacles,events)
+                        for obs in obstacles:
+                            if obs.rect.centery <= levelUpRect.centery: obs.kill()
 
-                            screen.blit(levelUpCloud,levelUpRect) # Draw cloud
-                            game.showHUD(player)
-                            screen.blit(img,imgRect) # Draw player
-                            displayUpdate()
-                            levelUpRect.centery += levelUpCloudSpeed
+                        screen.blit(levelUpCloud,levelUpRect) # Draw cloud
+                        game.showHUD(player)
+                        screen.blit(img,imgRect) # Draw player
+                        displayUpdate()
+                        levelUpRect.centery += levelUpCloudSpeed
 
-                            if levelUpRect.top >= screenSize[1]: levelUp = False
-                            self.clk.tick(fps)
+                        if levelUpRect.top >= screenSize[1]: levelUp = False
+                        self.clk.tick(fps)
 
-                    levelDict["START"] = True
-                    self.obstacleBoundaries = levelDict["bound"]
-                    self.obstacleSpeed = levelDict["speedMult"]
-                    self.maxObstacles = levelDict["maxObsMult"]
-                    self.obstacleSize = levelDict["obsSizeMult"]
-                    self.spinSpeed = levelDict["spinSpeed"]
-                    self.spawnPattern = levelDict["pattern"]
-                    self.wipe = levelDict["wipe"]
-                    self.levelType = levelDict["type"]
-                    self.angle = levelDict["angle"]
-                    if self.cave is not None: self.cave.leave = True # Set cave for exit
-                    self.cloudSpeed += cloudSpeedAdder
-                    self.currentLevel += 1
-                    break
+                levelDict["START"] = True
+                self.obstacleBoundaries = levelDict["bound"]
+                self.obstacleSpeed = levelDict["speedMult"]
+                self.maxObstacles = levelDict["maxObsMult"]
+                self.obstacleSize = levelDict["obsSizeMult"]
+                self.spinSpeed = levelDict["spinSpeed"]
+                self.spawnPattern = levelDict["pattern"]
+                self.wipe = levelDict["wipe"]
+                self.levelType = levelDict["type"]
+                self.angle = levelDict["angle"]
+                if self.cave is not None: self.cave.leave = True # Set cave for exit
+                self.cloudSpeed += cloudSpeedAdder
+                self.currentLevel += 1
+                break
 
 
     # RESET LEVEL PROGRESS
