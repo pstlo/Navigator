@@ -128,9 +128,8 @@ laserShipAttributes =   [ 2,   1,   1,      0,    0,    2,         True,   0,   
 hyperYachtAttributes =  [ 3,   20,  30,     0.1,  25,   12,        False,  0,        0,         0,       0.25,       True,  False,      0,      0,           0          ]
 oldReliableAttributes = [ 4,   10,  15,     0.05, 50,   6,         True,   1,        5,         1000,    0.25,       False, False,      0,      0,           0          ]
 
+#ADD SHIPS TO LIST
 shipAttributes = [defaultShipAttributes,gunShipAttributes,laserShipAttributes,hyperYachtAttributes,oldReliableAttributes]
-
-
 
 # LEVELS
 levelTimer = 15 # Default = 15 / Time (seconds) between levels (can be overridden)
@@ -141,8 +140,8 @@ explosionDelay = 1 # Default = 1
 obstacleSpawnRange = [0,1] # Default = [0,1]
 
 # CAVES
-caveStartPos =  0 #screenSize[1]*-2 # Default = -1600 / Cave start Y coordinate
-caveSpeed = 10 # Default = 20 / Cave flyby speed
+caveStartPos = screenSize[1]*-2 # Default = -1600 / Cave start Y coordinate
+caveSpeed = 20 # Default = 20 / Cave flyby speed
 
 # Type -> (OBS,CAVE,BOTH) / Pattern -> (ALL,AGGRO,TOP,VERT) / Bound -> (KILL,WIPE,BOUNCE)
 # ADD LEVELS HERE:   [ STARTED, START TIME,     BOUNDS, SPEED,      SIZE,       NUMBER,     SPIN, PATTERN, WIPE,  TYPE, ANGLE]
