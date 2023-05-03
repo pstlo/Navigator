@@ -1019,6 +1019,7 @@ class Game:
                     if self.cave is not None: self.cave.leave = True # Set cave for exit
                     self.cloudSpeed += cloudSpeedAdder
                     self.currentLevel += 1
+                    break
 
 
     # RESET LEVEL PROGRESS
