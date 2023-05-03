@@ -2,7 +2,8 @@
 # Copyright (c) 2023 Mike Pistolesi
 # All rights reserved
 
-import os,sys,random,math,platform,json,base64,time,pypresence
+
+import os,sys,random,math,platform,json,base64,time,pypresence,asyncio
 from cryptography.fernet import Fernet
 from dotenv import load_dotenv
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
@@ -148,24 +149,25 @@ spinSpeed = 1 # Default = 1
 obstacleWipe = False # Default = False / Wipe before level
 levelType = "OBS" # Default = "OBS" / Level type (OBS,CAVE,BOTH)
 spawnPattern = "ALL"  # Default = "ALL" / Removes restriction on obstacle movement/ (ALL,CAVE,RESTRICTED) restricted = most difficult
+gameAngle = 0 # Default = 0 / Game orientation
 
 levelTimer = 15 # Default = 15 / Time (seconds) between levels (can be overridden)
 levelUpCloudSpeed = 25 # Default = 25 / Only affects levels preceded by wipe
 
-# ADD LEVELS HERE:   [ STARTED, START TIME,     BOUNDS, SPEED,       SIZE,       NUMBER,     SPIN, PATTERN,      WIPE,  TYPE  ]
-levelTwo =           [ False,       levelTimer, "KILL", 5*scaler,    32*scaler,  16*scaler,  1,    "ALL",        False, "OBS" ]
-levelThree =         [ False,   2 * levelTimer, "KILL", 5*scaler,    34*scaler,  16*scaler,  2,    "ALL",        False, "OBS" ]
-levelFour =          [ False,   3 * levelTimer, "KILL", 5.5*scaler,  36*scaler,  16*scaler,  3,    "ALL",        False, "OBS" ]
-levelFive =          [ False,   4 * levelTimer, "KILL", 6*scaler,    38*scaler,  16*scaler,  4,    "ALL",        False, "OBS" ]
-levelSix =           [ False,   5 * levelTimer, "KILL", 6.5*scaler,  40*scaler,  18*scaler,  3,    "ALL",        False, "OBS" ]
-levelSeven =         [ False,   6 * levelTimer, "KILL", 2.2*scaler,  50*scaler,  65*scaler,  1,    "ALL",        False, "OBS" ]
-levelEight =         [ False,   7 * levelTimer, "KILL", 7*scaler,    44*scaler,  20*scaler,  4,    "ALL",        True , "OBS" ]
-levelNine =          [ False,   8 * levelTimer, "KILL", 7*scaler,    46*scaler,  21*scaler,  5,    "ALL",        False, "OBS" ]
-levelTen =           [ False,   9 * levelTimer, "KILL", 7.5*scaler,  48*scaler,  22*scaler,  5,    "ALL",        False, "OBS" ]
-stageTwoLevelOne =   [ False,  10 * levelTimer, "KILL", 7.5*scaler,  50*scaler,  23*scaler,  0,    "RESTRICTED", False, "OBS" ]
-stageTwoLevelTwo =   [ False,  11 * levelTimer, "KILL", 8*scaler,    52*scaler,  24*scaler,  0,    "RESTRICTED", False, "OBS" ]
-stageTwoLevelThree = [ False,  12 * levelTimer, "KILL", 8*scaler,    54*scaler,  25*scaler,  3,    "RESTRICTED", False, "OBS" ]
-stageTwoLevelFour =  [ False,  13 * levelTimer, "KILL", 8.5*scaler,  56*scaler,  26*scaler,  0,    "RESTRICTED", False, "OBS" ]
+# ADD LEVELS HERE:   [ STARTED, START TIME,     BOUNDS, SPEED,       SIZE,       NUMBER,     SPIN, PATTERN,      WIPE,  TYPE, ANGLE  ]
+levelTwo =           [ False,       levelTimer, "KILL", 5*scaler,    32*scaler,  16*scaler,  1,    "ALL",        False, "OBS", 0 ]
+levelThree =         [ False,   2 * levelTimer, "KILL", 5*scaler,    34*scaler,  16*scaler,  2,    "ALL",        False, "OBS", 0 ]
+levelFour =          [ False,   3 * levelTimer, "KILL", 5.5*scaler,  36*scaler,  16*scaler,  3,    "ALL",        False, "OBS", 0 ]
+levelFive =          [ False,   4 * levelTimer, "KILL", 6*scaler,    38*scaler,  16*scaler,  4,    "ALL",        False, "OBS", 0 ]
+levelSix =           [ False,   5 * levelTimer, "KILL", 6.5*scaler,  40*scaler,  18*scaler,  3,    "ALL",        False, "OBS", 0 ]
+levelSeven =         [ False,   6 * levelTimer, "KILL", 2.2*scaler,  50*scaler,  65*scaler,  1,    "ALL",        False, "OBS", 0 ]
+levelEight =         [ False,   7 * levelTimer, "KILL", 7*scaler,    44*scaler,  20*scaler,  4,    "ALL",        True , "OBS", 0 ]
+levelNine =          [ False,   8 * levelTimer, "KILL", 7*scaler,    46*scaler,  21*scaler,  5,    "ALL",        False, "OBS", 0 ]
+levelTen =           [ False,   9 * levelTimer, "KILL", 7.5*scaler,  48*scaler,  22*scaler,  5,    "ALL",        False, "OBS", 0 ]
+stageTwoLevelOne =   [ False,  10 * levelTimer, "KILL", 7.5*scaler,  50*scaler,  23*scaler,  0,    "RESTRICTED", False, "OBS", 0 ]
+stageTwoLevelTwo =   [ False,  11 * levelTimer, "KILL", 8*scaler,    52*scaler,  24*scaler,  0,    "RESTRICTED", False, "OBS", 0 ]
+stageTwoLevelThree = [ False,  12 * levelTimer, "KILL", 8*scaler,    54*scaler,  25*scaler,  3,    "RESTRICTED", False, "OBS", 0 ]
+stageTwoLevelFour =  [ False,  13 * levelTimer, "KILL", 8.5*scaler,  56*scaler,  26*scaler,  0,    "RESTRICTED", False, "OBS", 0 ]
 
 # DIVIDE INTO STAGES
 stageOneLevels = [levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight,levelNine,levelTen] # Stage 1
@@ -268,19 +270,29 @@ pygame.display.set_caption('Navigator')
 pygame.display.set_icon(windowIcon)
 screenColor = [0,0,0] # Screen fill color
 
+
 # DISCORD PRESENCE
+presence = None
+
+
+# ASYNCHRONOUSLY UPDATE DISCORD PRESENCE
+async def getPresence(presence):
+    try:
+        await asyncio.wait_for(presence.connect(),timeout = 0.5)
+        await presence.update(details='Playing Navigator', state='Navigating the depths of space', large_image='background', small_image = 'icon', buttons=[{'label': 'Play Navigator', 'url': 'https://pstlo.github.io/Navigator'}],start=int(time.time()))
+    except:
+        return None
+
+
 if showPresence:
     try:
-        presence = pypresence.Presence((Fernet(base64.b64decode(os.getenv('KEY1'))).decrypt(os.getenv('TOKEN'))).decode())
-        presence.connect()
-        presence.update(details='Playing Navigator', state='Navigating the depths of space', large_image='background', small_image = 'icon', buttons=[{'label': 'Play Navigator', 'url': 'https://pstlo.github.io/Navigator'}],start=int(time.time()))
+        presence = pypresence.AioPresence((Fernet(base64.b64decode(os.getenv('KEY1'))).decrypt(os.getenv('TOKEN'))).decode())
+        asyncio.run(getPresence(presence))
     except: presence = None
-else: presence = None
 
 
 # QUIT GAME
 def quitGame():
-    if presence is not None:presence.close()
     pygame.quit()
     sys.exit()
 
@@ -645,6 +657,7 @@ class Game:
         self.explosions = []
         self.cave,self.caveIndex = None, 0 # For cave levels
         self.musicMuted = musicMuted
+        self.angle = 0 # Game rotation
 
         contantList = []
         for stage in stageList:
@@ -660,7 +673,8 @@ class Game:
                     "spinSpeed" : settings[6],
                     "pattern" : settings[7],
                     "wipe" : settings[8],
-                    "type":settings[9]
+                    "type":settings[9],
+                    "angle":settings[10]
                     }
                 stageConstants.append(levelDict)
             contantList.append(stageConstants)
@@ -676,7 +690,8 @@ class Game:
                 "spinSpeed" : self.spinSpeed,
                 "pattern" : self.spawnPattern,
                 "wipe" : self.wipe,
-                "type":self.levelType
+                "type":self.levelType,
+                "angle":self.angle
                 }
 
 
@@ -889,7 +904,7 @@ class Game:
 
         # UPDATE SCREEN
         player.lastAngle = player.angle # Save recent player orientation
-        player.angle = 0 # Reset player orientation
+        player.angle = game.angle # Reset player orientation
         displayUpdate()
         self.clk.tick(fps)
 
@@ -905,6 +920,7 @@ class Game:
         self.spawnPattern = self.savedConstants["pattern"]
         self.wipe = self.savedConstants["wipe"]
         self.levelType = self.savedConstants["type"]
+        self.angle = self.savedConstants["angle"]
         self.cloudPos = cloudStart
 
 
@@ -918,7 +934,7 @@ class Game:
 
     # Draw frame outside of main game loop
     def alternateUpdate(self,player,obstacles,events):
-        player.alternateMovement()
+        player.alternateMovement(self)
         player.movement()
         player.wrapping()
         screen.fill(screenColor)
@@ -951,7 +967,7 @@ class Game:
                 while stageUp:
 
                     img, imgRect = rotateImage(player.image, player.rect, player.angle)
-                    self.alternateUpdate(player,obstacles,events)
+                    self.alternateUpdate(self,player,obstacles,events)
 
                     for obs in obstacles:
                         if obs.rect.top <= stageUpRect.bottom: obs.kill()
@@ -985,7 +1001,7 @@ class Game:
                         # LEVEL UP ANIMATION / Removes old obstacles
                         while levelUp:
                             img, imgRect = rotateImage(player.image, player.rect, player.angle)
-                            self.alternateUpdate(player,obstacles,events)
+                            self.alternateUpdate(self,player,obstacles,events)
                             for obs in obstacles:
                                 if obs.rect.centery <= levelUpRect.centery: obs.kill()
 
@@ -1008,6 +1024,7 @@ class Game:
                     self.spawnPattern = levelDict["pattern"]
                     self.wipe = levelDict["wipe"]
                     self.levelType = levelDict["type"]
+                    self.angle = levelDict["angle"]
                     if self.cave is not None: self.cave.leave = True # Set cave for exit
                     self.cloudSpeed += cloudSpeedAdder
                     self.currentLevel += 1
@@ -1120,6 +1137,19 @@ class Game:
 
     # Get number of skins unlocked for a specified level number
     def skinsUnlocked(self,level): return self.getUnlocks(len(spaceShipList[level][2]),unlockTimePerLevels[level])
+
+
+    # RESTART GAME
+    def reset(self,player,obstacles):
+        self.gameClock = 0
+        self.currentLevel = 1
+        self.currentStage = 1
+        self.score = 0
+        self.attemptNumber += 1
+        self.cave = None
+        self.killAllObstacles(obstacles)
+        self.resetAllLevels()
+        player.kill()
 
 
 
@@ -1510,31 +1540,15 @@ class Menu:
 
                 elif (event.type == pygame.KEYDOWN and event.key == pygame.K_TAB):
                     # SET DEFAULTS AND GO BACK TO MENU
-                    game.gameClock = 0
-                    game.currentLevel = 1
-                    game.currentStage = 1
-                    game.score = 0
-                    game.cave = None
-                    player.kill()
-                    game.killAllObstacles(obstacles)
-                    game.resetAllLevels()
-                    game.attemptNumber += 1
+                    game.reset(player,obstacles)
                     game.mainMenu = True
                     game.skipAutoSkinSelect = True
                     gameLoop()
 
                 elif (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE):
                     # SET DEFAULTS AND RESTART GAME
-                    game.gameClock = 0
-                    game.currentLevel = 1
-                    game.currentStage = 1
-                    game.score = 0
-                    game.cave = None
-                    player.kill()
+                    game.reset(player,obstacles)
                     player.updatePlayerConstants(game)
-                    game.killAllObstacles(obstacles)
-                    game.resetAllLevels()
-                    game.attemptNumber += 1
                     running = True
                     gameLoop()
 
@@ -1809,7 +1823,7 @@ class Player(pygame.sprite.Sprite):
 
 
         # MOVEMENT DURING STAGE UP
-        def alternateMovement(self):
+        def alternateMovement(self,game):
             for event in pygame.event.get():
                 if (event.type == pygame.QUIT) or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE): quitGame()
 
@@ -1838,7 +1852,7 @@ class Player(pygame.sprite.Sprite):
                 if event.type == pygame.KEYDOWN and (event.key == pygame.K_s or event.key == pygame.K_DOWN) and (event.key == pygame.K_d or event.key == pygame.K_RIGHT) and (event.key == pygame.K_w or event.key == pygame.K_UP): self.angle = -90
                 if event.type == pygame.KEYDOWN and (event.key == pygame.K_s or event.key == pygame.K_DOWN) and (event.key == pygame.K_a or event.key == pygame.K_LEFT) and (event.key == pygame.K_w or event.key == pygame.K_UP): self.angle = 90
                 if event.type == pygame.KEYDOWN and (event.key == pygame.K_s or event.key == pygame.K_DOWN) and (event.key == pygame.K_a or event.key == pygame.K_LEFT) and (event.key == pygame.K_d or event.key == pygame.K_RIGHT) and (event.key == pygame.K_w or event.key == pygame.K_UP): self.angle = 0
-                else: self.angle = 0
+                else: self.angle = game.angle
 
 
         # WRAP AROUND SCREEN
@@ -2354,7 +2368,6 @@ def gameLoop():
     game.pauseCount = 0 # Reset pause uses
     game.resetClock() # Restart game clock
     player = Player(game) # Initialize player
-
     if game.mainMenu: menu.home(game,player)
     else:
         for i in range(game.savedSkin): player.nextSkin()
