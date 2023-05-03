@@ -140,21 +140,12 @@ caveStartPos = screenSize[1]*-2 # Default = -1600 / Cave start Y coordinate
 caveSpeed = 40 # Default = 20 / Cave flyby speed
 
 # LEVELS
-# Initial values (Level 1)
-obstacleSpeed = 4 *scaler  # Default = 4
-obstacleSize = 30 *scaler  # Default = 30
-maxObstacles = 12 *scaler  # Default = 12
-obstacleBoundaries = "KILL" # Default = "KILL"
-spinSpeed = 1 # Default = 1
-obstacleWipe = False # Default = False / Wipe before level
-levelType = "OBS" # Default = "OBS" / Level type (OBS,CAVE,BOTH)
-spawnPattern = "ALL"  # Default = "ALL" / Removes restriction on obstacle movement/ (ALL,CAVE,RESTRICTED) restricted = most difficult
-gameAngle = 0 # Default = 0 / Game orientation
 
 levelTimer = 15 # Default = 15 / Time (seconds) between levels (can be overridden)
 levelUpCloudSpeed = 25 # Default = 25 / Only affects levels preceded by wipe
 
-# ADD LEVELS HERE:   [ STARTED, START TIME,     BOUNDS, SPEED,       SIZE,       NUMBER,     SPIN, PATTERN,      WIPE,  TYPE, ANGLE  ]
+# ADD LEVELS HERE:   [ STARTED, START TIME,     BOUNDS, SPEED,       SIZE,       NUMBER,     SPIN, PATTERN,      WIPE,  TYPE, ANGLE]
+levelOne =           [ False,       0,          "KILL", 4*scaler,    30*scaler,  12*scaler,  1,    "ALL",        False, "OBS", 0 ]
 levelTwo =           [ False,       levelTimer, "KILL", 5*scaler,    32*scaler,  16*scaler,  1,    "ALL",        False, "OBS", 0 ]
 levelThree =         [ False,   2 * levelTimer, "KILL", 5*scaler,    34*scaler,  16*scaler,  2,    "ALL",        False, "OBS", 0 ]
 levelFour =          [ False,   3 * levelTimer, "KILL", 5.5*scaler,  36*scaler,  16*scaler,  3,    "ALL",        False, "OBS", 0 ]
@@ -170,7 +161,7 @@ stageTwoLevelThree = [ False,  12 * levelTimer, "KILL", 8*scaler,    54*scaler, 
 stageTwoLevelFour =  [ False,  13 * levelTimer, "KILL", 8.5*scaler,  56*scaler,  26*scaler,  0,    "RESTRICTED", False, "OBS", 0 ]
 
 # DIVIDE INTO STAGES
-stageOneLevels = [levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight,levelNine,levelTen] # Stage 1
+stageOneLevels = [levelOne,levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight,levelNine,levelTen] # Stage 1
 stageTwoLevels = [stageTwoLevelOne,stageTwoLevelTwo,stageTwoLevelThree,stageTwoLevelFour] # Stage 2
 
 # STORE IN LIST
@@ -626,39 +617,8 @@ rightDir = ["W", "N", "S", "NW", "SW"]
 # GAME
 class Game:
     def __init__(self,records):
-        self.currentLevel = 1
-        self.currentStage = 1
-        self.score = 0 # Points collected
-        self.thisPoint = Point(None,None) # Currently active point (starts with default)
-        self.lastPointPos = self.thisPoint.rect.center # Last point's position for spacing
-        self.gameClock = 1
-        self.pauseCount = 0
-        self.clk = pygame.time.Clock()
-        self.records = records # Game records dictionary
-        self.obstacleSpeed = obstacleSpeed
-        self.obstacleSize = obstacleSize
-        self.maxObstacles = maxObstacles
-        self.spawnPattern = spawnPattern
-        self.obstacleBoundaries = obstacleBoundaries # Obstacle handling at screen border
-        self.cloudSpeed = cloudSpeed
-        self.attemptNumber = 1
-        self.mainMenu = True # Assures start menu only runs when called
-        self.sessionLongRun = 0 # Longest run this session
-        self.gameConstants = []
-        self.skipAutoSkinSelect = False # For re-entering home menu from game over screen
-        self.savedSkin = 0 # Saved ship skin
-        self.savedShipLevel = 0 # Saved ship type
-        self.shipUnlockNumber = 0 # Number of unlocked ships
-        self.skinUnlockNumber = 0 # Number of unlocked skins for current ship
-        self.levelType = levelType
-        self.spinSpeed = spinSpeed # Obstacle spin speed
-        self.cloudPos = cloudStart # Background cloud position
-        self.wipe = obstacleWipe # Old obstacle handling
-        self.explosions = []
-        self.cave,self.caveIndex = None, 0 # For cave levels
-        self.musicMuted = musicMuted
-        self.angle = 0 # Game rotation
 
+        # LOAD LEVELS
         contantList = []
         for stage in stageList:
             stageConstants = []
@@ -680,7 +640,41 @@ class Game:
             contantList.append(stageConstants)
         self.gameConstants = contantList
 
-        # LOAD GAME CONSTANTS
+        # Level constants
+        self.obstacleSpeed = self.gameConstants[0][0]["speedMult"]
+        self.obstacleSize = self.gameConstants[0][0]["obsSizeMult"]
+        self.maxObstacles = self.gameConstants[0][0]["maxObsMult"]
+        self.spawnPattern = self.gameConstants[0][0]["pattern"]
+        self.obstacleBoundaries = self.gameConstants[0][0]["bound"] # Obstacle handling at screen border
+        self.levelType = self.gameConstants[0][0]["type"]
+        self.wipe = self.gameConstants[0][0]["wipe"] # Old obstacle handling
+        self.spinSpeed = self.gameConstants[0][0]["spinSpeed"] # Obstacle spin speed
+        self.angle = self.gameConstants[0][0]["angle"] # Game rotation
+
+        self.cloudSpeed = cloudSpeed
+        self.currentLevel = 1
+        self.currentStage = 1
+        self.score = 0 # Points collected
+        self.thisPoint = Point(None,None) # Currently active point (starts with default)
+        self.lastPointPos = self.thisPoint.rect.center # Last point's position for spacing
+        self.gameClock = 1
+        self.pauseCount = 0
+        self.attemptNumber = 1
+        self.mainMenu = True # Assures start menu only runs when called
+        self.sessionLongRun = 0 # Longest run this session
+        self.skipAutoSkinSelect = False # For re-entering home menu from game over screen
+        self.savedSkin = 0 # Saved ship skin
+        self.savedShipLevel = 0 # Saved ship type
+        self.shipUnlockNumber = 0 # Number of unlocked ships
+        self.skinUnlockNumber = 0 # Number of unlocked skins for current ship
+        self.cloudPos = cloudStart # Background cloud position
+        self.explosions = [] # Obstacle explosions
+        self.cave,self.caveIndex = None, 0 # For cave levels
+        self.musicMuted = musicMuted
+        self.clk = pygame.time.Clock() # Gameclock
+        self.records = records # Game records dictionary
+
+        # STORE LEVEL 1 VALUES
         self.savedConstants = {
                 "obstacleSpeed" : self.obstacleSpeed,
                 "obstacleSize" : self.obstacleSize,
@@ -989,7 +983,7 @@ class Game:
 
         # UPDATES LEVEL
         for levelDict in self.gameConstants[self.currentStage-1]:
-            if levelDict["TIME"] == self.gameClock:
+            if levelDict["TIME"] == self.gameClock and self.gameClock != 0:
                 if not levelDict["START"]:
 
                     if self.gameConstants[self.currentStage-1][self.currentLevel-1]["wipe"]:
