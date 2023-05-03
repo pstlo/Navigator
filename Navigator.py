@@ -959,7 +959,6 @@ class Game:
 
                 # STAGE UP ANIMATION / Removes old obstacles
                 while stageUp:
-
                     img, imgRect = rotateImage(player.image, player.rect, player.angle)
                     self.alternateUpdate(self,player,obstacles,events)
 
@@ -983,9 +982,8 @@ class Game:
 
         # UPDATES LEVEL
         for levelDict in self.gameConstants[self.currentStage-1]:
-            if levelDict["TIME"] == self.gameClock and self.gameClock != 0:
+            if levelDict["TIME"] == self.gameClock and ( (self.currentLevel > 1 or self.currentStage > 1) or self.gameClock >= self.gameConstants[0][1]["TIME"]):
                 if not levelDict["START"]:
-
                     if self.gameConstants[self.currentStage-1][self.currentLevel-1]["wipe"]:
                         levelUpCloud = stageCloudImg
                         levelUpRect = levelUpCloud.get_rect()
@@ -1006,7 +1004,6 @@ class Game:
                             levelUpRect.centery += levelUpCloudSpeed
 
                             if levelUpRect.top >= screenSize[1]: levelUp = False
-
                             self.clk.tick(fps)
 
                     levelDict["START"] = True
