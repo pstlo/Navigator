@@ -143,7 +143,7 @@ obstacleSpawnRange = [0,1] # Default = [0,1]
 caveStartPos = screenSize[1]*-2 # Default = -1600 / Cave start Y coordinate
 caveSpeed = 20 # Default = 20 / Cave flyby speed
 
-# Type -> (OBS,CAVE,BOTH) / Pattern -> (ALL,AGGRO,TOP,VERT) / Bound -> (KILL,WIPE,BOUNCE) / Target -> (NONE)
+# Type -> (OBS,CAVE,BOTH) / Pattern -> (ALL,AGGRO,TOP,VERT) / Bound -> (KILL,WIPE,BOUNCE) / Target -> (NONE,LOCK,HOME)
 # ADD LEVELS HERE:   [ STARTED, START TIME,     BOUNDS, SPEED,      SIZE,       NUMBER,    SPIN,  PATTERN, WIPE,  TYPE, ANGLE,TARGET]
 levelOne =           [ False,       0,          "KILL", 4*scaler,   30*scaler,  12*scaler,  1,    "ALL",   False, "OBS", 0, "NONE"  ]
 levelTwo =           [ False,       levelTimer, "KILL", 5*scaler,   32*scaler,  16*scaler,  1,    "ALL",   False, "OBS", 0, "NONE"  ]
@@ -833,7 +833,7 @@ class Game:
 
             # OBSTACLE MOVEMENT
             for obs in obstacles:
-                obs.getMovement()
+                obs.move(player)
                 obs.activate() # Activate if on screen
                 if obs.active:
                     # OBSTACLE/LASER COLLISION DETECTION
@@ -872,7 +872,7 @@ class Game:
         # LEVEL UP
         self.levelUpdater(player,obstacles,events)
 
-        if self.levelType == "OBS" or self.levelType == "BOTH": self.spawner(obstacles) # Spawn obstacles
+        if self.levelType == "OBS" or self.levelType == "BOTH": self.spawner(obstacles,player) # Spawn obstacles
 
         musicLoop() # Loop music
 
@@ -1073,9 +1073,9 @@ class Game:
 
 
     # SPAWN OBSTACLES
-    def spawner(self,obstacles):
+    def spawner(self,obstacles,player):
         if len(obstacles) < self.maxObstacles:
-            obstacle = Obstacle(self.spawnPattern,self.target) # Create new obstacle with specified spawn pattern
+            obstacle = Obstacle(self.spawnPattern,self.target,[player.rect.centerx,player.rect.centery]) # Create new obstacle with specified spawn pattern
             obstacles.add(obstacle)
 
 
@@ -1919,7 +1919,7 @@ class Player(pygame.sprite.Sprite):
 
                 if game.levelType == "CAVE" or game.levelType == "BOTH": screen.blit(game.cave.image,game.cave.rect) # Draw cave
                 # Draw obstacles during explosion
-                obstacleMove(obstacles)
+                obstacleMove(self,obstacles)
                 for obs in obstacles:
                     newBlit = rotateImage(obs.image,obs.rect,obs.angle)
                     screen.blit(newBlit[0],newBlit[1])
@@ -1951,37 +1951,54 @@ class Player(pygame.sprite.Sprite):
 
 # OBSTACLES
 class Obstacle(pygame.sprite.Sprite):
-    def __init__(self,spawnPattern,targeting):
+    def __init__(self,spawnPattern,targeting,playerPos):
         super().__init__()
         self.spawnPattern = spawnPattern
+        self.target = targeting
+        self.movement = getMovement(self.spawnPattern)
         self.speed = game.obstacleSpeed
         self.size = game.obstacleSize
         self.spinSpeed = game.spinSpeed
-        self.movement = getMovement(self.spawnPattern)
-        self.direction = self.movement[1]
         try: self.image = obstacleImages[game.currentStage - 1][game.currentLevel-1]
         except: self.image = meteorList[random.randint(0,len(meteorList)-1)] # Not enough assets for this level yet
         self.image = pygame.transform.scale(self.image, (self.size, self.size)).convert_alpha()
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
-        self.angle = 0
+        self.getDirection(playerPos)
+        self.angle = 0 # Image rotation
         spins = [-1,1]
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
         self.active = False
-        self.target = targeting
 
 
-    def getMovement(self):
+    def getDirection(self,playerPos):
+        if self.target == "NONE": self.direction = self.movement[1]
+        else: self.direction = math.atan2(playerPos[1] - self.rect.centery, playerPos[0] - self.rect.centerx)
+
+
+    def move(self,player):
         if self.target == "NONE": self.basicMove()
-        elif self.target == "LOCK": pass # WIP
-        elif self.target == "HOME": pass # ^
+        elif self.target == "LOCK": self.targetMove()
+        elif self.target == "HOME": self.homingMove(player)
 
 
-    # BASIC MOVEMENT
+    # BASIC MOVEMENT (8-direction) -> direction is a string
     def basicMove(self):
         if "N" in self.direction: self.rect.centery -= self.speed
         if "S" in self.direction: self.rect.centery += self.speed
         if "E" in self.direction: self.rect.centerx += self.speed
         if "W" in self.direction: self.rect.centerx -= self.speed
+
+
+    # AIMED AT PLAYER -> direction is an angle
+    def targetMove(self):
+        self.rect.centerx +=self.speed * math.cos(self.direction)
+        self.rect.centery +=self.speed * math.sin(self.direction)
+
+
+    # HEAT SEEKING -> direction is an angle
+    def homingMove(self,player):
+        self.direction = math.atan2(player.rect.centery - self.rect.centery, player.rect.centerx - self.rect.centerx)
+        self.targetMove()
 
 
     # BOUNDARY HANDLING
@@ -2290,13 +2307,9 @@ def getMovement(spawnPattern):
 
 
 # OBSTACLE MOVEMENT (outside of main loop)
-def obstacleMove(obstacles):
+def obstacleMove(player,obstacles):
     for obs in obstacles:
-        position = obs.rect.center
-        if "N" in obs.direction: obs.rect.centery -= obs.speed
-        if "S" in obs.direction: obs.rect.centery += obs.speed
-        if "E" in obs.direction: obs.rect.centerx += obs.speed
-        if "W" in obs.direction: obs.rect.centerx -= obs.speed
+        obs.move(player)
         obs.activate()
 
 
