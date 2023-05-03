@@ -916,7 +916,7 @@ class Game:
         screen.blit(bgList[self.currentStage-1][0],(0,0)) # Draw background
         self.showBackgroundCloud()
 
-        obstacleMove(obstacles)
+        obstacleMove(player,obstacles)
 
         for obs in obstacles:
             newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
@@ -973,7 +973,7 @@ class Game:
                     # LEVEL UP ANIMATION / Removes old obstacles
                     while levelUp:
                         img, imgRect = rotateImage(player.image, player.rect, player.angle)
-                        self.alternateUpdate(self,player,obstacles,events)
+                        self.alternateUpdate(player,obstacles,events)
                         for obs in obstacles:
                             if obs.rect.centery <= levelUpRect.centery: obs.kill()
 
