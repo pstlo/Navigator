@@ -343,7 +343,7 @@ explosionDirectory = os.path.join(currentDirectory, 'Explosion') # Explosion ani
 pointsDirectory = os.path.join(currentDirectory, 'Points') # Point image directory
 soundDirectory = os.path.join(currentDirectory, 'Sounds') # Sound assets directory
 supportersDirectory = os.path.join(currentDirectory,'Supporters') # Supporters directory
-recordsPath = getRecordsPath()
+recordsPath = getRecordsPath() # Game records directory
 
 
 # GET KEY
@@ -627,9 +627,9 @@ class Game:
                     "START" : settings[0],
                     "TIME" : settings[1],
                     "bound" : settings[2],
-                    "speedMult" : settings[3],
-                    "obsSizeMult" : settings[4],
-                    "maxObsMult" : settings[5],
+                    "obsSpeed" : settings[3],
+                    "obsSize" : settings[4],
+                    "maxObs" : settings[5],
                     "spinSpeed" : settings[6],
                     "pattern" : settings[7],
                     "wipe" : settings[8],
@@ -641,9 +641,9 @@ class Game:
         self.gameConstants = contantList
 
         # Level constants
-        self.obstacleSpeed = self.gameConstants[0][0]["speedMult"]
-        self.obstacleSize = self.gameConstants[0][0]["obsSizeMult"]
-        self.maxObstacles = self.gameConstants[0][0]["maxObsMult"]
+        self.obstacleSpeed = self.gameConstants[0][0]["obsSpeed"]
+        self.obstacleSize = self.gameConstants[0][0]["obsSize"]
+        self.maxObstacles = self.gameConstants[0][0]["maxObs"]
         self.spawnPattern = self.gameConstants[0][0]["pattern"]
         self.obstacleBoundaries = self.gameConstants[0][0]["bound"] # Obstacle handling at screen border
         self.levelType = self.gameConstants[0][0]["type"]
@@ -815,8 +815,6 @@ class Game:
 
         # DRAW LASERS
         self.laserUpdate(lasers,player)
-
-
 
         # UPDATE OBSTACLES
         if self.levelType == "OBS" or self.levelType == "BOTH":
@@ -1008,9 +1006,9 @@ class Game:
 
                 levelDict["START"] = True
                 self.obstacleBoundaries = levelDict["bound"]
-                self.obstacleSpeed = levelDict["speedMult"]
-                self.maxObstacles = levelDict["maxObsMult"]
-                self.obstacleSize = levelDict["obsSizeMult"]
+                self.obstacleSpeed = levelDict["obsSpeed"]
+                self.maxObstacles = levelDict["maxObs"]
+                self.obstacleSize = levelDict["obsSize"]
                 self.spinSpeed = levelDict["spinSpeed"]
                 self.spawnPattern = levelDict["pattern"]
                 self.wipe = levelDict["wipe"]
@@ -1093,9 +1091,9 @@ class Game:
 
     # SPAWN OBSTACLES
     def spawner(self,obstacles):
-            if len(obstacles) < self.maxObstacles:
-                obstacle = Obstacle(self.spawnPattern) # Create new obstacle with specified spawn pattern
-                obstacles.add(obstacle)
+        if len(obstacles) < self.maxObstacles:
+            obstacle = Obstacle(self.spawnPattern) # Create new obstacle with specified spawn pattern
+            obstacles.add(obstacle)
 
 
     # Update all lasers
