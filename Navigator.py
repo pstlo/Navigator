@@ -143,22 +143,22 @@ obstacleSpawnRange = [0,1] # Default = [0,1]
 caveStartPos = screenSize[1]*-2 # Default = -1600 / Cave start Y coordinate
 caveSpeed = 20 # Default = 20 / Cave flyby speed
 
-# Type -> (OBS,CAVE,BOTH) / Pattern -> (ALL,AGGRO,TOP,VERT) / Bound -> (KILL,WIPE,BOUNCE)
-# ADD LEVELS HERE:   [ STARTED, START TIME,     BOUNDS, SPEED,      SIZE,       NUMBER,     SPIN, PATTERN, WIPE,  TYPE, ANGLE]
-levelOne =           [ False,       0,          "KILL", 4*scaler,   30*scaler,  12*scaler,  1,    "ALL",   False, "OBS", 0   ]
-levelTwo =           [ False,       levelTimer, "KILL", 5*scaler,   32*scaler,  16*scaler,  1,    "ALL",   False, "OBS", 0   ]
-levelThree =         [ False,     2*levelTimer, "KILL", 5*scaler,   34*scaler,  16*scaler,  2,    "ALL",   False, "OBS", 0   ]
-levelFour =          [ False,     3*levelTimer, "KILL", 5.5*scaler, 36*scaler,  16*scaler,  3,    "ALL",   False, "OBS", 0   ]
-levelFive =          [ False,     4*levelTimer, "KILL", 6*scaler,   38*scaler,  16*scaler,  4,    "ALL",   False, "OBS", 0   ]
-levelSix =           [ False,     5*levelTimer, "KILL", 6.5*scaler, 40*scaler,  18*scaler,  3,    "ALL",   False, "OBS", 0   ]
-levelSeven =         [ False,     6*levelTimer, "KILL", 2.2*scaler, 50*scaler,  65*scaler,  1,    "ALL",   False, "OBS", 0   ]
-levelEight =         [ False,     7*levelTimer, "KILL", 6.5*scaler, 44*scaler,  20*scaler,  4,    "ALL",   True , "OBS", 0   ]
-levelNine =          [ False,     8*levelTimer, "KILL", 6.5*scaler, 46*scaler,  21*scaler,  5,    "ALL",   False, "OBS", 0   ]
-levelTen =           [ False,     9*levelTimer, "KILL", 7*scaler,   48*scaler,  22*scaler,  5,    "ALL",   False, "OBS", 0   ]
-stageTwoLevelOne =   [ False,    10*levelTimer, "KILL", 7*scaler,   50*scaler,  23*scaler,  0,    "AGGRO", False, "OBS", 0   ]
-stageTwoLevelTwo =   [ False,    11*levelTimer, "KILL", 7.5*scaler, 52*scaler,  24*scaler,  0,    "AGGRO", False, "OBS", 0   ]
-stageTwoLevelThree = [ False,    12*levelTimer, "KILL", 7.5*scaler, 54*scaler,  25*scaler,  3,    "AGGRO", False, "OBS", 0   ]
-stageTwoLevelFour =  [ False,    13*levelTimer, "KILL", 8*scaler,   56*scaler,  26*scaler,  0,    "AGGRO", False, "OBS", 0   ]
+# Type -> (OBS,CAVE,BOTH) / Pattern -> (ALL,AGGRO,TOP,VERT) / Bound -> (KILL,WIPE,BOUNCE) / Target -> (NONE)
+# ADD LEVELS HERE:   [ STARTED, START TIME,     BOUNDS, SPEED,      SIZE,       NUMBER,    SPIN,  PATTERN, WIPE,  TYPE, ANGLE,TARGET]
+levelOne =           [ False,       0,          "KILL", 4*scaler,   30*scaler,  12*scaler,  1,    "ALL",   False, "OBS", 0, "NONE"  ]
+levelTwo =           [ False,       levelTimer, "KILL", 5*scaler,   32*scaler,  16*scaler,  1,    "ALL",   False, "OBS", 0, "NONE"  ]
+levelThree =         [ False,     2*levelTimer, "KILL", 5*scaler,   34*scaler,  16*scaler,  2,    "ALL",   False, "OBS", 0, "NONE"  ]
+levelFour =          [ False,     3*levelTimer, "KILL", 5.5*scaler, 36*scaler,  16*scaler,  3,    "ALL",   False, "OBS", 0, "NONE"  ]
+levelFive =          [ False,     4*levelTimer, "KILL", 6*scaler,   38*scaler,  16*scaler,  4,    "ALL",   False, "OBS", 0, "NONE"  ]
+levelSix =           [ False,     5*levelTimer, "KILL", 6.5*scaler, 40*scaler,  18*scaler,  3,    "ALL",   False, "OBS", 0, "NONE"  ]
+levelSeven =         [ False,     6*levelTimer, "KILL", 2.2*scaler, 50*scaler,  65*scaler,  1,    "ALL",   False, "OBS", 0, "NONE"  ]
+levelEight =         [ False,     7*levelTimer, "KILL", 6.5*scaler, 44*scaler,  20*scaler,  4,    "ALL",   True , "OBS", 0, "NONE"  ]
+levelNine =          [ False,     8*levelTimer, "KILL", 6.5*scaler, 46*scaler,  21*scaler,  5,    "ALL",   False, "OBS", 0, "NONE"  ]
+levelTen =           [ False,     9*levelTimer, "KILL", 7*scaler,   48*scaler,  22*scaler,  5,    "ALL",   False, "OBS", 0, "NONE"  ]
+stageTwoLevelOne =   [ False,    10*levelTimer, "KILL", 7*scaler,   50*scaler,  23*scaler,  0,    "AGGRO", False, "OBS", 0, "NONE"  ]
+stageTwoLevelTwo =   [ False,    11*levelTimer, "KILL", 7.5*scaler, 52*scaler,  24*scaler,  0,    "AGGRO", False, "OBS", 0, "NONE"  ]
+stageTwoLevelThree = [ False,    12*levelTimer, "KILL", 7.5*scaler, 54*scaler,  25*scaler,  3,    "AGGRO", False, "OBS", 0, "NONE"  ]
+stageTwoLevelFour =  [ False,    13*levelTimer, "KILL", 8*scaler,   56*scaler,  26*scaler,  0,    "AGGRO", False, "OBS", 0, "NONE"  ]
 
 # DIVIDE INTO STAGES
 stageOneLevels = [levelOne,levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight,levelNine,levelTen] # Stage 1
@@ -634,7 +634,8 @@ class Game:
                     "pattern" : settings[7],
                     "wipe" : settings[8],
                     "type":settings[9],
-                    "angle":settings[10]
+                    "angle":settings[10],
+                    "target":settings[11]
                     }
                 stageConstants.append(levelDict)
             contantList.append(stageConstants)
@@ -650,6 +651,7 @@ class Game:
         self.wipe = self.gameConstants[0][0]["wipe"] # Old obstacle handling
         self.spinSpeed = self.gameConstants[0][0]["spinSpeed"] # Obstacle spin speed
         self.angle = self.gameConstants[0][0]["angle"] # Game rotation
+        self.target = self.gameConstants[0][0]["target"] # Game rotation
 
         self.cloudSpeed = cloudSpeed
         self.currentLevel = 1
@@ -685,7 +687,8 @@ class Game:
                 "pattern" : self.spawnPattern,
                 "wipe" : self.wipe,
                 "type":self.levelType,
-                "angle":self.angle
+                "angle":self.angle,
+                "target":self.target
                 }
 
 
@@ -750,14 +753,15 @@ class Game:
 
             self.cave.update()
             if self.cave.rect.top <= screenSize[1] and self.cave.rect.bottom >= 0:
-                screen.blit(self.cave.image,self.cave.rect) # Draw
-                # Collision detection
+                screen.blit(self.cave.image,self.cave.rect) # DRAW CAVE
+                # COLLISION DETECTION
                 if pygame.sprite.collide_mask(self.cave,player):
                     if player.shields > 0: player.shieldDown(events)
                     else:
                         player.explode(game,obstacles) # explosion
                         if not self.musicMuted: explosionNoise.play()
                         menu.gameOver(self,player,obstacles) # Game over
+
         # EXITING CAVE
         elif self.cave is not None and self.cave.leave:
             if self.cave.rect.top > screenSize[1]:
@@ -818,6 +822,7 @@ class Game:
 
         # UPDATE OBSTACLES
         if self.levelType == "OBS" or self.levelType == "BOTH":
+
             # OBSTACLE/PLAYER COLLISION DETECTION
             if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask):
                 if player.shields > 0: player.shieldDown(events)
@@ -826,15 +831,10 @@ class Game:
                     if not self.musicMuted: explosionNoise.play()
                     menu.gameOver(self,player,obstacles) # Game over
 
+            # OBSTACLE MOVEMENT
             for obs in obstacles:
-                # Obstacle movement
-                position = obs.rect.center
-                if "N" in obs.direction: obs.rect.centery -= obs.speed
-                if "S" in obs.direction: obs.rect.centery += obs.speed
-                if "E" in obs.direction: obs.rect.centerx += obs.speed
-                if "W" in obs.direction: obs.rect.centerx -= obs.speed
+                obs.getMovement()
                 obs.activate() # Activate if on screen
-
                 if obs.active:
                     # OBSTACLE/LASER COLLISION DETECTION
                     if pygame.sprite.spritecollide(obs,lasers,player.laserCollat,pygame.sprite.collide_mask):
@@ -848,7 +848,7 @@ class Game:
                         self.explosions.append(Explosion(self,obs))
                         obs.kill()
 
-                    # ROTATE OBSTACLE
+                    # ROTATE AND DRAW OBSTACLE
                     if not performanceMode:
                         obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle
                         if obs.angle >= 360: obs.angle = -360
@@ -857,26 +857,7 @@ class Game:
                         screen.blit(newBlit[0],newBlit[1]) # Blit obstacles
 
                     # OBSTACLE BOUNDARY HANDLING
-                    if self.obstacleBoundaries == "KILL":
-                        if obs.rect.centerx > screenSize[0] or obs.rect.centerx < 0:
-                            obstacles.remove(obs)
-                            obs.kill()
-                        elif obs.rect.centery > screenSize[1] or obs.rect.centery < 0:
-                            obstacles.remove(obs)
-                            obs.kill()
-
-                    if self.obstacleBoundaries == "BOUNCE":
-                        direction = obs.direction
-                        if obs.rect.centery  > screenSize[1]: obs.direction = movementReverse(direction)
-                        if obs.rect.centery < 0: obs.direction = movementReverse(direction)
-                        if obs.rect.centerx > screenSize[0]: obs.direction = movementReverse(direction)
-                        if obs.rect.centerx < 0: obs.direction = movementReverse(direction)
-
-                    if self.obstacleBoundaries == "WRAP":
-                        if obs.rect.centery > screenSize[1]: obs.rect.centery = 0
-                        if obs.rect.centery < 0: obs.rect.centery = screenSize[1]
-                        if obs.rect.centerx > screenSize[0]: obs.rect.centerx = 0
-                        if obs.rect.centerx < 0: obs.rect.centerx = screenSize[0]
+                    obs.bound(self,obstacles)
 
             if performanceMode:obstacles.draw(screen) # Potential performance improvement
 
@@ -914,10 +895,11 @@ class Game:
         self.wipe = self.savedConstants["wipe"]
         self.levelType = self.savedConstants["type"]
         self.angle = self.savedConstants["angle"]
+        self.target = self.savedConstants["target"]
         self.cloudPos = cloudStart
 
 
-    # DRAW CLOUD OUTSIDE OF MAIN GAME LOOP
+    # DRAW CLOUD OUTSIDE OF MAIN LOOP
     def showBackgroundCloud(self):
         if showBackgroundCloud:
             cloudImg = bgList[game.currentStage - 1][1]
@@ -925,10 +907,10 @@ class Game:
             if cloudRect.bottom >= 0 and cloudRect.top <= screenSize[1]: screen.blit(cloudImg, cloudRect) # Draw cloud
 
 
-    # Draw frame outside of main game loop
+    # Draw frame outside of main loop **** revisit
     def alternateUpdate(self,player,obstacles,events):
-        player.alternateMovement(self)
-        player.movement()
+        player.alternateMovement(self) # not sure why
+        player.movement()              # this works
         player.wrapping()
         screen.fill(screenColor)
         screen.blit(bgList[self.currentStage-1][0],(0,0)) # Draw background
@@ -1014,6 +996,7 @@ class Game:
                 self.wipe = levelDict["wipe"]
                 self.levelType = levelDict["type"]
                 self.angle = levelDict["angle"]
+                self.target = levelDict["target"]
                 if self.cave is not None: self.cave.leave = True # Set cave for exit
                 self.cloudSpeed += cloudSpeedAdder
                 self.currentLevel += 1
@@ -1092,7 +1075,7 @@ class Game:
     # SPAWN OBSTACLES
     def spawner(self,obstacles):
         if len(obstacles) < self.maxObstacles:
-            obstacle = Obstacle(self.spawnPattern) # Create new obstacle with specified spawn pattern
+            obstacle = Obstacle(self.spawnPattern,self.target) # Create new obstacle with specified spawn pattern
             obstacles.add(obstacle)
 
 
@@ -1968,7 +1951,7 @@ class Player(pygame.sprite.Sprite):
 
 # OBSTACLES
 class Obstacle(pygame.sprite.Sprite):
-    def __init__(self,spawnPattern):
+    def __init__(self,spawnPattern,targeting):
         super().__init__()
         self.spawnPattern = spawnPattern
         self.speed = game.obstacleSpeed
@@ -1984,6 +1967,46 @@ class Obstacle(pygame.sprite.Sprite):
         spins = [-1,1]
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
         self.active = False
+        self.target = targeting
+
+
+    def getMovement(self):
+        if self.target == "NONE": self.basicMove()
+        elif self.target == "LOCK": pass # WIP
+        elif self.target == "HOME": pass # ^
+
+
+    # BASIC MOVEMENT
+    def basicMove(self):
+        if "N" in self.direction: self.rect.centery -= self.speed
+        if "S" in self.direction: self.rect.centery += self.speed
+        if "E" in self.direction: self.rect.centerx += self.speed
+        if "W" in self.direction: self.rect.centerx -= self.speed
+
+
+    # BOUNDARY HANDLING
+    def bound(self,game,obstacles):
+        if game.obstacleBoundaries == "KILL": # Remove obstacle
+            if self.rect.centerx > screenSize[0] or self.rect.centerx < 0:
+                obstacles.remove(self)
+                self.kill()
+            elif self.rect.centery > screenSize[1] or self.rect.centery < 0:
+                obstacles.remove(self)
+                self.kill()
+
+        elif game.obstacleBoundaries == "BOUNCE": # Bounce off walls
+            direction = obs.direction
+            if self.rect.centery  > screenSize[1]: self.direction = movementReverse(direction)
+            if self.rect.centery < 0: obs.direction = movementReverse(direction)
+            if self.rect.centerx > screenSize[0]: self.direction = movementReverse(direction)
+            if self.rect.centerx < 0: obs.direction = movementReverse(direction)
+
+        elif game.obstacleBoundaries == "WRAP": # Wrap around screen
+            if self.rect.centery > screenSize[1]: self.rect.centery = 0
+            if self.rect.centery < 0: self.rect.centery = screenSize[1]
+            if self.rect.centerx > screenSize[0]: self.rect.centerx = 0
+            if self.rect.centerx < 0: self.rect.centerx = screenSize[0]
+
 
     def activate(self):
         if not self.active:
@@ -2266,7 +2289,7 @@ def getMovement(spawnPattern):
     return move
 
 
-# OBSTACLE MOVEMENT (outside of main game loop)
+# OBSTACLE MOVEMENT (outside of main loop)
 def obstacleMove(obstacles):
     for obs in obstacles:
         position = obs.rect.center
