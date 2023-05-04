@@ -45,8 +45,13 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: NavigatorWindows
+          path: dist/Navigator.exe
+        
+      - name: Include license and notice in Windows artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: NavigatorWindows
           path: |
-              dist/Navigator.exe
               ${{ github.workspace }}/LICENSE
               ${{ github.workspace }}/NOTICE
 
@@ -62,8 +67,13 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: NavigatorWindowsC
+          path: dist/Navigator.exe
+          
+      - name: Include license and notice in Windows C artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: NavigatorWindowsC
           path: |
-            dist/Navigator.exe
             ${{ github.workspace }}/LICENSE
             ${{ github.workspace }}/NOTICE
 
@@ -105,10 +115,15 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: NavigatorMacOSIntel
+          path: dist/Navigator.app
+          
+      - name: Inlclude license and notice in MacOS Intel artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: NavigatorMacOSIntel
           path: |
-            dist/Navigator.app
-            ${{ github.workspace }}/LICENSE
-            ${{ github.workspace }}/NOTICE
+              ${{ github.workspace }}/LICENSE
+              ${{ github.workspace }}/NOTICE
 
   build-linux:
     runs-on: ubuntu-latest
@@ -147,7 +162,13 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: NavigatorLinux
+          path: dist/Navigator
+          
+      - name: Include license and notice in Linux artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: NavigatorLinux
           path: |
-            dist/Navigator
-            ${{ github.workspace }}/LICENSE
-            ${{ github.workspace }}/NOTICE
+              ${{ github.workspace }}/LICENSE
+              ${{ github.workspace }}/NOTICE
+            
