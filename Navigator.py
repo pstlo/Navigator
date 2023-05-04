@@ -1997,7 +1997,9 @@ class Obstacle(pygame.sprite.Sprite):
 
     # HEAT SEEKING -> direction is an angle
     def homingMove(self,player):
-        self.direction = math.atan2(player.rect.centery - self.rect.centery, player.rect.centerx - self.rect.centerx)
+        dirX = (player.rect.centerx - self.rect.centerx + screenSize[0]/2) % screenSize[0]-screenSize[0]/2 # Shortest horizontal path
+        dirY = (player.rect.centery - self.rect.centery + screenSize[1]/2) % screenSize[1]-screenSize[1]/2 # Shortest vetical path
+        self.direction = math.atan2(dirY,dirX) # Angle to shortest path
         self.targetMove()
 
 
