@@ -14,7 +14,7 @@ pygame.font.init()
 pygame.mixer.init()
 
 pygame.mouse.set_visible(False)
-
+ 
 version = "v0.4.7"
 #------------------GAME CONSTANTS--------------------------------------------------------------------------
 # SCREEN
