@@ -40,16 +40,14 @@ jobs:
       - name: Create Windows executable
         run: |
             pyinstaller --name Navigator --onefile --noconsole --add-data "${{ github.workspace }}/Assets;Assets" -i "${{ github.workspace }}\.github\Icon.ico" --version-file "${{ github.workspace }}\.github\version.txt" "${{ github.workspace }}\Navigator.py"
-
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v3
         with:
           name: NavigatorWindows
           path: |
-            dist/Navigator.exe
-            LICENSE
-            NOTICE
-          working-directory: ${{ github.workspace }}
+              dist/Navigator.exe
+              ${{ github.workspace }}/LICENSE
+              ${{ github.workspace }}/NOTICE
 
   build-macos-intel:
     runs-on: macos-latest
@@ -88,11 +86,10 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: NavigatorMacOSIntel
-          path: |
+          path: | 
             dist/Navigator.app
-            LICENSE
-            NOTICE
-          working-directory: ${{ github.workspace }}
+            ${{ github.workspace }}/LICENSE
+            ${{ github.workspace }}/NOTICE
 
   build-linux:
     runs-on: ubuntu-latest
@@ -131,8 +128,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: NavigatorLinux
-          path: |
+          path: | 
             dist/Navigator
-            LICENSE
-            NOTICE
-          working-directory: ${{ github.workspace }}
+            ${{ github.workspace }}/LICENSE
+            ${{ github.workspace }}/NOTICE
