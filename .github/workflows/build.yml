@@ -59,11 +59,11 @@ jobs:
             python SetupCython.py build_ext --inplace
             pyinstaller --name Navigator --onefile --noconsole --add-data "${{ github.workspace }}/Assets;Assets" -i "${{ github.workspace }}\.github\Icon.ico" --version-file "${{ github.workspace }}\.github\version.txt" Cython/Main.py
 
-        -name: Upload Windows C artifact
-         uses: action/upload-actions/checkout@v3
-         with:
-           name: NavigatorWindowsC
-           path: |
+      - name: Upload Windows C artifact
+        uses: actions/upload-actions/checkout@v3
+        with:
+          name: NavigatorWindowsC
+          path: |
             dist/Navigator.exe
             ${{ github.workspace }}/LICENSE
             ${{ github.workspace }}/NOTICE
