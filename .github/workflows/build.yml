@@ -60,7 +60,7 @@ jobs:
             pyinstaller --name Navigator --onefile --noconsole --add-data "${{ github.workspace }}/Assets;Assets" -i "${{ github.workspace }}\.github\Icon.ico" --version-file "${{ github.workspace }}\.github\version.txt" Cython/Main.py
 
       - name: Upload Windows C artifact
-        uses: actions/upload-actions/checkout@v3
+        uses: actions/upload-artifact@v3
         with:
           name: NavigatorWindowsC
           path: |
