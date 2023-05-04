@@ -55,9 +55,8 @@ jobs:
         run: |
             pip install cython
             pip install setuptools
-            copy ${{ github.workspace }}/.github/Cython .
             python ${{ github.workspace }}/.github/Cython/SetupCython.py build_ext --inplace
-            pyinstaller --name Navigator --onefile --noconsole --add-data "${{ github.workspace }}/Assets;Assets" -i "${{ github.workspace }}\.github\Icon.ico" --version-file "${{ github.workspace }}\.github\version.txt" "${{ github.workspace }}\.github\Cython.Main.py"
+            pyinstaller --name Navigator --onefile --noconsole --add-data "${{ github.workspace }}/Assets;Assets" -i "${{ github.workspace }}\.github\Icon.ico" --version-file "${{ github.workspace }}\.github\version.txt" "${{ github.workspace }}\.github\Cython\Main.py"
 
       - name: Upload Windows C artifact
         uses: actions/upload-artifact@v3
