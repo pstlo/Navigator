@@ -39,13 +39,15 @@ jobs:
           
       - name: Create Windows executable
         run: |
-            pyinstaller --name NavigatorWindows --onefile --noconsole --add-data "${{ github.workspace }}/Assets;Assets" -i "${{ github.workspace }}\.github\Icon.ico" --version-file "${{ github.workspace }}\.github\version.txt" "${{ github.workspace }}\Navigator.py"
+            pyinstaller --name Navigator --onefile --noconsole --add-data "${{ github.workspace }}/Assets;Assets" -i "${{ github.workspace }}\.github\Icon.ico" --version-file "${{ github.workspace }}\.github\version.txt" "${{ github.workspace }}\Navigator.py"
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v3
         with:
           name: NavigatorWindows
-          path: dist/NavigatorWindows.exe
-
+          path: |
+              dist/Navigator.exe
+              ${{ github.workspace }}/LICENSE
+              ${{ github.workspace }}/NOTICE
 
   build-macos-intel:
     runs-on: macos-latest
@@ -78,13 +80,16 @@ jobs:
 
       - name: Create MacOS App (Intel Based)
         run: |
-          pyinstaller --name NavigatorMacOSIntel --noconsole --add-data Assets:Assets -i ".github/Icon.icns" Navigator.py
+          pyinstaller --name Navigator --noconsole --add-data Assets:Assets -i ".github/Icon.icns" Navigator.py
 
       - name: Upload MacOS artifact
         uses: actions/upload-artifact@v3
         with:
           name: NavigatorMacOSIntel
-          path: dist/NavigatorMacOSIntel.app
+          path: | 
+            dist/Navigator.app
+            ${{ github.workspace }}/LICENSE
+            ${{ github.workspace }}/NOTICE
 
   build-linux:
     runs-on: ubuntu-latest
@@ -117,10 +122,13 @@ jobs:
 
       - name: Create Linux executable
         run: |
-          pyinstaller --name NavigatorLinux --onefile --noconsole --add-data Assets:Assets Navigator.py
+          pyinstaller --name Navigator --onefile --noconsole --add-data Assets:Assets Navigator.py
 
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v3
         with:
           name: NavigatorLinux
-          path: dist/NavigatorLinux
+          path: | 
+            dist/Navigator
+            ${{ github.workspace }}/LICENSE
+            ${{ github.workspace }}/NOTICE
