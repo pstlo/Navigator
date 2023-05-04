@@ -36,10 +36,11 @@ jobs:
           pip install cryptography
           pip install pypresence
           pip install python-dotenv
-          
+
       - name: Create Windows executable
         run: |
             pyinstaller --name Navigator --onefile --noconsole --add-data "${{ github.workspace }}/Assets;Assets" -i "${{ github.workspace }}\.github\Icon.ico" --version-file "${{ github.workspace }}\.github\version.txt" "${{ github.workspace }}\Navigator.py"
+
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v3
         with:
@@ -48,6 +49,25 @@ jobs:
               dist/Navigator.exe
               ${{ github.workspace }}/LICENSE
               ${{ github.workspace }}/NOTICE
+
+
+      - name: Build and create Windows Cython executable
+        run: |
+            pip install cython
+            pip install setuptools
+            copy ${{ github.workspace }}/.github/Cython .
+            python setup.py build_ext --inplace
+            pyinstaller --name Navigator --onefile --noconsole --add-data "${{ github.workspace }}/Assets;Assets" -i "${{ github.workspace }}\.github\Icon.ico" --version-file "${{ github.workspace }}\.github\version.txt" Cython/Main.py
+
+        -name: Upload Windows C artifact
+         uses: action/upload-actions/checkout@v3
+         with:
+           name: NavigatorWindowsC
+           path: |
+            dist/Navigator.exe
+            ${{ github.workspace }}/LICENSE
+            ${{ github.workspace }}/NOTICE
+
 
   build-macos-intel:
     runs-on: macos-latest
@@ -59,7 +79,7 @@ jobs:
         with:
           repository: pstlo/Navigator
           ref: main
-          
+
       - name: Store data in Assets folder
         run: |
           echo "${{ secrets.ENV }}" > "${{ github.workspace }}/Assets/.env"
@@ -86,7 +106,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: NavigatorMacOSIntel
-          path: | 
+          path: |
             dist/Navigator.app
             ${{ github.workspace }}/LICENSE
             ${{ github.workspace }}/NOTICE
@@ -101,11 +121,11 @@ jobs:
         with:
           repository: pstlo/Navigator
           ref: main
-          
+
       - name: Store data in Assets folder
         run: |
           echo "${{ secrets.ENV }}" > "${{ github.workspace }}/Assets/.env"
-          
+
       - name: Set up Python on Linux
         uses: actions/setup-python@v4
         with:
@@ -128,7 +148,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: NavigatorLinux
-          path: | 
+          path: |
             dist/Navigator
             ${{ github.workspace }}/LICENSE
             ${{ github.workspace }}/NOTICE
