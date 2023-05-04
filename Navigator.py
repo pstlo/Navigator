@@ -916,6 +916,10 @@ class Game:
         screen.blit(bgList[self.currentStage-1][0],(0,0)) # Draw background
         self.showBackgroundCloud()
         self.cloudPos += self.cloudSpeed
+        if self.cave is not None and self.levelType == "CAVE" or self.levelType == "BOTH":
+            self.cave.update()
+            if self.cave.rect.top <= screenSize[1] and self.cave.rect.bottom >= 0: screen.blit(self.cave.image,self.cave.rect) # DRAW CAVE
+                
         obstacleMove(player,obstacles)
         for obs in obstacles:
             newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
