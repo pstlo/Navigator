@@ -54,6 +54,7 @@ jobs:
           path: |
               ${{ github.workspace }}/LICENSE
               ${{ github.workspace }}/NOTICE
+              ${{ github.workspace }}/gameRecords.txt
 
 
       - name: Build and create Windows Cython executable
@@ -76,6 +77,7 @@ jobs:
           path: |
             ${{ github.workspace }}/LICENSE
             ${{ github.workspace }}/NOTICE
+            ${{ github.workspace }}/gameRecords.txt
 
 
   build-macos-intel:
