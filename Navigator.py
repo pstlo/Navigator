@@ -1983,13 +1983,13 @@ class Player(pygame.sprite.Sprite):
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self,spawnPattern,targeting,playerPos):
         super().__init__()
-        self.spawnPattern = spawnPattern
-        self.target = targeting
+        self.spawnPattern = self.getAttributes(spawnPattern)
+        self.target = self.getAttributes(targeting)
         self.movement = getMovement(self.spawnPattern)
-        self.speed = game.obstacleSpeed
-        self.size = game.obstacleSize
-        self.spinSpeed = game.spinSpeed
-        self.health = game.obsHealth
+        self.speed = self.getAttributes(game.obstacleSpeed)
+        self.size = self.getAttributes(game.obstacleSize)
+        self.spinSpeed = self.getAttributes(game.spinSpeed)
+        self.health = self.getAttributes(game.obsHealth)
         try: self.image = obstacleImages[game.currentStage - 1][game.currentLevel-1]
         except: self.image = meteorList[random.randint(0,len(meteorList)-1)] # Not enough assets for this level yet
         self.image = pygame.transform.scale(self.image, (self.size, self.size)).convert_alpha()
@@ -2000,6 +2000,11 @@ class Obstacle(pygame.sprite.Sprite):
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
         self.active = False
 
+
+    # For levels with multiple obstacle types
+    def getAttributes(self,attribute):
+        if type(attribute) == list: return random.choice(attribute)
+        else: return attribute
 
     def getDirection(self,playerPos):
         if self.target == "NONE": self.direction = self.movement[1]
