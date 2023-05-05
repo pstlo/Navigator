@@ -1,7 +1,7 @@
 # Navigator
 # Copyright (c) 2023 Mike Pistolesi
 # All rights reserved
- 
+
 
 import os,sys,random,math,platform,json,base64,time,pypresence,asyncio
 from cryptography.fernet import Fernet
@@ -44,7 +44,6 @@ spawnVertices = 8 # Default = 8 / Vertices in shape of point spawn area (Octagon
 pointSize = 25  # Default = 20
 shieldChunkSize = screenSize[0]/40 # Default = screen width / 40
 boostCooldownTime = 2000 # Default = 2000 / Activates when fuel runs out to allow regen
-shieldPiecesNeeded = 10 # Default = 10 / Pieces needed for an extra life
 showSpawnArea = False # Default = False
 powerUpList = ["Shield", "Fuel", "Default", "Default"] # Shield/Fuel/Default, chances of spawn
 playerShieldSize = 48 # Default = 64 / Shield visual size
@@ -121,12 +120,12 @@ defaultToHighSkin = True # Default = True / Default to highest skin unlocked on 
 defaultToHighShip = False # Default = False / Default to highest ship unlocked on game launch
 drawExhaust = True # Default = True
 # SHIP CONSTANTS
-#                       [speed,fuel,maxFuel,regen,delay,boostSpeed,hasGuns,laserCost,laserSpeed,fireRate,boostDrain,collats,hasShields,shields,shieldPieces,piecesNeeded]
-defaultShipAttributes = [ 5,    1,  20,     0.05, 50,   7,         False,  0,        0,         0,       0.4,        True,  True,       0,      0,           5          ]
-gunShipAttributes =     [ 3,   10,  20,     0.05, 50,   10,        True,   0.4,      10,        250,     0.3,        True,  False,      0,      0,           0          ]
-laserShipAttributes =   [ 2,   1,   1,      0,    0,    2,         True,   0,        10,        50,      0,          True,  False,      0,      0,           0          ]
-hyperYachtAttributes =  [ 3,   20,  30,     0.1,  25,   12,        False,  0,        0,         0,       0.25,       True,  False,      0,      0,           0          ]
-oldReliableAttributes = [ 4,   10,  15,     0.05, 50,   6,         True,   1,        5,         1000,    0.25,       False, False,      0,      0,           0          ]
+#                       [speed,fuel,maxFuel,regen,delay,boostSpeed,hasGuns,laserCost,laserSpeed,fireRate,boostDrain,collats,hasShields,shields,shieldPieces,piecesNeeded,laserDmg]
+defaultShipAttributes = [ 5,    1,  20,     0.05, 50,   7,         False,  0,        0,         0,       0.4,        False, True,       0,      0,           5,          0       ]
+gunShipAttributes =     [ 3,   10,  20,     0.05, 50,   10,        True,   0.4,      10,        250,     0.3,        False, False,      0,      0,           0,          1       ]
+laserShipAttributes =   [ 2,   1,   1,      0,    0,    2,         True,   0,        10,        50,      0,          False, False,      0,      0,           0,          0.5     ]
+hyperYachtAttributes =  [ 3,   20,  30,     0.1,  25,   12,        False,  0,        0,         0,       0.25,       False, False,      0,      0,           0,          0       ]
+oldReliableAttributes = [ 4,   10,  15,     0.05, 50,   6,         True,   1,        5,         1000,    0.25,       True,  False,      0,      0,           0,          3       ]
 
 #ADD SHIPS TO LIST
 shipAttributes = [defaultShipAttributes,gunShipAttributes,laserShipAttributes,hyperYachtAttributes,oldReliableAttributes]
@@ -144,21 +143,21 @@ caveStartPos = screenSize[1]*-2 # Default = -1600 / Cave start Y coordinate
 caveSpeed = 20 # Default = 20 / Cave flyby speed
 
 # Type -> (OBS,CAVE,BOTH) / Pattern -> (ALL,AGGRO,TOP,VERT) / Bound -> (KILL,WIPE,BOUNCE) / Target -> (NONE,LOCK,HOME)
-# ADD LEVELS HERE:   [ STARTED, START TIME,     BOUNDS, SPEED,      SIZE,       NUMBER,    SPIN,  PATTERN, WIPE,  TYPE, ANGLE,TARGET]
-levelOne =           [ False,       0,          "KILL", 4*scaler,   30*scaler,  12*scaler,  1,    "ALL",   False, "OBS", 0, "NONE"  ]
-levelTwo =           [ False,       levelTimer, "KILL", 5*scaler,   32*scaler,  16*scaler,  1,    "ALL",   False, "OBS", 0, "NONE"  ]
-levelThree =         [ False,     2*levelTimer, "KILL", 5*scaler,   34*scaler,  16*scaler,  2,    "ALL",   False, "OBS", 0, "NONE"  ]
-levelFour =          [ False,     3*levelTimer, "KILL", 5.5*scaler, 36*scaler,  16*scaler,  3,    "ALL",   False, "OBS", 0, "NONE"  ]
-levelFive =          [ False,     4*levelTimer, "KILL", 6*scaler,   38*scaler,  16*scaler,  4,    "ALL",   False, "OBS", 0, "NONE"  ]
-levelSix =           [ False,     5*levelTimer, "KILL", 6.5*scaler, 40*scaler,  18*scaler,  3,    "ALL",   False, "OBS", 0, "NONE"  ]
-levelSeven =         [ False,     6*levelTimer, "KILL", 2.2*scaler, 50*scaler,  65*scaler,  1,    "ALL",   True,  "OBS", 0, "NONE"  ]
-levelEight =         [ False,     7*levelTimer, "KILL", 6.5*scaler, 44*scaler,  20*scaler,  4,    "ALL",   False, "OBS", 0, "NONE"  ]
-levelNine =          [ False,     8*levelTimer, "KILL", 6.5*scaler, 46*scaler,  21*scaler,  5,    "ALL",   False, "OBS", 0, "NONE"  ]
-levelTen =           [ False,     9*levelTimer, "KILL", 7*scaler,   48*scaler,  22*scaler,  5,    "ALL",   False, "OBS", 0, "NONE"  ]
-stageTwoLevelOne =   [ False,    10*levelTimer, "KILL", 7*scaler,   50*scaler,  23*scaler,  0,    "AGGRO", False, "OBS", 0, "NONE"  ]
-stageTwoLevelTwo =   [ False,    11*levelTimer, "KILL", 7.5*scaler, 52*scaler,  24*scaler,  0,    "AGGRO", False, "OBS", 0, "NONE"  ]
-stageTwoLevelThree = [ False,    12*levelTimer, "KILL", 7.5*scaler, 54*scaler,  25*scaler,  3,    "AGGRO", False, "OBS", 0, "NONE"  ]
-stageTwoLevelFour =  [ False,    13*levelTimer, "KILL", 8*scaler,   56*scaler,  26*scaler,  0,    "AGGRO", False, "OBS", 0, "NONE"  ]
+# ADD LEVELS HERE:   [ STARTED, START TIME,     BOUNDS, SPEED,      SIZE,       NUMBER,    SPIN,  PATTERN, WIPE,  TYPE, ANGLE,TARGET,HEALTH]
+levelOne =           [ False,       0,          "KILL", 4*scaler,   30*scaler,  12*scaler,  1,    "ALL",   False, "OBS", 0,   "NONE", 0    ]
+levelTwo =           [ False,       levelTimer, "KILL", 5*scaler,   32*scaler,  16*scaler,  1,    "ALL",   False, "OBS", 0,   "NONE", 0    ]
+levelThree =         [ False,     2*levelTimer, "KILL", 5*scaler,   34*scaler,  16*scaler,  2,    "ALL",   False, "OBS", 0,   "NONE", 0    ]
+levelFour =          [ False,     3*levelTimer, "KILL", 5.5*scaler, 36*scaler,  16*scaler,  3,    "ALL",   False, "OBS", 0,   "NONE", 0    ]
+levelFive =          [ False,     4*levelTimer, "KILL", 6*scaler,   38*scaler,  16*scaler,  4,    "ALL",   False, "OBS", 0,   "NONE", 0    ]
+levelSix =           [ False,     5*levelTimer, "KILL", 6.5*scaler, 40*scaler,  18*scaler,  3,    "ALL",   False, "OBS", 0,   "NONE", 0    ]
+levelSeven =         [ False,     6*levelTimer, "KILL", 2.2*scaler, 50*scaler,  65*scaler,  1,    "ALL",   True,  "OBS", 0,   "NONE", 0    ]
+levelEight =         [ False,     7*levelTimer, "KILL", 6.5*scaler, 44*scaler,  20*scaler,  4,    "ALL",   False, "OBS", 0,   "NONE", 0    ]
+levelNine =          [ False,     8*levelTimer, "KILL", 6.5*scaler, 46*scaler,  21*scaler,  5,    "ALL",   False, "OBS", 0,   "NONE", 0    ]
+levelTen =           [ False,     9*levelTimer, "KILL", 7*scaler,   48*scaler,  22*scaler,  5,    "ALL",   False, "OBS", 0,   "NONE", 0    ]
+stageTwoLevelOne =   [ False,    10*levelTimer, "KILL", 7*scaler,   50*scaler,  23*scaler,  0,    "AGGRO", False, "OBS", 0,   "NONE", 0    ]
+stageTwoLevelTwo =   [ False,    11*levelTimer, "KILL", 7.5*scaler, 52*scaler,  24*scaler,  0,    "AGGRO", False, "OBS", 0,   "NONE", 0    ]
+stageTwoLevelThree = [ False,    12*levelTimer, "KILL", 7.5*scaler, 54*scaler,  25*scaler,  3,    "AGGRO", False, "OBS", 0,   "NONE", 0    ]
+stageTwoLevelFour =  [ False,    13*levelTimer, "KILL", 8*scaler,   56*scaler,  26*scaler,  0,    "AGGRO", False, "OBS", 0,   "NONE", 0    ]
 
 # DIVIDE INTO STAGES
 stageOneLevels = [levelOne,levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight,levelNine,levelTen] # Stage 1
@@ -530,7 +529,8 @@ for i in shipAttributes:
     "hasShields" : i[12],
     "startingShields" : i[13],
     "startingShieldPieces" : i[14],
-    "piecesNeeded" : i[15]
+    "piecesNeeded" : i[15],
+    "laserDmg" : i[16]
     }
     shipConstants.append(levelConstantsDict)
 
@@ -635,7 +635,8 @@ class Game:
                     "wipe" : settings[8],
                     "type":settings[9],
                     "angle":settings[10],
-                    "target":settings[11]
+                    "target":settings[11],
+                    "health":settings[12]
                     }
                 stageConstants.append(levelDict)
             contantList.append(stageConstants)
@@ -652,6 +653,7 @@ class Game:
         self.spinSpeed = self.gameConstants[0][0]["spinSpeed"] # Obstacle spin speed
         self.angle = self.gameConstants[0][0]["angle"] # Game rotation
         self.target = self.gameConstants[0][0]["target"] # Game rotation
+        self.obsHealth = self.gameConstants[0][0]["health"] # Game rotation
 
         self.cloudSpeed = cloudSpeed
         self.currentLevel = 1
@@ -688,7 +690,8 @@ class Game:
                 "wipe" : self.wipe,
                 "type":self.levelType,
                 "angle":self.angle,
-                "target":self.target
+                "target":self.target,
+                "health":self.obsHealth
                 }
 
 
@@ -824,8 +827,10 @@ class Game:
         if self.levelType == "OBS" or self.levelType == "BOTH":
 
             # OBSTACLE/PLAYER COLLISION DETECTION
-            if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask):
-                if player.shields > 0: player.shieldDown(events)
+            if pygame.sprite.spritecollide(player,obstacles,False,pygame.sprite.collide_mask):
+                if player.shields > 0:
+                    player.shieldDown(events)
+
                 else:
                     player.explode(game,obstacles) # Animation
                     if not self.musicMuted: explosionNoise.play()
@@ -837,10 +842,13 @@ class Game:
                 obs.activate() # Activate if on screen
                 if obs.active:
                     # OBSTACLE/LASER COLLISION DETECTION
-                    if pygame.sprite.spritecollide(obs,lasers,player.laserCollat,pygame.sprite.collide_mask):
-                        if player.laserCollat: obs.kill()
-                        if not self.musicMuted: impactNoise.play()
-                        self.explosions.append(Explosion(self,obs))
+                    if pygame.sprite.spritecollide(obs,lasers,not player.laserCollat,pygame.sprite.collide_mask):
+                        if obs.health - player.damage > 0: obs.health -= player.damage
+                        else:
+                            obs.kill()
+                            obstacles.remove(obs)
+                            if not self.musicMuted: impactNoise.play()
+                            self.explosions.append(Explosion(self,obs))
 
                     # OBSTACLE/CAVE COLLISION DETECTION
                     elif self.cave is not None and pygame.sprite.collide_mask(obs,self.cave):
@@ -896,6 +904,7 @@ class Game:
         self.levelType = self.savedConstants["type"]
         self.angle = self.savedConstants["angle"]
         self.target = self.savedConstants["target"]
+        self.health = self.savedConstants["health"]
         self.cloudPos = cloudStart
 
 
@@ -919,7 +928,7 @@ class Game:
         if self.cave is not None and self.levelType == "CAVE" or self.levelType == "BOTH":
             self.cave.update()
             if self.cave.rect.top <= screenSize[1] and self.cave.rect.bottom >= 0: screen.blit(self.cave.image,self.cave.rect) # DRAW CAVE
-                
+
         obstacleMove(player,obstacles)
         for obs in obstacles:
             newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
@@ -1000,6 +1009,7 @@ class Game:
                 self.levelType = levelDict["type"]
                 self.angle = levelDict["angle"]
                 self.target = levelDict["target"]
+                self.obsHealth = levelDict["health"]
                 if self.cave is not None: self.cave.leave = True # Set cave for exit
                 self.cloudSpeed += cloudSpeedAdder
                 self.currentLevel += 1
@@ -1703,6 +1713,7 @@ class Player(pygame.sprite.Sprite):
             self.shields = spaceShipList[game.savedShipLevel][3]["startingShields"]
             self.shieldPieces = spaceShipList[game.savedShipLevel][3]["startingShieldPieces"]
             self.shieldPiecesNeeded = spaceShipList[game.savedShipLevel][3]["piecesNeeded"]
+            self.damage = spaceShipList[game.savedShipLevel][3]["laserDmg"]
             self.showShield = False
 
 
@@ -1906,6 +1917,7 @@ class Player(pygame.sprite.Sprite):
             self.shields = spaceShipList[game.savedShipLevel][3]["startingShields"]
             self.shieldPieces = spaceShipList[game.savedShipLevel][3]["startingShieldPieces"]
             self.shieldPiecesNeeded = spaceShipList[game.savedShipLevel][3]["piecesNeeded"]
+            self.damage = spaceShipList[game.savedShipLevel][3]["laserDmg"]
 
 
         def updateExhaust(self,game):
@@ -1962,6 +1974,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.speed = game.obstacleSpeed
         self.size = game.obstacleSize
         self.spinSpeed = game.spinSpeed
+        self.health = game.obsHealth
         try: self.image = obstacleImages[game.currentStage - 1][game.currentLevel-1]
         except: self.image = meteorList[random.randint(0,len(meteorList)-1)] # Not enough assets for this level yet
         self.image = pygame.transform.scale(self.image, (self.size, self.size)).convert_alpha()
