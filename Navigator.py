@@ -1,7 +1,7 @@
 # Navigator
 # Copyright (c) 2023 Mike Pistolesi
 # All rights reserved
- 
+
 
 import os,sys,random,math,platform,json,base64,time,pypresence,asyncio
 from cryptography.fernet import Fernet
@@ -259,7 +259,6 @@ windowIcon = pygame.image.load(resources(os.path.join(currentDirectory,'Icon.png
 pygame.display.set_caption('Navigator')
 pygame.display.set_icon(windowIcon)
 screenColor = [0,0,0] # Screen fill color
-
 
 # DISCORD PRESENCE
 presence = None
@@ -1783,7 +1782,6 @@ class Player(pygame.sprite.Sprite):
 
             if (key[pygame.K_a] or key[pygame.K_LEFT]) and ( key[pygame.K_w] or key[pygame.K_UP]) and (key[pygame.K_s] or key[pygame.K_DOWN]) and (key[pygame.K_d] or key[pygame.K_RIGHT]):
                 self.angle = 0
-
 
 
         # SPEED BOOST
