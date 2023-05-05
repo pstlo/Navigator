@@ -1717,26 +1717,40 @@ class Player(pygame.sprite.Sprite):
             self.showShield = False
 
 
-        # PLAYER MOVEMENT
+        # PLAYER MOVEMENT ( will be revisited for more accurate angular movement)
         def movement(self):
             key = pygame.key.get_pressed()
+            if not key[pygame.K_LALT] and not key[pygame.K_RALT]:
+                if key[pygame.K_w] or key[pygame.K_UP]:
+                    self.rect.centery -= self.speed
+                    self.angle = 0
 
-            if key[pygame.K_w] or key[pygame.K_UP]:
-                self.rect.centery -= self.speed
-                self.angle = 0
+                if key[pygame.K_s] or key[pygame.K_DOWN]:
+                    self.rect.centery += self.speed
+                    self.angle = 180
 
-            if key[pygame.K_s] or key[pygame.K_DOWN]:
-                self.rect.centery += self.speed
-                self.angle = 180
+                if key[pygame.K_a] or key[pygame.K_LEFT]:
+                    self.rect.centerx -= self.speed
+                    self.angle = 90
 
-            if key[pygame.K_a] or key[pygame.K_LEFT]:
-                self.rect.centerx -= self.speed
-                self.angle = 90
+                if key[pygame.K_d] or key[pygame.K_RIGHT]:
+                    self.rect.centerx += self.speed
+                    self.angle = -90
 
-            if key[pygame.K_d] or key[pygame.K_RIGHT]:
-                self.rect.centerx += self.speed
-                self.angle = -90
+            else: # ROTATION ONLY
+                if key[pygame.K_w] or key[pygame.K_UP]:
+                    self.angle = 0
 
+                if key[pygame.K_s] or key[pygame.K_DOWN]:
+                    self.angle = 180
+
+                if key[pygame.K_a] or key[pygame.K_LEFT]:
+                    self.angle = 90
+
+                if key[pygame.K_d] or key[pygame.K_RIGHT]:
+                    self.angle = -90
+
+            # DIAGONAL MOVEMENT ANGLES
             if (key[pygame.K_a] or key[pygame.K_LEFT]) and (key[pygame.K_w] or key[pygame.K_UP]):
                 self.angle = 45
 
@@ -1769,6 +1783,7 @@ class Player(pygame.sprite.Sprite):
 
             if (key[pygame.K_a] or key[pygame.K_LEFT]) and ( key[pygame.K_w] or key[pygame.K_UP]) and (key[pygame.K_s] or key[pygame.K_DOWN]) and (key[pygame.K_d] or key[pygame.K_RIGHT]):
                 self.angle = 0
+
 
 
         # SPEED BOOST
