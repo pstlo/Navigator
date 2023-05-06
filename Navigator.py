@@ -792,7 +792,7 @@ class Game:
         # UPDATE OBSTACLES
         if len(obstacles) > 0:
             # OBSTACLE/PLAYER COLLISION DETECTION
-            if pygame.sprite.spritecollide(player,obstacles,False,pygame.sprite.collide_mask):
+            if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask):
                 if player.shields > 0:player.shieldDown(events)
                 else:
                     player.explode(game,obstacles) # Animation
