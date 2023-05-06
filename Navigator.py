@@ -321,7 +321,7 @@ recordsPath = getRecordsPath() # Game records directory
 
 # LOAD LEVELS
 stageList = []
-with open(resources(os.path.join(currentDirectory, 'Levels.txt')), 'r') as file:
+with open(resources(os.path.join(currentDirectory, 'Levels.json')), 'r') as file:
     stages = json.load(file)
     for stage in stages.values():
         levels = []
