@@ -1196,7 +1196,9 @@ class Menu:
                     else: break
                     startPoints += pointsForUnlock
 
+        if game.shipUnlockNumber >= len(spaceShipList): game.shipUnlockNumber = len(spaceShipList)-1
         game.skinUnlockNumber = game.skinsUnlocked(game.savedShipLevel)
+        if game.skinUnlockNumber >= len(spaceShipList[game.savedShipLevel][2]): game.skinUnlockNumber = len(spaceShipList[game.savedShipLevel][2]) - 1
 
         if defaultToHighSkin and not game.skipAutoSkinSelect:
             for i in range(game.skinUnlockNumber): player.nextSkin() # Gets highest unlocked skin by default
@@ -1909,7 +1911,7 @@ class Player(pygame.sprite.Sprite):
                 game.showBackgroundCloud()
 
                 if game.cave is not None: screen.blit(game.cave.image,game.cave.rect) # Draw cave
-                    
+
                 # Draw obstacles during explosion
                 obstacleMove(self,obstacles)
                 for obs in obstacles:
