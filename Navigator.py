@@ -715,7 +715,7 @@ class Game:
         screen.blit(self.thisPoint.image, self.thisPoint.rect)
 
         # CAVES
-        if self.levelType == "CAVE" or self.levelType == "BOTH":
+        if self.levelType == "CAVE":
             if self.cave is None: # SPAWN A CAVE
                 self.cave = Caves(self.caveIndex)
                 if self.caveIndex + 1 < len(caveList) - 1: self.caveIndex+=1
@@ -790,13 +790,10 @@ class Game:
         self.laserUpdate(lasers,player)
 
         # UPDATE OBSTACLES
-        if self.levelType == "OBS" or self.levelType == "BOTH":
-
+        if len(obstacles) > 0:
             # OBSTACLE/PLAYER COLLISION DETECTION
             if pygame.sprite.spritecollide(player,obstacles,False,pygame.sprite.collide_mask):
-                if player.shields > 0:
-                    player.shieldDown(events)
-
+                if player.shields > 0:player.shieldDown(events)
                 else:
                     player.explode(game,obstacles) # Animation
                     if not self.musicMuted: explosionNoise.play()
@@ -846,7 +843,7 @@ class Game:
         # LEVEL UP
         self.levelUpdater(player,obstacles,events)
 
-        if self.levelType == "OBS" or self.levelType == "BOTH": self.spawner(obstacles,player) # Spawn obstacles
+        self.spawner(obstacles,player) # Spawn obstacles
 
         musicLoop() # Loop music
 
@@ -891,7 +888,7 @@ class Game:
         screen.blit(bgList[self.currentStage-1][0],(0,0)) # Draw background
         self.showBackgroundCloud()
         self.cloudPos += self.cloudSpeed
-        if self.cave is not None and self.levelType == "CAVE" or self.levelType == "BOTH":
+        if self.cave is not None:
             self.cave.update()
             if self.cave.rect.top <= screenSize[1] and self.cave.rect.bottom >= 0: screen.blit(self.cave.image,self.cave.rect) # DRAW CAVE
 
@@ -1335,8 +1332,7 @@ class Menu:
             screen.blit(bgList[game.currentStage-1][0],(0,0))
             game.showBackgroundCloud()
 
-            if game.levelType == "CAVE" or game.levelType == "BOTH":
-                screen.blit(game.cave.image,game.cave.rect)
+            if game.cave is not None: screen.blit(game.cave.image,game.cave.rect)
 
             game.showHUD(player)
             screen.blit(game.thisPoint.image, game.thisPoint.rect)
@@ -1466,7 +1462,7 @@ class Menu:
             screen.blit(bgList[game.currentStage - 1][0],(0,0))
             game.showBackgroundCloud()
 
-            if game.levelType == "CAVE" or game.levelType == "BOTH": screen.blit(game.cave.image,game.cave.rect)
+            if game.cave is not None: screen.blit(game.cave.image,game.cave.rect)
             screen.blit(player.finalImg,player.finalRect) # Explosion
 
             pygame.draw.rect(screen, screenColor, [gameOverRect.x - 12,gameOverRect.y + 4,gameOverRect.width + 16, gameOverRect.height - 16],0,10)
@@ -1912,7 +1908,8 @@ class Player(pygame.sprite.Sprite):
                 screen.blit(bgList[game.currentStage-1][0],(0,0))
                 game.showBackgroundCloud()
 
-                if game.levelType == "CAVE" or game.levelType == "BOTH": screen.blit(game.cave.image,game.cave.rect) # Draw cave
+                if game.cave is not None: screen.blit(game.cave.image,game.cave.rect) # Draw cave
+                    
                 # Draw obstacles during explosion
                 obstacleMove(self,obstacles)
                 for obs in obstacles:
