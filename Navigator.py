@@ -15,7 +15,7 @@ pygame.mixer.init()
 
 pygame.mouse.set_visible(False)
 
-version = "v0.4.7"
+version = "v0.4.8"
 #------------------GAME CONSTANTS--------------------------------------------------------------------------
 # SCREEN
 screenSize = [800,800] # Default = [800,800]
