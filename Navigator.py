@@ -19,7 +19,7 @@ version = "v0.4.8"
 #------------------GAME CONSTANTS--------------------------------------------------------------------------
 # SCREEN
 screenSize = [800,800] # Default = [800,800]
-scaler = (screenSize[0] + screenSize[1]) / 1600 # Default = x + y / 2  / 800 == 1 / Make game difficulty scale to screen size
+scaler = (screenSize[0] + screenSize[1]) / 1600 # Default = x + y / 2  / 800 == 1 / scale to screen size
 roundedScaler = int(round(scaler)) # For values that require whole numbers
 fullScreen = False # Default = False
 fps = 60 # Default = 60
