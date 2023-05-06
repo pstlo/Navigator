@@ -6,7 +6,7 @@ extensions = [Extension("Navigator", ["Navigator.py"],)]
 
 setup(
     name='Navigator',
-    version='0.4.7',
+    version='0.4.8',
     author='Mike Pistolesi',
     ext_modules=cythonize(extensions, language_level=3),
     install_requires=['pygame', 'cryptography', 'python-dotenv', 'pypresence'])
