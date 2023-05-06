@@ -404,9 +404,13 @@ for filename in sorted(os.listdir(ufoDirectory)):
 obstacleImages = [meteorList,ufoList] # Seperated by stage
 
 # CAVE ASSETS
-caveImages = []
-for filename in sorted(os.listdir(caveDirectory)):
-    if filename.endswith('.png'): caveImages.append(pygame.image.load(resources(os.path.join(caveDirectory,filename))).convert_alpha())
+caveList = []
+for caveNum in sorted(os.listdir(caveDirectory)):
+    caveAssets = os.path.join(caveDirectory,caveNum)
+    cave = []
+    cave.append(pygame.image.load(resources(os.path.join(caveAssets,"Background.png"))).convert_alpha())
+    cave.append(pygame.image.load(resources(os.path.join(caveAssets,"Cave.png"))).convert_alpha())
+    caveList.append(cave)
 
 # BACKGROUND ASSETS
 bgList = []
@@ -714,7 +718,7 @@ class Game:
         if self.levelType == "CAVE" or self.levelType == "BOTH":
             if self.cave is None: # SPAWN A CAVE
                 self.cave = Caves(self.caveIndex)
-                if self.caveIndex + 1 < len(caveImages) - 1: self.caveIndex+=1
+                if self.caveIndex + 1 < len(caveList) - 1: self.caveIndex+=1
 
             self.cave.update()
             if self.cave.rect.top <= screenSize[1] and self.cave.rect.bottom >= 0:
@@ -1962,7 +1966,7 @@ class Obstacle(pygame.sprite.Sprite):
         spins = [-1,1]
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
         self.active = False
-        
+
 
     # For levels with multiple obstacle types
     def getAttributes(self,attribute):
@@ -2041,7 +2045,8 @@ class Caves(pygame.sprite.Sprite):
     def __init__(self,index):
         super().__init__()
         self.speed = caveSpeed
-        self.image = caveImages[index]
+        self.background = caveList[index][0]
+        self.image = caveList[index][1]
         self.rect = self.image.get_rect(bottomleft = (0,caveStartPos))
         self.mask = pygame.mask.from_surface(self.image)
         self.leave = False # Mark cave for exit
