@@ -827,7 +827,7 @@ class Game:
                         screen.blit(newBlit[0],newBlit[1]) # Blit obstacles
 
                     # OBSTACLE BOUNDARY HANDLING
-                    obs.bound(self,obstacles)
+                    obs.bound(obstacles)
 
             if performanceMode:obstacles.draw(screen) # Potential performance improvement
 
@@ -1944,6 +1944,7 @@ class Player(pygame.sprite.Sprite):
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self,spawnPattern,targeting,playerPos):
         super().__init__()
+        self.attributeIndex = None
         self.spawnPattern = self.getAttributes(spawnPattern)
         self.target = self.getAttributes(targeting)
         self.movement = getMovement(self.spawnPattern)
@@ -1951,6 +1952,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.size = self.getAttributes(game.obstacleSize)
         self.spinSpeed = self.getAttributes(game.spinSpeed)
         self.health = self.getAttributes(game.obsHealth)
+        self.bounds = self.getAttributes(game.obstacleBoundaries)
         try: self.image = obstacleImages[game.currentStage - 1][game.currentLevel-1]
         except: self.image = meteorList[random.randint(0,len(meteorList)-1)] # Not enough assets for this level yet
         self.image = pygame.transform.scale(self.image, (self.size, self.size)).convert_alpha()
@@ -1960,12 +1962,16 @@ class Obstacle(pygame.sprite.Sprite):
         spins = [-1,1]
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
         self.active = False
-
+        
 
     # For levels with multiple obstacle types
     def getAttributes(self,attribute):
-        if type(attribute) == list: return random.choice(attribute)
+        if type(attribute) == list:
+            if self.attributeIndex is None: self.attributeIndex = random.randint(0,len(attribute)-1)
+            if self.attributeIndex > len(attribute): return attribute[random.randint(0,len(attribute)-1)]
+            return attribute[self.attributeIndex]
         else: return attribute
+
 
     def getDirection(self,playerPos):
         if self.target == "NONE": self.direction = self.movement[1]
@@ -2001,8 +2007,8 @@ class Obstacle(pygame.sprite.Sprite):
 
 
     # BOUNDARY HANDLING
-    def bound(self,game,obstacles):
-        if game.obstacleBoundaries == "KILL": # Remove obstacle
+    def bound(self,obstacles):
+        if self.bounds == "KILL": # Remove obstacle
             if self.rect.centerx > screenSize[0] or self.rect.centerx < 0:
                 obstacles.remove(self)
                 self.kill()
@@ -2010,14 +2016,14 @@ class Obstacle(pygame.sprite.Sprite):
                 obstacles.remove(self)
                 self.kill()
 
-        elif game.obstacleBoundaries == "BOUNCE": # Bounce off walls
+        elif self.bounds == "BOUNCE": # Bounce off walls
             direction = self.direction
             if self.rect.centery  > screenSize[1]: self.direction = movementReverse(direction)
             if self.rect.centery < 0: self.direction = movementReverse(direction)
             if self.rect.centerx > screenSize[0]: self.direction = movementReverse(direction)
             if self.rect.centerx < 0: self.direction = movementReverse(direction)
 
-        elif game.obstacleBoundaries == "WRAP": # Wrap around screen
+        elif self.bounds == "WRAP": # Wrap around screen
             if self.rect.centery > screenSize[1]: self.rect.centery = 0
             if self.rect.centery < 0: self.rect.centery = screenSize[1]
             if self.rect.centerx > screenSize[0]: self.rect.centerx = 0
