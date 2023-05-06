@@ -121,14 +121,15 @@ defaultToHighShip = False # Default = False / Default to highest ship unlocked o
 drawExhaust = True # Default = True
 # SHIP CONSTANTS
 #                       [speed,fuel,maxFuel,regen,delay,boostSpeed,hasGuns,laserCost,laserSpeed,fireRate,boostDrain,collats,hasShields,shields,shieldPieces,piecesNeeded,laserDmg]
-defaultShipAttributes = [ 5,    1,  20,     0.05, 50,   7,         False,  0,        0,         0,       0.4,        False, True,       0,      0,           5,          0       ]
-gunShipAttributes =     [ 3,   10,  20,     0.05, 50,   10,        True,   0.4,      10,        250,     0.3,        False, False,      0,      0,           0,          1       ]
+classicShipAttributes = [ 5,    1,  20,     0.05, 50,   7,         False,  0,        0,         0,       0.4,        False, True,       0,      0,           5,          0       ]
+gunShipAttributes =     [ 3,   5,   20,     0.05, 50,   10,        True,   0.4,      10,        250,     0.3,        False, False,      0,      0,           0,          1       ]
 laserShipAttributes =   [ 2,   1,   1,      0,    0,    2,         True,   0,        10,        50,      0,          False, False,      0,      0,           0,          0.5     ]
-hyperYachtAttributes =  [ 3,   20,  30,     0.1,  25,   12,        False,  0,        0,         0,       0.25,       False, False,      0,      0,           0,          0       ]
-oldReliableAttributes = [ 4,   10,  15,     0.05, 50,   6,         True,   1,        5,         1000,    0.25,       True,  False,      0,      0,           0,          3       ]
+hyperYachtAttributes =  [ 3,   5,   30,     0.1,  25,   12,        False,  0,        0,         0,       0.25,       False, False,      0,      0,           0,          0       ]
+oldReliableAttributes = [ 4,   5,   15,     0.05, 50,   6,         True,   1,        5,         1000,    0.25,       True,  False,      0,      0,           0,          3       ]
+newShipAttributes =     [ 4,   1,   15,     0.05, 50,   6,         True,   1,        5,         500,     0.5,        False, False,      0,      0,           0,          3       ]
 
 #ADD SHIPS TO LIST
-shipAttributes = [defaultShipAttributes,gunShipAttributes,laserShipAttributes,hyperYachtAttributes,oldReliableAttributes]
+shipAttributes = [classicShipAttributes,gunShipAttributes,laserShipAttributes,hyperYachtAttributes,oldReliableAttributes,newShipAttributes]
 
 # LEVELS
 levelTimer = 15 # Default = 15 / Time (seconds) between levels (can be overridden)
@@ -567,7 +568,7 @@ unlockTimePerLevels = [] # For time based unlocks
 totalLevels = 0
 
 for stage in stageList: totalLevels += len(stage) # Get total number of levels
-totalTime = totalLevels * levelTimer # multiply by time per level
+totalTime = totalLevels * levelTimer # multiply by (average) time per level
 
 # Calculate time per unlock for each ship level
 for shipInd in range(len(spaceShipList)):
