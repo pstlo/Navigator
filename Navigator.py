@@ -142,30 +142,6 @@ obstacleSpawnRange = [0,1] # Default = [0,1]
 caveStartPos = screenSize[1]*-2 # Default = -1600 / Cave start Y coordinate
 caveSpeed = 20 # Default = 20 / Cave flyby speed
 
-# Type -> (OBS,CAVE,BOTH) / Pattern -> (ALL,AGGRO,TOP,VERT) / Bound -> (KILL,WIPE,BOUNCE) / Target -> (NONE,LOCK,HOME)
-# ADD LEVELS HERE:   [ STARTED, START TIME,     BOUNDS, SPEED,      SIZE,       NUMBER,    SPIN,  PATTERN, WIPE,  TYPE, ANGLE,TARGET,HEALTH]
-levelOne =           [ False,       0,          "KILL", 4*scaler,   30*scaler,  12*scaler,  1,    "ALL",   False, "OBS", 0,   "NONE", 0    ]
-levelTwo =           [ False,       levelTimer, "KILL", 5*scaler,   32*scaler,  16*scaler,  1,    "ALL",   False, "OBS", 0,   "NONE", 0    ]
-levelThree =         [ False,     2*levelTimer, "KILL", 5*scaler,   34*scaler,  16*scaler,  2,    "ALL",   False, "OBS", 0,   "NONE", 0    ]
-levelFour =          [ False,     3*levelTimer, "KILL", 5.5*scaler, 36*scaler,  16*scaler,  3,    "ALL",   False, "OBS", 0,   "NONE", 0    ]
-levelFive =          [ False,     4*levelTimer, "KILL", 6*scaler,   38*scaler,  16*scaler,  4,    "ALL",   False, "OBS", 0,   "NONE", 0    ]
-levelSix =           [ False,     5*levelTimer, "KILL", 6.5*scaler, 40*scaler,  18*scaler,  3,    "ALL",   False, "OBS", 0,   "NONE", 0    ]
-levelSeven =         [ False,     6*levelTimer, "KILL", 2.2*scaler, 50*scaler,  65*scaler,  1,    "ALL",   True,  "OBS", 0,   "NONE", 0    ]
-levelEight =         [ False,     7*levelTimer, "KILL", 6.5*scaler, 44*scaler,  20*scaler,  4,    "ALL",   False, "OBS", 0,   "NONE", 0    ]
-levelNine =          [ False,     8*levelTimer, "KILL", 6.5*scaler, 46*scaler,  21*scaler,  5,    "ALL",   False, "OBS", 0,   "NONE", 0    ]
-levelTen =           [ False,     9*levelTimer, "KILL", 7*scaler,   48*scaler,  22*scaler,  5,    "ALL",   False, "OBS", 0,   "NONE", 0    ]
-stageTwoLevelOne =   [ False,    10*levelTimer, "KILL", 7*scaler,   50*scaler,  23*scaler,  0,    "AGGRO", False, "OBS", 0,   "NONE", 0    ]
-stageTwoLevelTwo =   [ False,    11*levelTimer, "KILL", 7.5*scaler, 52*scaler,  24*scaler,  0,    "AGGRO", False, "OBS", 0,   "NONE", 0    ]
-stageTwoLevelThree = [ False,    12*levelTimer, "KILL", 7.5*scaler, 54*scaler,  25*scaler,  3,    "AGGRO", False, "OBS", 0,   "NONE", 0    ]
-stageTwoLevelFour =  [ False,    13*levelTimer, "KILL", 8*scaler,   56*scaler,  26*scaler,  0,    "AGGRO", False, "OBS", 0,   "NONE", 0    ]
-
-# DIVIDE INTO STAGES
-stageOneLevels = [levelOne,levelTwo,levelThree,levelFour,levelFive,levelSix,levelSeven,levelEight,levelNine,levelTen] # Stage 1
-stageTwoLevels = [stageTwoLevelOne,stageTwoLevelTwo,stageTwoLevelThree,stageTwoLevelFour] # Stage 2
-
-# STORE IN LIST
-stageList = [stageOneLevels, stageTwoLevels] # List of stages
-
 # SAVING
 encryptGameRecords = True # Hide game records from user to prevent manual unlocks
 invalidKeyMessage = "Get a key to save progress :)" # Saved to game records file if encryptGameRecords == True and key is invalid
@@ -343,6 +319,16 @@ soundDirectory = os.path.join(currentDirectory, 'Sounds') # Sound assets directo
 supportersDirectory = os.path.join(currentDirectory,'Supporters') # Supporters directory
 recordsPath = getRecordsPath() # Game records directory
 
+# LOAD LEVELS
+stageList = []
+with open(resources(os.path.join(currentDirectory, 'Levels.txt')), 'r') as file:
+    stages = json.load(file)
+    for stage in stages.values():
+        levels = []
+        for level in stage.values():
+            level["START"] = False
+            levels.append(level)
+        stageList.append(levels)
 
 # GET KEY
 def getKey():
@@ -617,44 +603,22 @@ rightDir = ["W", "N", "S", "NW", "SW"]
 class Game:
     def __init__(self,records):
 
-        # LOAD LEVELS
-        contantList = []
-        for stage in stageList:
-            stageConstants = []
-            for settings in stage:
-                levelDict = {
-                    "START" : settings[0],
-                    "TIME" : settings[1],
-                    "bound" : settings[2],
-                    "obsSpeed" : settings[3],
-                    "obsSize" : settings[4],
-                    "maxObs" : settings[5],
-                    "spinSpeed" : settings[6],
-                    "pattern" : settings[7],
-                    "wipe" : settings[8],
-                    "type":settings[9],
-                    "angle":settings[10],
-                    "target":settings[11],
-                    "health":settings[12]
-                    }
-                stageConstants.append(levelDict)
-            contantList.append(stageConstants)
-        self.gameConstants = contantList
+        self.gameConstants = stageList
 
         # Level constants
-        self.obstacleSpeed = self.gameConstants[0][0]["obsSpeed"]
-        self.obstacleSize = self.gameConstants[0][0]["obsSize"]
-        self.maxObstacles = self.gameConstants[0][0]["maxObs"]
-        self.spawnPattern = self.gameConstants[0][0]["pattern"]
-        self.obstacleBoundaries = self.gameConstants[0][0]["bound"] # Obstacle handling at screen border
-        self.levelType = self.gameConstants[0][0]["type"]
-        self.wipe = self.gameConstants[0][0]["wipe"] # Old obstacle handling
-        self.spinSpeed = self.gameConstants[0][0]["spinSpeed"] # Obstacle spin speed
-        self.angle = self.gameConstants[0][0]["angle"] # Game rotation
-        self.target = self.gameConstants[0][0]["target"] # Game rotation
-        self.obsHealth = self.gameConstants[0][0]["health"] # Game rotation
-
+        self.obstacleSpeed = self.gameConstants[0][0]["obstacleSpeed"]
+        self.obstacleSize = self.gameConstants[0][0]["obstacleSize"]
+        self.maxObstacles = self.gameConstants[0][0]["maxObstacles"]
+        self.spawnPattern = self.gameConstants[0][0]["obstacleSpawn"]
+        self.obstacleBoundaries = self.gameConstants[0][0]["obstacleBounds"] # Obstacle handling at screen border
+        self.levelType = self.gameConstants[0][0]["levelType"]
+        self.wipe = self.gameConstants[0][0]["wipeObstacles"] # Old obstacle handling
+        self.spinSpeed = self.gameConstants[0][0]["obstacleSpin"] # Obstacle spin speed
+        self.angle = self.gameConstants[0][0]["levelAngle"] # Game rotation
+        self.target = self.gameConstants[0][0]["obstacleTarget"]
+        self.obsHealth = self.gameConstants[0][0]["obstacleHealth"]
         self.cloudSpeed = cloudSpeed
+
         self.currentLevel = 1
         self.currentStage = 1
         self.score = 0 # Points collected
@@ -682,15 +646,14 @@ class Game:
                 "obstacleSpeed" : self.obstacleSpeed,
                 "obstacleSize" : self.obstacleSize,
                 "maxObstacles" : self.maxObstacles,
-                "obstacleBoundaries" : self.obstacleBoundaries,
-                "cloudSpeed" : self.cloudSpeed,
-                "spinSpeed" : self.spinSpeed,
-                "pattern" : self.spawnPattern,
-                "wipe" : self.wipe,
-                "type":self.levelType,
-                "angle":self.angle,
-                "target":self.target,
-                "health":self.obsHealth
+                "obstacleBounds" : self.obstacleBoundaries,
+                "obstacleSpin" : self.spinSpeed,
+                "obstacleSpawn" : self.spawnPattern,
+                "wipeObstacles" : self.wipe,
+                "levelType":self.levelType,
+                "levelAngle":self.angle,
+                "obstacleTarget":self.target,
+                "obstacleHealth":self.obsHealth
                 }
 
 
@@ -895,15 +858,15 @@ class Game:
         self.obstacleSpeed = self.savedConstants["obstacleSpeed"]
         self.obstacleSize = self.savedConstants["obstacleSize"]
         self.maxObstacles = self.savedConstants["maxObstacles"]
-        self.obstacleBoundaries = self.savedConstants["obstacleBoundaries"]
-        self.cloudSpeed = self.savedConstants["cloudSpeed"]
-        self.spinSpeed = self.savedConstants["spinSpeed"]
-        self.spawnPattern = self.savedConstants["pattern"]
-        self.wipe = self.savedConstants["wipe"]
-        self.levelType = self.savedConstants["type"]
-        self.angle = self.savedConstants["angle"]
-        self.target = self.savedConstants["target"]
-        self.health = self.savedConstants["health"]
+        self.obstacleBoundaries = self.savedConstants["obstacleBounds"]
+        self.spinSpeed = self.savedConstants["obstacleSpin"]
+        self.spawnPattern = self.savedConstants["obstacleSpawn"]
+        self.wipe = self.savedConstants["wipeObstacles"]
+        self.levelType = self.savedConstants["levelType"]
+        self.angle = self.savedConstants["levelAngle"]
+        self.target = self.savedConstants["obstacleTarget"]
+        self.health = self.savedConstants["obstacleHealth"]
+        self.cloudSpeed = cloudSpeed
         self.cloudPos = cloudStart
 
 
@@ -940,7 +903,7 @@ class Game:
 
         # UPDATES STAGE
         if self.currentStage < len(self.gameConstants): # Make sure there is a next stage
-            if self.gameConstants[self.currentStage][0]["TIME"] == self.gameClock and not self.gameConstants[self.currentStage][0]["START"]: # Next stage's first level's activation time reached
+            if self.gameConstants[self.currentStage][0]["startTime"] == self.gameClock and not self.gameConstants[self.currentStage][0]["START"]: # Next stage's first level's activation time reached
                 self.gameConstants[self.currentStage][0]["START"] = True # Mark as activated
                 stageUpCloud = stageCloudImg
                 stageUpFont = pygame.font.Font(gameFont, stageUpSize)
@@ -974,8 +937,8 @@ class Game:
 
         # UPDATES LEVEL
         for levelDict in self.gameConstants[self.currentStage-1]:
-            if levelDict["TIME"] == self.gameClock and not levelDict["START"] and ( (self.currentLevel > 1 or self.currentStage > 1) or (len(self.gameConstants[0]) > 1 and self.gameClock >= self.gameConstants[0][1]["TIME"]) ):
-                if self.gameConstants[self.currentStage-1][self.currentLevel-1]["wipe"]:
+            if levelDict["startTime"] == self.gameClock and not levelDict["START"] and ( (self.currentLevel > 1 or self.currentStage > 1) or (len(self.gameConstants[0]) > 1 and self.gameClock >= self.gameConstants[0][1]["startTime"]) ):
+                if self.gameConstants[self.currentStage-1][self.currentLevel-1]["wipeObstacles"]:
                     levelUpCloud = stageCloudImg
                     levelUpRect = levelUpCloud.get_rect()
                     levelUpRect.center = (screenSize[0]/2, stageUpCloudStartPos)
@@ -998,17 +961,17 @@ class Game:
                         self.clk.tick(fps)
 
                 levelDict["START"] = True
-                self.obstacleBoundaries = levelDict["bound"]
-                self.obstacleSpeed = levelDict["obsSpeed"]
-                self.maxObstacles = levelDict["maxObs"]
-                self.obstacleSize = levelDict["obsSize"]
-                self.spinSpeed = levelDict["spinSpeed"]
-                self.spawnPattern = levelDict["pattern"]
-                self.wipe = levelDict["wipe"]
-                self.levelType = levelDict["type"]
-                self.angle = levelDict["angle"]
-                self.target = levelDict["target"]
-                self.obsHealth = levelDict["health"]
+                self.obstacleBoundaries = levelDict["obstacleBounds"]
+                self.obstacleSpeed = levelDict["obstacleSpeed"]
+                self.maxObstacles = levelDict["maxObstacles"]
+                self.obstacleSize = levelDict["obstacleSize"]
+                self.spinSpeed = levelDict["obstacleSpin"]
+                self.spawnPattern = levelDict["obstacleSpawn"]
+                self.wipe = levelDict["wipeObstacles"]
+                self.levelType = levelDict["levelType"]
+                self.angle = levelDict["levelAngle"]
+                self.target = levelDict["obstacleTarget"]
+                self.obsHealth = levelDict["obstacleHealth"]
                 if self.cave is not None: self.cave.leave = True # Set cave for exit
                 self.cloudSpeed += cloudSpeedAdder
                 self.currentLevel += 1
