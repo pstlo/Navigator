@@ -140,6 +140,9 @@ invalidKeyMessage = "Get a key to save progress :)" # Saved to game records file
 
 # DISCORD PRESENCE
 showPresence = True # Default = True
+
+# DEV MODE
+devMode = False
 #----------------------------------------------------------------------------------------------------------------------
 
 
@@ -1812,7 +1815,7 @@ class Player(pygame.sprite.Sprite):
         # GET NEXT SKIN
         def nextSkin(self):
             if self.currentImageNum + 1 < len(spaceShipList[game.savedShipLevel]['skins']):
-                if self.currentImageNum + 1 > game.skinUnlockNumber:
+                if self.currentImageNum + 1 > game.skinUnlockNumber and not devMode:
                     self.image = spaceShipList[game.savedShipLevel]['skins'][0]
                     self.currentImageNum = 0
                 else:
@@ -1834,20 +1837,23 @@ class Player(pygame.sprite.Sprite):
                 if game.skinUnlockNumber == 0:return
                 else:
                     self.image = spaceShipList[game.savedShipLevel]['skins'][game.skinUnlockNumber]
-                    self.currentImageNum = game.skinUnlockNumber
+                    if devMode: self.currentImageNum = len(spaceShipList[game.savedShipLevel]['skins']) - 1
+                    else: self.currentImageNum = game.skinUnlockNumber
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
 
 
         # SWITCH SHIP TYPE
         def toggleSpaceShip(self,game,toggleDirection): # toggleDirection == True -> next ship / False -> last ship
-            if game.shipUnlockNumber == 0: return
+            if game.shipUnlockNumber == 0 and not devMode: return
             else:
                 if toggleDirection:
-                    if game.savedShipLevel + 1 <= game.shipUnlockNumber: game.savedShipLevel +=1
+                    if game.savedShipLevel + 1  < len(spaceShipList) and (devMode or game.savedShipLevel + 1 <= game.shipUnlockNumber): game.savedShipLevel +=1
                     else: game.savedShipLevel = 0
                 else:
-                    if game.savedShipLevel - 1 < 0: game.savedShipLevel = game.shipUnlockNumber
+                    if game.savedShipLevel - 1 < 0: 
+                        if devMode: game.savedShipLevel = len(spaceShipList) - 1
+                        else:game.savedShipLevel = game.shipUnlockNumber
                     else: game.savedShipLevel -=1
                 game.skinUnlockNumber = game.skinsUnlocked(game.savedShipLevel) # Get skin unlocks for new ship type
                 self.updatePlayerConstants(game) # Update attributes
