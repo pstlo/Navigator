@@ -142,7 +142,7 @@ invalidKeyMessage = "Get a key to save progress :)" # Saved to game records file
 showPresence = True # Default = True
 
 # DEV MODE
-devMode = True
+devMode = False
 #----------------------------------------------------------------------------------------------------------------------
 
 
