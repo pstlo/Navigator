@@ -119,17 +119,6 @@ exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation fr
 defaultToHighSkin = True # Default = True / Default to highest skin unlocked on game launch
 defaultToHighShip = False # Default = False / Default to highest ship unlocked on game launch
 drawExhaust = True # Default = True
-# SHIP CONSTANTS
-#                       [speed,fuel,maxFuel,regen,delay,boostSpeed,hasGuns,laserCost,laserSpeed,fireRate,boostDrain,collats,hasShields,shields,shieldPieces,piecesNeeded,laserDmg]
-classicShipAttributes = [ 5,    1,  20,     0.05, 50,   7,         False,  0,        0,         0,       0.4,        False, True,       0,      0,           5,          0       ]
-gunShipAttributes =     [ 3,   5,   20,     0.05, 50,   10,        True,   0.4,      10,        250,     0.3,        False, False,      0,      0,           0,          1       ]
-laserShipAttributes =   [ 2,   1,   1,      0,    0,    2,         True,   0,        10,        50,      0,          False, False,      0,      0,           0,          0.5     ]
-hyperYachtAttributes =  [ 3,   5,   30,     0.1,  25,   12,        False,  0,        0,         0,       0.25,       False, False,      0,      0,           0,          0       ]
-oldReliableAttributes = [ 4,   5,   15,     0.05, 50,   6,         True,   1,        5,         1000,    0.25,       True,  False,      0,      0,           0,          3       ]
-newShipAttributes =     [ 4,   1,   15,     0.05, 50,   6,         True,   1,        5,         500,     0.5,        False, False,      0,      0,           0,          3       ]
-
-#ADD SHIPS TO LIST
-shipAttributes = [classicShipAttributes,gunShipAttributes,laserShipAttributes,hyperYachtAttributes,oldReliableAttributes,newShipAttributes]
 
 # LEVELS
 levelTimer = 15 # Default = 15 / Time (seconds) between levels (can be overridden)
@@ -449,34 +438,45 @@ for filename in sorted(os.listdir(pointsDirectory)):
 
 # SPACESHIP ASSETS
 spaceShipList = []
-toRemoveBackground = ['gunShip.png','laserShip.png','f1Laser.png','hyperYacht.png', 'HYf1.png','HYf2.png','HYf3.png','olReliableShip.png','oRf1.png','oRf2.png','oRf3.png'] # List of PNGs in ships folder with white backgrounds
-
 for levelFolder in sorted(os.listdir(shipDirectory)):
     levelFolderPath = os.path.join(shipDirectory,levelFolder) # level folder path
-
     if os.path.isdir(levelFolderPath): # Ignore DS_STORE on MacOS
-        shipLevelList = []
-        for shipAsset in sorted(os.listdir(levelFolderPath)): # Ship assets per level
-            shipAssetPath = os.path.join(levelFolderPath,shipAsset) # Ship asset path
+        shipLevelDict = {'skins':[],'exhaust':[], 'boost':[], 'laser':'', 'stats':''}
 
-            if os.path.isdir(shipAssetPath): # Ignore DS_STORE on MacOS
-                assetList = []
-                for imageAsset in sorted(os.listdir(shipAssetPath)): # Iterate through image folders
+        # Load ship skins
+        skinsPath = os.path.join(levelFolderPath,'Skins')
+        assetList = []
+        for imageAsset in sorted(os.listdir(skinsPath)):
+            if imageAsset.endswith('.png'):
+                imageAssetPath = os.path.join(skinsPath,imageAsset)
+                shipLevelDict['skins'].append(pygame.image.load(resources((imageAssetPath))).convert_alpha())
 
-                    if imageAsset.endswith('.png'):
-                        imageAssetPath = os.path.join(shipAssetPath,imageAsset)
-                        imageAssetPng = pygame.image.load(resources((imageAssetPath)))
-                        if imageAsset in toRemoveBackground: imageAssetPng.set_colorkey([255,255,255]) # Remove white background if specified in list
-                        assetList.append(imageAssetPng.convert_alpha())
+        # Load exhaust frames
+        exhaustPath = os.path.join(levelFolderPath,'Exhaust')
+        assetList = []
+        for imageAsset in sorted(os.listdir(exhaustPath)):
+            if imageAsset.endswith('.png'):
+                imageAssetPath = os.path.join(exhaustPath,imageAsset)
+                shipLevelDict['exhaust'].append(pygame.image.load(resources((imageAssetPath))).convert_alpha())
 
-                shipLevelList.append(assetList)
+        # Load boost frames
+        boostPath = os.path.join(levelFolderPath,'Boost')
+        assetList = []
+        for imageAsset in sorted(os.listdir(boostPath)):
+            if imageAsset.endswith('.png'):
+                imageAssetPath = os.path.join(boostPath,imageAsset)
+                shipLevelDict['boost'].append(pygame.image.load(resources((imageAssetPath))).convert_alpha())
 
-            elif shipAsset == 'Laser.png':
-                laserPng = pygame.image.load(resources(shipAssetPath))
-                laserPng.set_colorkey([255,255,255])
-                shipLevelList.append(laserPng.convert_alpha())
+        # Load laser image
+        laserPath = os.path.join(levelFolderPath,'Laser.png')
+        shipLevelDict['laser'] = pygame.image.load(resources(laserPath)).convert_alpha()
 
-        spaceShipList.append(shipLevelList) # Add to main list
+        # Load ship stats
+        statsPath = os.path.join(levelFolderPath,'Stats.json')
+        with open(resources(statsPath), 'r') as file: shipLevelDict['stats'] = json.load(file)
+
+        spaceShipList.append(shipLevelDict)
+
 
 # PLAYER SHIELD ASSET
 playerShield = pygame.transform.scale(pygame.image.load(resources(os.path.join(currentDirectory,"Shield.png"))),(playerShieldSize,playerShieldSize)).convert_alpha()
@@ -502,30 +502,7 @@ impactNoise.set_volume(sfxVolume/100)
 
 # SHIP ATTRIBUTES DATA
 shipConstants = []
-for i in shipAttributes:
-    levelConstantsDict = {
-    "playerSpeed" : i[0],
-    "fuel" : i[1],
-    "maxFuel" : i[2],
-    "fuelRegenNum" : i[3],
-    "fuelRegenDelay" : i[4],
-    "boostSpeed" : i[5],
-    "hasGuns" : i[6],
-    "laserCost" : i[7],
-    "laserSpeed" : i[8],
-    "laserFireRate" : i[9],
-    "boostDrain" : i[10],
-    "laserCollat" : i[11],
-    "hasShields" : i[12],
-    "startingShields" : i[13],
-    "startingShieldPieces" : i[14],
-    "piecesNeeded" : i[15],
-    "laserDmg" : i[16]
-    }
-    shipConstants.append(levelConstantsDict)
-
-for i in range(len(spaceShipList)): spaceShipList[i].append(shipConstants[i])
-# Stores as -> [ ( [Exhaust frames],Laser Image,[Ship Skins],{Player Constants} ) ]
+for i in range(len(spaceShipList)): shipConstants.append(spaceShipList[i]["stats"])
 
 # MAIN MENU ASSETS
 menuList = []
@@ -572,7 +549,7 @@ totalTime = totalLevels * levelTimer # multiply by (average) time per level
 
 # Calculate time per unlock for each ship level
 for shipInd in range(len(spaceShipList)):
-    timePerUnlock = totalTime/len(spaceShipList[shipInd][2])
+    timePerUnlock = totalTime/len(spaceShipList[shipInd]['skins'])
     if timePerUnlock == totalTime: unlockTimePerLevels.append(None) # No other skins for this level
     else: unlockTimePerLevels.append(int(timePerUnlock))
 
@@ -767,7 +744,7 @@ class Game:
         newBlit = rotateImage(player.image,player.rect,player.angle)
 
         # ROTATE EXHAUST
-        if drawExhaust: newExhaustBlit = rotateImage(spaceShipList[game.savedShipLevel][0][player.exhaustState-1],player.rect,player.angle)
+        if drawExhaust: newExhaustBlit = rotateImage(spaceShipList[game.savedShipLevel]['exhaust'][player.exhaustState-1],player.rect,player.angle)
 
         # DRAW PLAYER
         screen.blit(newBlit[0],newBlit[1])
@@ -1086,7 +1063,7 @@ class Game:
 
 
     # Get number of skins unlocked for a specified level number
-    def skinsUnlocked(self,level): return self.getUnlocks(len(spaceShipList[level][2]),unlockTimePerLevels[level])
+    def skinsUnlocked(self,level): return self.getUnlocks(len(spaceShipList[level]['skins']),unlockTimePerLevels[level])
 
 
     # RESTART GAME
@@ -1199,7 +1176,7 @@ class Menu:
 
         if game.shipUnlockNumber >= len(spaceShipList): game.shipUnlockNumber = len(spaceShipList)-1
         game.skinUnlockNumber = game.skinsUnlocked(game.savedShipLevel)
-        if game.skinUnlockNumber >= len(spaceShipList[game.savedShipLevel][2]): game.skinUnlockNumber = len(spaceShipList[game.savedShipLevel][2]) - 1
+        if game.skinUnlockNumber >= len(spaceShipList[game.savedShipLevel]['skins']): game.skinUnlockNumber = len(spaceShipList[game.savedShipLevel]['skins']) - 1
 
         if defaultToHighSkin and not game.skipAutoSkinSelect:
             for i in range(game.skinUnlockNumber): player.nextSkin() # Gets highest unlocked skin by default
@@ -1293,7 +1270,7 @@ class Menu:
             # SHOW SHIP CONTROLS
             if player.hasGuns: screen.blit(shootHelp,shootHelpRect)
             if player.boostSpeed > player.baseSpeed: screen.blit(boostHelp,boostHelpRect)
-            if unlockTimePerLevels[game.savedShipLevel] != None and game.records["longestRun"] >= unlockTimePerLevels[game.savedShipLevel] and len(spaceShipList[game.savedShipLevel][2]) > 1: screen.blit(skinHelpDisplay,skinHelpRect) # Show switch skin controls
+            if unlockTimePerLevels[game.savedShipLevel] != None and game.records["longestRun"] >= unlockTimePerLevels[game.savedShipLevel] and len(spaceShipList[game.savedShipLevel]['skins']) > 1: screen.blit(skinHelpDisplay,skinHelpRect) # Show switch skin controls
             if game.shipUnlockNumber > 0: screen.blit(shipHelpDisplay,shipHelpRect)
             screen.blit(player.image, (player.rect.x,player.rect.y + startOffset)) # Current spaceship
             # LOGO LETTERS
@@ -1656,29 +1633,29 @@ class Player(pygame.sprite.Sprite):
 
             # GET DEFAULT SHIP CONSTANTS
             self.currentImageNum = 0
-            self.speed,self.baseSpeed,self.boostSpeed = spaceShipList[game.savedShipLevel][3]["playerSpeed"],spaceShipList[game.savedShipLevel][3]["playerSpeed"],spaceShipList[game.savedShipLevel][3]["boostSpeed"]
-            self.image = spaceShipList[game.savedShipLevel][2][self.currentImageNum]
-            self.laserImage = spaceShipList[game.savedShipLevel][1]
+            self.speed,self.baseSpeed,self.boostSpeed = spaceShipList[game.savedShipLevel]['stats']["speed"],spaceShipList[game.savedShipLevel]['stats']["speed"],spaceShipList[game.savedShipLevel]['stats']["boostSpeed"]
+            self.image = spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum]
+            self.laserImage = spaceShipList[game.savedShipLevel]['laser']
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
-            self.fuel, self.maxFuel = spaceShipList[game.savedShipLevel][3]["fuel"], spaceShipList[game.savedShipLevel][3]["maxFuel"]
+            self.fuel, self.maxFuel = spaceShipList[game.savedShipLevel]['stats']["startingFuel"], spaceShipList[game.savedShipLevel]['stats']["maxFuel"]
             self.angle, self.lastAngle = 0, 0
             self.exhaustState, self.explosionState = 0, 0 # Index of animation frame
             self.finalImg, self.finalRect = '','' # Last frame of exhaust animation for boost
             self.lastThreeExhaustPos = [[0,0],[0,0],[0,0]] # Will be updated with rotateImage(recent player blits)
-            self.fuelRegenNum = spaceShipList[game.savedShipLevel][3]["fuelRegenNum"]
-            self.fuelRegenDelay = spaceShipList[game.savedShipLevel][3]["fuelRegenDelay"]
-            self.boostDrain = spaceShipList[game.savedShipLevel][3]["boostDrain"]
-            self.laserCost = spaceShipList[game.savedShipLevel][3]["laserCost"]
-            self.laserSpeed = spaceShipList[game.savedShipLevel][3]["laserSpeed"]
-            self.laserFireRate = spaceShipList[game.savedShipLevel][3]["laserFireRate"]
-            self.laserCollat = spaceShipList[game.savedShipLevel][3]["laserCollat"]
-            self.hasGuns, self.laserReady, self.boostReady = spaceShipList[game.savedShipLevel][3]["hasGuns"], True, True
-            self.hasShields = spaceShipList[game.savedShipLevel][3]["hasShields"]
-            self.shields = spaceShipList[game.savedShipLevel][3]["startingShields"]
-            self.shieldPieces = spaceShipList[game.savedShipLevel][3]["startingShieldPieces"]
-            self.shieldPiecesNeeded = spaceShipList[game.savedShipLevel][3]["piecesNeeded"]
-            self.damage = spaceShipList[game.savedShipLevel][3]["laserDmg"]
+            self.fuelRegenNum = spaceShipList[game.savedShipLevel]['stats']["fuelRegen"]
+            self.fuelRegenDelay = spaceShipList[game.savedShipLevel]['stats']["fuelRegenDelay"]
+            self.boostDrain = spaceShipList[game.savedShipLevel]['stats']["boostDrain"]
+            self.laserCost = spaceShipList[game.savedShipLevel]['stats']["laserCost"]
+            self.laserSpeed = spaceShipList[game.savedShipLevel]['stats']["laserSpeed"]
+            self.laserFireRate = spaceShipList[game.savedShipLevel]['stats']["fireRate"]
+            self.laserCollat = spaceShipList[game.savedShipLevel]['stats']["collats"]
+            self.hasGuns, self.laserReady, self.boostReady = spaceShipList[game.savedShipLevel]['stats']["hasGuns"], True, True
+            self.hasShields = spaceShipList[game.savedShipLevel]['stats']["hasShields"]
+            self.shields = spaceShipList[game.savedShipLevel]['stats']["startingShields"]
+            self.shieldPieces = spaceShipList[game.savedShipLevel]['stats']["startingShieldPieces"]
+            self.shieldPiecesNeeded = spaceShipList[game.savedShipLevel]['stats']["shieldPiecesNeeded"]
+            self.damage = spaceShipList[game.savedShipLevel]['stats']["laserDamage"]
             self.showShield = False
 
 
@@ -1831,15 +1808,15 @@ class Player(pygame.sprite.Sprite):
 
         # GET NEXT SKIN
         def nextSkin(self):
-            if self.currentImageNum + 1 < len(spaceShipList[game.savedShipLevel][2]):
+            if self.currentImageNum + 1 < len(spaceShipList[game.savedShipLevel]['skins']):
                 if self.currentImageNum + 1 > game.skinUnlockNumber:
-                    self.image = spaceShipList[game.savedShipLevel][2][0]
+                    self.image = spaceShipList[game.savedShipLevel]['skins'][0]
                     self.currentImageNum = 0
                 else:
-                    self.image = spaceShipList[game.savedShipLevel][2][self.currentImageNum+1]
+                    self.image = spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum+1]
                     self.currentImageNum+=1
             else:
-                self.image = spaceShipList[game.savedShipLevel][2][0]
+                self.image = spaceShipList[game.savedShipLevel]['skins'][0]
                 self.currentImageNum = 0
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
@@ -1848,12 +1825,12 @@ class Player(pygame.sprite.Sprite):
         # GET PREVIOUS SKIN
         def lastSkin(self):
             if self.currentImageNum >= 1:
-                self.image = spaceShipList[game.savedShipLevel][2][self.currentImageNum - 1]
+                self.image = spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum - 1]
                 self.currentImageNum-=1
             else:
                 if game.skinUnlockNumber == 0:return
                 else:
-                    self.image = spaceShipList[game.savedShipLevel][2][game.skinUnlockNumber]
+                    self.image = spaceShipList[game.savedShipLevel]['skins'][game.skinUnlockNumber]
                     self.currentImageNum = game.skinUnlockNumber
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
@@ -1875,32 +1852,32 @@ class Player(pygame.sprite.Sprite):
 
         # Update player attributes
         def updatePlayerConstants(self,game):
-            self.image = spaceShipList[game.savedShipLevel][2][0]
-            self.laserImage = spaceShipList[game.savedShipLevel][1]
+            self.image = spaceShipList[game.savedShipLevel]['skins'][0]
+            self.laserImage = spaceShipList[game.savedShipLevel]['laser']
             self.currentImageNum = 0
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
-            self.speed,self.baseSpeed = spaceShipList[game.savedShipLevel][3]["playerSpeed"],spaceShipList[game.savedShipLevel][3]["playerSpeed"]
-            self.fuel = spaceShipList[game.savedShipLevel][3]["fuel"]
-            self.maxFuel = spaceShipList[game.savedShipLevel][3]["maxFuel"]
-            self.fuelRegenNum = spaceShipList[game.savedShipLevel][3]["fuelRegenNum"]
-            self.fuelRegenDelay = spaceShipList[game.savedShipLevel][3]["fuelRegenDelay"]
-            self.boostSpeed = spaceShipList[game.savedShipLevel][3]["boostSpeed"]
-            self.boostDrain = spaceShipList[game.savedShipLevel][3]["boostDrain"]
-            self.laserCost = spaceShipList[game.savedShipLevel][3]["laserCost"]
-            self.laserSpeed = spaceShipList[game.savedShipLevel][3]["laserSpeed"]
-            self.laserFireRate = spaceShipList[game.savedShipLevel][3]["laserFireRate"]
-            self.hasGuns = spaceShipList[game.savedShipLevel][3]["hasGuns"]
-            self.laserCollat = spaceShipList[game.savedShipLevel][3]["laserCollat"]
-            self.hasShields = spaceShipList[game.savedShipLevel][3]["hasShields"]
-            self.shields = spaceShipList[game.savedShipLevel][3]["startingShields"]
-            self.shieldPieces = spaceShipList[game.savedShipLevel][3]["startingShieldPieces"]
-            self.shieldPiecesNeeded = spaceShipList[game.savedShipLevel][3]["piecesNeeded"]
-            self.damage = spaceShipList[game.savedShipLevel][3]["laserDmg"]
+            self.speed,self.baseSpeed = spaceShipList[game.savedShipLevel]['stats']["speed"],spaceShipList[game.savedShipLevel]['stats']["speed"]
+            self.fuel = spaceShipList[game.savedShipLevel]['stats']["startingFuel"]
+            self.maxFuel = spaceShipList[game.savedShipLevel]['stats']["maxFuel"]
+            self.fuelRegenNum = spaceShipList[game.savedShipLevel]['stats']["fuelRegen"]
+            self.fuelRegenDelay = spaceShipList[game.savedShipLevel]['stats']["fuelRegenDelay"]
+            self.boostSpeed = spaceShipList[game.savedShipLevel]['stats']["boostSpeed"]
+            self.boostDrain = spaceShipList[game.savedShipLevel]['stats']["boostDrain"]
+            self.laserCost = spaceShipList[game.savedShipLevel]['stats']["laserCost"]
+            self.laserSpeed = spaceShipList[game.savedShipLevel]['stats']["laserSpeed"]
+            self.laserFireRate = spaceShipList[game.savedShipLevel]['stats']["fireRate"]
+            self.hasGuns = spaceShipList[game.savedShipLevel]['stats']["hasGuns"]
+            self.laserCollat = spaceShipList[game.savedShipLevel]['stats']["collats"]
+            self.hasShields = spaceShipList[game.savedShipLevel]['stats']["hasShields"]
+            self.shields = spaceShipList[game.savedShipLevel]['stats']["startingShields"]
+            self.shieldPieces = spaceShipList[game.savedShipLevel]['stats']["startingShieldPieces"]
+            self.shieldPiecesNeeded = spaceShipList[game.savedShipLevel]['stats']["shieldPiecesNeeded"]
+            self.damage = spaceShipList[game.savedShipLevel]['stats']["laserDamage"]
 
 
         def updateExhaust(self,game):
-            if self.exhaustState+1 > len(spaceShipList[game.savedShipLevel][0]): self.exhaustState = 0
+            if self.exhaustState+1 > len(spaceShipList[game.savedShipLevel]['exhaust']): self.exhaustState = 0
             else: self.exhaustState += 1
 
 
