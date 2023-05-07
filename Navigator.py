@@ -1274,7 +1274,7 @@ class Menu:
             if game.shipUnlockNumber > 0: screen.blit(shipHelpDisplay,shipHelpRect)
             screen.blit(player.image, (player.rect.x,player.rect.y + startOffset)) # Current spaceship
             # LOGO LETTERS
-            screen.blit(menuList[0],(-14 + startRect.left + menuList[0].get_width() - menuList[0].get_width()/8,screenSize[1]/2 - 42)) # "A" symbol
+            screen.blit(menuList[0],(-14 + startRect.left + menuList[0].get_width() - menuList[0].get_width()/10,screenSize[1]/2 - 42)) # "A" symbol
             screen.blit(menuList[1],(-42 + screenSize[0] - startRect.centerx + menuList[1].get_width() * 2,screenSize[1]/2 - 42)) # "O" symbol
 
             # UFO ICONS
