@@ -1,0 +1,20 @@
+{
+
+	"speed": 3,
+	"boostSpeed": 12,
+	"boostDrain" : 0.25,
+	"startingFuel": 5,
+	"maxFuel": 30,
+	"fuelRegen": 0.1,
+	"fuelRegenDelay": 25,
+	"hasGuns": false,
+	"laserCost": 0,
+	"laserSpeed": 0,
+	"laserDamage":0,
+	"fireRate": 0,
+	"collats": false,
+	"hasShields" : false,
+	"startingShields": 0,
+	"startingShieldPieces" : 0,
+	"shieldPiecesNeeded": 0
+}
