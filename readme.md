@@ -1,4 +1,4 @@
-![image](https://user-images.githubusercontent.com/119834037/212812065-8ee402e9-1e59-42b0-956c-334b5e0133ab.png)
+![Screenshot 2023-05-07 010323](https://user-images.githubusercontent.com/119834037/236658726-f58a9628-9aa5-4faf-8e65-0d919728493b.png)
 
 ### Simple and addictive arcade game written in Python with PyGame ###
 
