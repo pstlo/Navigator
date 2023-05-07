@@ -78,6 +78,8 @@ minIconSize = 30 * roundedScaler # Default = 30
 maxIconSize = 100 * roundedScaler # Default = 100
 versionSize = 25 # Default = 25
 versionColor = [0,255,0] # Default = [0,255,0]
+showVersion = True
+showMenuIcons = True
 
 # STAGE UP
 stageUpColor = [0,255,0] # Default = [0,255,0]
@@ -1264,7 +1266,7 @@ class Menu:
                 icon.draw()
 
             screen.blit(startDisplay,startRect) # Menu Logo
-            screen.blit(versionDisplay,versionRect) # Version info
+            if showVersion: screen.blit(versionDisplay,versionRect) # Version info
             screen.blit(startHelpDisplay, startHelpRect) # Game controls
 
             # SHOW SHIP CONTROLS
@@ -1278,9 +1280,10 @@ class Menu:
             screen.blit(menuList[1],(-42 + screenSize[0] - startRect.centerx + menuList[1].get_width() * 2,screenSize[1]/2 - 42)) # "O" symbol
 
             # UFO ICONS
-            screen.blit(menuList[2],(screenSize[0]/2 - menuList[2].get_width()/2,screenSize[1]/8)) # Big icon
-            screen.blit(menuList[3],leftRect) # Left UFO
-            screen.blit(menuList[4],rightRect) # Right UFO
+            if showMenuIcons:
+                screen.blit(menuList[2],(screenSize[0]/2 - menuList[2].get_width()/2,screenSize[1]/8)) # Big icon
+                screen.blit(menuList[3],leftRect) # Left UFO
+                screen.blit(menuList[4],rightRect) # Right UFO
 
             displayUpdate()
 
