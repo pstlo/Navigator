@@ -142,7 +142,7 @@ invalidKeyMessage = "Get a key to save progress :)" # Saved to game records file
 showPresence = True # Default = True
 
 # DEV MODE
-devMode = False
+devMode = True
 #----------------------------------------------------------------------------------------------------------------------
 
 
@@ -1815,12 +1815,12 @@ class Player(pygame.sprite.Sprite):
         # GET NEXT SKIN
         def nextSkin(self):
             if self.currentImageNum + 1 < len(spaceShipList[game.savedShipLevel]['skins']):
-                if self.currentImageNum + 1 > game.skinUnlockNumber and not devMode:
+                if not devMode and self.currentImageNum + 1 > game.skinUnlockNumber:
                     self.image = spaceShipList[game.savedShipLevel]['skins'][0]
                     self.currentImageNum = 0
                 else:
-                    self.image = spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum+1]
                     self.currentImageNum+=1
+                    self.image = spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum]
             else:
                 self.image = spaceShipList[game.savedShipLevel]['skins'][0]
                 self.currentImageNum = 0
@@ -1831,14 +1831,14 @@ class Player(pygame.sprite.Sprite):
         # GET PREVIOUS SKIN
         def lastSkin(self):
             if self.currentImageNum >= 1:
-                self.image = spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum - 1]
                 self.currentImageNum-=1
+                self.image = spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum]
             else:
-                if game.skinUnlockNumber == 0:return
+                if game.skinUnlockNumber == 0 and not devMode: return
                 else:
-                    self.image = spaceShipList[game.savedShipLevel]['skins'][game.skinUnlockNumber]
                     if devMode: self.currentImageNum = len(spaceShipList[game.savedShipLevel]['skins']) - 1
                     else: self.currentImageNum = game.skinUnlockNumber
+                    self.image = spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum]
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
 
@@ -1851,7 +1851,7 @@ class Player(pygame.sprite.Sprite):
                     if game.savedShipLevel + 1  < len(spaceShipList) and (devMode or game.savedShipLevel + 1 <= game.shipUnlockNumber): game.savedShipLevel +=1
                     else: game.savedShipLevel = 0
                 else:
-                    if game.savedShipLevel - 1 < 0: 
+                    if game.savedShipLevel - 1 < 0:
                         if devMode: game.savedShipLevel = len(spaceShipList) - 1
                         else:game.savedShipLevel = game.shipUnlockNumber
                     else: game.savedShipLevel -=1
@@ -2386,7 +2386,6 @@ def gameLoop():
     if game.mainMenu: menu.home(game,player)
     else:
         for i in range(game.savedSkin): player.nextSkin()
-    if game.savedShipLevel > 0: player.updatePlayerConstants(game)
 
     events = Event() # Initialize events
     events.set(player) # Events manipulate player cooldowns
