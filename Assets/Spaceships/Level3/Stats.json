@@ -8,6 +8,7 @@
 	"fuelRegen": 0.05,
 	"fuelRegenDelay": 0,
 	"hasGuns": true,
+	"laserType": "NORMAL",
 	"laserCost": 0,
 	"laserSpeed": 10,
 	"laserDamage":0.5,
