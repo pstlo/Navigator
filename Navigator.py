@@ -2066,12 +2066,12 @@ class Laser(pygame.sprite.Sprite):
     def update(self,player,lasers,obstacles):
         # Remove offscreen lasers
         if self.rect.centerx > screenSize[0] or self.rect.centery > screenSize[1] or self.rect.centerx < 0 or self.rect.centery < 0: self.kill()
-        elif self.laserType == "NORMAL": self.normalMove()
+        elif self.laserType == "NORMAL": self.normalMove(player)
         elif self.laserType == "HOME": self.homingMove(game,lasers,obstacles)
-        else: self.normalMove()
+        else: self.normalMove(player)
 
     # Simple movement
-    def normalMove(self):
+    def normalMove(self,player):
 
         # Laser angles correspond to player angles
         if self.angle == 0: self.rect.centery -= self.speed
@@ -2099,7 +2099,7 @@ class Laser(pygame.sprite.Sprite):
     def homingMove(self,player,lasers,obstacles):
         if self.seekWaitTime < heatSeekDelay:
             self.seekWaitTime += 1
-            self.normalMove()
+            self.normalMove(player)
         elif self.seek == False: self.target, self.seek = getClosestPoint(self,obstacles), True # Get target
         else:
             if self.target is None or not obstacles.has(self.target):
