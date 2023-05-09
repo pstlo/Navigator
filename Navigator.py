@@ -855,7 +855,7 @@ class Game:
         self.levelType = self.savedConstants["levelType"]
         self.angle = self.savedConstants["levelAngle"]
         self.target = self.savedConstants["obstacleTarget"]
-        self.health = self.savedConstants["obstacleHealth"]
+        self.obsHealth = self.savedConstants["obstacleHealth"]
         self.cloudSpeed = cloudSpeed
         self.cloudPos = cloudStart
 
