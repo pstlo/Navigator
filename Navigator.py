@@ -132,6 +132,7 @@ levelUpCloudSpeed = 25 # Default = 25 / Only affects levels preceded by wipe
 # OBSTACLES
 explosionDelay = 1 # Default = 1
 obstacleSpawnRange = [0,1] # Default = [0,1]
+slowerDiagonalObstacles = True # Defualt = True / use the hypotenuse or whatever
 
 # CAVES
 caveStartPos = screenSize[1]*-2 # Default = -1600 / Cave start Y coordinate
@@ -2002,10 +2003,29 @@ class Obstacle(pygame.sprite.Sprite):
 
     # BASIC MOVEMENT (8-direction) -> direction is a string
     def basicMove(self):
-        if "N" in self.direction: self.rect.centery -= self.speed
-        if "S" in self.direction: self.rect.centery += self.speed
-        if "E" in self.direction: self.rect.centerx += self.speed
-        if "W" in self.direction: self.rect.centerx -= self.speed
+        if slowerDiagonalObstacles: # Use sqrt(2) for correct diagonal movement
+            if self.direction  == "N": self.rect.centery -= self.speed
+            elif self.direction == "S": self.rect.centery += self.speed
+            elif self.direction == "E": self.rect.centerx += self.speed
+            elif self.direction == "W": self.rect.centerx -= self.speed
+            elif self.direction == "NE":
+                self.rect.centery -= self.speed / 1.414
+                self.rect.centerx -= self.speed / 1.414
+            elif self.direction == "NW":
+                self.rect.centery -= self.speed / 1.414
+                self.rect.centerx += self.speed / 1.414
+            elif self.direction == "SE":
+                self.rect.centery += self.speed / 1.414
+                self.rect.centerx -= self.speed / 1.414
+            elif self.direction == "SW":
+                self.rect.centery += self.speed / 1.414
+                self.rect.centerx += self.speed / 1.414
+            
+        else:
+            if "N" in self.direction: self.rect.centery -= self.speed
+            if "S" in self.direction: self.rect.centery += self.speed
+            if "E" in self.direction: self.rect.centerx += self.speed
+            if "W" in self.direction: self.rect.centerx -= self.speed
 
 
     # AIMED AT PLAYER -> direction is an angle
