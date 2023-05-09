@@ -2012,10 +2012,10 @@ class Obstacle(pygame.sprite.Sprite):
 
         elif self.bounds == "BOUNCE": # Bounce off walls
             direction = self.direction
-            if self.rect.centery  > screenSize[1]: self.direction = movementReverse(direction)
-            if self.rect.centery < 0: self.direction = movementReverse(direction)
-            if self.rect.centerx > screenSize[0]: self.direction = movementReverse(direction)
-            if self.rect.centerx < 0: self.direction = movementReverse(direction)
+            if self.rect.top  > screenSize[1]: self.direction = movementReverse(direction)
+            if self.rect.bottom < 0: self.direction = movementReverse(direction)
+            if self.rect.left > screenSize[0]: self.direction = movementReverse(direction)
+            if self.rect.right < 0: self.direction = movementReverse(direction)
 
         elif self.bounds == "WRAP": # Wrap around screen
             if self.rect.centery > screenSize[1]: self.rect.centery = 0
