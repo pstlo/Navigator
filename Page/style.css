@@ -133,6 +133,10 @@ td {
 	align-items:center;
 }
 
+#demoBox {
+	padding-bottom: 1%;
+}
+
 #downloads {
 	display: flex;
 	flex-direction: column;
