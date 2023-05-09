@@ -742,32 +742,25 @@ class Game:
         # UPDATE PLAYER
         player.movement()
         player.shoot(self,lasers,events)
-        player.boost(events)
+        player.boost(self,events)
         player.wrapping()
 
         # ROTATE PLAYER
         newBlit = rotateImage(player.image,player.rect,player.angle)
 
-        # ROTATE EXHAUST
-        if drawExhaust: newExhaustBlit = rotateImage(spaceShipList[game.savedShipLevel]['exhaust'][player.exhaustState-1],player.rect,player.angle)
-
         # DRAW PLAYER
         screen.blit(newBlit[0],newBlit[1])
 
-        # DRAW EXHAST
+        # DRAW EXHAUST/BOOST
         if drawExhaust:
-            if game.savedShipLevel != 1: screen.blit(newExhaustBlit[0],newExhaustBlit[1])
+            if player.boosting: newBlit = rotateImage(spaceShipList[game.savedShipLevel]['boost'][player.boostState],player.rect,player.angle) # Boost frames
+            else: newBlit = rotateImage(spaceShipList[game.savedShipLevel]['exhaust'][player.exhaustState-1],player.rect,player.angle) # Regular exhaust frames
+            screen.blit(newBlit[0],newBlit[1])
 
         # DRAW SHIELD
         if player.showShield:
             shieldImg,shieldImgRect = rotateImage(playerShield, player.rect, player.angle)
             screen.blit(shieldImg,shieldImgRect)
-
-        # UPDATE BOOST ANIMATION / currently only 3 frames
-        if drawExhaust:
-            player.lastThreeExhaustPos[2] = player.lastThreeExhaustPos[1]
-            player.lastThreeExhaustPos[1] = player.lastThreeExhaustPos[0]
-            player.lastThreeExhaustPos[0] =  newExhaustBlit
 
         # DRAW LASERS
         self.laserUpdate(lasers,player)
@@ -833,6 +826,7 @@ class Game:
         # UPDATE SCREEN
         player.lastAngle = player.angle # Save recent player orientation
         player.angle = game.angle # Reset player orientation
+        player.boosting = False
         displayUpdate()
         self.clk.tick(fps)
 
@@ -1646,9 +1640,8 @@ class Player(pygame.sprite.Sprite):
             self.mask = pygame.mask.from_surface(self.image)
             self.fuel, self.maxFuel = spaceShipList[game.savedShipLevel]['stats']["startingFuel"], spaceShipList[game.savedShipLevel]['stats']["maxFuel"]
             self.angle, self.lastAngle = 0, 0
-            self.exhaustState, self.explosionState = 0, 0 # Index of animation frame
+            self.exhaustState, self.boostState, self.explosionState = 0, 0, 0 # Indexes of animation frames
             self.finalImg, self.finalRect = '','' # Last frame of exhaust animation for boost
-            self.lastThreeExhaustPos = [[0,0],[0,0],[0,0]] # Will be updated with rotateImage(recent player blits)
             self.fuelRegenNum = spaceShipList[game.savedShipLevel]['stats']["fuelRegen"]
             self.fuelRegenDelay = spaceShipList[game.savedShipLevel]['stats']["fuelRegenDelay"]
             self.boostDrain = spaceShipList[game.savedShipLevel]['stats']["boostDrain"]
@@ -1662,7 +1655,7 @@ class Player(pygame.sprite.Sprite):
             self.shieldPieces = spaceShipList[game.savedShipLevel]['stats']["startingShieldPieces"]
             self.shieldPiecesNeeded = spaceShipList[game.savedShipLevel]['stats']["shieldPiecesNeeded"]
             self.damage = spaceShipList[game.savedShipLevel]['stats']["laserDamage"]
-            self.showShield = False
+            self.showShield,self.boosting = False,False
 
 
         # PLAYER MOVEMENT ( will be revisited for more accurate angular movement)
@@ -1734,7 +1727,7 @@ class Player(pygame.sprite.Sprite):
 
 
         # SPEED BOOST
-        def boost(self,events):
+        def boost(self,game,events):
             if self.boostReady:
                 if self.fuel - self.boostDrain > self.boostDrain:
                     key = pygame.key.get_pressed()
@@ -1744,19 +1737,16 @@ class Player(pygame.sprite.Sprite):
 
                     elif (key[pygame.K_LSHIFT] or key[pygame.K_RSHIFT]) and ( (key[pygame.K_a] or key[pygame.K_LEFT]) or ( key[pygame.K_w] or key[pygame.K_UP]) or (key[pygame.K_s] or key[pygame.K_DOWN]) or (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
                         self.speed = self.boostSpeed
-                        self.fuel -= (self.boostDrain)
-
-                        # Boost animation
-                        try:
-                            screen.blit(self.lastThreeExhaustPos[0][0],self.lastThreeExhaustPos[0][1])
-                            screen.blit(self.lastThreeExhaustPos[1][0],self.lastThreeExhaustPos[1][1])
-                            screen.blit(self.lastThreeExhaustPos[2][0],self.lastThreeExhaustPos[2][1])
-                        except: pass # will not have assets loaded in class variable until frame 3
+                        self.fuel -= self.boostDrain
+                        if not self.boosting: self.boosting = True
+                        if self.boostState + 1 < len(spaceShipList[game.savedShipLevel]['boost']): self.boostState += 1
+                        else: self.boostState = 0
 
                     else: self.speed = self.baseSpeed
 
                 else:
-                    self.speed = self.baseSpeed
+                    if self.speed != self.baseSpeed: self.speed = self.baseSpeed
+                    if self.boosting: self.boosting = False
                     events.boostCharge(self)
 
 
