@@ -123,6 +123,7 @@ defaultToHighSkin = True # Default = True / Default to highest skin unlocked on 
 defaultToHighShip = False # Default = False / Default to highest ship unlocked on game launch
 heatSeekDelay = 15
 heatSeekNeedsTarget = False
+playerMovement = "VECTOR" # ( Vector, Original )
 
 # LEVELS
 levelTimer = 15 # Default = 15 / Time (seconds) between levels (can be overridden)
@@ -1669,10 +1670,31 @@ class Player(pygame.sprite.Sprite):
             self.damage = spaceShipList[game.savedShipLevel]['stats']["laserDamage"]
             self.laserType = spaceShipList[game.savedShipLevel]['stats']["laserType"]
             self.showShield,self.boosting = False,False
+            self.movementType = playerMovement
 
 
-        # PLAYER MOVEMENT ( will be revisited for more accurate angular movement)
         def movement(self):
+            if self.movementType == "VECTOR": self.vectorMovement()
+            elif self.movementType == "ORIGINAL": self.classicMovement()
+
+
+        # VECTOR BASED MOVEMENT
+        def vectorMovement(self):
+            key = pygame.key.get_pressed()
+            direction = pygame.Vector2(0, 0)
+            if key[pygame.K_w] or key[pygame.K_UP]: direction += pygame.Vector2(0, -1)
+            if key[pygame.K_s] or key[pygame.K_DOWN]: direction += pygame.Vector2(0, 1)
+            if key[pygame.K_a] or key[pygame.K_LEFT]: direction += pygame.Vector2(-1, 0)
+            if key[pygame.K_d] or key[pygame.K_RIGHT]: direction += pygame.Vector2(1, 0)
+            if direction.magnitude_squared() > 0:
+                direction.normalize_ip()
+                if key[pygame.K_w] or key[pygame.K_UP] or key[pygame.K_s] or key[pygame.K_DOWN]: direction *= 1.414 # sqrt(2)
+                if not key[pygame.K_RALT] and not key[pygame.K_LALT]: self.rect.move_ip(direction * self.speed)
+                if direction.x != 0 or direction.y != 0: self.angle = direction.angle_to(pygame.Vector2(0, -1))
+
+
+        # ORIGINAL MOVEMENT
+        def classicMovement(self):
             key = pygame.key.get_pressed()
             if not key[pygame.K_LALT] and not key[pygame.K_RALT]:
                 if key[pygame.K_w] or key[pygame.K_UP]:
@@ -2070,30 +2092,31 @@ class Laser(pygame.sprite.Sprite):
         elif self.laserType == "HOME": self.homingMove(player,lasers,obstacles)
         else: self.normalMove(player)
 
+
     # Simple movement
     def normalMove(self,player):
-
-        # Laser angles correspond to player angles
+        # Laser angles correspond to player angles ( second is for vector based movement )
         if self.angle == 0: self.rect.centery -= self.speed + player.speed
-        elif self.angle == 180: self.rect.centery +=  self.speed + player.speed
-        elif self.angle == 90: self.rect.centerx -=  self.speed + player.speed
+        elif self.angle == 180 or self.angle == -180: self.rect.centery +=  self.speed + player.speed
+        elif self.angle == 90 or self.angle == -270: self.rect.centerx -=  self.speed + player.speed
         elif self.angle == -90: self.rect.centerx +=  self.speed + player.speed
 
         elif self.angle == 45:
-            self.rect.centery -=  self.speed + player.speed
-            self.rect.centerx -= self.speed + player.speed
-
+            speed = self.speed / 1.414 # sqrt(2)
+            self.rect.centery -= speed + player.speed
+            self.rect.centerx -= speed + player.speed
         elif self.angle == -45:
-            self.rect.centery -=  self.speed + player.speed
-            self.rect.centerx += self.speed + player.speed
-
-        elif self.angle == 135:
-            self.rect.centery +=  self.speed + player.speed
-            self.rect.centerx -= self.speed + player.speed
-
+            speed = self.speed / 1.414 # sqrt(2)
+            self.rect.centery -= speed + player.speed
+            self.rect.centerx += speed + player.speed
+        elif self.angle == 135 or self.angle == -225:
+            speed = self.speed / 1.414 # sqrt(2)
+            self.rect.centery += speed + player.speed
+            self.rect.centerx -= speed + player.speed
         elif self.angle == -135:
-            self.rect.centery +=  self.speed + player.speed
-            self.rect.centerx += self.speed + player.speed
+            speed = self.speed / 1.414 # sqrt(2)
+            self.rect.centery += speed + player.speed
+            self.rect.centerx += speed + player.speed
 
 
     def homingMove(self,player,lasers,obstacles):
