@@ -325,6 +325,7 @@ with open(resources(os.path.join(currentDirectory, 'Levels.json')), 'r') as file
             levels.append(level)
         stageList.append(levels)
 
+
 # GET KEY
 def getKey():
     try: return base64.b64decode(os.getenv('KEY'))
