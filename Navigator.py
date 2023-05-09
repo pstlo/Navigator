@@ -117,10 +117,12 @@ musicLoopStart = 25000 # Default = 25000
 musicLoopEnd = 76000 # Default = 76000
 
 # PLAYER
+drawExhaust = True # Default = True
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
 defaultToHighSkin = True # Default = True / Default to highest skin unlocked on game launch
 defaultToHighShip = False # Default = False / Default to highest ship unlocked on game launch
-drawExhaust = True # Default = True
+heatSeekDelay = 15
+heatSeekNeedsTarget = False
 
 # LEVELS
 levelTimer = 15 # Default = 15 / Time (seconds) between levels (can be overridden)
@@ -142,7 +144,7 @@ invalidKeyMessage = "Get a key to save progress :)" # Saved to game records file
 showPresence = True # Default = True
 
 # DEV MODE
-devMode = False
+devMode = False # Default = False
 #----------------------------------------------------------------------------------------------------------------------
 
 
@@ -153,7 +155,7 @@ def resources(relative):
     return os.path.join(base, relative)
 
 
-# SPECIFY UPDATE SCREEN UPDATE METHOD
+# SPECIFY SCREEN UPDATE METHOD
 if qualityMode: updateNotFlip = False
 else: updateNotFlip = True # use update instead of flip for display updates
 
@@ -586,6 +588,15 @@ bottomDir = ["N", "W", "E", "NE", "NW"]
 rightDir = ["W", "N", "S", "NW", "SW"]
 
 
+# Get closest point out of a group
+def getClosestPoint(point, points):
+    closest,shortest = None,None
+    for pt in points:
+        if closest is None or math.dist(point.rect.center,closest.rect.center) > math.dist(point.rect.center,pt.rect.center):
+            closest,shortest = pt, math.dist(point.rect.center,pt.rect.center)
+    return closest
+
+
 
 # GAME
 class Game:
@@ -742,7 +753,7 @@ class Game:
 
         # UPDATE PLAYER
         player.movement()
-        player.shoot(self,lasers,events)
+        player.shoot(self,lasers,events,obstacles)
         player.boost(self,events)
         player.wrapping()
 
@@ -764,7 +775,7 @@ class Game:
             screen.blit(shieldImg,shieldImgRect)
 
         # DRAW LASERS
-        self.laserUpdate(lasers,player)
+        self.laserUpdate(lasers,player,obstacles)
 
         # UPDATE OBSTACLES
         if len(obstacles) > 0:
@@ -788,12 +799,12 @@ class Game:
                             obs.kill()
                             obstacles.remove(obs)
                             if not self.musicMuted: impactNoise.play()
-                            self.explosions.append(Explosion(self,obs))
+                            self.explosions.append(Explosion(obs))
 
                     # OBSTACLE/CAVE COLLISION DETECTION
                     elif self.cave is not None and pygame.sprite.collide_mask(obs,self.cave):
                         if not self.musicMuted: impactNoise.play()
-                        self.explosions.append(Explosion(self,obs))
+                        self.explosions.append(Explosion(obs))
                         obs.kill()
 
                     # ROTATE AND DRAW OBSTACLE
@@ -809,7 +820,7 @@ class Game:
 
             if performanceMode:obstacles.draw(screen) # Potential performance improvement
 
-            # DRAW OBSTACLE EXPLOSIONS
+            # DRAW EXPLOSIONS
             for debris in self.explosions:
                 if debris.finished: self.explosions.remove(debris)
                 else: debris.update()
@@ -857,7 +868,7 @@ class Game:
             if cloudRect.bottom >= 0 and cloudRect.top <= screenSize[1]: screen.blit(cloudImg, cloudRect) # Draw cloud
 
 
-    # Draw frame outside of main loop **** revisit
+    # Draw frame outside of main loop
     def alternateUpdate(self,player,obstacles,events):
         player.alternateMovement(self) # not sure why
         player.movement()              # this works
@@ -1034,9 +1045,9 @@ class Game:
 
 
     # Update all lasers
-    def laserUpdate(self,lasers,player):
+    def laserUpdate(self,lasers,player,obstacles):
         for laser in lasers:
-            laser.move(player)
+            laser.update(player,lasers,obstacles)
             screen.blit(laser.image,laser.rect)
 
 
@@ -1329,7 +1340,7 @@ class Menu:
                     screen.blit(newBlit[0],newBlit[1])
             else: obstacles.draw(screen)
 
-            lasers.draw(screen)
+            for laser in lasers: screen.blit(laser.image,laser.rect)
 
             screen.blit(pauseDisplay, pauseRect)
             screen.blit(pausedDisplay,pausedRect)
@@ -1656,6 +1667,7 @@ class Player(pygame.sprite.Sprite):
             self.shieldPieces = spaceShipList[game.savedShipLevel]['stats']["startingShieldPieces"]
             self.shieldPiecesNeeded = spaceShipList[game.savedShipLevel]['stats']["shieldPiecesNeeded"]
             self.damage = spaceShipList[game.savedShipLevel]['stats']["laserDamage"]
+            self.laserType = spaceShipList[game.savedShipLevel]['stats']["laserType"]
             self.showShield,self.boosting = False,False
 
 
@@ -1752,11 +1764,11 @@ class Player(pygame.sprite.Sprite):
 
 
         # SHOOT ROCKETS/LASERS
-        def shoot(self,game,lasers,events):
+        def shoot(self,game,lasers,events,obstacles):
             if self.hasGuns and self.laserReady:
                 key = pygame.key.get_pressed()
                 if  (key[pygame.K_LCTRL] or key[pygame.K_RCTRL]) and self.fuel - self.laserCost > 0:
-                    lasers.add(Laser(self))
+                    lasers.add(Laser(self,obstacles))
                     if not game.musicMuted: laserNoise.play()
                     self.fuel -= self.laserCost
                     events.laserCharge(self)
@@ -1874,6 +1886,7 @@ class Player(pygame.sprite.Sprite):
             self.shieldPieces = spaceShipList[game.savedShipLevel]['stats']["startingShieldPieces"]
             self.shieldPiecesNeeded = spaceShipList[game.savedShipLevel]['stats']["shieldPiecesNeeded"]
             self.damage = spaceShipList[game.savedShipLevel]['stats']["laserDamage"]
+            self.laserType = spaceShipList[game.savedShipLevel]['stats']["laserType"]
 
 
         def updateExhaust(self,game):
@@ -1950,7 +1963,7 @@ class Obstacle(pygame.sprite.Sprite):
         if type(attribute) == list:
             if self.attributeIndex is None: self.attributeIndex = random.randint(0,len(attribute)-1)
             if self.attributeIndex > len(attribute): return attribute[random.randint(0,len(attribute)-1)]
-            return attribute[self.attributeIndex]
+            return attribute[self.attributeIndex] # Treat as parallel lists
         else: return attribute
 
 
@@ -2037,48 +2050,78 @@ class Caves(pygame.sprite.Sprite):
 
 # LASERS
 class Laser(pygame.sprite.Sprite):
-    def __init__(self,player):
+    def __init__(self,player,obstacles):
         super().__init__()
+        self.laserType = player.laserType
         self.speed = player.laserSpeed
         self.angle = player.angle
-        newBlit = rotateImage(player.laserImage,player.laserImage.get_rect(center = player.rect.center),player.angle)
+        newBlit = rotateImage(player.laserImage,player.laserImage.get_rect(center = player.rect.center),self.angle)
         self.image = newBlit[0]
         self.rect = newBlit[1]
         self.mask = pygame.mask.from_surface(self.image)
+        self.target, self.seek, self.seekWaitTime, self.seekDelay = None, False, 0, heatSeekDelay # For heat seeking lasers
 
 
     # MOVE LASERS
-    def move(self,player):
-        # Laser angles = player angles, hard coded here
-        if self.angle == 0: self.rect.centery -= (self.speed + player.speed)
-        elif self.angle == 180: self.rect.centery +=  (self.speed + player.speed)
-        elif self.angle == 90: self.rect.centerx -=  (self.speed + player.speed)
-        elif self.angle == -90: self.rect.centerx +=  (self.speed + player.speed)
+    def update(self,player,lasers,obstacles):
+        # Remove offscreen lasers
+        if self.rect.centerx > screenSize[0] or self.rect.centery > screenSize[1] or self.rect.centerx < 0 or self.rect.centery < 0: self.kill()
+        elif self.laserType == "NORMAL": self.normalMove()
+        elif self.laserType == "HOME": self.homingMove(game,lasers,obstacles)
+        else: self.normalMove()
+
+    # Simple movement
+    def normalMove(self):
+
+        # Laser angles correspond to player angles
+        if self.angle == 0: self.rect.centery -= self.speed
+        elif self.angle == 180: self.rect.centery +=  self.speed
+        elif self.angle == 90: self.rect.centerx -=  self.speed
+        elif self.angle == -90: self.rect.centerx +=  self.speed
 
         elif self.angle == 45:
-            self.rect.centery -=  (self.speed + player.speed)
-            self.rect.centerx -= (self.speed + player.speed)
+            self.rect.centery -=  self.speed
+            self.rect.centerx -= self.speed
 
         elif self.angle == -45:
-            self.rect.centery -=  (self.speed + player.speed)
-            self.rect.centerx += (self.speed + player.speed)
+            self.rect.centery -=  self.speed
+            self.rect.centerx += self.speed
 
         elif self.angle == 135:
-            self.rect.centery +=  (self.speed + player.speed)
-            self.rect.centerx -= (self.speed + player.speed)
+            self.rect.centery +=  self.speed
+            self.rect.centerx -= self.speed
 
         elif self.angle == -135:
-            self.rect.centery +=  (self.speed + player.speed)
-            self.rect.centerx += (self.speed + player.speed)
+            self.rect.centery +=  self.speed
+            self.rect.centerx += self.speed
 
-        # Remove lasers off screen
-        if self.rect.centerx > screenSize[0] or self.rect.centery > screenSize[1] or self.rect.centerx < 0 or self.rect.centery < 0: self.kill()
+
+    def homingMove(self,player,lasers,obstacles):
+        if self.seekWaitTime < heatSeekDelay:
+            self.seekWaitTime += 1
+            self.normalMove()
+        elif self.seek == False: self.target, self.seek = getClosestPoint(self,obstacles), True # Get target
+        else:
+            if self.target is None or not obstacles.has(self.target):
+                if heatSeekNeedsTarget:
+                    game.explosions.append(Explosion(self))
+                    self.kill()
+                else:
+                    self.rect.centerx +=self.speed * math.cos(self.angle) # Horizontal movement
+                    self.rect.centery +=self.speed * math.sin(self.angle) # Vertical movement
+
+            else: # Homing
+                dirX = (self.target.rect.centerx - self.rect.centerx + screenSize[0]/2) % screenSize[0]-screenSize[0]/2 # Shortest horizontal path
+                dirY = (self.target.rect.centery - self.rect.centery + screenSize[1]/2) % screenSize[1]-screenSize[1]/2 # Shortest vetical path
+                self.angle = math.atan2(dirY,dirX) # Angle to shortest path
+                self.rect.centerx +=self.speed * math.cos(self.angle) # Horizontal movement
+                self.rect.centery +=self.speed * math.sin(self.angle) # Vertical movement
 
 
 
 # EXPLOSIONS
 class Explosion:
-    def __init__(self,game,laser):
+    def __init__(self,laser):
         self.state,self.finalState,self.finished = 0,len(explosionList)-1,False
         self.rect = laser.rect.copy()
         self.image = explosionList[self.state]
