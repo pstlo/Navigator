@@ -2067,33 +2067,33 @@ class Laser(pygame.sprite.Sprite):
         # Remove offscreen lasers
         if self.rect.centerx > screenSize[0] or self.rect.centery > screenSize[1] or self.rect.centerx < 0 or self.rect.centery < 0: self.kill()
         elif self.laserType == "NORMAL": self.normalMove(player)
-        elif self.laserType == "HOME": self.homingMove(game,lasers,obstacles)
+        elif self.laserType == "HOME": self.homingMove(player,lasers,obstacles)
         else: self.normalMove(player)
 
     # Simple movement
     def normalMove(self,player):
 
         # Laser angles correspond to player angles
-        if self.angle == 0: self.rect.centery -= self.speed
-        elif self.angle == 180: self.rect.centery +=  self.speed
-        elif self.angle == 90: self.rect.centerx -=  self.speed
-        elif self.angle == -90: self.rect.centerx +=  self.speed
+        if self.angle == 0: self.rect.centery -= self.speed + player.speed
+        elif self.angle == 180: self.rect.centery +=  self.speed + player.speed
+        elif self.angle == 90: self.rect.centerx -=  self.speed + player.speed
+        elif self.angle == -90: self.rect.centerx +=  self.speed + player.speed
 
         elif self.angle == 45:
-            self.rect.centery -=  self.speed
-            self.rect.centerx -= self.speed
+            self.rect.centery -=  self.speed + player.speed
+            self.rect.centerx -= self.speed + player.speed
 
         elif self.angle == -45:
-            self.rect.centery -=  self.speed
-            self.rect.centerx += self.speed
+            self.rect.centery -=  self.speed + player.speed
+            self.rect.centerx += self.speed + player.speed
 
         elif self.angle == 135:
-            self.rect.centery +=  self.speed
-            self.rect.centerx -= self.speed
+            self.rect.centery +=  self.speed + player.speed
+            self.rect.centerx -= self.speed + player.speed
 
         elif self.angle == -135:
-            self.rect.centery +=  self.speed
-            self.rect.centerx += self.speed
+            self.rect.centery +=  self.speed + player.speed
+            self.rect.centerx += self.speed + player.speed
 
 
     def homingMove(self,player,lasers,obstacles):
@@ -2114,7 +2114,7 @@ class Laser(pygame.sprite.Sprite):
                 dirX = (self.target.rect.centerx - self.rect.centerx + screenSize[0]/2) % screenSize[0]-screenSize[0]/2 # Shortest horizontal path
                 dirY = (self.target.rect.centery - self.rect.centery + screenSize[1]/2) % screenSize[1]-screenSize[1]/2 # Shortest vetical path
                 self.angle = math.atan2(dirY,dirX) # Angle to shortest path
-                self.rect.centerx +=self.speed * math.cos(self.angle) # Horizontal movement
+                self.rect.centerx += (player.speed + self.speed) * math.cos(self.angle) # Horizontal movement
                 self.rect.centery +=self.speed * math.sin(self.angle) # Vertical movement
 
 
