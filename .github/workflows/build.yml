@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'Navigator.py'
+      -'.github/workflows/build.yml'
 
 jobs:
   build-windows:
@@ -57,7 +58,7 @@ jobs:
               ${{ github.workspace }}/gameRecords.txt
 
 
-      - name: Build and create Windows Cython executable
+      - name: Build Windows Cython executable
         run: |
             pip install cython
             pip install setuptools
@@ -128,8 +129,8 @@ jobs:
               ${{ github.workspace }}/NOTICE
 
 
-      - name: Build and create MacOS (Intel Based) Cython executable
-        run: |
+       - name: Build MacOS (Intel Based) Cython executable
+         run: |
             pip install cython
             pip install setuptools
             python SetupCython.py build_ext --inplace
