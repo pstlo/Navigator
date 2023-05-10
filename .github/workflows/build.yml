@@ -128,7 +128,7 @@ jobs:
               ${{ github.workspace }}/NOTICE
 
 
-    - name: Build and create MacOS (Intel Based) Cython executable
+      - name: Build and create MacOS (Intel Based) Cython executable
         run: |
             pip install cython
             pip install setuptools
