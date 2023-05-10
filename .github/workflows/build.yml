@@ -46,7 +46,7 @@ jobs:
         with:
           name: NavigatorWindows
           path: dist/Navigator.exe
-        
+
       - name: Include license and notice in Windows artifact
         uses: actions/upload-artifact@v3
         with:
@@ -69,7 +69,7 @@ jobs:
         with:
           name: NavigatorWindowsC
           path: dist/Navigator.exe
-          
+
       - name: Include license and notice in Windows C artifact
         uses: actions/upload-artifact@v3
         with:
@@ -118,7 +118,7 @@ jobs:
         with:
           name: NavigatorMacOSIntel
           path: dist/Navigator.app
-          
+
       - name: Inlclude license and notice in MacOS Intel artifact
         uses: actions/upload-artifact@v3
         with:
@@ -126,6 +126,29 @@ jobs:
           path: |
               ${{ github.workspace }}/LICENSE
               ${{ github.workspace }}/NOTICE
+
+
+    - name: Build and create MacOS (Intel Based) Cython executable
+        run: |
+            pip install cython
+            pip install setuptools
+            python SetupCython.py build_ext --inplace
+            pyinstaller --name Navigator --onefile --noconsole --add-data Assets:Assets -i "\.github\Icon.ico" "${{ github.workspace }}\.github\Cython\Main.py"
+            pyinstaller --name Navigator --noconsole --add-data Assets:Assets -i "\.github\Cython\Main.py"
+
+      - name: Upload MacOS (Intel Based) C artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: MacOSIntelC
+          path: dist/Navigator.app
+
+      - name: Include license and notice in MacOS (Intel Based) C artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: MacOSIntelC
+          path: |
+            ${{ github.workspace }}/LICENSE
+            ${{ github.workspace }}/NOTICE
 
   build-linux:
     runs-on: ubuntu-latest
@@ -165,7 +188,7 @@ jobs:
         with:
           name: NavigatorLinux
           path: dist/Navigator
-          
+
       - name: Include license and notice in Linux artifact
         uses: actions/upload-artifact@v3
         with:
@@ -173,4 +196,4 @@ jobs:
           path: |
               ${{ github.workspace }}/LICENSE
               ${{ github.workspace }}/NOTICE
-            
+
