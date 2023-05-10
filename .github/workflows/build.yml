@@ -6,7 +6,6 @@ on:
       - main
     paths:
       - 'Navigator.py'
-      -'.github/workflows/build.yml'
 
 jobs:
   build-windows:
