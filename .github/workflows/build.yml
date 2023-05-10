@@ -128,8 +128,8 @@ jobs:
               ${{ github.workspace }}/NOTICE
 
 
-       - name: Build MacOS (Intel Based) Cython executable
-         run: |
+      - name: Build MacOS (Intel Based) Cython executable
+        run: |
             pip install cython
             pip install setuptools
             python SetupCython.py build_ext --inplace
