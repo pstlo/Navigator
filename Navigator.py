@@ -132,7 +132,7 @@ levelUpCloudSpeed = 25 # Default = 25 / Only affects levels preceded by wipe
 # OBSTACLES
 explosionDelay = 1 # Default = 1
 obstacleSpawnRange = [0,1] # Default = [0,1]
-slowerDiagonalObstacles = True # Defualt = True / use the hypotenuse or whatever
+slowerDiagonalObstacles = True # Default = True / use the hypotenuse or whatever
 
 # CAVES
 caveStartPos = screenSize[1]*-2 # Default = -1600 / Cave start Y coordinate
