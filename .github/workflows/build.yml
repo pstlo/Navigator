@@ -128,13 +128,12 @@ jobs:
               ${{ github.workspace }}/NOTICE
 
 
-      - name: Build MacOS (Intel Based) Cython executable
+      - name: Build MacOS (Intel Based) Cython app
         run: |
             pip install cython
             pip install setuptools
             python .github/Cython/SetupCython.py build_ext --inplace
-            pyinstaller --name Navigator --onefile --noconsole --add-data Assets:Assets -i "/.github/Icon.icns" "/.github/Cython/Main.py"
-            pyinstaller --name Navigator --noconsole --add-data Assets:Assets -i "/.github/Cython/Main.py"
+            pyinstaller --name Navigator --noconsole --add-data Assets:Assets -i ".github/Icon.icns" .github/Cython/Main.py
 
       - name: Upload MacOS (Intel Based) C artifact
         uses: actions/upload-artifact@v3
