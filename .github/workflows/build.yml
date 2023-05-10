@@ -133,7 +133,7 @@ jobs:
             pip install cython
             pip install setuptools
             python .github/Cython/SetupCython.py build_ext --inplace
-            pyinstaller --name Navigator --noconsole --add-data Assets:Assets -i ".github/Icon.icns" .github/Cython/Main.py
+            pyinstaller -y --name Navigator --noconsole --add-data Assets:Assets -i ".github/Icon.icns" .github/Cython/Main.py
 
       - name: Upload MacOS (Intel Based) C artifact
         uses: actions/upload-artifact@v3
