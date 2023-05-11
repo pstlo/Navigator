@@ -2289,7 +2289,7 @@ class Icon:
 
     def activate(self):
         if not self.active:
-            if self.rect.right >= 0 or self.rect.left <= screenSize[0] or self.rect.top <= 0 or self.rect.bottom >= screenSize[1]: self.active = True
+            if ("W" in self.direction and self.rect.right >= 0) or ("E" in self.direction and self.rect.left <= screenSize[0]) or ("N" in self.direction and self.rect.top <= screenSize[1]) or ("S" in self.direction and self.rect.bottom >= 0): self.active = True
 
 
     def draw(self):
