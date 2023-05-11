@@ -162,7 +162,7 @@ controllerSelect = 0
 controllerBack = 1
 controllerMute = 4
 controllerExit = 7
-controllerPause = 6 
+controllerPause = 6
 controllerMenu = 6
 controllerFullScreen = 10
 controllerCredits = 3
@@ -923,7 +923,8 @@ class Game:
 
     # Draw frame outside of main loop
     def alternateUpdate(self,player,obstacles,events):
-        for event in pygame.event.get(): pass # Movement during stage-up animation does not work without this line for some reason?
+        for event in pygame.event.get(): pass # Movement during stage-up animation does not work without this loop for some reason?
+
         player.movement()
         player.wrapping()
         screen.fill(screenColor)
@@ -939,6 +940,8 @@ class Game:
             newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
             screen.blit(newBlit[0],newBlit[1])
             obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle
+
+        self.clk.tick(fps)
 
 
     # UPDATE GAME CONSTANTS
@@ -957,7 +960,6 @@ class Game:
 
                 # STAGE UP ANIMATION / Removes old obstacles
                 while stageUp:
-                    img, imgRect = rotateImage(player.image, player.rect, player.angle)
                     self.alternateUpdate(player,obstacles,events)
 
                     for obs in obstacles:
@@ -966,10 +968,9 @@ class Game:
                     screen.blit(stageUpCloud,stageUpRect) # Draw cloud
                     screen.blit(stageUpDisplay,(stageUpRect.centerx - screenSize[0]/5, stageUpRect.centery)) # Draw "STAGE UP" text
                     game.showHUD(player)
+                    img, imgRect = rotateImage(player.image, player.rect, player.angle)
                     screen.blit(img,imgRect) # Draw player
-                    displayUpdate()
                     stageUpRect.centery += stageUpCloudSpeed
-                    self.clk.tick(fps)
 
                     if stageUpRect.centery >= screenSize[1]/2 and stageWipe:
                         self.currentStage += 1
@@ -977,6 +978,8 @@ class Game:
                         stageWipe = False
 
                     elif stageUpRect.centery >= screenSize[1] * 2: stageUp = False
+                    displayUpdate()
+                    player.angle = self.angle
 
         # UPDATES LEVEL
         for levelDict in self.gameConstants[self.currentStage-1]:
@@ -989,19 +992,20 @@ class Game:
 
                     # LEVEL UP ANIMATION / Removes old obstacles
                     while levelUp:
-                        img, imgRect = rotateImage(player.image, player.rect, player.angle)
+
                         self.alternateUpdate(player,obstacles,events)
                         for obs in obstacles:
                             if obs.rect.centery <= levelUpRect.centery: obs.kill()
 
                         screen.blit(levelUpCloud,levelUpRect) # Draw cloud
                         game.showHUD(player)
+                        img, imgRect = rotateImage(player.image, player.rect, player.angle)
                         screen.blit(img,imgRect) # Draw player
-                        displayUpdate()
-                        levelUpRect.centery += levelUpCloudSpeed
 
+                        levelUpRect.centery += levelUpCloudSpeed
                         if levelUpRect.top >= screenSize[1]: levelUp = False
-                        self.clk.tick(fps)
+                        displayUpdate()
+                        player.angle = self.angle
 
                 levelDict["START"] = True
                 self.obstacleBoundaries = levelDict["obstacleBounds"]
