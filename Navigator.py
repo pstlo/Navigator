@@ -1780,14 +1780,21 @@ class Player(pygame.sprite.Sprite):
                     if defaultMovement:
                         direction.normalize_ip()
                         direction *= 1.414  # sqrt(2)
-                    if not any(key[bind] for bind in brakeInput): self.rect.move_ip(direction * self.speed)
-                    if direction.x != 0 or direction.y != 0: self.angle = direction.angle_to(pygame.Vector2(0, -1))
+                    if not any(key[bind] for bind in brakeInput): self.rect.move_ip(direction * self.speed) # MOVE PLAYER
+                    if direction.x != 0 or direction.y != 0: self.angle = direction.angle_to(pygame.Vector2(0, -1)) # GET PLAYER ANGLE
 
             # CONTROLLER
             elif gamePad is not None and game.usingController:
                 direction = pygame.Vector2(0, 0)
-                xTilt = gamePad.get_axis(controllerMoveX)
-                yTilt = gamePad.get_axis(controllerMoveY)
+
+                xLeft = gamePad.get_axis(controllerMoveX)
+                yLeft = gamePad.get_axis(controllerMoveY)
+                xRight = gamePad.get_axis(controllerRotateX)
+                yRight = gamePad.get_axis(controllerRotateY)
+                
+                if abs(xRight) > 0.3 or abs(yRight) > 0.3: xTilt, yTilt, braking = xRight, yRight, True
+                else: xTilt, yTilt, braking = xLeft, yLeft, False
+                
                 if yTilt < -0.5: direction += pygame.Vector2(0, -1)
                 if yTilt > 0.5: direction += pygame.Vector2(0, 1)
                 if xTilt < -0.5: direction += pygame.Vector2(-1, 0)
@@ -1795,9 +1802,9 @@ class Player(pygame.sprite.Sprite):
                 if direction.magnitude_squared() > 0:
                     if defaultMovement:
                         direction.normalize_ip()
-                        direction *= 1.414  # sqrt(2)
-                    if direction.x != 0 or direction.y != 0: self.rect.move_ip(direction * self.speed)
-                    self.angle = direction.angle_to(pygame.Vector2(0, -1))
+                        direction *= 1.414  # sqrt(2)        
+                    if not braking: self.rect.move_ip(direction * self.speed) # MOVE PLAYER
+                    if direction.x != 0 or direction.y != 0:self.angle = direction.angle_to(pygame.Vector2(0, -1)) # GET PLAYER ANGLE
 
 
         # SPEED BOOST
