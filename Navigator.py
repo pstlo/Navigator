@@ -117,7 +117,7 @@ musicLoopStart = 25000 # Default = 25000
 musicLoopEnd = 76000 # Default = 76000
 
 # PLAYER
-useController = False
+useController = True
 drawExhaust = True # Default = True
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
 defaultToHighSkin = True # Default = True / Default to highest skin unlocked on game launch
@@ -125,6 +125,46 @@ defaultToHighShip = False # Default = False / Default to highest ship unlocked o
 heatSeekDelay = 15
 heatSeekNeedsTarget = False
 playerMovement = "DEFAULT" # (DEFAULT, ORIGINAL)
+
+# KEY BINDS
+leftInput = pygame.K_a, pygame.K_LEFT
+rightInput = pygame.K_d,pygame.K_RIGHT
+upInput = pygame.K_w,pygame.K_UP
+downInput = pygame.K_s,pygame.K_DOWN
+boostInput = pygame.K_LSHIFT,pygame.K_RSHIFT
+pauseInput = pygame.K_SPACE
+shootInput = pygame.K_LCTRL,pygame.K_RCTRL
+escapeInput = pygame.K_ESCAPE
+backInput = pygame.K_TAB
+creditsInput = pygame.K_c
+brakeInput = pygame.K_LALT,pygame.K_RALT
+muteInput = pygame.K_m
+fullScreenInput = pygame.K_f
+
+# CONTROLLER BINDS
+# XB Controller ******
+# Axis
+controllerMoveX = 0 # left stick X axis
+controllerMoveY = 1 # left stick Y axis
+controllerRotateX = 2 # right stick X axis
+controllerRotateY = 3 # right stick Y axis
+controllerBoost = 4 # right trigger
+controllerShoot = 5 # left trigger
+
+# d-pad
+controllerNextShip = (0,1)
+controllerLastShip = (0,-1)
+controllerNextSkin = (1,0)
+controllerLastSkin = (-1,0)
+
+# Buttons
+controllerSelect = 0
+controllerBack = 1
+controllerMute = 4
+controllerExit = 7
+controllerPause = 6 
+controllerFullScreen = 10
+controllerCredits = 3
 
 # LEVELS
 levelTimer = 15 # Default = 15 / Time (seconds) between levels (can be overridden)
@@ -153,7 +193,7 @@ devMode = False # Default = False
 
 # FOR EXE/APP RESOURCES
 def resources(relative):
-    try: base = sys._MEIPASS # Running from EXE
+    try: base = sys._MEIPASS # Running from EXE/APP
     except Exception: base = os.path.abspath(".") # Running fron script
     return os.path.join(base, relative)
 
@@ -258,41 +298,9 @@ if useController:
     if pygame.joystick.get_count() > 0:
         gamePad = pygame.joystick.Joystick(0)
         gamePad.init()
-    else: pygame.joystick.quit()
-
-
-# KEY BINDS
-if not useController or gamePad is None:
-    leftInput = pygame.K_a, pygame.K_LEFT
-    rightInput = pygame.K_d,pygame.K_RIGHT
-    upInput = pygame.K_w,pygame.K_UP
-    downInput = pygame.K_s,pygame.K_DOWN
-    boostInput = pygame.K_LSHIFT,pygame.K_RSHIFT
-    pauseInput = pygame.K_SPACE
-    shootInput = pygame.K_LCTRL,pygame.K_RCTRL
-    escapeInput = pygame.K_ESCAPE
-    backInput = pygame.K_TAB
-    creditsInput = pygame.K_c
-    brakeInput = pygame.K_LALT,pygame.K_RALT
-    muteInput = pygame.K_m
-    fullScreenInput = pygame.K_f
-
-# CONTROLLER BINDS
-else:
-    # Axis
-    controllerMoveX = 0 # left stick horizontal axis
-    controllerMoveY = 1 # left stick vertical axis
-    controllerBoost = 4
-    controllerShoot = 5
-
-    # Buttons
-    controllerSelect = 0
-    controllerMute = 4
-    controllerExit = 5
-    controllerPause = 6
-    controllerFullScreen = 11
-
-
+    else:
+        pygame.joystick.quit()
+        if useController: useController = False
 
 
 # QUIT GAME
@@ -697,39 +705,25 @@ class Game:
                 "obstacleHealth":self.obsHealth
                 }
 
+        self.usingController = useController
+
 
     # MAIN GAME LOOP
     def update(self,player,obstacles,menu,events,lasers):
         for event in pygame.event.get():
 
-            if not useController or gamePad is None:
-                # EXIT
-                if (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE) or event.type == pygame.QUIT:
-                    running = False
-                    quitGame()
+            # EXIT
+            if (event.type == pygame.KEYDOWN and event.key == escapeInput) or (gamePad is not None and gamePad.get_button(controllerExit) == 1) or event.type == pygame.QUIT:
+                running = False
+                quitGame()
 
-                # PAUSE GAME
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and game.pauseCount < pauseMax:
-                    game.pauseCount += 1
-                    menu.pause(game,player,obstacles,lasers)
+            # MUTE
+            if (event.type == pygame.KEYDOWN and event.key == muteInput) or (gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
 
-                # MUTE
-                if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_m): toggleMusic(game)
-
-            else:
-                # EXIT
-                if gamePad.get_button(controllerExit) == 1 or event.type == pygame.QUIT:
-                    running = False
-                    quitGame()
-
-                # PAUSE GAME
-                if gamePad.get_button(controllerPause) == 1 and game.pauseCount < pauseMax:
-                    game.pauseCount += 1
-                    menu.pause(game,player,obstacles,lasers)
-
-                # MUTE
-                if gamePad.get_button(controllerMute) == 1: toggleMusic(game)
-
+            # PAUSE GAME
+            if ( (game.pauseCount < pauseMax and event.type == pygame.KEYDOWN and event.key == pauseInput) or (gamePad is not None and gamePad.get_button(controllerPause)==1) ):
+                game.pauseCount += 1
+                menu.pause(game,player,obstacles,lasers)
 
             # INCREMENT TIMER
             if event.type == events.timerEvent: self.gameClock +=1
@@ -1128,7 +1122,9 @@ class Game:
             if unlockNum <= 0:
                 if self.records["longestRun"] >= time: return 1
                 else: return 0
-            else: return unlockNum
+            else:
+                if unlockNum >= numSkins: unlockNum = numSkins - 1
+                return unlockNum
 
 
     # Get number of skins unlocked for a specified level number
@@ -1203,29 +1199,32 @@ class Menu:
         startFont = pygame.font.Font(gameFont, startSize)
         startDisplay = startFont.render("N  VIGAT  R", True, startColor)
         startRect = startDisplay.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
-
-        startHelpFont = pygame.font.Font(gameFont, helpSize)
-        startHelpDisplay = startHelpFont.render("ESCAPE = Quit   SPACE = Start   F = Fullscreen   M = Mute   C = Credits", True, helpColor)
-        startHelpRect = startHelpDisplay.get_rect(center = (screenSize[0]/2,screenSize[1]-screenSize[1]/7))
-
         shipHelpFont = pygame.font.Font(gameFont, round(helpSize * .65))
-        skinHelpDisplay = shipHelpFont.render("A/LEFT = Last skin     D/RIGHT = Next skin", True, helpColor)
-        shipHelpDisplay = shipHelpFont.render("S/DOWN = Last ship     W/UP = Next ship", True, helpColor)
+        startHelpFont = pygame.font.Font(gameFont, helpSize)
+        if not game.usingController or gamePad is None:
+            startHelpDisplay = startHelpFont.render("ESCAPE = Quit   SPACE = Start   F = Fullscreen   M = Mute   C = Credits", True, helpColor)
+            skinHelpDisplay = shipHelpFont.render("A/LEFT = Last skin     D/RIGHT = Next skin", True, helpColor)
+            shipHelpDisplay = shipHelpFont.render("S/DOWN = Last ship     W/UP = Next ship", True, helpColor)
+            boostHelp = shipHelpFont.render("SHIFT = Boost", True, helpColor)
+            shootHelp = shipHelpFont.render("CTRL = Shoot", True, helpColor)
+
+        else:
+            startHelpDisplay = startHelpFont.render("START = Quit   A = Start   GUIDE = Fullscreen   LB = Mute   Y = Credits", True, helpColor)
+            boostHelp = shipHelpFont.render("LT = Boost", True, helpColor)
+            shootHelp = shipHelpFont.render("RT = Shoot", True, helpColor)
+            skinHelpDisplay = shipHelpFont.render("D-PAD LEFT = Last skin   D-PAD RIGHT = Next skin", True, helpColor)
+            shipHelpDisplay = shipHelpFont.render("D-PAD DOWN = Last ship   D-PAD UP = Next ship", True, helpColor)
+
+        startHelpRect = startHelpDisplay.get_rect(center = (screenSize[0]/2,screenSize[1]-screenSize[1]/7))
         skinHelpRect = skinHelpDisplay.get_rect(center = (screenSize[0]/4 + 40, screenSize[1]-screenSize[1]/7 + 70))
         shipHelpRect = shipHelpDisplay.get_rect(center = (screenSize[0]/4 + 40, screenSize[1]-screenSize[1]/7 + 40))
-
-        boostHelp = shipHelpFont.render("SHIFT = Boost", True, helpColor)
-        shootHelp = shipHelpFont.render("CTRL = Shoot", True, helpColor)
         boostHelpRect = boostHelp.get_rect()
         shootHelpRect = shootHelp.get_rect()
-
         leftRect = menuList[3].get_rect(center = (screenSize[0] * 0.2 , screenSize[1]/3) )
         rightRect = menuList[4].get_rect(center = (screenSize[0] * 0.8 , screenSize[1]/3) )
-
         versionFont = pygame.font.Font(gameFont,versionSize)
         versionDisplay = versionFont.render(version,True,versionColor)
         versionRect = versionDisplay.get_rect(topright = (startRect.right-versionSize,startRect.bottom-versionSize))
-
         bounceDelay = 5
         bounceCount = 0
 
@@ -1260,7 +1259,6 @@ class Menu:
         iconPosition, startDelayCounter = startOffset, 0
 
         while game.mainMenu:
-
             menuMusicLoop() # Keep music looping
 
             if bounceCount >= bounceDelay: bounceCount = 0
@@ -1268,7 +1266,9 @@ class Menu:
 
             for event in pygame.event.get():
                 # START
-                if ( (not useController or gamePad is None) and event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE) or (gamePad is not None and gamePad.get_button(controllerSelect) == 1):
+                if (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE) or (gamePad is not None and gamePad.get_button(controllerSelect) == 1):
+                    if (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE): game.usingController = False
+                    elif (gamePad is not None and gamePad.get_button(controllerSelect) == 1): game.usingController = True
 
                     game.savedSkin = player.currentImageNum
 
@@ -1284,39 +1284,57 @@ class Menu:
                         displayUpdate()
 
                         if startDelayCounter >= startDelay: iconPosition-=1
-
                     game.mainMenu = False
                     return
 
                 # TOGGLE FULLSCREEN
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_f:
+                if (event.type == pygame.KEYDOWN and event.key == fullScreenInput) or (gamePad is not None and gamePad.get_button(controllerFullScreen) == 1):
                     pygame.mouse.set_visible(False)
                     screen = toggleScreen()
 
                 # NEXT SPACESHIP SKIN
-                elif event.type == pygame.KEYDOWN and (event.key == pygame.K_d or event.key == pygame.K_RIGHT):
+                elif (event.type == pygame.KEYDOWN and event.key in rightInput) or (gamePad is not None and gamePad.get_numhats() > 0 and gamePad.get_hat(0) == controllerNextSkin):
                     player.nextSkin()
 
                 # PREVIOUS SPACESHIP SKIN
-                elif event.type == pygame.KEYDOWN and (event.key == pygame.K_a or event.key == pygame.K_LEFT):
+                elif (event.type == pygame.KEYDOWN and event.key in leftInput) or (gamePad is not None and gamePad.get_numhats() > 0  and gamePad.get_hat(0) == controllerLastSkin):
                     player.lastSkin()
 
                 # NEXT SHIP TYPE
-                elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_w or event.key == pygame.K_UP):
+                elif (event.type == pygame.KEYDOWN and event.key in upInput) or (gamePad is not None and gamePad.get_numhats() > 0  and gamePad.get_hat(0)== controllerNextShip):
                     player.toggleSpaceShip(game,True)
 
                 # PREVIOUS SHIP TYPE
-                elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_s or event.key == pygame.K_DOWN):
+                elif (event.type == pygame.KEYDOWN and event.key in downInput) or (gamePad is not None and gamePad.get_numhats() > 0 and gamePad.get_hat(0) == controllerLastShip):
                     player.toggleSpaceShip(game,False)
 
+                # EXIT
+                if (event.type == pygame.KEYDOWN and event.key == escapeInput) or (gamePad is not None and gamePad.get_button(controllerExit) == 1) or event.type == pygame.QUIT:
+                    running = False
+                    quitGame()
+
                 # MUTE
-                elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_m): toggleMusic(game)
+                if (event.type == pygame.KEYDOWN) and (event.key == muteInput) or (gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
 
                 # CREDITS
-                elif event.type == pygame.KEYDOWN and event.key == pygame.K_c: menu.creditScreen()
+                if (event.type == pygame.KEYDOWN and event.key == creditsInput) or (gamePad is not None and gamePad.get_button(controllerCredits) == 1): menu.creditScreen()
 
-                # QUIT
-                elif event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and  event.key == pygame.K_ESCAPE): quitGame()
+                 # SWITCH CONTROL TYPE
+                if game.usingController and event.type == pygame.KEYDOWN:
+                    game.usingController = False
+                    startHelpDisplay = startHelpFont.render("ESCAPE = Quit   SPACE = Start   F = Fullscreen   M = Mute   C = Credits", True, helpColor)
+                    boostHelp = shipHelpFont.render("SHIFT = Boost", True, helpColor)
+                    shootHelp = shipHelpFont.render("CTRL = Shoot", True, helpColor)
+                    skinHelpDisplay = shipHelpFont.render("A/LEFT = Last skin     D/RIGHT = Next skin", True, helpColor)
+                    shipHelpDisplay = shipHelpFont.render("S/DOWN = Last ship     W/UP = Next ship", True, helpColor)
+
+                elif gamePad is not None and not game.usingController and (event.type == pygame.JOYHATMOTION or event.type == pygame.JOYAXISMOTION or event.type == pygame.JOYBUTTONDOWN):
+                    game.usingController = True
+                    startHelpDisplay = startHelpFont.render("START = Quit   A = Start   GUIDE = Fullscreen   LB = Mute   Y = Credits", True, helpColor)
+                    boostHelp = shipHelpFont.render("LT = Boost", True, helpColor)
+                    shootHelp = shipHelpFont.render("RT = Shoot", True, helpColor)
+                    skinHelpDisplay = shipHelpFont.render("D-PAD LEFT = Last skin   D-PAD RIGHT = Next skin", True, helpColor)
+                    shipHelpDisplay = shipHelpFont.render("D-PAD DOWN = Last ship   D-PAD UP = Next ship", True, helpColor)
 
             # GET SHIP CONTROLS
             if player.hasGuns and player.boostSpeed > player.baseSpeed: # has guns and boost
@@ -1409,12 +1427,12 @@ class Menu:
                 if event.type == pygame.QUIT: quitGame()
 
                 # TOGGLE FULLSCREEN
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_f:
+                if (event.type == pygame.KEYDOWN and event.key == fullScreenInput) or (gamePad is not None and gamePad.get_button(controllerFullScreen) == 1):
                     pygame.mouse.set_visible(False)
                     screen = toggleScreen()
 
                 # UNPAUSE
-                if event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_SPACE):
+                if (event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_SPACE)) or (gamePad is not None and gamePad.get_button(controllerBack) == 1):
                     pygame.mixer.music.unpause()
                     paused = False
 
@@ -1478,7 +1496,8 @@ class Menu:
         newLongestRunDisplay = statFont.render(newLongestRunLine, True, finalScoreColor)
         attemptDisplay = statFont.render(attemptLine, True, finalScoreColor)
         timeWastedDisplay = statFont.render(timeWasted,True,finalScoreColor)
-        exitDisplay = exitFont.render("TAB = Menu     SPACE = Restart    ESCAPE = Quit    C = Credits", True, helpColor)
+        if not game.usingController or gamePad is None: exitDisplay = exitFont.render("TAB = Menu     SPACE = Restart    ESCAPE = Quit    C = Credits", True, helpColor)
+        else: exitDisplay = exitFont.render("B = Menu    A = Restart    START = Quit    Y = Credits", True, helpColor)
 
         # Rects
         scoreRect = scoreDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 + statsOffsetY +statsSpacingY * 1))
@@ -1523,28 +1542,32 @@ class Menu:
 
             for event in pygame.event.get():
 
+                # CREDITS
+                if event.type == pygame.KEYDOWN and event.key == creditsInput or (gamePad is not None and gamePad.get_button(controllerCredits) == 1): menu.creditScreen()
+
                 # EXIT
-                if (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE) or event.type == pygame.QUIT: quitGame()
+                if (event.type == pygame.KEYDOWN and event.key == escapeInput) or (gamePad is not None and gamePad.get_button(controllerExit) == 1) or event.type == pygame.QUIT:
+                    running = False
+                    quitGame()
 
                 # TOGGLE FULLSCREEN
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_f:
+                if (event.type == pygame.KEYDOWN and event.key == fullScreenInput) or (gamePad is not None and gamePad.get_button(controllerFullScreen) == 1):
                     pygame.mouse.set_visible(False)
                     screen = toggleScreen()
 
-                # CREDITS
-                elif (event.type == pygame.KEYDOWN and event.key == pygame.K_c): menu.creditScreen()
-
-                # WIPE
-
-                elif (event.type == pygame.KEYDOWN and event.key == pygame.K_TAB):
-                    # SET DEFAULTS AND GO BACK TO MENU
+                # BACK TO MENU
+                elif (event.type == pygame.KEYDOWN and event.key == pygame.K_TAB) or gamePad is not None and gamePad.get_button(controllerBack) == 1:
+                    if (event.type == pygame.KEYDOWN and event.key == pygame.K_TAB): game.usingController = False
+                    elif (gamePad is not None and gamePad.get_button(controllerBack) == 1): game.usingController = True
                     game.reset(player,obstacles)
                     game.mainMenu = True
                     game.skipAutoSkinSelect = True
                     gameLoop()
 
-                elif (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE):
-                    # SET DEFAULTS AND RESTART GAME
+                # RESTART GAME
+                elif (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE) or gamePad is not None and gamePad.get_button(controllerSelect) == 1:
+                    if (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE): game.usingController = False
+                    elif (gamePad is not None and gamePad.get_button(controllerSelect) == 1): game.usingController = True
                     game.reset(player,obstacles)
                     player.updatePlayerConstants(game)
                     running = True
@@ -1593,11 +1616,16 @@ class Menu:
             menuMusicLoop()
 
             for event in pygame.event.get():
-                # EXIT
-                if event.type == pygame.QUIT: quitGame()
+
+                if event.type == pygame.QUIT:
+                    running = False
+                    quitGame()
+
+                # TOGGLE MUTE
+                if ((not useController) or (gamePad is None) and (event.type == pygame.KEYDOWN) and (event.key == muteInput) or gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
 
                 # TOGGLE FULLSCREEN
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_f:
+                if ( (not useController or gamePad is None) and event.type == pygame.KEYDOWN and event.key == fullScreenInput) or (gamePad is not None and gamePad.get_button(controllerFullScreen) == 1):
                     pygame.mouse.set_visible(False)
                     screen = toggleScreen()
 
@@ -1605,11 +1633,8 @@ class Menu:
                 if event.type == backGroundShipSpawnEvent:
                     waitToSpawn = False
 
-                # MUTE
-                elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_m): toggleMusic(game)
-
                 # RETURN TO GAME
-                elif event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_c or event.key == pygame.K_SPACE or event.key == pygame.K_TAB):
+                elif (event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_c or event.key == pygame.K_SPACE or event.key == pygame.K_TAB) ) or gamePad is not None and gamePad.get_button(controllerBack) == 1:
                     rollCredits = False
 
             screen.fill(screenColor)
@@ -1736,12 +1761,10 @@ class Player(pygame.sprite.Sprite):
             else: self.vectorMovement(False)
 
 
-
-
         # VECTOR BASED MOVEMENT
         def vectorMovement(self,defaultMovement):
             # KEYBOARD
-            if gamePad is None or not useController:
+            if not game.usingController:
                 key = pygame.key.get_pressed()
                 direction = pygame.Vector2(0, 0)
                 if any(key[bind] for bind in upInput): direction += pygame.Vector2(0, -1)
@@ -1755,8 +1778,8 @@ class Player(pygame.sprite.Sprite):
                     if not any(key[bind] for bind in brakeInput): self.rect.move_ip(direction * self.speed)
                     if direction.x != 0 or direction.y != 0: self.angle = direction.angle_to(pygame.Vector2(0, -1))
 
-            # JOYSTICK
-            else:
+            # CONTROLLER
+            elif gamePad is not None and game.usingController:
                 direction = pygame.Vector2(0, 0)
                 xTilt = gamePad.get_axis(controllerMoveX)
                 yTilt = gamePad.get_axis(controllerMoveY)
@@ -1817,7 +1840,15 @@ class Player(pygame.sprite.Sprite):
                 # KEYBOARD
                 if gamePad is None or not useController:
                     key = pygame.key.get_pressed()
-                    if  any(key[bind] for bind in shootInput) and self.fuel - self.laserCost > 0:
+                    if any(key[bind] for bind in shootInput) and self.fuel - self.laserCost > 0:
+                        lasers.add(Laser(self,obstacles))
+                        if not game.musicMuted: laserNoise.play()
+                        self.fuel -= self.laserCost
+                        events.laserCharge(self)
+
+                # CONTROLLER
+                else:
+                    if gamePad.get_axis(controllerShoot) > 0.5 and self.fuel - self.laserCost > 0:
                         lasers.add(Laser(self,obstacles))
                         if not game.musicMuted: laserNoise.play()
                         self.fuel -= self.laserCost
@@ -1859,6 +1890,7 @@ class Player(pygame.sprite.Sprite):
                     if devMode: self.currentImageNum = len(spaceShipList[game.savedShipLevel]['skins']) - 1
                     else: self.currentImageNum = game.skinUnlockNumber
                     self.image = spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum]
+
             self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
 
