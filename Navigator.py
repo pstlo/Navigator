@@ -1,8 +1,8 @@
 # Navigator
 # Copyright (c) 2023 Mike Pistolesi
-# All rights reserved 
+# All rights reserved
 
- 
+
 import os,sys,random,math,platform,json,base64,time,pypresence,asyncio
 from cryptography.fernet import Fernet
 from dotenv import load_dotenv
@@ -117,13 +117,14 @@ musicLoopStart = 25000 # Default = 25000
 musicLoopEnd = 76000 # Default = 76000
 
 # PLAYER
+useController = False
 drawExhaust = True # Default = True
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
 defaultToHighSkin = True # Default = True / Default to highest skin unlocked on game launch
 defaultToHighShip = False # Default = False / Default to highest ship unlocked on game launch
 heatSeekDelay = 15
 heatSeekNeedsTarget = False
-playerMovement = "VECTOR" # ( Vector, Original )
+playerMovement = "DEFAULT" # (DEFAULT, ORIGINAL)
 
 # LEVELS
 levelTimer = 15 # Default = 15 / Time (seconds) between levels (can be overridden)
@@ -160,11 +161,6 @@ def resources(relative):
 # SPECIFY SCREEN UPDATE METHOD
 if qualityMode: updateNotFlip = False
 else: updateNotFlip = True # use update instead of flip for display updates
-
-# GET SCREEN SIZE
-displayInfo = pygame.display.Info()
-displayInfo = displayInfo.current_w,displayInfo.current_h
-displayInfo = pygame.Rect(0, 0, displayInfo[0], displayInfo[1]).center
 
 # PERFORMANCE SETTINGS
 if performanceMode:
@@ -253,6 +249,50 @@ if showPresence:
         presence = pypresence.AioPresence((Fernet(base64.b64decode(os.getenv('KEY1'))).decrypt(os.getenv('TOKEN'))).decode())
         asyncio.run(getPresence(presence))
     except: presence = None
+
+
+# CONTROLLER INPUT
+gamePad = None
+if useController:
+    pygame.joystick.init()
+    if pygame.joystick.get_count() > 0:
+        gamePad = pygame.joystick.Joystick(0)
+        gamePad.init()
+    else: pygame.joystick.quit()
+
+
+# KEY BINDS
+if not useController or gamePad is None:
+    leftInput = pygame.K_a, pygame.K_LEFT
+    rightInput = pygame.K_d,pygame.K_RIGHT
+    upInput = pygame.K_w,pygame.K_UP
+    downInput = pygame.K_s,pygame.K_DOWN
+    boostInput = pygame.K_LSHIFT,pygame.K_RSHIFT
+    pauseInput = pygame.K_SPACE
+    shootInput = pygame.K_LCTRL,pygame.K_RCTRL
+    escapeInput = pygame.K_ESCAPE
+    backInput = pygame.K_TAB
+    creditsInput = pygame.K_c
+    brakeInput = pygame.K_LALT,pygame.K_RALT
+    muteInput = pygame.K_m
+    fullScreenInput = pygame.K_f
+
+# CONTROLLER BINDS
+else:
+    # Axis
+    controllerMoveX = 0 # left stick horizontal axis
+    controllerMoveY = 1 # left stick vertical axis
+    controllerBoost = 4
+    controllerShoot = 5
+
+    # Buttons
+    controllerSelect = 0
+    controllerMute = 4
+    controllerExit = 5
+    controllerPause = 6
+    controllerFullScreen = 11
+
+
 
 
 # QUIT GAME
@@ -662,21 +702,37 @@ class Game:
     def update(self,player,obstacles,menu,events,lasers):
         for event in pygame.event.get():
 
-            # EXIT
-            if (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE) or event.type == pygame.QUIT:
-                running = False
-                quitGame()
+            if not useController or gamePad is None:
+                # EXIT
+                if (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE) or event.type == pygame.QUIT:
+                    running = False
+                    quitGame()
+
+                # PAUSE GAME
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and game.pauseCount < pauseMax:
+                    game.pauseCount += 1
+                    menu.pause(game,player,obstacles,lasers)
+
+                # MUTE
+                if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_m): toggleMusic(game)
+
+            else:
+                # EXIT
+                if gamePad.get_button(controllerExit) == 1 or event.type == pygame.QUIT:
+                    running = False
+                    quitGame()
+
+                # PAUSE GAME
+                if gamePad.get_button(controllerPause) == 1 and game.pauseCount < pauseMax:
+                    game.pauseCount += 1
+                    menu.pause(game,player,obstacles,lasers)
+
+                # MUTE
+                if gamePad.get_button(controllerMute) == 1: toggleMusic(game)
+
 
             # INCREMENT TIMER
             if event.type == events.timerEvent: self.gameClock +=1
-
-            # PAUSE GAME
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and game.pauseCount < pauseMax :
-                game.pauseCount += 1
-                menu.pause(game,player,obstacles,lasers)
-
-             # MUTE
-            if (event.type == pygame.KEYDOWN) and (event.key == pygame.K_m): toggleMusic(game)
 
             # FUEL REPLENISH
             if event.type == events.fuelReplenish and player.fuel < player.maxFuel: player.fuel += player.fuelRegenNum
@@ -872,8 +928,8 @@ class Game:
 
     # Draw frame outside of main loop
     def alternateUpdate(self,player,obstacles,events):
-        player.alternateMovement(self) # not sure why
-        player.movement()              # this works
+        for event in pygame.event.get(): pass # Movement during stage-up animation does not work without this line for some reason?
+        player.movement()
         player.wrapping()
         screen.fill(screenColor)
         screen.blit(bgList[self.currentStage-1][0],(0,0)) # Draw background
@@ -1212,7 +1268,7 @@ class Menu:
 
             for event in pygame.event.get():
                 # START
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                if ( (not useController or gamePad is None) and event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE) or (gamePad is not None and gamePad.get_button(controllerSelect) == 1):
 
                     game.savedSkin = player.currentImageNum
 
@@ -1674,111 +1730,79 @@ class Player(pygame.sprite.Sprite):
             self.movementType = playerMovement
 
 
+        # MOVEMENT
         def movement(self):
-            if self.movementType == "VECTOR": self.vectorMovement()
-            elif self.movementType == "ORIGINAL": self.classicMovement()
+            if self.movementType == "DEFAULT": self.vectorMovement(True) # In progress
+            else: self.vectorMovement(False)
+
+
 
 
         # VECTOR BASED MOVEMENT
-        def vectorMovement(self):
-            key = pygame.key.get_pressed()
-            direction = pygame.Vector2(0, 0)
-            if key[pygame.K_w] or key[pygame.K_UP]: direction += pygame.Vector2(0, -1)
-            if key[pygame.K_s] or key[pygame.K_DOWN]: direction += pygame.Vector2(0, 1)
-            if key[pygame.K_a] or key[pygame.K_LEFT]: direction += pygame.Vector2(-1, 0)
-            if key[pygame.K_d] or key[pygame.K_RIGHT]: direction += pygame.Vector2(1, 0)
-            if direction.magnitude_squared() > 0:
-                direction.normalize_ip()
-                if key[pygame.K_w] or key[pygame.K_UP] or key[pygame.K_s] or key[pygame.K_DOWN]: direction *= 1.414 # sqrt(2)
-                if not key[pygame.K_RALT] and not key[pygame.K_LALT]: self.rect.move_ip(direction * self.speed)
-                if direction.x != 0 or direction.y != 0: self.angle = direction.angle_to(pygame.Vector2(0, -1))
+        def vectorMovement(self,defaultMovement):
+            # KEYBOARD
+            if gamePad is None or not useController:
+                key = pygame.key.get_pressed()
+                direction = pygame.Vector2(0, 0)
+                if any(key[bind] for bind in upInput): direction += pygame.Vector2(0, -1)
+                if any(key[bind] for bind in downInput): direction += pygame.Vector2(0, 1)
+                if any(key[bind] for bind in leftInput): direction += pygame.Vector2(-1, 0)
+                if any(key[bind] for bind in rightInput): direction += pygame.Vector2(1, 0)
+                if direction.magnitude_squared() > 0:
+                    if defaultMovement:
+                        direction.normalize_ip()
+                        direction *= 1.414  # sqrt(2)
+                    if not any(key[bind] for bind in brakeInput): self.rect.move_ip(direction * self.speed)
+                    if direction.x != 0 or direction.y != 0: self.angle = direction.angle_to(pygame.Vector2(0, -1))
 
-
-        # ORIGINAL MOVEMENT
-        def classicMovement(self):
-            key = pygame.key.get_pressed()
-            if not key[pygame.K_LALT] and not key[pygame.K_RALT]:
-                if key[pygame.K_w] or key[pygame.K_UP]:
-                    self.rect.centery -= self.speed
-                    self.angle = 0
-
-                if key[pygame.K_s] or key[pygame.K_DOWN]:
-                    self.rect.centery += self.speed
-                    self.angle = 180
-
-                if key[pygame.K_a] or key[pygame.K_LEFT]:
-                    self.rect.centerx -= self.speed
-                    self.angle = 90
-
-                if key[pygame.K_d] or key[pygame.K_RIGHT]:
-                    self.rect.centerx += self.speed
-                    self.angle = -90
-
-            else: # ROTATION ONLY
-                if key[pygame.K_w] or key[pygame.K_UP]:
-                    self.angle = 0
-
-                if key[pygame.K_s] or key[pygame.K_DOWN]:
-                    self.angle = 180
-
-                if key[pygame.K_a] or key[pygame.K_LEFT]:
-                    self.angle = 90
-
-                if key[pygame.K_d] or key[pygame.K_RIGHT]:
-                    self.angle = -90
-
-            # DIAGONAL MOVEMENT ANGLES
-            if (key[pygame.K_a] or key[pygame.K_LEFT]) and (key[pygame.K_w] or key[pygame.K_UP]):
-                self.angle = 45
-
-            if (key[pygame.K_s] or key[pygame.K_DOWN]) and (key[pygame.K_w] or key[pygame.K_UP]):
-                self.angle = 0
-
-            if (key[pygame.K_a] or key[pygame.K_LEFT]) and (key[pygame.K_d] or key[pygame.K_RIGHT]):
-                self.angle = 0
-
-            if (key[pygame.K_d] or key[pygame.K_RIGHT]) and (key[pygame.K_w] or key[pygame.K_UP]):
-                self.angle = -45
-
-            if (key[pygame.K_d] or key[pygame.K_RIGHT]) and (key[pygame.K_s] or key[pygame.K_DOWN]):
-                self.angle = -135
-
-            if (key[pygame.K_a] or key[pygame.K_LEFT]) and (key[pygame.K_s] or key[pygame.K_DOWN]):
-                self.angle = 135
-
-            if (key[pygame.K_d] or key[pygame.K_RIGHT]) and ( key[pygame.K_a] or key[pygame.K_LEFT]):
-                self.angle = 0
-
-            if (key[pygame.K_a] or key[pygame.K_LEFT]) and (key[pygame.K_s] or key[pygame.K_DOWN]) and (key[pygame.K_w] or key[pygame.K_UP]):
-                self.angle = 90
-
-            if (key[pygame.K_d] or key[pygame.K_RIGHT]) and ( key[pygame.K_a] or key[pygame.K_LEFT]) and (key[pygame.K_s] or key[pygame.K_DOWN]):
-                self.angle = 180
-
-            if (key[pygame.K_d] or key[pygame.K_RIGHT]) and ( key[pygame.K_w] or key[pygame.K_UP]) and (key[pygame.K_s] or key[pygame.K_DOWN]):
-                self.angle = -90
-
-            if (key[pygame.K_a] or key[pygame.K_LEFT]) and ( key[pygame.K_w] or key[pygame.K_UP]) and (key[pygame.K_s] or key[pygame.K_DOWN]) and (key[pygame.K_d] or key[pygame.K_RIGHT]):
-                self.angle = 0
+            # JOYSTICK
+            else:
+                direction = pygame.Vector2(0, 0)
+                xTilt = gamePad.get_axis(controllerMoveX)
+                yTilt = gamePad.get_axis(controllerMoveY)
+                if yTilt < -0.5: direction += pygame.Vector2(0, -1)
+                if yTilt > 0.5: direction += pygame.Vector2(0, 1)
+                if xTilt < -0.5: direction += pygame.Vector2(-1, 0)
+                if xTilt > 0.5: direction += pygame.Vector2(1, 0)
+                if direction.magnitude_squared() > 0:
+                    if defaultMovement:
+                        direction.normalize_ip()
+                        direction *= 1.414  # sqrt(2)
+                    if direction.x != 0 or direction.y != 0: self.rect.move_ip(direction * self.speed)
+                    self.angle = direction.angle_to(pygame.Vector2(0, -1))
 
 
         # SPEED BOOST
         def boost(self,game,events):
             if self.boostReady:
                 if self.fuel - self.boostDrain > self.boostDrain:
-                    key = pygame.key.get_pressed()
+                    # KEYBOARD
+                    if gamePad is None or not useController:
+                        key = pygame.key.get_pressed()
+                        if any(key[bind] for bind in boostInput) and ( any(key[bind] for bind in leftInput) and  any(key[bind] for bind in upInput) and any(key[bind] for bind in downInput) and any(key[bind] for bind in rightInput) ):
+                            pass # Cannot boost with all directional inputs held together
 
-                    if (key[pygame.K_LSHIFT] or key[pygame.K_RSHIFT]) and ( (key[pygame.K_a] or key[pygame.K_LEFT]) and ( key[pygame.K_w] or key[pygame.K_UP]) and (key[pygame.K_s] or key[pygame.K_DOWN]) and (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
-                        pass
+                        elif any(key[bind] for bind in boostInput) and ( any(key[bind] for bind in leftInput) or any(key[bind] for bind in upInput) or any(key[bind] for bind in downInput) or any(key[bind] for bind in rightInput)):
+                            self.speed = self.boostSpeed
+                            self.fuel -= self.boostDrain
+                            if not self.boosting: self.boosting = True
+                            if self.boostState + 1 < len(spaceShipList[game.savedShipLevel]['boost']): self.boostState += 1
+                            else: self.boostState = 0
 
-                    elif (key[pygame.K_LSHIFT] or key[pygame.K_RSHIFT]) and ( (key[pygame.K_a] or key[pygame.K_LEFT]) or ( key[pygame.K_w] or key[pygame.K_UP]) or (key[pygame.K_s] or key[pygame.K_DOWN]) or (key[pygame.K_d] or key[pygame.K_RIGHT]) ):
-                        self.speed = self.boostSpeed
-                        self.fuel -= self.boostDrain
-                        if not self.boosting: self.boosting = True
-                        if self.boostState + 1 < len(spaceShipList[game.savedShipLevel]['boost']): self.boostState += 1
-                        else: self.boostState = 0
+                        else: self.speed = self.baseSpeed
 
-                    else: self.speed = self.baseSpeed
+                    # CONTROLLER
+                    else:
+                        xTilt,yTilt = gamePad.get_axis(controllerMoveX),gamePad.get_axis(controllerMoveY)
+                        if abs(xTilt) == 0 and abs(yTilt) == 0: pass # Cannot boost in place
+                        elif (abs(xTilt) > 0 or abs(yTilt)) > 0 and gamePad.get_axis(controllerBoost) > 0.5:
+                            self.speed = self.boostSpeed
+                            self.fuel -= self.boostDrain
+                            if not self.boosting: self.boosting = True
+                            if self.boostState + 1 < len(spaceShipList[game.savedShipLevel]['boost']): self.boostState += 1
+                            else: self.boostState = 0
+
+                        else: self.speed = self.baseSpeed
 
                 else:
                     if self.speed != self.baseSpeed: self.speed = self.baseSpeed
@@ -1789,45 +1813,15 @@ class Player(pygame.sprite.Sprite):
         # SHOOT ROCKETS/LASERS
         def shoot(self,game,lasers,events,obstacles):
             if self.hasGuns and self.laserReady:
-                key = pygame.key.get_pressed()
-                if  (key[pygame.K_LCTRL] or key[pygame.K_RCTRL]) and self.fuel - self.laserCost > 0:
-                    lasers.add(Laser(self,obstacles))
-                    if not game.musicMuted: laserNoise.play()
-                    self.fuel -= self.laserCost
-                    events.laserCharge(self)
 
-
-        # MOVEMENT DURING STAGE UP
-        def alternateMovement(self,game):
-            for event in pygame.event.get():
-                if (event.type == pygame.QUIT) or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE): quitGame()
-
-                if event.type == pygame.KEYDOWN and (event.key == pygame.K_w or event.key == pygame.K_UP):
-                    self.rect.centery -=1
-                    self.angle = 0
-
-                if event.type == pygame.KEYDOWN and (event.key == pygame.K_a or event.key == pygame.K_LEFT):
-                    self.rect.centerx -=1
-                    self.angle = 90
-
-                if event.type == pygame.KEYDOWN and (event.key == pygame.K_s or event.key == pygame.K_DOWN):
-                    self.rect.centery +=1
-                    self.angle = 180
-
-                if event.type == pygame.KEYDOWN and (event.key == pygame.K_d or event.key == pygame.K_RIGHT):
-                    self.rect.centerx +=1
-                    self.angle = -90
-
-                if event.type == pygame.KEYDOWN and (event.key == pygame.K_d or event.key == pygame.K_RIGHT) and (event.key == pygame.K_w or event.key == pygame.K_UP): self.angle = -45
-                if event.type == pygame.KEYDOWN and (event.key == pygame.K_a or event.key == pygame.K_LEFT) and (event.key == pygame.K_w or event.key == pygame.K_UP): self.angle = -45
-                if event.type == pygame.KEYDOWN and (event.key == pygame.K_s or event.key == pygame.K_DOWN) and (event.key == pygame.K_a or event.key == pygame.K_LEFT): self.angle = 135
-                if event.type == pygame.KEYDOWN and (event.key == pygame.K_s or event.key == pygame.K_DOWN) and (event.key == pygame.K_d or event.key == pygame.K_RIGHT): self.angle = -135
-                if event.type == pygame.KEYDOWN and (event.key == pygame.K_d or event.key == pygame.K_RIGHT) and (event.key == pygame.K_a or event.key == pygame.K_LEFT): self.angle = 0
-                if event.type == pygame.KEYDOWN and (event.key == pygame.K_s or event.key == pygame.K_DOWN) and (event.key == pygame.K_a or event.key == pygame.K_LEFT) and (event.key == pygame.K_d or event.key == pygame.K_RIGHT): self.angle = 180
-                if event.type == pygame.KEYDOWN and (event.key == pygame.K_s or event.key == pygame.K_DOWN) and (event.key == pygame.K_d or event.key == pygame.K_RIGHT) and (event.key == pygame.K_w or event.key == pygame.K_UP): self.angle = -90
-                if event.type == pygame.KEYDOWN and (event.key == pygame.K_s or event.key == pygame.K_DOWN) and (event.key == pygame.K_a or event.key == pygame.K_LEFT) and (event.key == pygame.K_w or event.key == pygame.K_UP): self.angle = 90
-                if event.type == pygame.KEYDOWN and (event.key == pygame.K_s or event.key == pygame.K_DOWN) and (event.key == pygame.K_a or event.key == pygame.K_LEFT) and (event.key == pygame.K_d or event.key == pygame.K_RIGHT) and (event.key == pygame.K_w or event.key == pygame.K_UP): self.angle = 0
-                else: self.angle = game.angle
+                # KEYBOARD
+                if gamePad is None or not useController:
+                    key = pygame.key.get_pressed()
+                    if  any(key[bind] for bind in shootInput) and self.fuel - self.laserCost > 0:
+                        lasers.add(Laser(self,obstacles))
+                        if not game.musicMuted: laserNoise.play()
+                        self.fuel -= self.laserCost
+                        events.laserCharge(self)
 
 
         # WRAP AROUND SCREEN
@@ -2020,7 +2014,7 @@ class Obstacle(pygame.sprite.Sprite):
             elif self.direction == "SW":
                 self.rect.centery += self.speed / 1.414
                 self.rect.centerx += self.speed / 1.414
-            
+
         else:
             if "N" in self.direction: self.rect.centery -= self.speed
             if "S" in self.direction: self.rect.centery += self.speed
