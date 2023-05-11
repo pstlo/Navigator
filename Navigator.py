@@ -163,6 +163,7 @@ controllerBack = 1
 controllerMute = 4
 controllerExit = 7
 controllerPause = 6 
+controllerMenu = 6
 controllerFullScreen = 10
 controllerCredits = 3
 
@@ -1497,7 +1498,7 @@ class Menu:
         attemptDisplay = statFont.render(attemptLine, True, finalScoreColor)
         timeWastedDisplay = statFont.render(timeWasted,True,finalScoreColor)
         if not game.usingController or gamePad is None: exitDisplay = exitFont.render("TAB = Menu     SPACE = Restart    ESCAPE = Quit    C = Credits", True, helpColor)
-        else: exitDisplay = exitFont.render("B = Menu    A = Restart    START = Quit    Y = Credits", True, helpColor)
+        else: exitDisplay = exitFont.render("SELECT = Menu    A = Restart    START = Quit    Y = Credits", True, helpColor)
 
         # Rects
         scoreRect = scoreDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 + statsOffsetY +statsSpacingY * 1))
@@ -1556,7 +1557,7 @@ class Menu:
                     screen = toggleScreen()
 
                 # BACK TO MENU
-                elif (event.type == pygame.KEYDOWN and event.key == pygame.K_TAB) or gamePad is not None and gamePad.get_button(controllerBack) == 1:
+                elif (event.type == pygame.KEYDOWN and event.key == pygame.K_TAB) or gamePad is not None and gamePad.get_button(controllerMenu) == 1:
                     if (event.type == pygame.KEYDOWN and event.key == pygame.K_TAB): game.usingController = False
                     elif (gamePad is not None and gamePad.get_button(controllerBack) == 1): game.usingController = True
                     game.reset(player,obstacles)
