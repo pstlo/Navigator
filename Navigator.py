@@ -152,20 +152,20 @@ controllerBoost = 4 # right trigger
 controllerShoot = 5 # left trigger
 
 # d-pad
-controllerNextShip = (0,1)
-controllerLastShip = (0,-1)
-controllerNextSkin = (1,0)
-controllerLastSkin = (-1,0)
+controllerNextShip = (0,1) # up
+controllerLastShip = (0,-1) # down
+controllerNextSkin = (1,0) # right
+controllerLastSkin = (-1,0) # left
 
 # Buttons
-controllerSelect = 0
-controllerBack = 1
-controllerMute = 4
-controllerExit = 7
-controllerPause = 6
-controllerMenu = 6
-controllerFullScreen = 10
-controllerCredits = 3
+controllerSelect = 0 # A
+controllerBack = 1 # B
+controllerMute = 4 # LB
+controllerExit = 7 # START
+controllerPause = 6 # SELECT
+controllerMenu = 6 # SELECT
+controllerFullScreen = 10 # GUIDE
+controllerCredits = 3 # Y
 
 # LEVELS
 levelTimer = 15 # Default = 15 / Time (seconds) between levels (can be overridden)
@@ -1627,7 +1627,7 @@ class Menu:
                     quitGame()
 
                 # TOGGLE MUTE
-                if ((not useController) or (gamePad is None) and (event.type == pygame.KEYDOWN) and (event.key == muteInput) or gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
+                if ((not useController or gamePad is None) and (event.type == pygame.KEYDOWN) and (event.key == muteInput) or gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
 
                 # TOGGLE FULLSCREEN
                 if ( (not useController or gamePad is None) and event.type == pygame.KEYDOWN and event.key == fullScreenInput) or (gamePad is not None and gamePad.get_button(controllerFullScreen) == 1):
@@ -1791,10 +1791,10 @@ class Player(pygame.sprite.Sprite):
                 yLeft = gamePad.get_axis(controllerMoveY)
                 xRight = gamePad.get_axis(controllerRotateX)
                 yRight = gamePad.get_axis(controllerRotateY)
-                
+
                 if abs(xRight) > 0.3 or abs(yRight) > 0.3: xTilt, yTilt, braking = xRight, yRight, True
                 else: xTilt, yTilt, braking = xLeft, yLeft, False
-                
+
                 if yTilt < -0.5: direction += pygame.Vector2(0, -1)
                 if yTilt > 0.5: direction += pygame.Vector2(0, 1)
                 if xTilt < -0.5: direction += pygame.Vector2(-1, 0)
@@ -1802,7 +1802,7 @@ class Player(pygame.sprite.Sprite):
                 if direction.magnitude_squared() > 0:
                     if defaultMovement:
                         direction.normalize_ip()
-                        direction *= 1.414  # sqrt(2)        
+                        direction *= 1.414  # sqrt(2)
                     if not braking: self.rect.move_ip(direction * self.speed) # MOVE PLAYER
                     if direction.x != 0 or direction.y != 0:self.angle = direction.angle_to(pygame.Vector2(0, -1)) # GET PLAYER ANGLE
 
