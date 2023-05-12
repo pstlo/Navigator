@@ -127,45 +127,21 @@ heatSeekNeedsTarget = False
 playerMovement = "DEFAULT" # (DEFAULT, ORIGINAL)
 
 # KEY BINDS
-leftInput = pygame.K_a, pygame.K_LEFT
-rightInput = pygame.K_d,pygame.K_RIGHT
-upInput = pygame.K_w,pygame.K_UP
-downInput = pygame.K_s,pygame.K_DOWN
-boostInput = pygame.K_LSHIFT,pygame.K_RSHIFT
-pauseInput = pygame.K_SPACE
-shootInput = pygame.K_LCTRL,pygame.K_RCTRL
-escapeInput = pygame.K_ESCAPE
-backInput = pygame.K_TAB
-creditsInput = pygame.K_c
-brakeInput = pygame.K_LALT,pygame.K_RALT
-muteInput = pygame.K_m
-fullScreenInput = pygame.K_f
+leftInput = [pygame.K_a, pygame.K_LEFT]
+rightInput = [pygame.K_d,pygame.K_RIGHT]
+upInput = [pygame.K_w,pygame.K_UP]
+downInput = [pygame.K_s,pygame.K_DOWN]
+boostInput = [pygame.K_LSHIFT,pygame.K_RSHIFT]
+pauseInput = [pygame.K_SPACE]
+shootInput = [pygame.K_LCTRL,pygame.K_RCTRL]
+escapeInput = [pygame.K_ESCAPE]
+backInput = [pygame.K_TAB]
+creditsInput = [pygame.K_c]
+brakeInput = [pygame.K_LALT,pygame.K_RALT]
+muteInput = [pygame.K_m]
+fullScreenInput = [pygame.K_f]
+startInput = [pygame.K_SPACE]
 
-# CONTROLLER BINDS
-# XB Controller ******
-# Axis
-controllerMoveX = 0 # left stick X axis
-controllerMoveY = 1 # left stick Y axis
-controllerRotateX = 2 # right stick X axis
-controllerRotateY = 3 # right stick Y axis
-controllerBoost = 4 # right trigger
-controllerShoot = 5 # left trigger
-
-# d-pad
-controllerNextShip = (0,1) # up
-controllerLastShip = (0,-1) # down
-controllerNextSkin = (1,0) # right
-controllerLastSkin = (-1,0) # left
-
-# Buttons
-controllerSelect = 0 # A
-controllerBack = 1 # B
-controllerMute = 4 # LB
-controllerExit = 7 # START
-controllerPause = 6 # SELECT
-controllerMenu = 6 # SELECT
-controllerFullScreen = 10 # GUIDE
-controllerCredits = 3 # Y
 
 # LEVELS
 levelTimer = 15 # Default = 15 / Time (seconds) between levels (can be overridden)
@@ -280,7 +256,7 @@ presence = None
 async def getPresence(presence):
     try:
         await asyncio.wait_for(presence.connect(),timeout = 0.5)
-        await presence.update(details='Playing Navigator', state='Navigating the depths of space', large_image='background', small_image = 'icon', buttons=[{'label': 'Play Navigator', 'url': 'https://pstlo.github.io/Navigator'}],start=int(time.time()))
+        await presence.update(details='Playing Navigator', state='Navigating the depths of space', large_image='background', small_image = 'icon', buttons=[{'label': 'Play Navigator', 'url': 'https://pstlo.github.io/navigator'}],start=int(time.time()))
     except:
         return None
 
@@ -291,6 +267,77 @@ if showPresence:
         asyncio.run(getPresence(presence))
     except: presence = None
 
+# CONTROLLER BINDS
+controllerBinds = {
+    'PS': # Dualshock
+        {
+        'name': "Playstation 4 Controller",
+        'moveX': 0,
+        'moveY': 1,
+        'rotX' : 2,
+        'rotY' : 3,
+        'boost':4,
+        'shoot':5,
+        'nextShip':(0,1),
+        'lastShip':(0,-1),
+        'nextSkin':(1,0),
+        'lastSkin':(-1,0),
+        'select':0,
+        'back':1,
+        'mute':4,
+        'exit':7,
+        'pause':6,
+        'menu':6,
+        'fullScreen': 10,
+        'credits':3
+        },
+
+    'XB': # Xbox controller
+        {
+        'name': "Xbox One Controller",
+        'moveX': 0,
+        'moveY': 1,
+        'rotX' : 2,
+        'rotY' : 3,
+        'boost':4,
+        'shoot':5,
+        'nextShip':(0,1),
+        'lastShip':(0,-1),
+        'nextSkin':(1,0),
+        'lastSkin':(-1,0),
+        'select':0,
+        'back':1,
+        'mute':4,
+        'exit':7,
+        'pause':6,
+        'menu':6,
+        'fullScreen': 10,
+        'credits':3
+        },
+
+    'NS': # Switch pro controller
+        {
+        'name': "Nintendo Switch Pro Controller",
+        'moveX': 0,
+        'moveY': 1,
+        'rotX' : 2,
+        'rotY' : 3,
+        'boost':4,
+        'shoot':5,
+        'nextShip':11,
+        'lastShip':12,
+        'nextSkin':14,
+        'lastSkin':13,
+        'select':0,
+        'back':1,
+        'mute':9,
+        'exit':6,
+        'pause':4,
+        'menu':4,
+        'fullScreen': 15,
+        'credits':2
+        }
+    }
 
 # CONTROLLER INPUT
 gamePad = None
@@ -299,6 +346,28 @@ if useController:
     if pygame.joystick.get_count() > 0:
         gamePad = pygame.joystick.Joystick(0)
         gamePad.init()
+        for controllerType in controllerBinds:
+            if gamePad.get_name() == controllerBinds[controllerType]['name']:
+                controllerMoveX = controllerBinds[controllerType]['moveX']
+                controllerMoveY = controllerBinds[controllerType]['moveY']
+                controllerRotateX = controllerBinds[controllerType]['rotX']
+                controllerRotateY = controllerBinds[controllerType]['rotY']
+                controllerBoost = controllerBinds[controllerType]['boost']
+                controllerShoot = controllerBinds[controllerType]['shoot']
+                controllerNextShip =controllerBinds[controllerType]['nextShip']
+                controllerLastShip =controllerBinds[controllerType]['lastShip']
+                controllerNextSkin =controllerBinds[controllerType]['nextSkin']
+                controllerLastSkin = controllerBinds[controllerType]['lastSkin']
+                controllerSelect = controllerBinds[controllerType]['select']
+                controllerBack = controllerBinds[controllerType]['back']
+                controllerMute = controllerBinds[controllerType]['mute']
+                controllerExit = controllerBinds[controllerType]['exit']
+                controllerPause = controllerBinds[controllerType]['pause']
+                controllerMenu = controllerBinds[controllerType]['menu']
+                controllerFullScreen = controllerBinds[controllerType]['fullScreen']
+                controllerCredits = controllerBinds[controllerType]['credits']
+                break
+
     else:
         pygame.joystick.quit()
         if useController: useController = False
@@ -714,15 +783,15 @@ class Game:
         for event in pygame.event.get():
 
             # EXIT
-            if (event.type == pygame.KEYDOWN and event.key == escapeInput) or (gamePad is not None and gamePad.get_button(controllerExit) == 1) or event.type == pygame.QUIT:
+            if (event.type == pygame.KEYDOWN and event.key in escapeInput) or (gamePad is not None and gamePad.get_button(controllerExit) == 1) or event.type == pygame.QUIT:
                 running = False
                 quitGame()
 
             # MUTE
-            if (event.type == pygame.KEYDOWN and event.key == muteInput) or (gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
+            if (event.type == pygame.KEYDOWN and event.key in muteInput) or (gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
 
             # PAUSE GAME
-            if ( (game.pauseCount < pauseMax and event.type == pygame.KEYDOWN and event.key == pauseInput) or (gamePad is not None and gamePad.get_button(controllerPause)==1) ):
+            if ( (game.pauseCount < pauseMax and event.type == pygame.KEYDOWN and event.key in pauseInput) or (gamePad is not None and gamePad.get_button(controllerPause)==1) ):
                 game.pauseCount += 1
                 menu.pause(game,player,obstacles,lasers)
 
@@ -1271,8 +1340,8 @@ class Menu:
 
             for event in pygame.event.get():
                 # START
-                if (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE) or (gamePad is not None and gamePad.get_button(controllerSelect) == 1):
-                    if (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE): game.usingController = False
+                if (event.type == pygame.KEYDOWN and event.key in startInput) or (gamePad is not None and gamePad.get_button(controllerSelect) == 1):
+                    if (event.type == pygame.KEYDOWN and event.key in startInput): game.usingController = False
                     elif (gamePad is not None and gamePad.get_button(controllerSelect) == 1): game.usingController = True
 
                     game.savedSkin = player.currentImageNum
@@ -1293,36 +1362,36 @@ class Menu:
                     return
 
                 # TOGGLE FULLSCREEN
-                if (event.type == pygame.KEYDOWN and event.key == fullScreenInput) or (gamePad is not None and gamePad.get_button(controllerFullScreen) == 1):
+                if (event.type == pygame.KEYDOWN and event.key in fullScreenInput) or (gamePad is not None and gamePad.get_button(controllerFullScreen) == 1):
                     pygame.mouse.set_visible(False)
                     screen = toggleScreen()
 
                 # NEXT SPACESHIP SKIN
-                elif (event.type == pygame.KEYDOWN and event.key in rightInput) or (gamePad is not None and gamePad.get_numhats() > 0 and gamePad.get_hat(0) == controllerNextSkin):
+                elif (event.type == pygame.KEYDOWN and event.key in rightInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerNextSkin)  or (gamePad.get_button(controllerNextSkin)==1))):
                     player.nextSkin()
 
                 # PREVIOUS SPACESHIP SKIN
-                elif (event.type == pygame.KEYDOWN and event.key in leftInput) or (gamePad is not None and gamePad.get_numhats() > 0  and gamePad.get_hat(0) == controllerLastSkin):
+                elif (event.type == pygame.KEYDOWN and event.key in leftInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerLastSkin) or (gamePad.get_button(controllerLastSkin)==1))):
                     player.lastSkin()
 
                 # NEXT SHIP TYPE
-                elif (event.type == pygame.KEYDOWN and event.key in upInput) or (gamePad is not None and gamePad.get_numhats() > 0  and gamePad.get_hat(0)== controllerNextShip):
+                elif (event.type == pygame.KEYDOWN and event.key in upInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerNextShip) or (gamePad.get_button(controllerNextShip)==1))):
                     player.toggleSpaceShip(game,True)
 
                 # PREVIOUS SHIP TYPE
-                elif (event.type == pygame.KEYDOWN and event.key in downInput) or (gamePad is not None and gamePad.get_numhats() > 0 and gamePad.get_hat(0) == controllerLastShip):
+                elif (event.type == pygame.KEYDOWN and event.key in downInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerLastShip) or (gamePad.get_button(controllerLastShip)==1))):
                     player.toggleSpaceShip(game,False)
 
                 # EXIT
-                if (event.type == pygame.KEYDOWN and event.key == escapeInput) or (gamePad is not None and gamePad.get_button(controllerExit) == 1) or event.type == pygame.QUIT:
+                if (event.type == pygame.KEYDOWN and event.key in escapeInput) or (gamePad is not None and gamePad.get_button(controllerExit) == 1) or event.type == pygame.QUIT:
                     running = False
                     quitGame()
 
                 # MUTE
-                if (event.type == pygame.KEYDOWN) and (event.key == muteInput) or (gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
+                if (event.type == pygame.KEYDOWN) and (event.key in muteInput) or (gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
 
                 # CREDITS
-                if (event.type == pygame.KEYDOWN and event.key == creditsInput) or (gamePad is not None and gamePad.get_button(controllerCredits) == 1): menu.creditScreen()
+                if (event.type == pygame.KEYDOWN and event.key in creditsInput) or (gamePad is not None and gamePad.get_button(controllerCredits) == 1): menu.creditScreen()
 
                  # SWITCH CONTROL TYPE
                 if game.usingController and event.type == pygame.KEYDOWN:
@@ -1432,12 +1501,12 @@ class Menu:
                 if event.type == pygame.QUIT: quitGame()
 
                 # TOGGLE FULLSCREEN
-                if (event.type == pygame.KEYDOWN and event.key == fullScreenInput) or (gamePad is not None and gamePad.get_button(controllerFullScreen) == 1):
+                if (event.type == pygame.KEYDOWN and event.key in fullScreenInput) or (gamePad is not None and gamePad.get_button(controllerFullScreen) == 1):
                     pygame.mouse.set_visible(False)
                     screen = toggleScreen()
 
                 # UNPAUSE
-                if (event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_SPACE)) or (gamePad is not None and gamePad.get_button(controllerBack) == 1):
+                if (event.type == pygame.KEYDOWN and (event.key in escapeInput or event.key in startInput)) or (gamePad is not None and gamePad.get_button(controllerBack) == 1):
                     pygame.mixer.music.unpause()
                     paused = False
 
@@ -1548,21 +1617,21 @@ class Menu:
             for event in pygame.event.get():
 
                 # CREDITS
-                if event.type == pygame.KEYDOWN and event.key == creditsInput or (gamePad is not None and gamePad.get_button(controllerCredits) == 1): menu.creditScreen()
+                if event.type == pygame.KEYDOWN and event.key in creditsInput or (gamePad is not None and gamePad.get_button(controllerCredits) == 1): menu.creditScreen()
 
                 # EXIT
-                if (event.type == pygame.KEYDOWN and event.key == escapeInput) or (gamePad is not None and gamePad.get_button(controllerExit) == 1) or event.type == pygame.QUIT:
+                if (event.type == pygame.KEYDOWN and event.key in escapeInput) or (gamePad is not None and gamePad.get_button(controllerExit) == 1) or event.type == pygame.QUIT:
                     running = False
                     quitGame()
 
                 # TOGGLE FULLSCREEN
-                if (event.type == pygame.KEYDOWN and event.key == fullScreenInput) or (gamePad is not None and gamePad.get_button(controllerFullScreen) == 1):
+                if (event.type == pygame.KEYDOWN and event.key in fullScreenInput) or (gamePad is not None and gamePad.get_button(controllerFullScreen) == 1):
                     pygame.mouse.set_visible(False)
                     screen = toggleScreen()
 
                 # BACK TO MENU
-                elif (event.type == pygame.KEYDOWN and event.key == pygame.K_TAB) or gamePad is not None and gamePad.get_button(controllerMenu) == 1:
-                    if (event.type == pygame.KEYDOWN and event.key == pygame.K_TAB): game.usingController = False
+                elif (event.type == pygame.KEYDOWN and event.key in backInput) or gamePad is not None and gamePad.get_button(controllerMenu) == 1:
+                    if (event.type == pygame.KEYDOWN and event.key in backInput): game.usingController = False
                     elif (gamePad is not None and gamePad.get_button(controllerBack) == 1): game.usingController = True
                     game.reset(player,obstacles)
                     game.mainMenu = True
@@ -1570,8 +1639,8 @@ class Menu:
                     gameLoop()
 
                 # RESTART GAME
-                elif (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE) or gamePad is not None and gamePad.get_button(controllerSelect) == 1:
-                    if (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE): game.usingController = False
+                elif (event.type == pygame.KEYDOWN and event.key in startInput) or gamePad is not None and gamePad.get_button(controllerSelect) == 1:
+                    if (event.type == pygame.KEYDOWN and event.key in startInput): game.usingController = False
                     elif (gamePad is not None and gamePad.get_button(controllerSelect) == 1): game.usingController = True
                     game.reset(player,obstacles)
                     player.updatePlayerConstants(game)
@@ -1627,10 +1696,10 @@ class Menu:
                     quitGame()
 
                 # TOGGLE MUTE
-                if ((not useController or gamePad is None) and (event.type == pygame.KEYDOWN) and (event.key == muteInput) or gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
+                if ((not useController or gamePad is None) and (event.type == pygame.KEYDOWN) and (event.key in muteInput) or gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
 
                 # TOGGLE FULLSCREEN
-                if ( (not useController or gamePad is None) and event.type == pygame.KEYDOWN and event.key == fullScreenInput) or (gamePad is not None and gamePad.get_button(controllerFullScreen) == 1):
+                if ( (not useController or gamePad is None) and event.type == pygame.KEYDOWN and event.key in fullScreenInput) or (gamePad is not None and gamePad.get_button(controllerFullScreen) == 1):
                     pygame.mouse.set_visible(False)
                     screen = toggleScreen()
 
@@ -1639,7 +1708,7 @@ class Menu:
                     waitToSpawn = False
 
                 # RETURN TO GAME
-                elif (event.type == pygame.KEYDOWN and (event.key == pygame.K_ESCAPE or event.key == pygame.K_c or event.key == pygame.K_SPACE or event.key == pygame.K_TAB) ) or gamePad is not None and gamePad.get_button(controllerBack) == 1:
+                elif (event.type == pygame.KEYDOWN and (event.key in escapeInput or event.key in creditsInput or event.key in startInput or event.key in backInput) ) or gamePad is not None and gamePad.get_button(controllerBack) == 1:
                     rollCredits = False
 
             screen.fill(screenColor)
@@ -1850,7 +1919,7 @@ class Player(pygame.sprite.Sprite):
             if self.hasGuns and self.laserReady:
 
                 # KEYBOARD
-                if gamePad is None or not useController:
+                if gamePad is None or not game.usingController:
                     key = pygame.key.get_pressed()
                     if any(key[bind] for bind in shootInput) and self.fuel - self.laserCost > 0:
                         lasers.add(Laser(self,obstacles))
