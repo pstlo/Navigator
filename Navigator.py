@@ -824,7 +824,6 @@ class Game:
         screen.fill(screenColor)
         screen.blit(bgList[self.currentStage - 1][0], (0,0) )
 
-
         # CLOUD ANIMATION
         if showBackgroundCloud:
             cloudImg = bgList[self.currentStage - 1][1]
@@ -2111,6 +2110,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.active = False
         self.activating = False
         self.activationDelay = 0
+        self.slowerDiagonal = slowerDiagonalObstacles
 
 
     # For levels with multiple obstacle types
@@ -2135,23 +2135,16 @@ class Obstacle(pygame.sprite.Sprite):
 
     # BASIC MOVEMENT (8-direction) -> direction is a string
     def basicMove(self):
-        if slowerDiagonalObstacles: # Use sqrt(2) for correct diagonal movement
+        if self.slowerDiagonal: # Use sqrt(2) for correct diagonal movement
             if self.direction  == "N": self.rect.centery -= self.speed
             elif self.direction == "S": self.rect.centery += self.speed
             elif self.direction == "E": self.rect.centerx += self.speed
             elif self.direction == "W": self.rect.centerx -= self.speed
-            elif self.direction == "NE":
-                self.rect.centery -= self.speed / 1.414
-                self.rect.centerx -= self.speed / 1.414
-            elif self.direction == "NW":
-                self.rect.centery -= self.speed / 1.414
-                self.rect.centerx += self.speed / 1.414
-            elif self.direction == "SE":
-                self.rect.centery += self.speed / 1.414
-                self.rect.centerx -= self.speed / 1.414
-            elif self.direction == "SW":
-                self.rect.centery += self.speed / 1.414
-                self.rect.centerx += self.speed / 1.414
+            else:
+                if "N" in self.direction: self.rect.centery -= self.speed / 1.414
+                if "S" in self.direction: self.rect.centery += self.speed / 1.414
+                if "E" in self.direction: self.rect.centerx += self.speed / 1.414
+                if "W" in self.direction: self.rect.centerx -= self.speed / 1.414
         else:
             if "N" in self.direction: self.rect.centery -= self.speed
             if "S" in self.direction: self.rect.centery += self.speed
@@ -2372,7 +2365,7 @@ class Icon:
     def __init__(self):
         spins = [-1,1]
         self.speed = random.randint(1,maxIconSpeed)
-        self.movement = getMovement("ALL")
+        self.movement = getMovement("AGGRO")
         self.direction = self.movement[1]
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
         self.image = menuList[random.randint(5,len(menuList)-1)]
@@ -2435,7 +2428,7 @@ class BackgroundShip:
         self.speed = maxBackgroundShipSpeed/self.size
         if self.speed > maxBackgroundShipSpeed: self.speed = maxBackgroundShipSpeed
         elif self.speed < minBackgroundShipSpeed: self.speed = minBackgroundShipSpeed
-        self.movement = getMovement("ALL")
+        self.movement = getMovement("AGGRO")
         self.direction = self.movement[1]
         self.angle = getAngle(self.direction)
         self.text = text
@@ -2516,7 +2509,7 @@ def getMovement(spawnPattern):
     if spawnPattern == "AGGRO": top, bottom, left, right, = ["SE", "SW", "S"], ["N", "NE", "NW"], ["E", "NE", "SE"], ["NW", "SW", "W"]
     elif spawnPattern == "TOP": top = ["SE", "SW", "S"]
     elif spawnPattern == "VERT": top, bottom = ["SE", "SW", "S"], ["N", "NE", "NW"]
-    else: top, bottom, left, right = ["S", "E", "W", "SE", "SW"], ["N", "W", "E", "NE", "NW"], ["E", "S", "N", "NE", "SE"], ["W", "N", "S", "NW", "SW"] # Default / "All"
+    else: top, bottom, left, right = topDir, bottomDir, leftDir, rightDir # Default / "All"
 
     X = random.randint(screenSize[0] * 0.1, screenSize[0] * 0.99)
     Y = random.randint(screenSize[1] * 0.1, screenSize[1] * 0.99)
