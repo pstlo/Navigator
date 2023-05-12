@@ -1367,19 +1367,19 @@ class Menu:
                     screen = toggleScreen()
 
                 # NEXT SPACESHIP SKIN
-                elif (event.type == pygame.KEYDOWN and event.key in rightInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerNextSkin)  or (gamePad.get_button(controllerNextSkin)==1))):
+                elif (event.type == pygame.KEYDOWN and event.key in rightInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerNextSkin)  or (event.type == pygame.JOYBUTTONUP and gamePad.get_button(controllerNextSkin)==1))):
                     player.nextSkin()
 
                 # PREVIOUS SPACESHIP SKIN
-                elif (event.type == pygame.KEYDOWN and event.key in leftInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerLastSkin) or (gamePad.get_button(controllerLastSkin)==1))):
+                elif (event.type == pygame.KEYDOWN and event.key in leftInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerLastSkin) or (event.type == pygame.JOYBUTTONUP and gamePad.get_button(controllerLastSkin)==1))):
                     player.lastSkin()
 
                 # NEXT SHIP TYPE
-                elif (event.type == pygame.KEYDOWN and event.key in upInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerNextShip) or (gamePad.get_button(controllerNextShip)==1))):
+                elif (event.type == pygame.KEYDOWN and event.key in upInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerNextShip) or (event.type == pygame.JOYBUTTONUP and gamePad.get_button(controllerNextShip)==1))):
                     player.toggleSpaceShip(game,True)
 
                 # PREVIOUS SHIP TYPE
-                elif (event.type == pygame.KEYDOWN and event.key in downInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerLastShip) or (gamePad.get_button(controllerLastShip)==1))):
+                elif (event.type == pygame.KEYDOWN and event.key in downInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerLastShip) or (event.type == pygame.JOYBUTTONUP and gamePad.get_button(controllerLastShip)==1))):
                     player.toggleSpaceShip(game,False)
 
                 # EXIT
@@ -1402,7 +1402,7 @@ class Menu:
                     skinHelpDisplay = shipHelpFont.render("A/LEFT = Last skin     D/RIGHT = Next skin", True, helpColor)
                     shipHelpDisplay = shipHelpFont.render("S/DOWN = Last ship     W/UP = Next ship", True, helpColor)
 
-                elif gamePad is not None and not game.usingController and (event.type == pygame.JOYHATMOTION or event.type == pygame.JOYAXISMOTION or event.type == pygame.JOYBUTTONDOWN):
+                elif gamePad is not None and not game.usingController and (event.type == pygame.JOYHATMOTION or event.type == pygame.JOYAXISMOTION or event.type == pygame.JOYBUTTONUP):
                     game.usingController = True
                     startHelpDisplay = startHelpFont.render("START = Quit   A = Start   GUIDE = Fullscreen   LB = Mute   Y = Credits", True, helpColor)
                     boostHelp = shipHelpFont.render("LT = Boost", True, helpColor)
@@ -2098,7 +2098,7 @@ class Obstacle(pygame.sprite.Sprite):
 
 
     def getDirection(self,playerPos):
-        if self.target == "NONE": self.direction = self.movement[1]
+        if self.target == "NONE": self.direction = self.movement[1] # Get a string representation of the direction
         else: self.direction = math.atan2(playerPos[1] - self.rect.centery, playerPos[0] - self.rect.centerx)
 
 
@@ -2152,19 +2152,18 @@ class Obstacle(pygame.sprite.Sprite):
     # BOUNDARY HANDLING
     def bound(self,obstacles):
         if self.bounds == "KILL": # Remove obstacle
-            if self.rect.centerx > screenSize[0] or self.rect.centerx < 0:
+            if self.rect.left > screenSize[0] or self.rect.right < 0:
                 obstacles.remove(self)
                 self.kill()
-            elif self.rect.centery > screenSize[1] or self.rect.centery < 0:
+            elif self.rect.top > screenSize[1] or self.rect.bottom < 0:
                 obstacles.remove(self)
                 self.kill()
 
         elif self.bounds == "BOUNCE": # Bounce off walls
-            direction = self.direction
-            if self.rect.top  > screenSize[1]: self.direction = movementReverse(direction)
-            if self.rect.bottom < 0: self.direction = movementReverse(direction)
-            if self.rect.left > screenSize[0]: self.direction = movementReverse(direction)
-            if self.rect.right < 0: self.direction = movementReverse(direction)
+             if self.rect.top  > screenSize[1] or self.rect.bottom < 0 or self.rect.left > screenSize[0] or self.rect.right < 0:
+                if self.target == "NONE": self.movementReverse(self.direction)
+                else: self.direction = math.atan2(math.sin(self.direction + math.pi), math.cos(self.direction + math.pi))
+
 
         elif self.bounds == "WRAP": # Wrap around screen
             if self.rect.centery > screenSize[1]: self.rect.centery = 0
@@ -2175,7 +2174,7 @@ class Obstacle(pygame.sprite.Sprite):
 
     def activate(self):
         if not self.active:
-            if self.rect.right >= 0 or self.rect.left <= screenSize[0] or self.rect.top <= 0 or self.rect.bottom >= screenSize[1]: self.active = True
+            if ("W" in self.direction and self.rect.right >= 0) or ("E" in self.direction and self.rect.left <= screenSize[0]) or ("N" in self.direction and self.rect.top <= screenSize[1]) or ("S" in self.direction and self.rect.bottom >= 0): self.active = True
 
 
 
