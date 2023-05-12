@@ -823,7 +823,7 @@ class Game:
         # BACKGROUND
         screen.fill(screenColor)
         screen.blit(bgList[self.currentStage - 1][0], (0,0) )
-        if self.cave is not None: screen.blit(self.cave.background,self.cave.rect)
+
 
         # CLOUD ANIMATION
         if showBackgroundCloud:
@@ -844,17 +844,16 @@ class Game:
             if self.cave is None: # SPAWN A CAVE
                 self.cave = Caves(self.caveIndex)
                 if self.caveIndex + 1 < len(caveList) - 1: self.caveIndex+=1
-
             self.cave.update()
-            if self.cave.rect.top <= screenSize[1] and self.cave.rect.bottom >= 0:
-                screen.blit(self.cave.image,self.cave.rect) # DRAW CAVE
-                # COLLISION DETECTION
-                if pygame.sprite.collide_mask(self.cave,player):
-                    if player.shields > 0: player.shieldDown(events)
-                    else:
-                        player.explode(game,obstacles) # explosion
-                        if not self.musicMuted: explosionNoise.play()
-                        menu.gameOver(self,player,obstacles) # Game over
+            screen.blit(self.cave.background,self.cave.rect)
+            screen.blit(self.cave.image,self.cave.rect) # DRAW CAVE
+            # COLLISION DETECTION
+            if pygame.sprite.collide_mask(self.cave,player):
+                if player.shields > 0: player.shieldDown(events)
+                else:
+                    player.explode(game,obstacles) # explosion
+                    if not self.musicMuted: explosionNoise.play()
+                    menu.gameOver(self,player,obstacles) # Game over
 
         # EXITING CAVE
         elif self.cave is not None and self.cave.leave:
@@ -863,7 +862,15 @@ class Game:
                 self.cave = None
             else:
                 self.cave.update()
-                screen.blit(self.cave.image,self.cave.rect)
+                screen.blit(self.cave.background,self.cave.rect)
+                screen.blit(self.cave.image,self.cave.rect) # DRAW CAVE
+                # COLLISION DETECTION
+                if pygame.sprite.collide_mask(self.cave,player):
+                    if player.shields > 0: player.shieldDown(events)
+                    else:
+                        player.explode(game,obstacles) # explosion
+                        if not self.musicMuted: explosionNoise.play()
+                        menu.gameOver(self,player,obstacles) # Game over
 
         # HUD
         if showHUD: self.showHUD(player)
@@ -1482,10 +1489,10 @@ class Menu:
         while paused:
             screen.fill(screenColor)
             screen.blit(bgList[game.currentStage - 1][0], (0,0) )
-            if game.cave is not None: screen.blit(game.cave.background,game.cave.rect)
             game.showBackgroundCloud()
-
-            if game.cave is not None: screen.blit(game.cave.image,game.cave.rect)
+            if game.cave is not None:
+                screen.blit(game.cave.background,game.cave.rect)
+                screen.blit(game.cave.image,game.cave.rect) # Draw cave
 
             game.showHUD(player)
             screen.blit(game.thisPoint.image, game.thisPoint.rect)
@@ -1615,10 +1622,11 @@ class Menu:
             # BACKGROUND
             screen.fill(screenColor)
             screen.blit(bgList[game.currentStage - 1][0], (0,0) )
-            if game.cave is not None: screen.blit(game.cave.background,game.cave.rect)
             game.showBackgroundCloud()
+            if game.cave is not None:
+                screen.blit(game.cave.background,game.cave.rect)
+                screen.blit(game.cave.image,game.cave.rect) # Draw cave
 
-            if game.cave is not None: screen.blit(game.cave.image,game.cave.rect)
             screen.blit(player.finalImg,player.finalRect) # Explosion
 
             pygame.draw.rect(screen, screenColor, [gameOverRect.x - 12,gameOverRect.y + 4,gameOverRect.width + 16, gameOverRect.height - 16],0,10)
@@ -2042,9 +2050,10 @@ class Player(pygame.sprite.Sprite):
                 width = explosionList[self.explosionState].get_width()
                 screen.fill(screenColor)
                 screen.blit(bgList[game.currentStage - 1][0], (0,0) )
-                if game.cave is not None: screen.blit(game.cave.background,game.cave.rect)
                 game.showBackgroundCloud()
-                if game.cave is not None: screen.blit(game.cave.image,game.cave.rect) # Draw cave
+                if game.cave is not None:
+                    screen.blit(game.cave.background,game.cave.rect)
+                    screen.blit(game.cave.image,game.cave.rect) # Draw cave
 
                 # Draw obstacles during explosion
                 obstacleMove(self,obstacles)
