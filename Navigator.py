@@ -2161,7 +2161,7 @@ class Obstacle(pygame.sprite.Sprite):
 
         elif self.bounds == "BOUNCE": # Bounce off walls
              if self.rect.top  > screenSize[1] or self.rect.bottom < 0 or self.rect.left > screenSize[0] or self.rect.right < 0:
-                if self.target == "NONE": self.movementReverse(self.direction)
+                if self.target == "NONE": self.direction = movementReverse(self.direction)
                 else: self.direction = math.atan2(math.sin(self.direction + math.pi), math.cos(self.direction + math.pi))
 
 
