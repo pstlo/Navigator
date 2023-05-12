@@ -2127,7 +2127,6 @@ class Obstacle(pygame.sprite.Sprite):
             elif self.direction == "SW":
                 self.rect.centery += self.speed / 1.414
                 self.rect.centerx += self.speed / 1.414
-
         else:
             if "N" in self.direction: self.rect.centery -= self.speed
             if "S" in self.direction: self.rect.centery += self.speed
@@ -2174,7 +2173,11 @@ class Obstacle(pygame.sprite.Sprite):
 
     def activate(self):
         if not self.active:
-            if ("W" in self.direction and self.rect.right > 0) or ("E" in self.direction and self.rect.left < screenSize[0]) or ("N" in self.direction and self.rect.top < screenSize[1]) or ("S" in self.direction and self.rect.bottom > 0): self.active = True
+            if self.target == "NONE":
+                if ("W" in self.direction and self.rect.right > 0) or ("E" in self.direction and self.rect.left < screenSize[0]) or ("N" in self.direction and self.rect.top < screenSize[1]) or ("S" in self.direction and self.rect.bottom > 0): self.active = True
+            else:
+                x,y = math.cos(self.direction),math.sin(self.direction)
+                if (x > 0 and self.rect.right > 0) or (x < 0 and self.rect.left < screenSize[0]) or (y > 0 and self.rect.top < screenSize[1]) or (y < 0 and self.rect.bottom > 0): self.active = True
 
 
 
