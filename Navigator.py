@@ -2200,10 +2200,9 @@ class Obstacle(pygame.sprite.Sprite):
     def activate(self):
         if not self.active:
             if self.rect.right > 0 and self.rect.left < screenSize[0] and self.rect.bottom > 0 and self.rect.top < screenSize[1]: self.activating = True
-        if self.activating: 
+        if self.activating:
             if self.activationDelay >= activationDelay: self.active = True
             else: self.activationDelay +=1
-                                
 
 
     # VALIDATE OBSTACLE POSTITION
@@ -2215,7 +2214,6 @@ class Obstacle(pygame.sprite.Sprite):
             if self.rect.top < 0 or self.rect.bottom > screenSize[1]:
                 if self.direction == "W":self.rect.center = (screenSize[0], random.randint(screenSize[1]*0.02, screenSize[1]*0.98))
                 elif self.direction == "E":self.rect.center = (0, random.randint(screenSize[1]*0.02, screenSize[1]*0.98))
-
 
 
 
