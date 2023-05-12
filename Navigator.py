@@ -122,8 +122,8 @@ drawExhaust = True # Default = True
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
 defaultToHighSkin = True # Default = True / Default to highest skin unlocked on game launch
 defaultToHighShip = False # Default = False / Default to highest ship unlocked on game launch
-heatSeekDelay = 15
-heatSeekNeedsTarget = False
+heatSeekDelay = 15 # Default = False
+heatSeekNeedsTarget = False # Default = False
 playerMovement = "DEFAULT" # (DEFAULT, ORIGINAL)
 
 # KEY BINDS
@@ -149,6 +149,8 @@ levelUpCloudSpeed = 25 # Default = 25 / Only affects levels preceded by wipe
 # OBSTACLES
 explosionDelay = 1 # Default = 1
 slowerDiagonalObstacles = True # Default = True / use the hypotenuse or whatever
+spawnDistance = 0 # Default = 0 / Distance past screen border required before new obstacle spawned
+activationDelay = 2 # Default = 2 / frames before activation after entering screen
 
 # CAVES
 caveStartPos = screenSize[1]*-2 # Default = -1600 / Cave start Y coordinate
@@ -1109,6 +1111,7 @@ class Game:
     # REMOVE ALL OBSTACLES
     def killAllObstacles(self,obstacles):
         for obstacle in obstacles: obstacle.kill()
+        obstacles.empty()
 
 
     # HUD ( Needs optimization )
@@ -1710,7 +1713,7 @@ class Menu:
                     waitToSpawn = False
 
                 # RETURN TO GAME
-                elif (event.type == pygame.KEYDOWN and (event.key in escapeInput or event.key in creditsInput or event.key in startInput or event.key in backInput) ) or (gamePad is not None and gamePad.get_button(controllerBack) == 1 or gamePad.get_button(controllerCredits) == 1):
+                elif (event.type == pygame.KEYDOWN and (event.key in escapeInput or event.key in creditsInput or event.key in startInput or event.key in backInput) ) or (gamePad is not None and (gamePad.get_button(controllerBack) == 1 or gamePad.get_button(controllerCredits) == 1)):
                     rollCredits = False
 
             screen.fill(screenColor)
@@ -1834,6 +1837,7 @@ class Player(pygame.sprite.Sprite):
         # MOVEMENT
         def movement(self):
             if self.movementType == "DEFAULT": self.vectorMovement(True) # In progress
+            elif self.movementType == "ORIGINAL": self.vectorMovement(False)
             else: self.vectorMovement(False)
 
 
@@ -1885,8 +1889,8 @@ class Player(pygame.sprite.Sprite):
                     # KEYBOARD
                     if gamePad is None or not game.usingController:
                         key = pygame.key.get_pressed()
-                        if any(key[bind] for bind in boostInput) and ( any(key[bind] for bind in leftInput) and  any(key[bind] for bind in upInput) and any(key[bind] for bind in downInput) and any(key[bind] for bind in rightInput) ):
-                            pass # Cannot boost with all directional inputs held together
+                        if (any(key[bind] for bind in brakeInput)) or (any(key[bind] for bind in boostInput) and ( any(key[bind] for bind in leftInput) and  any(key[bind] for bind in upInput) and any(key[bind] for bind in downInput) and any(key[bind] for bind in rightInput) )):
+                            return # Cannot boost with all directional inputs held together
 
                         elif any(key[bind] for bind in boostInput) and ( any(key[bind] for bind in leftInput) or any(key[bind] for bind in upInput) or any(key[bind] for bind in downInput) or any(key[bind] for bind in rightInput)):
                             self.speed = self.boostSpeed
@@ -2085,10 +2089,13 @@ class Obstacle(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (self.size, self.size)).convert_alpha()
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
         self.getDirection(playerPos)
+        self.validate()
         self.angle = 0 # Image rotation
         spins = [-1,1]
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
         self.active = False
+        self.activating = False
+        self.activationDelay = 0
 
 
     # For levels with multiple obstacle types
@@ -2154,17 +2161,33 @@ class Obstacle(pygame.sprite.Sprite):
     # BOUNDARY HANDLING
     def bound(self,obstacles):
         if self.bounds == "KILL": # Remove obstacle
-            if self.rect.left > screenSize[0] or self.rect.right < 0:
+            if self.rect.left > screenSize[0] + spawnDistance or self.rect.right < -spawnDistance:
                 obstacles.remove(self)
                 self.kill()
-            elif  self.rect.top > screenSize[1] or self.rect.bottom < 0:
+            elif  self.rect.top > screenSize[1] + spawnDistance or self.rect.bottom < 0 - spawnDistance:
                 obstacles.remove(self)
                 self.kill()
 
         elif self.bounds == "BOUNCE": # Bounce off walls
-             if self.rect.top > screenSize[1] or self.rect.bottom < 0 or self.rect.left > screenSize[0] or self.rect.right < 0:
+            if self.rect.left < 0:
                 if self.target == "NONE": self.direction = movementReverse(self.direction)
                 else: self.direction = math.atan2(math.sin(self.direction + math.pi), math.cos(self.direction + math.pi))
+                self.rect.left = 1
+
+            elif self.rect.right > screenSize[0]:
+                if self.target == "NONE": self.direction = movementReverse(self.direction)
+                else: self.direction = math.atan2(math.sin(self.direction + math.pi), math.cos(self.direction + math.pi))
+                self.rect.right = screenSize[0] - 1
+
+            elif self.rect.top < 0:
+                if self.target == "NONE": self.direction = movementReverse(self.direction)
+                else: self.direction = math.atan2(math.sin(self.direction + math.pi), math.cos(self.direction + math.pi))
+                self.rect.top = 1
+
+            elif self.rect.bottom > screenSize[1]:
+                if self.target == "NONE": self.direction = movementReverse(self.direction)
+                else: self.direction = math.atan2(math.sin(self.direction + math.pi), math.cos(self.direction + math.pi))
+                self.rect.bottom = screenSize[1]-1
 
         elif self.bounds == "WRAP": # Wrap around screen
             if self.rect.centery > screenSize[1]: self.rect.centery = 0
@@ -2173,19 +2196,26 @@ class Obstacle(pygame.sprite.Sprite):
             if self.rect.centerx < 0: self.rect.centerx = screenSize[0]
 
 
+    # ACTIVATE OBSTACLE
     def activate(self):
         if not self.active:
-            if self.target == "NONE": # Simple directions
-                if "N" in self.direction and self.rect.top <= screenSize[1]: self.active = True
-                elif "S" in self.direction and self.rect.bottom >= 0: self.active = True
-                elif "W" in self.direction and self.rect.left <= screenSize[0]: self.active = True
-                elif "E" in self.direction and self.rect.right >= 0: self.active = True
-            else:
-                x,y = math.cos(self.direction),math.sin(self.direction)
-                if y > 0 and self.rect.top <= screenSize[1]: self.active = True
-                elif y < 0 and self.rect.bottom >= 0: self.active = True
-                elif x < 0 and self.rect.left <= screenSize[0]: self.active = True
-                elif x > 0 and self.rect.right >= 0: self.active = True
+            if self.rect.right > 0 and self.rect.left < screenSize[0] and self.rect.bottom > 0 and self.rect.top < screenSize[1]: self.activating = True
+        if self.activating: 
+            if self.activationDelay >= activationDelay: self.active = True
+            else: self.activationDelay +=1
+                                
+
+
+    # VALIDATE OBSTACLE POSTITION
+    def validate(self):
+        if type(self.direction) == str:
+            if self.rect.right > screenSize[0] or self.rect.left < 0:
+                if self.direction == "N": self.rect.center = (random.randint(screenSize[0]*0.02, screenSize[0]*0.98) , screenSize[1])
+                elif self.direction == "S": self.rect.center= (random.randint(screenSize[0]*0.02, screenSize[0]*0.98) , 0)
+            if self.rect.top < 0 or self.rect.bottom > screenSize[1]:
+                if self.direction == "W":self.rect.center = (screenSize[0], random.randint(screenSize[1]*0.02, screenSize[1]*0.98))
+                elif self.direction == "E":self.rect.center = (0, random.randint(screenSize[1]*0.02, screenSize[1]*0.98))
+
 
 
 
@@ -2473,10 +2503,10 @@ def getMovement(spawnPattern):
     if spawnPattern == "AGGRO": top, bottom, left, right, = ["SE", "SW", "S"], ["N", "NE", "NW"], ["E", "NE", "SE"], ["NW", "SW", "W"]
     elif spawnPattern == "TOP": top = ["SE", "SW", "S"]
     elif spawnPattern == "VERT": top, bottom = ["SE", "SW", "S"], ["N", "NE", "NW"]
-    else: top, bottom, left, right = topDir, bottomDir, leftDir, rightDir # Default / "All"
+    else: top, bottom, left, right = ["S", "E", "W", "SE", "SW"], ["N", "W", "E", "NE", "NW"], ["E", "S", "N", "NE", "SE"], ["W", "N", "S", "NW", "SW"] # Default / "All"
 
-    X = random.randint(0, screenSize[0])
-    Y = random.randint(0, screenSize[1])
+    X = random.randint(screenSize[0] * 0.1, screenSize[0] * 0.99)
+    Y = random.randint(screenSize[1] * 0.1, screenSize[1] * 0.99)
 
     lowerX = random.randint(-1,0)
     upperX =  random.randint(screenSize[0], screenSize[0] + 1)
@@ -2484,12 +2514,12 @@ def getMovement(spawnPattern):
     upperY = random.randint(screenSize[1],screenSize[1] + 1)
 
     possible = []
-    if len(top) != 0: possible.append([X, lowerY, top[random.randint(0, len(top) - 1)]])
-    if len(bottom) != 0: possible.append([X, upperY, bottom[random.randint(0, len(bottom) - 1)]])
-    if len(left) != 0: possible.append([lowerX, Y, left[random.randint(0, len(left) - 1)]])
-    if len(right) != 0: possible.append([upperX, Y, right[random.randint(0, len(right) - 1)]])
+    if len(top) != 0: possible.append([X, lowerY, random.choice(top)])
+    if len(bottom) != 0: possible.append([X, upperY, random.choice(bottom)])
+    if len(left) != 0: possible.append([lowerX, Y, random.choice(left)])
+    if len(right) != 0: possible.append([upperX, Y, random.choice(right)])
 
-    movement = possible[ random.randint(0, len(possible) - 1) ]
+    movement = random.choice(possible)
     position = [movement[0], movement[1]]
     direction = movement[2]
     move = [position,direction]
