@@ -294,7 +294,7 @@ controllerBinds = {
 
     'XB': # Xbox controller
         {
-        'name': "Xbox One Controller",
+        'name': "Controller (Xbox One For Windows)",
         'moveX': 0,
         'moveY': 1,
         'rotX' : 2,
@@ -791,7 +791,7 @@ class Game:
             if (event.type == pygame.KEYDOWN and event.key in muteInput) or (gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
 
             # PAUSE GAME
-            if ( (game.pauseCount < pauseMax and event.type == pygame.KEYDOWN and event.key in pauseInput) or (gamePad is not None and gamePad.get_button(controllerPause)==1) ):
+            if game.pauseCount < pauseMax and ( (event.type == pygame.KEYDOWN and event.key in pauseInput) or (gamePad is not None and event.type == pygame.JOYBUTTONDOWN and gamePad.get_button(controllerPause)==1) ):
                 game.pauseCount += 1
                 menu.pause(game,player,obstacles,lasers)
 
@@ -1362,24 +1362,25 @@ class Menu:
                     return
 
                 # TOGGLE FULLSCREEN
-                if (event.type == pygame.KEYDOWN and event.key in fullScreenInput) or (gamePad is not None and gamePad.get_button(controllerFullScreen) == 1):
+                if (event.type == pygame.KEYDOWN and event.key in fullScreenInput) or (gamePad is not None and event.type == pygame.JOYBUTTONDOWN and gamePad.get_button(controllerFullScreen) == 1):
                     pygame.mouse.set_visible(False)
                     screen = toggleScreen()
 
+
                 # NEXT SPACESHIP SKIN
-                elif (event.type == pygame.KEYDOWN and event.key in rightInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerNextSkin)  or (event.type == pygame.JOYBUTTONUP and gamePad.get_button(controllerNextSkin)==1))):
+                elif (event.type == pygame.KEYDOWN and event.key in rightInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerNextSkin) or (event.type == pygame.JOYBUTTONUP and type(controllerNextSkin) == int and gamePad.get_button(controllerNextSkin)==1))):
                     player.nextSkin()
 
                 # PREVIOUS SPACESHIP SKIN
-                elif (event.type == pygame.KEYDOWN and event.key in leftInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerLastSkin) or (event.type == pygame.JOYBUTTONUP and gamePad.get_button(controllerLastSkin)==1))):
+                elif (event.type == pygame.KEYDOWN and event.key in leftInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerLastSkin) or (event.type == pygame.JOYBUTTONUP and type(controllerNextSkin) == int and gamePad.get_button(controllerLastSkin)==1))):
                     player.lastSkin()
 
                 # NEXT SHIP TYPE
-                elif (event.type == pygame.KEYDOWN and event.key in upInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerNextShip) or (event.type == pygame.JOYBUTTONUP and gamePad.get_button(controllerNextShip)==1))):
+                elif (event.type == pygame.KEYDOWN and event.key in upInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerNextShip) or (event.type == pygame.JOYBUTTONUP and type(controllerNextSkin) == int and gamePad.get_button(controllerNextShip)==1))):
                     player.toggleSpaceShip(game,True)
 
                 # PREVIOUS SHIP TYPE
-                elif (event.type == pygame.KEYDOWN and event.key in downInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerLastShip) or (event.type == pygame.JOYBUTTONUP and gamePad.get_button(controllerLastShip)==1))):
+                elif (event.type == pygame.KEYDOWN and event.key in downInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerLastShip) or (event.type == pygame.JOYBUTTONUP and type(controllerNextSkin) == int and gamePad.get_button(controllerLastShip)==1))):
                     player.toggleSpaceShip(game,False)
 
                 # EXIT
@@ -1501,12 +1502,12 @@ class Menu:
                 if event.type == pygame.QUIT: quitGame()
 
                 # TOGGLE FULLSCREEN
-                if (event.type == pygame.KEYDOWN and event.key in fullScreenInput) or (gamePad is not None and gamePad.get_button(controllerFullScreen) == 1):
+                if (event.type == pygame.KEYDOWN and event.key in fullScreenInput) or (gamePad is not None and event.type == pygame.JOYBUTTONDOWN and gamePad.get_button(controllerFullScreen) == 1):
                     pygame.mouse.set_visible(False)
                     screen = toggleScreen()
 
                 # UNPAUSE
-                if (event.type == pygame.KEYDOWN and (event.key in escapeInput or event.key in startInput)) or (gamePad is not None and gamePad.get_button(controllerBack) == 1):
+                if (event.type == pygame.KEYDOWN and (event.key in escapeInput or event.key in startInput)) or (gamePad is not None and event.type == pygame.JOYBUTTONDOWN and (gamePad.get_button(controllerBack) == 1 or gamePad.get_button(controllerPause) == 1)):
                     pygame.mixer.music.unpause()
                     paused = False
 
@@ -1625,7 +1626,7 @@ class Menu:
                     quitGame()
 
                 # TOGGLE FULLSCREEN
-                if (event.type == pygame.KEYDOWN and event.key in fullScreenInput) or (gamePad is not None and gamePad.get_button(controllerFullScreen) == 1):
+                if (event.type == pygame.KEYDOWN and event.key in fullScreenInput) or (gamePad is not None and event.type == pygame.JOYBUTTONDOWN and gamePad.get_button(controllerFullScreen) == 1):
                     pygame.mouse.set_visible(False)
                     screen = toggleScreen()
 
@@ -1686,20 +1687,17 @@ class Menu:
             else: extrasCap = maxExtras
 
         while rollCredits:
-
             menuMusicLoop()
-
             for event in pygame.event.get():
-
                 if event.type == pygame.QUIT:
                     running = False
                     quitGame()
 
                 # TOGGLE MUTE
-                if ((not useController or gamePad is None) and (event.type == pygame.KEYDOWN) and (event.key in muteInput) or gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
+                if ((event.type == pygame.KEYDOWN) and (event.key in muteInput)) or (gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
 
                 # TOGGLE FULLSCREEN
-                if ( (not useController or gamePad is None) and event.type == pygame.KEYDOWN and event.key in fullScreenInput) or (gamePad is not None and gamePad.get_button(controllerFullScreen) == 1):
+                if ( event.type == pygame.KEYDOWN and event.key in fullScreenInput) or (gamePad is not None and event.type == pygame.JOYBUTTONDOWN and gamePad.get_button(controllerFullScreen) == 1):
                     pygame.mouse.set_visible(False)
                     screen = toggleScreen()
 
@@ -1708,7 +1706,7 @@ class Menu:
                     waitToSpawn = False
 
                 # RETURN TO GAME
-                elif (event.type == pygame.KEYDOWN and (event.key in escapeInput or event.key in creditsInput or event.key in startInput or event.key in backInput) ) or gamePad is not None and gamePad.get_button(controllerBack) == 1:
+                elif (event.type == pygame.KEYDOWN and (event.key in escapeInput or event.key in creditsInput or event.key in startInput or event.key in backInput) ) or (gamePad is not None and gamePad.get_button(controllerBack) == 1 or gamePad.get_button(controllerCredits) == 1):
                     rollCredits = False
 
             screen.fill(screenColor)
@@ -2099,7 +2097,7 @@ class Obstacle(pygame.sprite.Sprite):
 
     def getDirection(self,playerPos):
         if self.target == "NONE": self.direction = self.movement[1] # Get a string representation of the direction
-        else: self.direction = math.atan2(playerPos[1] - self.rect.centery, playerPos[0] - self.rect.centerx)
+        else: self.direction = math.atan2(playerPos[1] - self.rect.centery, playerPos[0] - self.rect.centerx) # Get angle representation
 
 
     def move(self,player):
