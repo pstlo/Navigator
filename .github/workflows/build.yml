@@ -63,7 +63,7 @@ jobs:
 
   build-windows-c:
     runs-on: windows-latest
-    name: Build Navigator for Windows
+    name: Build Navigator for Windows C
 
     steps:
       - name: Download code on Windows
@@ -146,7 +146,7 @@ jobs:
 
   build-macos-intel-c:
     runs-on: macos-latest
-    name: Build Navigator for MacOS (Intel Based)
+    name: Build Navigator for MacOS C (Intel Based)
 
     steps:
       - name: Download code on MacOS (Intel Based)
