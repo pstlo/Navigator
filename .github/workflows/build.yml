@@ -144,7 +144,7 @@ jobs:
       - name: Include license and notice in MacOS (Intel Based) C artifact
         uses: actions/upload-artifact@v3
         with:
-          name: MacOSIntelC
+          name: NavigatorMacOSIntelC
           path: |
             ${{ github.workspace }}/LICENSE
             ${{ github.workspace }}/NOTICE
