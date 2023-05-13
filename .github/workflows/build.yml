@@ -175,11 +175,11 @@ jobs:
 
       - name: Build MacOS (Intel Based) Cython app
         run: |
-            pip install cython
-            pip install setuptools
-			mv "${{ github.workspace }}/.github/Cython/"* "${{ github.workspace }}"
-            python SetupCython.py build_ext --inplace
-            pyinstaller -y --name Navigator --noconsole --add-data Assets:Assets -i ".github/Icon.icns" Main.py
+          pip install cython
+          pip install setuptools
+          mv ${{github.workspace}}/.github/Cython/* ${{github.workspace}}
+          python SetupCython.py build_ext --inplace
+          pyinstaller -y --name Navigator --noconsole --add-data Assets:Assets -i ".github/Icon.icns" Main.py
 
       - name: Upload MacOS (Intel Based) C artifact
         uses: actions/upload-artifact@v3
