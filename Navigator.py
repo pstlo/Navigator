@@ -190,10 +190,7 @@ def getScreen():
         if fullScreen: return pygame.display.set_mode(screenSize, pygame.FULLSCREEN | pygame.DOUBLEBUF | pygame.SCALED , depth = 16)
         else: return pygame.display.set_mode(screenSize,pygame.DOUBLEBUF,depth=16)
     elif qualityMode:
-        if fullScreen:
-            for resolution in pygame.display.list_modes():
-                if resolution[0] >= screenSize[0] and resolution[1] >= screenSize[1]:
-                    return pygame.display.set_mode(screenSize, pygame.FULLSCREEN| pygame.NOFRAME | pygame.SRCALPHA,depth = 32)
+        if fullScreen: return pygame.display.set_mode(screenSize, pygame.FULLSCREEN| pygame.NOFRAME | pygame.SRCALPHA,depth = 32)
         else: return pygame.display.set_mode(screenSize, pygame.NOFRAME | pygame.SRCALPHA,depth = 32)
     # Default
     else:
@@ -282,6 +279,7 @@ pygame.draw.line(curSurf, (0, 255, 0), (20, 10), (20, 30), cursorThickness)
 cursor = pygame.cursors.Cursor((20, 20), curSurf)
 pygame.mouse.set_cursor(cursor)
 pygame.mouse.set_visible(cursorMode)
+
 
 def resetCursor():
     if cursorMode:
