@@ -39,7 +39,7 @@ jobs:
         run: |
             pip install cython
             pip install setuptools
-            move ${{ github.workspace }}/.github/Cython ${{ github.workspace }}
+            move ${{ github.workspace }}/.github/Cython/* ${{ github.workspace }}
             python ${{ github.workspace }}/SetupCython.py build_ext --inplace ${{ github.workspace }}
             pyinstaller --name Navigator --onefile --noconsole --add-data "${{ github.workspace }}/Assets;Assets" -i "${{ github.workspace }}/.github/Icon.ico" --version-file "${{ github.workspace }}/.github/version.txt" "${{ github.workspace }}/Main.py"
 
