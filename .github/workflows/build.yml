@@ -177,7 +177,7 @@ jobs:
         run: |
             pip install cython
             pip install setuptools
-			mv ${{ github.workspace }}/.github/Cython/* ${{ github.workspace }}
+			mv "${{ github.workspace }}/.github/Cython/"* "${{ github.workspace }}"
             python SetupCython.py build_ext --inplace
             pyinstaller -y --name Navigator --noconsole --add-data Assets:Assets -i ".github/Icon.icns" Main.py
 
