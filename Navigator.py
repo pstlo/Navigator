@@ -47,7 +47,7 @@ powerUpList = ["Shield", "Fuel", "Default", "Default"] # Shield/Fuel/Default, ch
 playerShieldSize = 48 # Default = 64 / Shield visual size
 shieldVisualDuration = 250 # Default = 250 / Shield visual duration
 minDistanceToPoint = (screenSize[0] + screenSize[1]) / 16 # Default = 100
-maxRandomAttempts = 100 # For random generator distances / max random attempts at finding a valid point
+maxRandomAttempts = 100 # Default = 100 / For random generator distances / max random attempts at finding a valid point
 
 # BACKGROUND CLOUD
 showBackgroundCloud = True # Default = True
@@ -115,7 +115,9 @@ musicLoopStart = 25000 # Default = 25000
 musicLoopEnd = 76000 # Default = 76000
 
 # PLAYER
-cursorMode = False
+cursorMode = True
+cursorFollowDistance = 30 # Default = 30
+cursorRotateDistance = 15 # Default = 15
 useController = True
 drawExhaust = True # Default = True
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
@@ -806,6 +808,7 @@ class Game:
                 }
 
         self.usingController = useController
+        self.usingCursor = False
 
 
     # MAIN GAME LOOP
@@ -911,7 +914,7 @@ class Game:
             self.thisPoint = Point(player,self.lastPointPos) # spawn new point
 
         # UPDATE PLAYER
-        player.movement()
+        player.movement(self)
         player.shoot(self,lasers,events,obstacles)
         player.boost(self,events)
         player.wrapping()
@@ -1031,7 +1034,7 @@ class Game:
     def alternateUpdate(self,player,obstacles,events):
         for event in pygame.event.get(): pass # Movement during stage-up animation does not work without this loop for some reason?
 
-        player.movement()
+        player.movement(self)
         player.wrapping()
         screen.fill(screenColor)
         screen.blit(bgList[self.currentStage - 1][0], (0,0) )
@@ -1381,9 +1384,18 @@ class Menu:
 
             for event in pygame.event.get():
                 # START
-                if (event.type == pygame.KEYDOWN and event.key in startInput) or (gamePad is not None and gamePad.get_button(controllerSelect) == 1):
-                    if (event.type == pygame.KEYDOWN and event.key in startInput): game.usingController = False
-                    elif (gamePad is not None and gamePad.get_button(controllerSelect) == 1): game.usingController = True
+                if (event.type == pygame.KEYDOWN and event.key in startInput) or (gamePad is not None and gamePad.get_button(controllerSelect) == 1) or (event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]==1):
+                    if (event.type == pygame.KEYDOWN and event.key in startInput):
+                        game.usingCursor, game.usingController = False, False
+                        pygame.mouse.set_visible(False)
+
+                    elif (gamePad is not None and gamePad.get_button(controllerSelect) == 1):
+                        game.usingController,game.usingCursor = True,False
+                        pygame.mouse.set_visible(False)
+
+                    elif (event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]==1):
+                        game.usingCursor, game.usingController = True, False
+                        pygame.mouse.set_visible(True)
 
                     game.savedSkin = player.currentImageNum
 
@@ -1561,6 +1573,9 @@ class Menu:
         game.thisPoint = Point(None,None)
         pygame.mixer.music.stop()
 
+        # Show cursor
+        pygame.mouse.set_visible(cursorMode)
+
         # Update game records
         newLongRun = False
         newHighScore = False
@@ -1673,18 +1688,22 @@ class Menu:
                     toggleScreen()
 
                 # BACK TO MENU
-                elif (event.type == pygame.KEYDOWN and event.key in backInput) or gamePad is not None and gamePad.get_button(controllerMenu) == 1:
-                    if (event.type == pygame.KEYDOWN and event.key in backInput): game.usingController = False
-                    elif (gamePad is not None and gamePad.get_button(controllerBack) == 1): game.usingController = True
+                elif (event.type == pygame.KEYDOWN and event.key in backInput) or (gamePad is not None and gamePad.get_button(controllerMenu) == 1) or (event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[2] == 1):
+                    if (event.type == pygame.KEYDOWN and event.key in backInput): game.usingController,game.usingCursor = False,False
+                    elif (gamePad is not None and gamePad.get_button(controllerBack) == 1): game.usingController,game.usingCursor = True,False
+                    elif (event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[1]==1): game.usingCursor, game.usingController = True, False
+                    pygame.mouse.set_visible(cursorMode) # Show cursor at menu
                     game.reset(player,obstacles)
                     game.mainMenu = True
                     game.skipAutoSkinSelect = True
                     gameLoop()
 
                 # RESTART GAME
-                elif (event.type == pygame.KEYDOWN and event.key in startInput) or gamePad is not None and gamePad.get_button(controllerSelect) == 1:
-                    if (event.type == pygame.KEYDOWN and event.key in startInput): game.usingController = False
-                    elif (gamePad is not None and gamePad.get_button(controllerSelect) == 1): game.usingController = True
+                elif (event.type == pygame.KEYDOWN and event.key in startInput) or (gamePad is not None and gamePad.get_button(controllerSelect) == 1) or (event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] == 1):
+                    if (event.type == pygame.KEYDOWN and event.key in backInput): game.usingController,game.usingCursor = False,False
+                    elif (gamePad is not None and gamePad.get_button(controllerBack) == 1): game.usingController,game.usingCursor = True,False
+                    elif (event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]==1): game.usingCursor, game.usingController = True, False
+                    pygame.mouse.set_visible(game.usingCursor)
                     game.reset(player,obstacles)
                     player.updatePlayerConstants(game)
                     running = True
@@ -1869,18 +1888,18 @@ class Player(pygame.sprite.Sprite):
 
 
         # MOVEMENT
-        def movement(self):
-            if self.movementType == "DEFAULT": self.vectorMovement(True) # In progress
+        def movement(self,game):
+            if self.movementType == "DEFAULT": self.vectorMovement(True)
             elif self.movementType == "ORIGINAL": self.vectorMovement(False)
-            else: self.vectorMovement(False)
+            else: self.vectorMovement(True)
 
 
         # VECTOR BASED MOVEMENT
         def vectorMovement(self,defaultMovement):
             # KEYBOARD
-            if not game.usingController:
+            if not game.usingController and not game.usingCursor:
                 key = pygame.key.get_pressed()
-                direction = pygame.Vector2(0, 0)
+                direction = pygame.Vector2(0, 0) # Get new vector
                 if any(key[bind] for bind in upInput): direction += pygame.Vector2(0, -1)
                 if any(key[bind] for bind in downInput): direction += pygame.Vector2(0, 1)
                 if any(key[bind] for bind in leftInput): direction += pygame.Vector2(-1, 0)
@@ -1894,8 +1913,7 @@ class Player(pygame.sprite.Sprite):
 
             # CONTROLLER
             elif gamePad is not None and game.usingController:
-                direction = pygame.Vector2(0, 0)
-
+                direction = pygame.Vector2(0, 0) # Get new vector
                 xLeft = gamePad.get_axis(controllerMoveX)
                 yLeft = gamePad.get_axis(controllerMoveY)
                 xRight = gamePad.get_axis(controllerRotateX)
@@ -1915,13 +1933,26 @@ class Player(pygame.sprite.Sprite):
                     if not braking: self.rect.move_ip(direction * self.speed) # MOVE PLAYER
                     if direction.x != 0 or direction.y != 0:self.angle = direction.angle_to(pygame.Vector2(0, -1)) # GET PLAYER ANGLE
 
+            # CURSOR BASED MOVEMENT
+            elif game.usingCursor:
+                cursorX, cursorY = pygame.mouse.get_pos()
+                if math.dist(self.rect.center,(cursorX,cursorY)) >= cursorRotateDistance:
+                    cursorDirection = pygame.Vector2(cursorX, cursorY)
+                    direction = cursorDirection - pygame.Vector2(self.rect.centerx, self.rect.centery)
+                    if direction.magnitude_squared() > 0: direction.normalize_ip()
+                    velocity = direction * self.speed
+                    self.angle = direction.angle_to(pygame.Vector2(0, -1))
+                    if math.dist(self.rect.center,(cursorX,cursorY)) >= cursorFollowDistance:
+                        self.rect.centerx += velocity.x
+                        self.rect.centery += velocity.y
+
 
         # SPEED BOOST
         def boost(self,game,events):
             if self.boostReady:
                 if self.fuel - self.boostDrain > self.boostDrain:
                     # KEYBOARD
-                    if gamePad is None or not game.usingController:
+                    if (gamePad is None or not game.usingController) and (not game.usingCursor):
                         key = pygame.key.get_pressed()
                         if (any(key[bind] for bind in brakeInput)) or (any(key[bind] for bind in boostInput) and ( any(key[bind] for bind in leftInput) and  any(key[bind] for bind in upInput) and any(key[bind] for bind in downInput) and any(key[bind] for bind in rightInput) )):
                             return # Cannot boost with all directional inputs held together
@@ -1936,11 +1967,23 @@ class Player(pygame.sprite.Sprite):
                         else: self.speed = self.baseSpeed
 
                     # CONTROLLER
-                    else:
+                    elif game.usingController and not game.usingCursor:
                         xTilt,yTilt = gamePad.get_axis(controllerMoveX),gamePad.get_axis(controllerMoveY)
                         xRot,yRot = gamePad.get_axis(controllerRotateX),gamePad.get_axis(controllerRotateY)
                         if (abs(xRot) > 0.1 and abs(yRot) > 0.1) or (abs(xTilt) <= 0.1 and abs(yTilt) <= 0.1): pass # Cannot boost in place
                         elif (abs(xTilt) > 0.1 or abs(yTilt)) > 0.1 and gamePad.get_axis(controllerBoost) > 0.5:
+                            self.speed = self.boostSpeed
+                            self.fuel -= self.boostDrain
+                            if not self.boosting: self.boosting = True
+                            if self.boostState + 1 < len(spaceShipList[game.savedShipLevel]['boost']): self.boostState += 1
+                            else: self.boostState = 0
+
+                        else: self.speed = self.baseSpeed
+
+                    elif game.usingCursor:
+                        button = pygame.mouse.get_pressed()
+                        pygame.mouse.get_pos()
+                        if math.dist(self.rect.center,pygame.mouse.get_pos()) >= cursorFollowDistance and pygame.mouse.get_pressed()[2] == 1:
                             self.speed = self.boostSpeed
                             self.fuel -= self.boostDrain
                             if not self.boosting: self.boosting = True
@@ -1960,7 +2003,7 @@ class Player(pygame.sprite.Sprite):
             if self.hasGuns and self.laserReady:
 
                 # KEYBOARD
-                if gamePad is None or not game.usingController:
+                if (gamePad is None or not game.usingController) and (not game.usingCursor):
                     key = pygame.key.get_pressed()
                     if any(key[bind] for bind in shootInput) and self.fuel - self.laserCost > 0:
                         lasers.add(Laser(self,obstacles))
@@ -1969,8 +2012,16 @@ class Player(pygame.sprite.Sprite):
                         events.laserCharge(self)
 
                 # CONTROLLER
-                else:
+                elif game.usingController and not game.usingCursor:
                     if gamePad.get_axis(controllerShoot) > 0.5 and self.fuel - self.laserCost > 0:
+                        lasers.add(Laser(self,obstacles))
+                        if not game.musicMuted: laserNoise.play()
+                        self.fuel -= self.laserCost
+                        events.laserCharge(self)
+
+                # CURSOR
+                elif game.usingCursor:
+                    if pygame.mouse.get_pressed()[0]== 1 and self.fuel - self.laserCost > 0:
                         lasers.add(Laser(self,obstacles))
                         if not game.musicMuted: laserNoise.play()
                         self.fuel -= self.laserCost
@@ -2312,6 +2363,12 @@ class Laser(pygame.sprite.Sprite):
             speed = self.speed / 1.414 # sqrt(2)
             self.rect.centery += speed + player.speed
             self.rect.centerx += speed + player.speed
+        else:
+            angle = math.radians( (self.angle-90))
+            velX = self.speed * math.cos(angle)
+            velY = self.speed * math.sin(angle)
+            self.rect.centerx -= velX
+            self.rect.centery += velY
 
 
     def homingMove(self,player,lasers,obstacles):
