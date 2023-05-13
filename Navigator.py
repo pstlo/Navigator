@@ -13,8 +13,6 @@ pygame.display.init()
 pygame.font.init()
 pygame.mixer.init()
 
-pygame.mouse.set_visible(False)
-
 version = "v0.4.8"
 #------------------GAME CONSTANTS--------------------------------------------------------------------------
 # SCREEN
@@ -117,12 +115,13 @@ musicLoopStart = 25000 # Default = 25000
 musicLoopEnd = 76000 # Default = 76000
 
 # PLAYER
+cursorMode = False
 useController = True
 drawExhaust = True # Default = True
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
 defaultToHighSkin = True # Default = True / Default to highest skin unlocked on game launch
 defaultToHighShip = False # Default = False / Default to highest ship unlocked on game launch
-heatSeekDelay = 15 # Default = False
+heatSeekDelay = 15 # Default = 15
 heatSeekNeedsTarget = False # Default = False
 playerMovement = "DEFAULT" # (DEFAULT, ORIGINAL)
 
@@ -191,12 +190,15 @@ def getScreen():
         if fullScreen: return pygame.display.set_mode(screenSize, pygame.FULLSCREEN | pygame.DOUBLEBUF | pygame.SCALED , depth = 16)
         else: return pygame.display.set_mode(screenSize,pygame.DOUBLEBUF,depth=16)
     elif qualityMode:
-        if fullScreen: return pygame.display.set_mode(screenSize, pygame.FULLSCREEN| pygame.NOFRAME | pygame.SCALED | pygame.SRCALPHA,depth = 32)
+        if fullScreen:
+            for resolution in pygame.display.list_modes():
+                if resolution[0] >= screenSize[0] and resolution[1] >= screenSize[1]:
+                    return pygame.display.set_mode(screenSize, pygame.FULLSCREEN| pygame.NOFRAME | pygame.SRCALPHA,depth = 32)
         else: return pygame.display.set_mode(screenSize, pygame.NOFRAME | pygame.SRCALPHA,depth = 32)
     # Default
     else:
         if fullScreen: return pygame.display.set_mode(screenSize,pygame.FULLSCREEN | pygame.SCALED, depth = 0)
-        else: return pygame.display.set_mode(screenSize,depth = 0)
+        else: return pygame.display.set_mode(screenSize,pygame.SCALED,depth = 0)
 
 
 # UPDATE DISPLAY
@@ -207,9 +209,14 @@ def displayUpdate():
 
 # TOGGLE FULLSCREEN
 def toggleScreen():
-    global fullScreen
-    fullScreen = not fullScreen
-    return getScreen()
+    if qualityMode:
+        global screen,fullScreen
+        pygame.display.quit()
+        fullScreen = not fullScreen
+        pygame.display.set_caption('Navigator')
+        pygame.display.set_icon(windowIcon)
+        screen = getScreen()
+    else: pygame.display.toggle_fullscreen()
 
 
 # MENU MUSIC LOOP
@@ -267,11 +274,29 @@ if showPresence:
         asyncio.run(getPresence(presence))
     except: presence = None
 
+# CURSOR
+cursorThickness = 2
+curSurf = pygame.Surface((40, 40), pygame.SRCALPHA)
+pygame.draw.line(curSurf, (0, 255, 0), (10, 20), (30, 20), cursorThickness)
+pygame.draw.line(curSurf, (0, 255, 0), (20, 10), (20, 30), cursorThickness)
+cursor = pygame.cursors.Cursor((20, 20), curSurf)
+pygame.mouse.set_cursor(cursor)
+pygame.mouse.set_visible(cursorMode)
+
+def resetCursor():
+    if cursorMode:
+        pos = list(pygame.mouse.get_pos())
+        if pos[0] <= 1: pygame.mouse.set_pos(5,pos[1])
+        if pos[0] >= screenSize[0]-1: pygame.mouse.set_pos(screenSize[0]-5,pos[1])
+        if pos[1] <= 1: pygame.mouse.set_pos(pos[0],5)
+        if pos[1] >= screenSize[1]-1: pygame.mouse.set_pos(pos[0],screenSize[1]-5)
+
+
 # CONTROLLER BINDS
 controllerBinds = {
     'PS': # Dualshock
         {
-        'name': "PS4 Controller",
+        'name': ["PS4 Controller"],
         'moveX': 0,
         'moveY': 1,
         'rotX' : 2,
@@ -294,7 +319,7 @@ controllerBinds = {
 
     'XB': # Xbox controller
         {
-        'name': "Controller (Xbox One For Windows)",
+        'name': ["Controller (Xbox One For Windows)", "Controller (XBOX 360 For Windows)"],
         'moveX': 0,
         'moveY': 1,
         'rotX' : 2,
@@ -317,7 +342,7 @@ controllerBinds = {
 
     'NS': # Switch pro controller
         {
-        'name': "Nintendo Switch Pro Controller",
+        'name': ["Nintendo Switch Pro Controller"],
         'moveX': 0,
         'moveY': 1,
         'rotX' : 2,
@@ -348,7 +373,7 @@ if useController:
         gamePad = pygame.joystick.Joystick(0)
         gamePad.init()
         for controllerType in controllerBinds:
-            if gamePad.get_name() == controllerBinds[controllerType]['name']:
+            if gamePad.get_name() in controllerBinds[controllerType]['name']:
                 controllerMoveX = controllerBinds[controllerType]['moveX']
                 controllerMoveY = controllerBinds[controllerType]['moveY']
                 controllerRotateX = controllerBinds[controllerType]['rotX']
@@ -1349,8 +1374,10 @@ class Menu:
         iconPosition, startDelayCounter = startOffset, 0
 
         while game.mainMenu:
-            menuMusicLoop() # Keep music looping
 
+            resetCursor()
+
+            menuMusicLoop() # Keep music looping
             if bounceCount >= bounceDelay: bounceCount = 0
             else: bounceCount +=1
 
@@ -1379,8 +1406,7 @@ class Menu:
 
                 # TOGGLE FULLSCREEN
                 if (event.type == pygame.KEYDOWN and event.key in fullScreenInput) or (gamePad is not None and event.type == pygame.JOYBUTTONDOWN and gamePad.get_button(controllerFullScreen) == 1):
-                    pygame.mouse.set_visible(False)
-                    screen = toggleScreen()
+                    toggleScreen()
 
                 # NEXT SPACESHIP SKIN
                 elif (event.type == pygame.KEYDOWN and event.key in rightInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerNextSkin) or (event.type == pygame.JOYBUTTONDOWN and type(controllerNextSkin) == int and gamePad.get_button(controllerNextSkin)==1))):
@@ -1436,9 +1462,11 @@ class Menu:
             screen.fill(screenColor)
             screen.blit(bgList[game.currentStage - 1][0],(0,0))
 
-            for icon in icons:
-                if bounceCount == bounceDelay: icon.move()
-                icon.draw()
+            # ANIMATION
+            if showMenuIcons:
+                for icon in icons:
+                    if bounceCount == bounceDelay: icon.move()
+                    icon.draw()
 
             screen.blit(startDisplay,startRect) # Menu Logo
             if showVersion: screen.blit(versionDisplay,versionRect) # Version info
@@ -1450,6 +1478,7 @@ class Menu:
             if unlockTimePerLevels[game.savedShipLevel] != None and game.records["longestRun"] >= unlockTimePerLevels[game.savedShipLevel] and len(spaceShipList[game.savedShipLevel]['skins']) > 1: screen.blit(skinHelpDisplay,skinHelpRect) # Show switch skin controls
             if game.shipUnlockNumber > 0: screen.blit(shipHelpDisplay,shipHelpRect)
             screen.blit(player.image, (player.rect.x,player.rect.y + startOffset)) # Current spaceship
+
             # LOGO LETTERS
             screen.blit(menuList[0],(-14 + startRect.left + menuList[0].get_width() - menuList[0].get_width()/10,screenSize[1]/2 - 42)) # "A" symbol
             screen.blit(menuList[1],(-16+screenSize[0] - startRect.centerx + menuList[1].get_width() * 2,screenSize[1]/2 - 35)) # "O" symbol
@@ -1519,8 +1548,7 @@ class Menu:
 
                 # TOGGLE FULLSCREEN
                 if (event.type == pygame.KEYDOWN and event.key in fullScreenInput) or (gamePad is not None and event.type == pygame.JOYBUTTONDOWN and gamePad.get_button(controllerFullScreen) == 1):
-                    pygame.mouse.set_visible(False)
-                    screen = toggleScreen()
+                    toggleScreen()
 
                 # UNPAUSE
                 if (event.type == pygame.KEYDOWN and (event.key in escapeInput or event.key in startInput)) or (gamePad is not None and event.type == pygame.JOYBUTTONDOWN and (gamePad.get_button(controllerBack) == 1 or gamePad.get_button(controllerPause) == 1)):
@@ -1616,8 +1644,6 @@ class Menu:
         displayTextList = [scoreText, highScoreText, newHighScoreText, survivedText, longestRunText, newLongestRunText, levelText, attemptText, wastedText]
 
         while gameOver:
-
-            # Background
             # BACKGROUND
             screen.fill(screenColor)
             screen.blit(bgList[game.currentStage - 1][0], (0,0) )
@@ -1646,8 +1672,7 @@ class Menu:
 
                 # TOGGLE FULLSCREEN
                 if (event.type == pygame.KEYDOWN and event.key in fullScreenInput) or (gamePad is not None and event.type == pygame.JOYBUTTONDOWN and gamePad.get_button(controllerFullScreen) == 1):
-                    pygame.mouse.set_visible(False)
-                    screen = toggleScreen()
+                    toggleScreen()
 
                 # BACK TO MENU
                 elif (event.type == pygame.KEYDOWN and event.key in backInput) or gamePad is not None and gamePad.get_button(controllerMenu) == 1:
@@ -1716,9 +1741,8 @@ class Menu:
                 if ((event.type == pygame.KEYDOWN) and (event.key in muteInput)) or (gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
 
                 # TOGGLE FULLSCREEN
-                if ( event.type == pygame.KEYDOWN and event.key in fullScreenInput) or (gamePad is not None and event.type == pygame.JOYBUTTONDOWN and gamePad.get_button(controllerFullScreen) == 1):
-                    pygame.mouse.set_visible(False)
-                    screen = toggleScreen()
+                if (event.type == pygame.KEYDOWN and event.key in fullScreenInput) or (gamePad is not None and event.type == pygame.JOYBUTTONDOWN and gamePad.get_button(controllerFullScreen) == 1):
+                    toggleScreen()
 
                 # SHIP SPAWN DELAY
                 if event.type == backGroundShipSpawnEvent:
@@ -2400,6 +2424,7 @@ class Icon:
             self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
             size = random.randint(minIconSize,maxIconSize)
             self.image = pygame.transform.scale(self.image, (size, size))
+            self.active = False
 
 
     def activate(self):
