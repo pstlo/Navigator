@@ -119,7 +119,7 @@ useController = True
 cursorMode = True
 cursorFollowDistance = 30 # Default = 30
 cursorRotateDistance = 15 # Default = 15
-rawCursorMode = True
+rawCursorMode = False
 resetPlayerOrientation = True
 drawExhaust = True # Default = True
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
