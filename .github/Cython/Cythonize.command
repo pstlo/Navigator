@@ -1,3 +1,3 @@
 #!/bin/bash
 cd "$(dirname "$0")"
-python setupCython.py built_ext --inplace
+python3 setupCython.py build_ext --inplace
