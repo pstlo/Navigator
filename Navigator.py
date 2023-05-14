@@ -1888,6 +1888,7 @@ class Player(pygame.sprite.Sprite):
             self.laserType = spaceShipList[game.savedShipLevel]['stats']["laserType"]
             self.showShield,self.boosting = False,False
             self.movementType = playerMovement
+            if rawCursorMode: self.lastCursor = pygame.Vector2(0,0)
 
 
         # MOVEMENT
@@ -1938,18 +1939,18 @@ class Player(pygame.sprite.Sprite):
 
             # CURSOR BASED MOVEMENT
             elif game.usingCursor:
-
                 # RAW CURSOR MODE
                 if rawCursorMode:
-                    cursorMotion = pygame.mouse.get_rel()
-                    if cursorMotion != (0,0): self.angle = math.degrees(math.atan2(-cursorMotion[1], cursorMotion[0])) - 90
-                    self.rect.center = pygame.mouse.get_pos()
+                    cursor = pygame.Vector2(pygame.mouse.get_pos())
+                    self.rect.center = cursor
+                    if pygame.Vector2.distance_to(cursor, self.lastCursor) > 0.5: self.angle = (cursor - self.lastCursor).angle_to(pygame.Vector2(1, 0))-90
+                    self.lastCursor = cursor
 
                 else:
                     # FOLLOW CURSOR MODE
                     cursorX, cursorY = pygame.mouse.get_pos()
+                    cursorDirection = pygame.Vector2(cursorX, cursorY)
                     if math.dist(self.rect.center,(cursorX,cursorY)) >= cursorRotateDistance:
-                        cursorDirection = pygame.Vector2(cursorX, cursorY)
                         direction = cursorDirection - pygame.Vector2(self.rect.centerx, self.rect.centery)
                         if direction.magnitude_squared() > 0:
                             direction.normalize_ip()
