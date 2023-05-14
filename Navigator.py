@@ -115,11 +115,12 @@ musicLoopStart = 25000 # Default = 25000
 musicLoopEnd = 76000 # Default = 76000
 
 # PLAYER
+useController = True
 cursorMode = True
-rawCursorMode = False
 cursorFollowDistance = 30 # Default = 30
 cursorRotateDistance = 15 # Default = 15
-useController = True
+rawCursorMode = True
+resetPlayerOrientation = True
 drawExhaust = True # Default = True
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
 defaultToHighSkin = True # Default = True / Default to highest skin unlocked on game launch
@@ -921,7 +922,8 @@ class Game:
         player.wrapping()
 
         # ROTATE PLAYER
-        newBlit = rotateImage(player.image,player.rect,player.angle)
+        if player.angle != game.angle: newBlit = rotateImage(player.image,player.rect,player.angle)
+        else: newBlit = player.image,player.rect
 
         # DRAW PLAYER
         screen.blit(newBlit[0],newBlit[1])
@@ -1000,7 +1002,7 @@ class Game:
 
         # UPDATE SCREEN
         player.lastAngle = player.angle # Save recent player orientation
-        player.angle = game.angle # Reset player orientation
+        if resetPlayerOrientation: player.angle = game.angle # Reset player orientation
         player.boosting = False
         displayUpdate()
         self.clk.tick(fps)
@@ -1886,7 +1888,6 @@ class Player(pygame.sprite.Sprite):
             self.laserType = spaceShipList[game.savedShipLevel]['stats']["laserType"]
             self.showShield,self.boosting = False,False
             self.movementType = playerMovement
-            if rawCursorMode: self.lastCursorX,self.lastCursorY = pygame.mouse.get_pos()
 
 
         # MOVEMENT
@@ -1937,16 +1938,16 @@ class Player(pygame.sprite.Sprite):
 
             # CURSOR BASED MOVEMENT
             elif game.usingCursor:
-                cursorX, cursorY = pygame.mouse.get_pos()
+
+                # RAW CURSOR MODE
                 if rawCursorMode:
-                    self.rect.center = cursorX,cursorY
-                    dx = cursorX - self.lastCursorX
-                    dy = cursorY - self.lastCursorY
-                    if dx != 0 or dy != 0:
-                        self.angle = math.degrees(math.atan2(-dy, dx)) - 90
-                        self.lastCursorX,self.lastCursorY = cursorX, cursorY
-                    
+                    cursorMotion = pygame.mouse.get_rel()
+                    if cursorMotion != (0,0): self.angle = math.degrees(math.atan2(-cursorMotion[1], cursorMotion[0])) - 90
+                    self.rect.center = pygame.mouse.get_pos()
+
                 else:
+                    # FOLLOW CURSOR MODE
+                    cursorX, cursorY = pygame.mouse.get_pos()
                     if math.dist(self.rect.center,(cursorX,cursorY)) >= cursorRotateDistance:
                         cursorDirection = pygame.Vector2(cursorX, cursorY)
                         direction = cursorDirection - pygame.Vector2(self.rect.centerx, self.rect.centery)
