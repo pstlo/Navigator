@@ -1,8 +1,8 @@
 # Navigator
 # Copyright (c) 2023 Mike Pistolesi
 # All rights reserved
- 
- 
+
+
 import os,sys,random,math,platform,json,base64,time,pypresence,asyncio
 from cryptography.fernet import Fernet
 from dotenv import load_dotenv
@@ -116,6 +116,7 @@ musicLoopEnd = 76000 # Default = 76000
 
 # PLAYER
 cursorMode = True
+rawCursorMode = False
 cursorFollowDistance = 30 # Default = 30
 cursorRotateDistance = 15 # Default = 15
 useController = True
@@ -1395,7 +1396,7 @@ class Menu:
 
                     elif (event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]==1):
                         game.usingCursor, game.usingController = True, False
-                        pygame.mouse.set_visible(True)
+                        pygame.mouse.set_visible(not rawCursorMode)
 
                     game.savedSkin = player.currentImageNum
 
@@ -1703,7 +1704,7 @@ class Menu:
                     if (event.type == pygame.KEYDOWN and event.key in startInput): game.usingController,game.usingCursor = False,False
                     elif (gamePad is not None and gamePad.get_button(controllerBack) == 1): game.usingController,game.usingCursor = True,False
                     elif (event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]==1): game.usingCursor, game.usingController = True, False
-                    pygame.mouse.set_visible(game.usingCursor)
+                    pygame.mouse.set_visible(game.usingCursor and not rawCursorMode)
                     game.reset(player,obstacles)
                     player.updatePlayerConstants(game)
                     running = True
@@ -1885,6 +1886,7 @@ class Player(pygame.sprite.Sprite):
             self.laserType = spaceShipList[game.savedShipLevel]['stats']["laserType"]
             self.showShield,self.boosting = False,False
             self.movementType = playerMovement
+            if rawCursorMode: self.lastCursorX,self.lastCursorY = pygame.mouse.get_pos()
 
 
         # MOVEMENT
@@ -1936,15 +1938,26 @@ class Player(pygame.sprite.Sprite):
             # CURSOR BASED MOVEMENT
             elif game.usingCursor:
                 cursorX, cursorY = pygame.mouse.get_pos()
-                if math.dist(self.rect.center,(cursorX,cursorY)) >= cursorRotateDistance:
-                    cursorDirection = pygame.Vector2(cursorX, cursorY)
-                    direction = cursorDirection - pygame.Vector2(self.rect.centerx, self.rect.centery)
-                    if direction.magnitude_squared() > 0: direction.normalize_ip()
-                    velocity = direction * self.speed
-                    self.angle = direction.angle_to(pygame.Vector2(0, -1))
-                    if math.dist(self.rect.center,(cursorX,cursorY)) >= cursorFollowDistance:
-                        self.rect.centerx += velocity.x
-                        self.rect.centery += velocity.y
+                if rawCursorMode:
+                    self.rect.center = cursorX,cursorY
+                    dx = cursorX - self.lastCursorX
+                    dy = cursorY - self.lastCursorY
+                    if dx != 0 or dy != 0:
+                        self.angle = math.degrees(math.atan2(-dy, dx)) - 90
+                        self.lastCursorX,self.lastCursorY = cursorX, cursorY
+                    
+                else:
+                    if math.dist(self.rect.center,(cursorX,cursorY)) >= cursorRotateDistance:
+                        cursorDirection = pygame.Vector2(cursorX, cursorY)
+                        direction = cursorDirection - pygame.Vector2(self.rect.centerx, self.rect.centery)
+                        if direction.magnitude_squared() > 0:
+                            direction.normalize_ip()
+                            direction *= 1.414
+                        velocity = direction * self.speed
+                        self.angle = direction.angle_to(pygame.Vector2(0, -1))
+                        if math.dist(self.rect.center,(cursorX,cursorY)) >= cursorFollowDistance:
+                            self.rect.centerx += velocity.x
+                            self.rect.centery += velocity.y
 
 
         # SPEED BOOST
