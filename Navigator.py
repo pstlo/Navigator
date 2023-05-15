@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Mike Pistolesi
 # All rights reserved
 
-
 import os,sys,random,math,platform,json,base64,time,pypresence,asyncio
 from cryptography.fernet import Fernet
 from dotenv import load_dotenv
@@ -19,21 +18,21 @@ version = "v0.4.8"
 screenSize = [800,800] # Default = [800,800]
 fullScreen = False # Default = False
 fps = 60 # Default = 60
-performanceMode = False # Default = False / Overrules quality mode
-qualityMode = False # Default = False
-pauseCountSize = 40 # Default = 40 / Size of pause count text
+
+# INPUT
+useController = True # Default = True / Allow controller input
+cursorMode = True # Default = True / Allow cursor input
+cursorFollowDistance = 25 # Default = 30 / Cursor follow deadzone
+cursorRotateDistance = 10 # Default = 15 / Cursor rotate deadzone
+cursorThickness = 2 # Default = 2
 
 # HUD
 showHUD = True
-shieldColor = [0,0,255] # Default = [0,0,255] / Color of shield gauge
-fullShieldColor = [0,255,255] # Default = [0,255,255] / Color of active shield gauge
-fuelColor = [255,0,0] # Default = [255,0,0] / Color of fuel gauge
-timerSize = 30  # Default = 30
-timerColor = [255,255,255] # Default = [255,255,255]
+shieldColor = [0,0,255] # Default = [0,0,255] / Color of shield gauge / Blue
+fullShieldColor = [0,255,255] # Default = [0,255,255] / Color of active shield gauge / Cyan
+fuelColor = [255,0,0] # Default = [255,0,0] / Color of fuel gauge /  Red
 timerDelay = 1000 # Default = 1000
-levelSize = 30  # Default = 30
-levelColor = [255,255,255] # Default = [255,255,255]
-scoreSize = 30  # Default = 30
+pauseMax = 5 # Default = 5 / max pauses per game
 
 # POWER UPS
 spawnRange = [0.15, 0.85]
@@ -41,7 +40,6 @@ spawnVertices = 8 # Default = 8 / Vertices in shape of point spawn area (Octagon
 pointSize = 25  # Default = 20
 shieldChunkSize = screenSize[0]/40 # Default = screen width / 40
 boostCooldownTime = 2000 # Default = 2000 / Activates when fuel runs out to allow regen
-showSpawnArea = False # Default = False
 powerUpList = ["Shield", "Fuel", "Default", "Default"] # Shield/Fuel/Default, chances of spawn
 playerShieldSize = 48 # Default = 64 / Shield visual size
 shieldVisualDuration = 250 # Default = 250 / Shield visual duration
@@ -52,47 +50,30 @@ maxRandomAttempts = 100 # Default = 100 / For random generator distances / max r
 showBackgroundCloud = True # Default = True
 cloudSpeed = 1 # Default = 1
 cloudStart = -1000 # Default = -1000
-cloudSpeedAdder = 0.5 # Default = 0.5
+cloudSpeedAdder = 0.5 # Default = 0.5 / cloud speed increment per level
 
-# GAME OVER SCREEN
-gameOverColor = [255,0,0] # Default = [255,0,0]
-gameOverSize = 100  # Default = 100
-helpSize = 30  # Default = 30
-helpColor = [0,255,0] # Default = [0,255,0]
-finalScoreSize = 40 # Default = 40
-statLineFontSize = round(finalScoreSize * 0.75)
-finalScoreColor = [0,255,0] # Default = [0,255,0]
-pausedSize = 100  # Default = 100
-pausedColor = [255,255,255] # Default = [255,255,255]
-pauseMax = 5 # Default = 5
+# FONT COLORS
+primaryFontColor = [0,255,0] # Default = [0,255,0] / Green
+secondaryFontColor = [255,255,255] # Default = [255,255,255] / White
 
 # START MENU
 maxIcons = 5 # Default = 5
 maxIconSpeed = 5 # Default = 5
 maxIconRotationSpeed = 3 # Default = 3
-startSize = 120 # Default = 120
-startColor = [0,255,0] # Default = [0,255,0]
 minIconSize = 30 # Default = 30
 maxIconSize = 100  # Default = 100
-versionSize = 25 # Default = 25
-versionColor = [0,255,0] # Default = [0,255,0]
-showVersion = True
-showMenuIcons = True
+showVersion = True # show version info
+showMenuIcons = True # show menu icons
 
 # STAGE UP
-stageUpColor = [0,255,0] # Default = [0,255,0]
-stageUpSize = 90  # Default = 90
 stageUpCloudStartPos = -900 # Default = -900
 stageUpCloudSpeed = 8  # Default = 8
 
 # CREDITS
-creditsFontSize = 55  # Default = 55
-creditsColor = [255,255,255] # Default = [255,255,255]
 mainCreditsSpeed = 1 # Default = 1
 mainCreditsDelay = 10 # Default = 10
 extraCreditsSize = 30  # Default = 30 / background ships text size
-extraCreditsColor = [0,0,0] # Background ships text color
-maxExtras = 3 # Default = 3 # max background ships
+maxExtras = 3 # Default = 3 / # max background ships
 minBackgroundShipSpeed = 2 # Default = 1
 maxBackgroundShipSpeed = 3 # Default = 3
 minBackgroundShipSize = 50 # Default = 50
@@ -115,35 +96,13 @@ musicLoopStart = 25000 # Default = 25000
 musicLoopEnd = 76000 # Default = 76000
 
 # PLAYER
-useController = True
-cursorMode = True
-rawCursorMode = False
-cursorFollowDistance = 25 # Default = 30
-cursorRotateDistance = 10 # Default = 15
-resetPlayerOrientation = True
-drawExhaust = True # Default = True
+resetPlayerOrientation = True # Default = True / reset orientation if player is not moving
+drawExhaust = True # Default = True / draw exhaust animation
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
 defaultToHighSkin = True # Default = True / Default to highest skin unlocked on game launch
 defaultToHighShip = False # Default = False / Default to highest ship unlocked on game launch
-heatSeekDelay = 15 # Default = 15
-heatSeekNeedsTarget = False # Default = False
-playerMovement = "DEFAULT" # (DEFAULT, ORIGINAL)
-
-# KEY BINDS
-leftInput = [pygame.K_a, pygame.K_LEFT]
-rightInput = [pygame.K_d,pygame.K_RIGHT]
-upInput = [pygame.K_w,pygame.K_UP]
-downInput = [pygame.K_s,pygame.K_DOWN]
-boostInput = [pygame.K_LSHIFT,pygame.K_RSHIFT]
-pauseInput = [pygame.K_SPACE]
-shootInput = [pygame.K_LCTRL,pygame.K_RCTRL]
-escapeInput = [pygame.K_ESCAPE]
-backInput = [pygame.K_TAB]
-creditsInput = [pygame.K_c]
-brakeInput = [pygame.K_LALT,pygame.K_RALT]
-muteInput = [pygame.K_m]
-fullScreenInput = [pygame.K_f]
-startInput = [pygame.K_SPACE]
+heatSeekDelay = 15 # Default = 15 / time before projectile starts homing
+heatSeekNeedsTarget = False # Default = False / projectile will explode if target not found
 
 # LEVELS
 levelTimer = 15 # Default = 15 / Time (seconds) between levels (can be overridden)
@@ -161,24 +120,42 @@ caveSpeed = 20 # Default = 20 / Cave flyby speed
 
 # SAVING
 encryptGameRecords = True # Hide game records from user to prevent manual unlocks
-invalidKeyMessage = "Get a key to save progress :)" # Saved to game records file if encryptGameRecords == True and key is invalid
+invalidKeyMessage = "Invalid key, could not save records." # Saved to game records file if encryptGameRecords == True and key is invalid
 
-# DISCORD PRESENCE
-showPresence = True # Default = True
-
-# DEV MODE
+# EXPERIMENTAL
 devMode = False # Default = False
+showSpawnArea = False # Default = False / show powerup spawn area
+performanceMode = False # Default = False
+qualityMode = False # Default = False / Overruled by quality mode
+showPresence = True # Default = True / show discord presence
+rawCursorMode = False # Default = False / sets player position to cursor position
+playerMovement = "DEFAULT" # Default = "DEFAULT" /  (DEFAULT, ORIGINAL)
 #----------------------------------------------------------------------------------------------------------------------
 
+# KEY BINDS
+leftInput = [pygame.K_a, pygame.K_LEFT]
+rightInput = [pygame.K_d,pygame.K_RIGHT]
+upInput = [pygame.K_w,pygame.K_UP]
+downInput = [pygame.K_s,pygame.K_DOWN]
+boostInput = [pygame.K_LSHIFT,pygame.K_RSHIFT]
+pauseInput = [pygame.K_SPACE]
+shootInput = [pygame.K_LCTRL,pygame.K_RCTRL]
+escapeInput = [pygame.K_ESCAPE]
+backInput = [pygame.K_TAB]
+creditsInput = [pygame.K_c]
+brakeInput = [pygame.K_LALT,pygame.K_RALT]
+muteInput = [pygame.K_m]
+fullScreenInput = [pygame.K_f]
+startInput = [pygame.K_SPACE]
 
-# FOR EXE/APP RESOURCES
+# EXE/APP RESOURCES
 def resources(relative):
     try: base = sys._MEIPASS # Running from EXE/APP
     except Exception: base = os.path.abspath(".") # Running fron script
     return os.path.join(base, relative)
 
 
-# SPECIFY SCREEN UPDATE METHOD
+# SCREEN UPDATE METHOD
 if qualityMode: updateNotFlip = False
 else: updateNotFlip = True # use update instead of flip for display updates
 
@@ -255,9 +232,7 @@ windowIcon = pygame.image.load(resources(os.path.join(currentDirectory,'Icon.png
 pygame.display.set_caption('Navigator')
 pygame.display.set_icon(windowIcon)
 screenColor = [0,0,0] # Screen fill color
-
-# DISCORD PRESENCE
-presence = None
+presence = None # DISCORD PRESENCE
 
 
 # ASYNCHRONOUSLY UPDATE DISCORD PRESENCE
@@ -276,7 +251,6 @@ if showPresence:
     except: presence = None
 
 # CURSOR
-cursorThickness = 2
 curSurf = pygame.Surface((40, 40), pygame.SRCALPHA)
 pygame.draw.line(curSurf, (0, 255, 0), (10, 20), (30, 20), cursorThickness)
 pygame.draw.line(curSurf, (0, 255, 0), (20, 10), (20, 30), cursorThickness)
@@ -516,7 +490,7 @@ def loadRecords():
             with open(recordsPath,'r') as file: return json.load(file)
         except:
             # Could not load records, try overwrite with default values
-            gameRecords = {'highScore':0, 'longestRun':0, 'attempts':0, 'timePlayed':0}
+            gameRecords = {'highScore':0, 'longestRun':0, 'attempts':0, 'timePlayed':0, 'points':0}
             storeRecords(gameRecords)
             return gameRecords
     # With encryption
@@ -527,29 +501,29 @@ def loadRecords():
             return json.loads(Fernet(getKey()).decrypt(encrypted))
         except:
             # Failed to load records
-            gameRecords = {'highScore':0, 'longestRun':0, 'attempts':0, 'timePlayed':0}
+            gameRecords = {'highScore':0, 'longestRun':0, 'attempts':0, 'timePlayed':0, 'points':0}
             storeRecords(gameRecords) # Try creating new encrypted records file
             return gameRecords
 
 
 # FONTS
 gameFont = os.path.join(currentDirectory, 'Font.ttf')
-stageFont = pygame.font.Font(gameFont, levelSize)
-levelFont = pygame.font.Font(gameFont, levelSize)
-scoreFont = pygame.font.Font(gameFont, scoreSize)
-timerFont = pygame.font.Font(gameFont, timerSize)
-stageUpFont = pygame.font.Font(gameFont, stageUpSize)
-startFont = pygame.font.Font(gameFont, startSize)
-shipHelpFont = pygame.font.Font(gameFont, round(helpSize * .65))
-startHelpFont = pygame.font.Font(gameFont, helpSize)
-pausedFont = pygame.font.Font(gameFont, pausedSize)
-pauseCountFont = pygame.font.Font(gameFont,pauseCountSize)
-versionFont = pygame.font.Font(gameFont,versionSize)
-gameOverFont = pygame.font.Font(gameFont, gameOverSize)
-statFont = pygame.font.Font(gameFont, statLineFontSize)
-exitFont = pygame.font.Font(gameFont, helpSize)
-creatorFont = pygame.font.Font(gameFont, creditsFontSize)
-creditsFont = pygame.font.Font(gameFont, creditsFontSize - 15)
+stageFont = pygame.font.Font(gameFont, 30)
+levelFont = pygame.font.Font(gameFont, 30)
+scoreFont = pygame.font.Font(gameFont, 30)
+timerFont = pygame.font.Font(gameFont, 30)
+stageUpFont = pygame.font.Font(gameFont, 90)
+startFont = pygame.font.Font(gameFont, 120)
+shipHelpFont = pygame.font.Font(gameFont, 20)
+startHelpFont = pygame.font.Font(gameFont, 30)
+pausedFont = pygame.font.Font(gameFont, 100)
+pauseCountFont = pygame.font.Font(gameFont,40)
+versionFont = pygame.font.Font(gameFont,25)
+gameOverFont = pygame.font.Font(gameFont, 100)
+statFont = pygame.font.Font(gameFont, 30)
+exitFont = pygame.font.Font(gameFont, 30)
+creatorFont = pygame.font.Font(gameFont, 55)
+creditsFont = pygame.font.Font(gameFont, 40)
 
 # STAGE WIPE CLOUD
 stageCloudImg = pygame.image.load(resources(os.path.join(currentDirectory,'StageCloud.png') ) ).convert_alpha()
@@ -655,7 +629,6 @@ for levelFolder in sorted(os.listdir(shipDirectory)):
 
         spaceShipList.append(shipLevelDict)
 
-
 # PLAYER SHIELD ASSET
 playerShield = pygame.transform.scale(pygame.image.load(resources(os.path.join(currentDirectory,"Shield.png"))),(playerShieldSize,playerShieldSize)).convert_alpha()
 
@@ -677,6 +650,9 @@ laserNoise.set_volume(sfxVolume/100)
 # LASER IMPACT NOISE ASSET
 impactNoise = pygame.mixer.Sound(resources(os.path.join(soundDirectory,"Impact.wav")))
 impactNoise.set_volume(sfxVolume/100)
+
+# SHIELD BREAK NOISE ASSET
+# coming soon
 
 # SHIP ATTRIBUTES DATA
 shipConstants = []
@@ -822,7 +798,6 @@ class Game:
                 "obstacleTarget":self.target,
                 "obstacleHealth":self.obsHealth
                 }
-
         self.usingController = useController
         self.usingCursor = False
 
@@ -1007,8 +982,7 @@ class Game:
         # UPDATE HIGH SCORE
         if self.gameClock > self.sessionLongRun: self.sessionLongRun = self.gameClock
 
-        # LEVEL UP
-        self.levelUpdater(player,obstacles,events)
+        self.levelUpdater(player,obstacles,events) # LEVEL UP
 
         self.spawner(obstacles,player) # Spawn obstacles
 
@@ -1080,7 +1054,7 @@ class Game:
                 self.gameConstants[self.currentStage][0]["START"] = True # Mark as activated
                 stageUpCloud = stageCloudImg
 
-                stageUpDisplay = stageUpFont.render("STAGE UP", True, stageUpColor)
+                stageUpDisplay = stageUpFont.render("STAGE UP", True, primaryFontColor)
                 stageUpRect = stageUpCloud.get_rect()
                 stageUpRect.center = (screenSize[0]/2, stageUpCloudStartPos)
                 stageUp , stageWipe = True , True
@@ -1164,7 +1138,7 @@ class Game:
         obstacles.empty()
 
 
-    # HUD ( Needs optimization )
+    # HUD
     def showHUD(self,player):
 
         # BORDER
@@ -1192,23 +1166,23 @@ class Game:
             pygame.draw.rect(screen, fuelColor,fuelRect)
 
         # TIMER DISPLAY
-        timerDisplay = timerFont.render(str(self.gameClock), True, timerColor)
+        timerDisplay = timerFont.render(str(self.gameClock), True, secondaryFontColor)
         timerRect = timerDisplay.get_rect(topright = screen.get_rect().topright)
 
         # STAGE DISPLAY
         stageNum = "Stage " + str(self.currentStage)
-        stageDisplay = stageFont.render( str(stageNum), True, levelColor )
+        stageDisplay = stageFont.render( str(stageNum), True, secondaryFontColor )
         stageRect = stageDisplay.get_rect(topleft = screen.get_rect().topleft)
 
         # LEVEL DISPLAY
         levelNum = "-  Level " + str(self.currentLevel)
-        levelDisplay = levelFont.render( str(levelNum), True, levelColor )
+        levelDisplay = levelFont.render( str(levelNum), True, secondaryFontColor )
         levelRect = levelDisplay.get_rect()
         levelRect.center = (stageRect.right + levelRect.width*0.65, stageRect.centery)
 
         # SCORE DISPLAY
         scoreNum = "Score " + str(self.score)
-        scoreDisplay = scoreFont.render(scoreNum, True, levelColor)
+        scoreDisplay = scoreFont.render(scoreNum, True, secondaryFontColor)
         scoreRect = scoreDisplay.get_rect()
         scoreRect.topleft = (screenSize[0] - (2*scoreRect.width), levelRect.y)
 
@@ -1325,22 +1299,22 @@ class Menu:
         icons = []
         for icon in range(maxIcons): icons.append(Icon())
 
-        startDisplay = startFont.render("N  VIGAT  R", True, startColor)
+        startDisplay = startFont.render("N  VIGAT  R", True, primaryFontColor)
         startRect = startDisplay.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
 
         if not game.usingController or gamePad is None:
-            startHelpDisplay = startHelpFont.render("ESCAPE = Quit   SPACE = Start   F = Fullscreen   M = Mute   C = Credits", True, helpColor)
-            skinHelpDisplay = shipHelpFont.render("A/LEFT = Last skin     D/RIGHT = Next skin", True, helpColor)
-            shipHelpDisplay = shipHelpFont.render("S/DOWN = Last ship     W/UP = Next ship", True, helpColor)
-            boostHelp = shipHelpFont.render("SHIFT = Boost", True, helpColor)
-            shootHelp = shipHelpFont.render("CTRL = Shoot", True, helpColor)
+            startHelpDisplay = startHelpFont.render("ESCAPE = Quit   SPACE = Start   F = Fullscreen   M = Mute   C = Credits", True, primaryFontColor)
+            skinHelpDisplay = shipHelpFont.render("A/LEFT = Last skin     D/RIGHT = Next skin", True, primaryFontColor)
+            shipHelpDisplay = shipHelpFont.render("S/DOWN = Last ship     W/UP = Next ship", True, primaryFontColor)
+            boostHelp = shipHelpFont.render("SHIFT = Boost", True, primaryFontColor)
+            shootHelp = shipHelpFont.render("CTRL = Shoot", True, primaryFontColor)
 
         else:
-            startHelpDisplay = startHelpFont.render("START = Quit   A = Start   GUIDE = Fullscreen   LB = Mute   Y = Credits", True, helpColor)
-            boostHelp = shipHelpFont.render("LT = Boost", True, helpColor)
-            shootHelp = shipHelpFont.render("RT = Shoot", True, helpColor)
-            skinHelpDisplay = shipHelpFont.render("D-PAD LEFT = Last skin   D-PAD RIGHT = Next skin", True, helpColor)
-            shipHelpDisplay = shipHelpFont.render("D-PAD DOWN = Last ship   D-PAD UP = Next ship", True, helpColor)
+            startHelpDisplay = startHelpFont.render("START = Quit   A = Start   GUIDE = Fullscreen   LB = Mute   Y = Credits", True, primaryFontColor)
+            boostHelp = shipHelpFont.render("LT = Boost", True, primaryFontColor)
+            shootHelp = shipHelpFont.render("RT = Shoot", True, primaryFontColor)
+            skinHelpDisplay = shipHelpFont.render("D-PAD LEFT = Last skin   D-PAD RIGHT = Next skin", True, primaryFontColor)
+            shipHelpDisplay = shipHelpFont.render("D-PAD DOWN = Last ship   D-PAD UP = Next ship", True, primaryFontColor)
 
         startHelpRect = startHelpDisplay.get_rect(center = (screenSize[0]/2,screenSize[1]-screenSize[1]/7))
         skinHelpRect = skinHelpDisplay.get_rect(center = (screenSize[0]/4 + 40, screenSize[1]-screenSize[1]/7 + 70))
@@ -1350,8 +1324,8 @@ class Menu:
         leftRect = menuList[3].get_rect(center = (screenSize[0] * 0.2 , screenSize[1]/3) )
         rightRect = menuList[4].get_rect(center = (screenSize[0] * 0.8 , screenSize[1]/3) )
 
-        versionDisplay = versionFont.render(version,True,versionColor)
-        versionRect = versionDisplay.get_rect(topright = (startRect.right-versionSize,startRect.bottom-versionSize))
+        versionDisplay = versionFont.render(version,True,primaryFontColor)
+        versionRect = versionDisplay.get_rect(topright = (startRect.right-25,startRect.bottom-25))
         bounceDelay = 5
         bounceCount = 0
 
@@ -1459,19 +1433,19 @@ class Menu:
                  # SWITCH CONTROL TYPE
                 if game.usingController and event.type == pygame.KEYDOWN:
                     game.usingController = False
-                    startHelpDisplay = startHelpFont.render("ESCAPE = Quit   SPACE = Start   F = Fullscreen   M = Mute   C = Credits", True, helpColor)
-                    boostHelp = shipHelpFont.render("SHIFT = Boost", True, helpColor)
-                    shootHelp = shipHelpFont.render("CTRL = Shoot", True, helpColor)
-                    skinHelpDisplay = shipHelpFont.render("A/LEFT = Last skin     D/RIGHT = Next skin", True, helpColor)
-                    shipHelpDisplay = shipHelpFont.render("S/DOWN = Last ship     W/UP = Next ship", True, helpColor)
+                    startHelpDisplay = startHelpFont.render("ESCAPE = Quit   SPACE = Start   F = Fullscreen   M = Mute   C = Credits", True, primaryFontColor)
+                    boostHelp = shipHelpFont.render("SHIFT = Boost", True, primaryFontColor)
+                    shootHelp = shipHelpFont.render("CTRL = Shoot", True, primaryFontColor)
+                    skinHelpDisplay = shipHelpFont.render("A/LEFT = Last skin     D/RIGHT = Next skin", True, primaryFontColor)
+                    shipHelpDisplay = shipHelpFont.render("S/DOWN = Last ship     W/UP = Next ship", True, primaryFontColor)
 
                 elif gamePad is not None and not game.usingController and (event.type == pygame.JOYHATMOTION or event.type == pygame.JOYAXISMOTION or event.type == pygame.JOYBUTTONUP):
                     game.usingController = True
-                    startHelpDisplay = startHelpFont.render("START = Quit   A = Start   GUIDE = Fullscreen   LB = Mute   Y = Credits", True, helpColor)
-                    boostHelp = shipHelpFont.render("LT = Boost", True, helpColor)
-                    shootHelp = shipHelpFont.render("RT = Shoot", True, helpColor)
-                    skinHelpDisplay = shipHelpFont.render("D-PAD LEFT = Last skin   D-PAD RIGHT = Next skin", True, helpColor)
-                    shipHelpDisplay = shipHelpFont.render("D-PAD DOWN = Last ship   D-PAD UP = Next ship", True, helpColor)
+                    startHelpDisplay = startHelpFont.render("START = Quit   A = Start   GUIDE = Fullscreen   LB = Mute   Y = Credits", True, primaryFontColor)
+                    boostHelp = shipHelpFont.render("LT = Boost", True, primaryFontColor)
+                    shootHelp = shipHelpFont.render("RT = Shoot", True, primaryFontColor)
+                    skinHelpDisplay = shipHelpFont.render("D-PAD LEFT = Last skin   D-PAD RIGHT = Next skin", True, primaryFontColor)
+                    shipHelpDisplay = shipHelpFont.render("D-PAD DOWN = Last ship   D-PAD UP = Next ship", True, primaryFontColor)
 
             # GET SHIP CONTROLS
             if player.hasGuns and player.boostSpeed > player.baseSpeed: # has guns and boost
@@ -1520,7 +1494,7 @@ class Menu:
         playerBlit = rotateImage(player.image,player.rect,player.lastAngle)
         paused = True
 
-        pausedDisplay = pausedFont.render("Paused", True, pausedColor)
+        pausedDisplay = pausedFont.render("Paused", True, secondaryFontColor)
         pausedRect = pausedDisplay.get_rect()
         pausedRect.center = (screenSize[0]/2, screenSize[1]/2)
 
@@ -1530,7 +1504,7 @@ class Menu:
         if game.pauseCount >= pauseMax: pauseNum = "Out of pauses"
 
 
-        pauseDisplay = pauseCountFont.render(pauseNum,True,levelColor)
+        pauseDisplay = pauseCountFont.render(pauseNum,True,secondaryFontColor)
         pauseRect = pauseDisplay.get_rect()
         pauseRect.center = (screenSize[0]/2,screenSize[1]-16)
 
@@ -1592,11 +1566,14 @@ class Menu:
 
         game.records["timePlayed"] += game.gameClock # Update total time played
         game.records["attempts"] += 1 # Update total attempts
+        game.records["points"] += game.score # Update saved points
 
+        # NEW LONGEST RUN
         if game.sessionLongRun > game.records["longestRun"]:
             newLongRun = True
             game.records["longestRun"] = game.sessionLongRun
 
+        # NEW HIGH SCORE
         if game.score > game.records["highScore"]:
             newHighScore = True
             game.records["highScore"] = game.score
@@ -1607,7 +1584,7 @@ class Menu:
         statsSpacingY = screenSize[1]/20
 
         # "GAME OVER" text
-        gameOverDisplay = gameOverFont.render("GAME OVER", True, gameOverColor)
+        gameOverDisplay = gameOverFont.render("GAME OVER", True, [255,0,0])
         gameOverRect = gameOverDisplay.get_rect()
         gameOverRect.center = (screenSize[0]/2, screenSize[1]/3)
 
@@ -1623,17 +1600,17 @@ class Menu:
         timeWasted = "Time played = " + str(game.records["timePlayed"]) + " seconds"
 
         # Display
-        scoreDisplay = statFont.render(scoreLine, True, finalScoreColor)
-        highScoreDisplay = statFont.render(highScoreLine, True, finalScoreColor)
-        newHighScoreDisplay = statFont.render(newHighScoreLine, True, finalScoreColor)
-        longestRunDisplay = statFont.render(overallLongestRunLine, True, finalScoreColor)
-        survivedDisplay = statFont.render(survivedLine, True, finalScoreColor)
-        levelDisplay = statFont.render(levelLine, True, finalScoreColor)
-        newLongestRunDisplay = statFont.render(newLongestRunLine, True, finalScoreColor)
-        attemptDisplay = statFont.render(attemptLine, True, finalScoreColor)
-        timeWastedDisplay = statFont.render(timeWasted,True,finalScoreColor)
-        if not game.usingController or gamePad is None: exitDisplay = exitFont.render("TAB = Menu     SPACE = Restart    ESCAPE = Quit    C = Credits", True, helpColor)
-        else: exitDisplay = exitFont.render("SELECT = Menu    A = Restart    START = Quit    Y = Credits", True, helpColor)
+        scoreDisplay = statFont.render(scoreLine, True, primaryFontColor)
+        highScoreDisplay = statFont.render(highScoreLine, True, primaryFontColor)
+        newHighScoreDisplay = statFont.render(newHighScoreLine, True, primaryFontColor)
+        longestRunDisplay = statFont.render(overallLongestRunLine, True, primaryFontColor)
+        survivedDisplay = statFont.render(survivedLine, True, primaryFontColor)
+        levelDisplay = statFont.render(levelLine, True, primaryFontColor)
+        newLongestRunDisplay = statFont.render(newLongestRunLine, True, primaryFontColor)
+        attemptDisplay = statFont.render(attemptLine, True, primaryFontColor)
+        timeWastedDisplay = statFont.render(timeWasted,True,primaryFontColor)
+        if not game.usingController or gamePad is None: exitDisplay = exitFont.render("TAB = Menu     SPACE = Restart    ESCAPE = Quit    C = Credits", True, primaryFontColor)
+        else: exitDisplay = exitFont.render("SELECT = Menu    A = Restart    START = Quit    Y = Credits", True, primaryFontColor)
 
         # Rects
         scoreRect = scoreDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 + statsOffsetY +statsSpacingY * 1))
@@ -1725,9 +1702,9 @@ class Menu:
         creditsLine = "with art by Collin Guetta"
         musicCreditsLine = '& music by Dylan Kusenko'
 
-        createdByDisplay = creatorFont.render(createdByLine, True, creditsColor)
-        creditsDisplay = creditsFont.render(creditsLine, True, creditsColor)
-        musicCreditsDisplay = creditsFont.render(musicCreditsLine, True, creditsColor)
+        createdByDisplay = creatorFont.render(createdByLine, True, [255,255,255])
+        creditsDisplay = creditsFont.render(creditsLine, True, [255,255,255])
+        musicCreditsDisplay = creditsFont.render(musicCreditsLine, True, [255,255,255])
 
         createdByRect = createdByDisplay.get_rect(center = (posX, posY - screenSize[1]/15) )
         creditsRect = creditsDisplay.get_rect(center = (posX,posY))
@@ -2530,7 +2507,7 @@ class BackgroundShip:
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
         self.count = 0
         self.font = pygame.font.Font(gameFont, int(self.size * 2/3))
-        self.display = self.font.render(self.text, True, extraCreditsColor)
+        self.display = self.font.render(self.text, True, [0,0,0])
         self.displayRect = self.display.get_rect(center = self.rect.center)
         self.active = False
 
