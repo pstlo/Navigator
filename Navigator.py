@@ -472,7 +472,6 @@ def storeRecords(records):
             except: return # Failed to load encrypted records, continue without saving
 
 
-
 # LOAD GAME RECORDS
 def loadRecords():
     # No encryption
