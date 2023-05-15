@@ -156,7 +156,7 @@ def resources(relative):
     return os.path.join(base, relative)
 
 
-# LOAD PREFERENCES
+# LOAD PREFERENCES ( Work in progress )
 defaultPreferences = {'fullScreen':False, 'muted':False, 'performanceMode':False, 'qualityMode':False, 'showDiscordPresence':True}
 
 
@@ -182,7 +182,6 @@ if loadPreferencesFromFile:
     qualityMode = preferences['qualityMode']
     showPresence = preferences['showDiscordPresence']
 
-else: preferences = defaultPreferences
 
 # SCREEN UPDATE METHOD
 if qualityMode and not performanceMode: updateNotFlip = False
