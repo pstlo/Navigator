@@ -44,12 +44,13 @@ jobs:
       - name: Build MacOS app
         run: |
           pyinstaller --noconsole --add-data Assets:Assets --add-data gameRecords.txt:. -i ".github/Icon.icns" Navigator.py
+          mv dist/Navigator.app ${{ github.workspace }}
 
       - name: Upload MacOS (Intel Based) artifact
         uses: actions/upload-artifact@v3
         with:
           name: NavigatorMacOSIntel
           path: |
-            dist/Navigator.app
+            ${{ github.workspace }}/Navigator.app
             ${{ github.workspace }}/LICENSE
             ${{ github.workspace }}/NOTICE
