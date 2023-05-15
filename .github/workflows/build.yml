@@ -63,7 +63,7 @@ jobs:
 
   build-windows-c:
     runs-on: windows-latest
-    name: Build Navigator for Windows C
+    name: Build Navigator for Windows
 
     steps:
       - name: Download code on Windows
@@ -142,11 +142,29 @@ jobs:
           pip install cryptography
           pip install pypresence
           pip install python-dotenv
+          
+      - name: Build MacOS app
+        run: |
+          pyinstaller -y --name Navigator --noconsole --add-data Assets:Assets --add-data gameRecords.txt:. -i ".github/Icon.icns" Navigator.py
+
+      - name: Upload MacOS (Intel Based) C artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: NavigatorMacOSIntel
+          path: dist/Navigator.app
+
+      - name: Include license and notice in MacOS (Intel Based) artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: NavigatorMacOSIntel
+          path: |
+            ${{ github.workspace }}/LICENSE
+            ${{ github.workspace }}/NOTICE
 
 
   build-macos-intel-c:
     runs-on: macos-latest
-    name: Build Navigator for MacOS C (Intel Based)
+    name: Build Navigator for MacOS (Intel Based)
 
     steps:
       - name: Download code on MacOS (Intel Based)
@@ -177,9 +195,9 @@ jobs:
         run: |
           pip install cython
           pip install setuptools
-          mv ${{github.workspace}}/.github/Cython/* ${{github.workspace}}
+       	  mv ${{ github.workspace }}/.github/Cython/* ${{ github.workspace }}
           python SetupCython.py build_ext --inplace
-          pyinstaller -y --name Navigator --noconsole --add-data Assets:Assets -i ".github/Icon.icns" Main.py
+          pyinstaller -y --name Navigator --noconsole --add-data Assets:Assets --add-data gameRecords.txt:. -i ".github/Icon.icns" Main.py
 
       - name: Upload MacOS (Intel Based) C artifact
         uses: actions/upload-artifact@v3
