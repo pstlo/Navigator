@@ -117,9 +117,9 @@ musicLoopEnd = 76000 # Default = 76000
 # PLAYER
 useController = True
 cursorMode = True
-cursorFollowDistance = 30 # Default = 30
-cursorRotateDistance = 15 # Default = 15
 rawCursorMode = False
+cursorFollowDistance = 25 # Default = 30
+cursorRotateDistance = 10 # Default = 15
 resetPlayerOrientation = True
 drawExhaust = True # Default = True
 exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
@@ -1325,7 +1325,6 @@ class Menu:
         icons = []
         for icon in range(maxIcons): icons.append(Icon())
 
-
         startDisplay = startFont.render("N  VIGAT  R", True, startColor)
         startRect = startDisplay.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
 
@@ -1726,8 +1725,6 @@ class Menu:
         rollCredits = True
         posX = screenSize[0]/2
         posY = screenSize[1]/2
-
-
 
         createdByLine = "Created by Mike Pistolesi"
         creditsLine = "with art by Collin Guetta"
