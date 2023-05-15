@@ -48,18 +48,14 @@ jobs:
           mv ${{github.workspace}}/.github/Cython/* ${{github.workspace}}
           python SetupCython.py build_ext --inplace
           pyinstaller -y --name Navigator --noconsole --add-data Assets:Assets --add-data gameRecords.txt:. -i ".github/Icon.icns" Main.py
+          mv dist/Navigator.app ${{ github.workspace }}
           
-
       - name: Upload MacOS (Intel Based) C artifact
         uses: actions/upload-artifact@v3
         with:
           name: NavigatorMacOSIntelC
-          path: dist/Navigator.app
-
-      - name: Include license and notice in MacOS (Intel Based) C artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: NavigatorMacOSIntelC
           path: |
+            ${{ github.workspace }}/Navigator.app
             ${{ github.workspace }}/LICENSE
             ${{ github.workspace }}/NOTICE
+
