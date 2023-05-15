@@ -142,12 +142,12 @@ jobs:
           pip install cryptography
           pip install pypresence
           pip install python-dotenv
-          
+
       - name: Build MacOS app
         run: |
           pyinstaller -y --name Navigator --noconsole --add-data Assets:Assets --add-data gameRecords.txt:. -i ".github/Icon.icns" Navigator.py
 
-      - name: Upload MacOS (Intel Based) C artifact
+      - name: Upload MacOS (Intel Based) artifact
         uses: actions/upload-artifact@v3
         with:
           name: NavigatorMacOSIntel
