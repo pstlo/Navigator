@@ -1338,8 +1338,7 @@ class Menu:
                 game.shipUnlockNumber = 0
                 startPoints = pointsForUnlock
                 for i in range(totalShipTypes):
-                    if game.records["highScore"] >= startPoints:
-                        game.shipUnlockNumber += 1
+                    if game.records["highScore"] >= startPoints: game.shipUnlockNumber += 1
                     else: break
                     startPoints += pointsForUnlock
 
@@ -1360,8 +1359,6 @@ class Menu:
         iconPosition, startDelayCounter = startOffset, 0
 
         while game.mainMenu:
-
-            resetCursor()
 
             menuMusicLoop() # Keep music looping
             if bounceCount >= bounceDelay: bounceCount = 0
@@ -1502,7 +1499,6 @@ class Menu:
         pauseNum = str(pauseMax - game.pauseCount) + " Pauses left"
 
         if game.pauseCount >= pauseMax: pauseNum = "Out of pauses"
-
 
         pauseDisplay = pauseCountFont.render(pauseNum,True,secondaryFontColor)
         pauseRect = pauseDisplay.get_rect()
@@ -2437,7 +2433,9 @@ class Icon:
         self.movement = getMovement("AGGRO")
         self.direction = self.movement[1]
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
-        self.image = menuList[random.randint(5,len(menuList)-1)]
+        randomChoice = random.randint(0,10)
+        if randomChoice < 7: self.image = menuList[1]
+        else: self.image = menuList[random.randint(5,len(menuList)-1)]
         size = random.randint(minIconSize,maxIconSize)
         self.image = pygame.transform.scale(self.image, (size, size)).convert_alpha()
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
@@ -2464,7 +2462,9 @@ class Icon:
         if self.active and ( (self.rect.centery > randomTimerUY) or (self.rect.centery < randomTimerLY) or (self.rect.centerx> randomTimerUX) or (self.rect.centerx < randomTimerLX) ):
             self.movement = getMovement("ALL")
             self.direction = self.movement[1]
-            self.image = menuList[random.randint(5,len(menuList)-1)]
+            randomChoice = random.randint(0,10)
+            if randomChoice < 7: self.image = menuList[1]
+            else: self.image = menuList[random.randint(5,len(menuList)-1)]
             self.speed = random.randint(1,maxIconSpeed)
             self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
             size = random.randint(minIconSize,maxIconSize)
