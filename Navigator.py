@@ -1607,14 +1607,9 @@ class Menu:
         statsSpacingY = screenSize[1]/20
 
         # "GAME OVER" text
-
         gameOverDisplay = gameOverFont.render("GAME OVER", True, gameOverColor)
         gameOverRect = gameOverDisplay.get_rect()
         gameOverRect.center = (screenSize[0]/2, screenSize[1]/3)
-
-        # Stats display
-
-
 
         # Text
         scoreLine = "Score " + str(game.score)
