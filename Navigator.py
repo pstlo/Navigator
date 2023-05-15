@@ -1702,9 +1702,9 @@ class Menu:
         creditsLine = "with art by Collin Guetta"
         musicCreditsLine = '& music by Dylan Kusenko'
 
-        createdByDisplay = creatorFont.render(createdByLine, True, [255,255,255])
-        creditsDisplay = creditsFont.render(creditsLine, True, [255,255,255])
-        musicCreditsDisplay = creditsFont.render(musicCreditsLine, True, [255,255,255])
+        createdByDisplay = creatorFont.render(createdByLine, True, secondaryFontColor)
+        creditsDisplay = creditsFont.render(creditsLine, True, secondaryFontColor)
+        musicCreditsDisplay = creditsFont.render(musicCreditsLine, True, secondaryFontColor)
 
         createdByRect = createdByDisplay.get_rect(center = (posX, posY - screenSize[1]/15) )
         creditsRect = creditsDisplay.get_rect(center = (posX,posY))
