@@ -114,7 +114,7 @@ jobs:
             ${{ github.workspace }}/gameRecords.txt
 
 
-  build-macos-intel:
+    build-macos-intel:
     runs-on: macos-latest
     name: Build Navigator for MacOS (Intel Based)
 
@@ -145,19 +145,15 @@ jobs:
 
       - name: Build MacOS app
         run: |
-          pyinstaller -y --name Navigator --noconsole --add-data Assets:Assets --add-data gameRecords.txt:. -i ".github/Icon.icns" Navigator.py
+          pyinstaller -y --noconsole --add-data Assets:Assets --add-data gameRecords.txt:. -i ".github/Icon.icns" Navigator.py
+          mv dist/Navigator.app ${{ github.workspace }}
 
       - name: Upload MacOS (Intel Based) artifact
         uses: actions/upload-artifact@v3
         with:
           name: NavigatorMacOSIntel
-          path: dist/Navigator.app
-
-      - name: Include license and notice in MacOS (Intel Based) artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: NavigatorMacOSIntel
           path: |
+            ${{ github.workspace }}/Navigator.app
             ${{ github.workspace }}/LICENSE
             ${{ github.workspace }}/NOTICE
 
@@ -198,6 +194,7 @@ jobs:
           mv ${{github.workspace}}/.github/Cython/* ${{github.workspace}}
           python SetupCython.py build_ext --inplace
           pyinstaller -y --name Navigator --noconsole --add-data Assets:Assets --add-data gameRecords.txt:. -i ".github/Icon.icns" Main.py
+          
 
       - name: Upload MacOS (Intel Based) C artifact
         uses: actions/upload-artifact@v3
