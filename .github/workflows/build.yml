@@ -63,7 +63,7 @@ jobs:
 
   build-windows-c:
     runs-on: windows-latest
-    name: Build Navigator for Windows
+    name: Build Navigator C for Windows
 
     steps:
       - name: Download code on Windows
@@ -164,7 +164,7 @@ jobs:
 
   build-macos-intel-c:
     runs-on: macos-latest
-    name: Build Navigator for MacOS (Intel Based)
+    name: Build Navigator C for MacOS (Intel Based)
 
     steps:
       - name: Download code on MacOS (Intel Based)
@@ -195,7 +195,7 @@ jobs:
         run: |
           pip install cython
           pip install setuptools
-          mv ${{github.workspace}}/.github/Cython/* ${{github.workspace}}
+       	  mv ${{ github.workspace }}/.github/Cython/* ${{ github.workspace }}
           python SetupCython.py build_ext --inplace
           pyinstaller -y --name Navigator --noconsole --add-data Assets:Assets --add-data gameRecords.txt:. -i ".github/Icon.icns" Main.py
 
