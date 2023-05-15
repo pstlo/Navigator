@@ -17,24 +17,23 @@ version = "v0.4.8"
 #------------------GAME CONSTANTS--------------------------------------------------------------------------
 # SCREEN
 screenSize = [800,800] # Default = [800,800]
-scaler = (screenSize[0] + screenSize[1]) / 1600 # Default = x + y / 2  / 800 == 1 / scale to screen size
-roundedScaler = int(round(scaler)) # For values that require whole numbers
 fullScreen = False # Default = False
 fps = 60 # Default = 60
 performanceMode = False # Default = False / Overrules quality mode
 qualityMode = False # Default = False
+pauseCountSize = 40 # Default = 40 / Size of pause count text
 
 # HUD
 showHUD = True
 shieldColor = [0,0,255] # Default = [0,0,255] / Color of shield gauge
 fullShieldColor = [0,255,255] # Default = [0,255,255] / Color of active shield gauge
 fuelColor = [255,0,0] # Default = [255,0,0] / Color of fuel gauge
-timerSize = 30 * roundedScaler # Default = 30
+timerSize = 30  # Default = 30
 timerColor = [255,255,255] # Default = [255,255,255]
 timerDelay = 1000 # Default = 1000
-levelSize = 30 * roundedScaler # Default = 30
+levelSize = 30  # Default = 30
 levelColor = [255,255,255] # Default = [255,255,255]
-scoreSize = 30 * roundedScaler # Default = 30
+scoreSize = 30  # Default = 30
 
 # POWER UPS
 spawnRange = [0.15, 0.85]
@@ -57,12 +56,13 @@ cloudSpeedAdder = 0.5 # Default = 0.5
 
 # GAME OVER SCREEN
 gameOverColor = [255,0,0] # Default = [255,0,0]
-gameOverSize = 100 * roundedScaler # Default = 100
-helpSize = 30 * roundedScaler # Default = 30
+gameOverSize = 100  # Default = 100
+helpSize = 30  # Default = 30
 helpColor = [0,255,0] # Default = [0,255,0]
 finalScoreSize = 40 # Default = 40
+statLineFontSize = round(finalScoreSize * 0.75)
 finalScoreColor = [0,255,0] # Default = [0,255,0]
-pausedSize = 100 * roundedScaler # Default = 100
+pausedSize = 100  # Default = 100
 pausedColor = [255,255,255] # Default = [255,255,255]
 pauseMax = 5 # Default = 5
 
@@ -70,10 +70,10 @@ pauseMax = 5 # Default = 5
 maxIcons = 5 # Default = 5
 maxIconSpeed = 5 # Default = 5
 maxIconRotationSpeed = 3 # Default = 3
-startSize = 120 * roundedScaler # Default = 120
+startSize = 120 # Default = 120
 startColor = [0,255,0] # Default = [0,255,0]
-minIconSize = 30 * roundedScaler # Default = 30
-maxIconSize = 100 * roundedScaler # Default = 100
+minIconSize = 30 # Default = 30
+maxIconSize = 100  # Default = 100
 versionSize = 25 # Default = 25
 versionColor = [0,255,0] # Default = [0,255,0]
 showVersion = True
@@ -81,16 +81,16 @@ showMenuIcons = True
 
 # STAGE UP
 stageUpColor = [0,255,0] # Default = [0,255,0]
-stageUpSize = 90 * roundedScaler # Default = 90
+stageUpSize = 90  # Default = 90
 stageUpCloudStartPos = -900 # Default = -900
-stageUpCloudSpeed = 8 * roundedScaler # Default = 8
+stageUpCloudSpeed = 8  # Default = 8
 
 # CREDITS
-creditsFontSize = 55 * roundedScaler # Default = 55
+creditsFontSize = 55  # Default = 55
 creditsColor = [255,255,255] # Default = [255,255,255]
 mainCreditsSpeed = 1 # Default = 1
 mainCreditsDelay = 10 # Default = 10
-extraCreditsSize = 30 * roundedScaler # Default = 30 / background ships text size
+extraCreditsSize = 30  # Default = 30 / background ships text size
 extraCreditsColor = [0,0,0] # Background ships text color
 maxExtras = 3 # Default = 3 # max background ships
 minBackgroundShipSpeed = 2 # Default = 1
@@ -289,7 +289,7 @@ def resetCursor():
     if cursorMode:
         pos = list(pygame.mouse.get_pos())
         if pos[0] <= 1: pygame.mouse.set_pos(5,pos[1])
-        if pos[0] >= screenSize[0]-1: pygame.mouse.set_pos(screenSize[0]-5,pos[1])
+        if pos[0] >= screenSize[0]-2: pygame.mouse.set_pos(screenSize[0]-5,pos[1])
         if pos[1] <= 1: pygame.mouse.set_pos(pos[0],5)
         if pos[1] >= screenSize[1]-1: pygame.mouse.set_pos(pos[0],screenSize[1]-5)
 
@@ -532,8 +532,24 @@ def loadRecords():
             return gameRecords
 
 
-# FONT
+# FONTS
 gameFont = os.path.join(currentDirectory, 'Font.ttf')
+stageFont = pygame.font.Font(gameFont, levelSize)
+levelFont = pygame.font.Font(gameFont, levelSize)
+scoreFont = pygame.font.Font(gameFont, scoreSize)
+timerFont = pygame.font.Font(gameFont, timerSize)
+stageUpFont = pygame.font.Font(gameFont, stageUpSize)
+startFont = pygame.font.Font(gameFont, startSize)
+shipHelpFont = pygame.font.Font(gameFont, round(helpSize * .65))
+startHelpFont = pygame.font.Font(gameFont, helpSize)
+pausedFont = pygame.font.Font(gameFont, pausedSize)
+pauseCountFont = pygame.font.Font(gameFont,pauseCountSize)
+versionFont = pygame.font.Font(gameFont,versionSize)
+gameOverFont = pygame.font.Font(gameFont, gameOverSize)
+statFont = pygame.font.Font(gameFont, statLineFontSize)
+exitFont = pygame.font.Font(gameFont, helpSize)
+creatorFont = pygame.font.Font(gameFont, creditsFontSize)
+creditsFont = pygame.font.Font(gameFont, creditsFontSize - 15)
 
 # STAGE WIPE CLOUD
 stageCloudImg = pygame.image.load(resources(os.path.join(currentDirectory,'StageCloud.png') ) ).convert_alpha()
@@ -719,8 +735,6 @@ expectedPointsPerLevel = 12 # In testing
 totalShipTypes = len(spaceShipList) # For score based unlocks
 totalPointsForUnlock = totalLevels * expectedPointsPerLevel # Points in game for all unlocks
 pointsForUnlock = int(totalPointsForUnlock/expectedPointsPerLevel)
-
-timerFont = pygame.font.Font(gameFont, timerSize)
 
 # POINT SPAWN AREA
 spawnWidth = int(screenSize[0] * (spawnRange[1] - spawnRange[0]))
@@ -1002,7 +1016,7 @@ class Game:
 
         # UPDATE SCREEN
         player.lastAngle = player.angle # Save recent player orientation
-        if resetPlayerOrientation: player.angle = game.angle # Reset player orientation
+        if resetPlayerOrientation: player.angle = self.angle # Reset player orientation
         player.boosting = False
         displayUpdate()
         self.clk.tick(fps)
@@ -1065,7 +1079,7 @@ class Game:
             if self.gameConstants[self.currentStage][0]["startTime"] == self.gameClock and not self.gameConstants[self.currentStage][0]["START"]: # Next stage's first level's activation time reached
                 self.gameConstants[self.currentStage][0]["START"] = True # Mark as activated
                 stageUpCloud = stageCloudImg
-                stageUpFont = pygame.font.Font(gameFont, stageUpSize)
+
                 stageUpDisplay = stageUpFont.render("STAGE UP", True, stageUpColor)
                 stageUpRect = stageUpCloud.get_rect()
                 stageUpRect.center = (screenSize[0]/2, stageUpCloudStartPos)
@@ -1141,8 +1155,7 @@ class Game:
     # RESET LEVEL PROGRESS
     def resetAllLevels(self):
         for stage in self.gameConstants:
-            for levels in stage:
-                levels["START"] = False
+            for levels in stage: levels["START"] = False
 
 
     # REMOVE ALL OBSTACLES
@@ -1184,20 +1197,17 @@ class Game:
 
         # STAGE DISPLAY
         stageNum = "Stage " + str(self.currentStage)
-        stageFont = pygame.font.Font(gameFont, levelSize)
         stageDisplay = stageFont.render( str(stageNum), True, levelColor )
         stageRect = stageDisplay.get_rect(topleft = screen.get_rect().topleft)
 
         # LEVEL DISPLAY
         levelNum = "-  Level " + str(self.currentLevel)
-        levelFont = pygame.font.Font(gameFont, levelSize)
         levelDisplay = levelFont.render( str(levelNum), True, levelColor )
         levelRect = levelDisplay.get_rect()
         levelRect.center = (stageRect.right + levelRect.width*0.65, stageRect.centery)
 
         # SCORE DISPLAY
         scoreNum = "Score " + str(self.score)
-        scoreFont = pygame.font.Font(gameFont, scoreSize)
         scoreDisplay = scoreFont.render(scoreNum, True, levelColor)
         scoreRect = scoreDisplay.get_rect()
         scoreRect.topleft = (screenSize[0] - (2*scoreRect.width), levelRect.y)
@@ -1315,11 +1325,10 @@ class Menu:
         icons = []
         for icon in range(maxIcons): icons.append(Icon())
 
-        startFont = pygame.font.Font(gameFont, startSize)
+
         startDisplay = startFont.render("N  VIGAT  R", True, startColor)
         startRect = startDisplay.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
-        shipHelpFont = pygame.font.Font(gameFont, round(helpSize * .65))
-        startHelpFont = pygame.font.Font(gameFont, helpSize)
+
         if not game.usingController or gamePad is None:
             startHelpDisplay = startHelpFont.render("ESCAPE = Quit   SPACE = Start   F = Fullscreen   M = Mute   C = Credits", True, helpColor)
             skinHelpDisplay = shipHelpFont.render("A/LEFT = Last skin     D/RIGHT = Next skin", True, helpColor)
@@ -1341,7 +1350,7 @@ class Menu:
         shootHelpRect = shootHelp.get_rect()
         leftRect = menuList[3].get_rect(center = (screenSize[0] * 0.2 , screenSize[1]/3) )
         rightRect = menuList[4].get_rect(center = (screenSize[0] * 0.8 , screenSize[1]/3) )
-        versionFont = pygame.font.Font(gameFont,versionSize)
+
         versionDisplay = versionFont.render(version,True,versionColor)
         versionRect = versionDisplay.get_rect(topright = (startRect.right-versionSize,startRect.bottom-versionSize))
         bounceDelay = 5
@@ -1511,18 +1520,17 @@ class Menu:
         pygame.mixer.music.pause()
         playerBlit = rotateImage(player.image,player.rect,player.lastAngle)
         paused = True
-        pausedFont = pygame.font.Font(gameFont, pausedSize)
+
         pausedDisplay = pausedFont.render("Paused", True, pausedColor)
         pausedRect = pausedDisplay.get_rect()
         pausedRect.center = (screenSize[0]/2, screenSize[1]/2)
 
         # REMAINING PAUSES
-        pauseCountSize = 40 * roundedScaler
         pauseNum = str(pauseMax - game.pauseCount) + " Pauses left"
 
         if game.pauseCount >= pauseMax: pauseNum = "Out of pauses"
 
-        pauseCountFont = pygame.font.Font(gameFont,pauseCountSize)
+
         pauseDisplay = pauseCountFont.render(pauseNum,True,levelColor)
         pauseRect = pauseDisplay.get_rect()
         pauseRect.center = (screenSize[0]/2,screenSize[1]-16)
@@ -1600,15 +1608,14 @@ class Menu:
         statsSpacingY = screenSize[1]/20
 
         # "GAME OVER" text
-        gameOverFont = pygame.font.Font(gameFont, gameOverSize)
+
         gameOverDisplay = gameOverFont.render("GAME OVER", True, gameOverColor)
         gameOverRect = gameOverDisplay.get_rect()
         gameOverRect.center = (screenSize[0]/2, screenSize[1]/3)
 
         # Stats display
-        statLineFontSize = round(finalScoreSize * 0.75)
-        statFont = pygame.font.Font(gameFont, statLineFontSize)
-        exitFont = pygame.font.Font(gameFont, helpSize)
+
+
 
         # Text
         scoreLine = "Score " + str(game.score)
@@ -1720,8 +1727,7 @@ class Menu:
         posX = screenSize[0]/2
         posY = screenSize[1]/2
 
-        creatorFont = pygame.font.Font(gameFont, creditsFontSize)
-        creditsFont = pygame.font.Font(gameFont, creditsFontSize - 15)
+
 
         createdByLine = "Created by Mike Pistolesi"
         creditsLine = "with art by Collin Guetta"
@@ -1939,6 +1945,7 @@ class Player(pygame.sprite.Sprite):
 
             # CURSOR BASED MOVEMENT
             elif game.usingCursor:
+                resetCursor()
                 # RAW CURSOR MODE
                 if rawCursorMode:
                     cursor = pygame.Vector2(pygame.mouse.get_pos())
