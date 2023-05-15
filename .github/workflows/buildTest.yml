@@ -51,11 +51,5 @@ jobs:
           name: NavigatorMacOSIntel
           path: |
             dist/Navigator.app
-            
-      - name: Include license and notice in MacOS artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: NavigatorMacOSIntel
-          path: |
             ${{ github.workspace }}/LICENSE
             ${{ github.workspace }}/NOTICE
