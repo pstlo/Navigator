@@ -16,8 +16,8 @@ version = "v0.4.8"
 #------------------GAME CONSTANTS--------------------------------------------------------------------------
 # SCREEN
 screenSize = [800,800] # Default = [800,800]
-fullScreen = False # Default = False
 fps = 60 # Default = 60
+fullScreen = False
 
 # INPUT
 useController = True # Default = True / Allow controller input
@@ -85,9 +85,9 @@ showBackgroundShips = True # Default = True
 showSupporterNames = True # Default = True
 
 # SOUNDS
-musicMuted = False # Default = False
 musicVolume = 10 # Default = 10 / Music volume / 100
 sfxVolume = 5 # Default = 5 / SFX volume / 100
+musicMuted = False
 
 # MUSIC LOOP DURATION
 menuLoopStart = 1100 # Default = 1100
@@ -105,7 +105,6 @@ heatSeekDelay = 15 # Default = 15 / time before projectile starts homing
 heatSeekNeedsTarget = False # Default = False / projectile will explode if target not found
 
 # LEVELS
-levelTimer = 15 # Default = 15 / Time (seconds) between levels (can be overridden)
 levelUpCloudSpeed = 25 # Default = 25 / Only affects levels preceded by wipe
 
 # OBSTACLES
@@ -123,13 +122,14 @@ encryptGameRecords = True # Hide game records from user to prevent manual unlock
 invalidKeyMessage = "Invalid key, could not save records." # Saved to game records file if encryptGameRecords == True and key is invalid
 
 # EXPERIMENTAL
+loadPreferencesFromFile = False # Default = False / load settings from txt file
 devMode = False # Default = False
 showSpawnArea = False # Default = False / show powerup spawn area
-performanceMode = False # Default = False
-qualityMode = False # Default = False / Overruled by quality mode
-showPresence = True # Default = True / show discord presence
 rawCursorMode = False # Default = False / sets player position to cursor position
 playerMovement = "DEFAULT" # Default = "DEFAULT" /  (DEFAULT, ORIGINAL)
+performanceMode = False
+qualityMode = False
+showPresence = True
 #----------------------------------------------------------------------------------------------------------------------
 
 # KEY BINDS
@@ -148,6 +148,7 @@ muteInput = [pygame.K_m]
 fullScreenInput = [pygame.K_f]
 startInput = [pygame.K_SPACE]
 
+
 # EXE/APP RESOURCES
 def resources(relative):
     try: base = sys._MEIPASS # Running from EXE/APP
@@ -155,14 +156,48 @@ def resources(relative):
     return os.path.join(base, relative)
 
 
+# LOAD PREFERENCES
+defaultPreferences = {'fullScreen':False, 'muted':False, 'performanceMode':False, 'qualityMode':False, 'showDiscordPresence':True}
+
+
+def loadPreferences():
+    if platform.system().lower() == 'windows' or platform.system().lower == 'linux': preferencesPath = './gamePreferences.txt' # For windows and linux
+    else: preferencesPath = resources('gamePreferences.txt') # For MacOS
+    try:
+        with open(preferencesPath, 'r') as file:
+            prefs = json.load(file)
+            return {'fullScreen': bool(prefs['fullScreen']), 'muted':bool(prefs['muted']), 'performanceMode':bool(prefs['performanceMode']), 'qualityMode':bool(prefs['qualityMode']), 'showDiscordPresence':bool(prefs['showDiscordPresence']) } # Sanitize dictionary
+    except:
+        preferences = {'fullScreen':False, 'muted':False, 'performanceMode':False, 'qualityMode':False, 'showDiscordPresence':True} # Default preferences
+        with open(preferencesPath, 'w') as file: file.write(json.dumps(preferences))
+        return preferences
+
+
+# LOADED PREFERENCES
+if loadPreferencesFromFile:
+    preferences = loadPreferences()
+    fullScreen = preferences['fullScreen']
+    musicMuted = preferences['muted']
+    performanceMode = preferences['performanceMode']
+    qualityMode = preferences['qualityMode']
+    showPresence = preferences['showDiscordPresence']
+
+else: preferences = defaultPreferences
+
 # SCREEN UPDATE METHOD
-if qualityMode: updateNotFlip = False
+if qualityMode and not performanceMode: updateNotFlip = False
 else: updateNotFlip = True # use update instead of flip for display updates
 
 # PERFORMANCE SETTINGS
 if performanceMode:
     showBackgroundCloud = False
     drawExhaust = False
+
+
+# UPDATE DISPLAY
+def displayUpdate():
+    if not updateNotFlip: pygame.display.flip()
+    else: pygame.display.update()
 
 
 # GET SCREEN
@@ -177,12 +212,6 @@ def getScreen():
     else:
         if fullScreen: return pygame.display.set_mode(screenSize,pygame.FULLSCREEN | pygame.SCALED, depth = 0)
         else: return pygame.display.set_mode(screenSize,pygame.SCALED,depth = 0)
-
-
-# UPDATE DISPLAY
-def displayUpdate():
-    if not updateNotFlip: pygame.display.flip()
-    else: pygame.display.update()
 
 
 # TOGGLE FULLSCREEN
@@ -387,43 +416,6 @@ def quitGame():
     sys.exit()
 
 
-# Draw labels from formatted list of rects and displays, first 4 lines arranged based on truth value of two booleans
-def drawGameOverLabels(textList, conditionOne, conditionTwo):
-    statsSpacingY = 50
-    statsOffsetY = 10
-    skipped = 0
-    # Both true
-    if conditionOne and conditionTwo:
-        for x in range(len(textList)):
-            if x != 0 and x!= 1 and x!= 3 and x!= 4: # Skip 1st, 2nd, 4th, and 5th items
-                textList[x][1].center = screenSize[0]/2, screenSize[1]/3 + statsOffsetY + statsSpacingY * (x+1 - skipped)
-                screen.blit(textList[x][0],textList[x][1])
-            else: skipped+=1
-
-    # newHighScore
-    elif conditionOne and not conditionTwo:
-        for x in range(len(textList)):
-            if x != 0 and x!= 1 and x!= 5: # Skip 1st, 2nd, and 6th items
-                textList[x][1].center = screenSize[0]/2, screenSize[1]/3+ statsOffsetY + statsSpacingY * (x+1 - skipped)
-                screen.blit(textList[x][0],textList[x][1])
-            else: skipped+=1
-
-    # newLongestRun
-    elif conditionTwo and not conditionOne:
-        for x in range(len(textList)):
-            if x != 2 and x!= 3 and x!= 4: # Skip 3rd, 4th, and 5th items
-                textList[x][1].center = screenSize[0]/2, screenSize[1]/3 + statsOffsetY + statsSpacingY * (x+1 - skipped)
-                screen.blit(textList[x][0],textList[x][1])
-            else: skipped+=1
-
-    else:
-        for x in range(len(textList)):
-            if x != 2 and x != 5: # Skip 3rd and 6th items
-                textList[x][1].center = screenSize[0]/2, screenSize[1]/3 + statsOffsetY + statsSpacingY * (x+1 - skipped)
-                screen.blit(textList[x][0],textList[x][1])
-            else: skipped+=1
-
-
 # Get path to game records based on OS
 def getRecordsPath():
     if platform.system().lower() == 'windows' or platform.system().lower == 'linux': return './gameRecords.txt' # For windows and linux
@@ -442,7 +434,7 @@ explosionDirectory = os.path.join(currentDirectory, 'Explosion') # Explosion ani
 pointsDirectory = os.path.join(currentDirectory, 'Points') # Point image directory
 soundDirectory = os.path.join(currentDirectory, 'Sounds') # Sound assets directory
 supportersDirectory = os.path.join(currentDirectory,'Supporters') # Supporters directory
-recordsPath = getRecordsPath() # Game records directory
+recordsPath = getRecordsPath() # Game records path
 
 # LOAD LEVELS
 stageList = []
@@ -478,8 +470,8 @@ def storeRecords(records):
             try:
                 encrypted = Fernet(getKey()).encrypt(json.dumps(records).encode())
                 with open(recordsPath,'wb') as file: file.write(encrypted)
-            except:
-                return # Failed to load encrypted records, continue without saving
+            except: return # Failed to load encrypted records, continue without saving
+
 
 
 # LOAD GAME RECORDS
@@ -699,7 +691,7 @@ unlockTimePerLevels = [] # For time based unlocks
 totalLevels = 0
 
 for stage in stageList: totalLevels += len(stage) # Get total number of levels
-totalTime = totalLevels * levelTimer # multiply by (average) time per level
+totalTime = totalLevels * 15 # multiply by (average) time per level
 
 # Calculate time per unlock for each ship level
 for shipInd in range(len(spaceShipList)):
@@ -1646,7 +1638,7 @@ class Menu:
 
             pygame.draw.rect(screen, screenColor, [gameOverRect.x - 12,gameOverRect.y + 4,gameOverRect.width + 16, gameOverRect.height - 16],0,10)
             screen.blit(gameOverDisplay,gameOverRect)
-            drawGameOverLabels(displayTextList,newHighScore,newLongRun)
+            self.drawGameOverLabels(displayTextList,newHighScore,newLongRun)
             screen.blit(exitDisplay,exitRect)
             displayUpdate()
 
@@ -1684,6 +1676,44 @@ class Menu:
                     player.updatePlayerConstants(game)
                     running = True
                     gameLoop()
+
+
+    # Draw labels from formatted list of rects and displays, first 4 lines arranged based on truth value of two booleans
+    def drawGameOverLabels(self,textList, conditionOne, conditionTwo):
+        statsSpacingY = 50
+        statsOffsetY = 10
+        skipped = 0
+        # Both true
+        if conditionOne and conditionTwo:
+            for x in range(len(textList)):
+                if x != 0 and x!= 1 and x!= 3 and x!= 4: # Skip 1st, 2nd, 4th, and 5th items
+                    textList[x][1].center = screenSize[0]/2, screenSize[1]/3 + statsOffsetY + statsSpacingY * (x+1 - skipped)
+                    screen.blit(textList[x][0],textList[x][1])
+                else: skipped+=1
+
+        # newHighScore
+        elif conditionOne and not conditionTwo:
+            for x in range(len(textList)):
+                if x != 0 and x!= 1 and x!= 5: # Skip 1st, 2nd, and 6th items
+                    textList[x][1].center = screenSize[0]/2, screenSize[1]/3+ statsOffsetY + statsSpacingY * (x+1 - skipped)
+                    screen.blit(textList[x][0],textList[x][1])
+                else: skipped+=1
+
+        # newLongestRun
+        elif conditionTwo and not conditionOne:
+            for x in range(len(textList)):
+                if x != 2 and x!= 3 and x!= 4: # Skip 3rd, 4th, and 5th items
+                    textList[x][1].center = screenSize[0]/2, screenSize[1]/3 + statsOffsetY + statsSpacingY * (x+1 - skipped)
+                    screen.blit(textList[x][0],textList[x][1])
+                else: skipped+=1
+
+        else:
+            for x in range(len(textList)):
+                if x != 2 and x != 5: # Skip 3rd and 6th items
+                    textList[x][1].center = screenSize[0]/2, screenSize[1]/3 + statsOffsetY + statsSpacingY * (x+1 - skipped)
+                    screen.blit(textList[x][0],textList[x][1])
+                else: skipped+=1
+
 
 
     # CREDITS
@@ -2433,8 +2463,7 @@ class Icon:
         self.movement = getMovement("AGGRO")
         self.direction = self.movement[1]
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
-        randomChoice = random.randint(0,10)
-        if randomChoice < 7: self.image = menuList[1]
+        if random.randint(0,10) < 7: self.image = menuList[1]
         else: self.image = menuList[random.randint(5,len(menuList)-1)]
         size = random.randint(minIconSize,maxIconSize)
         self.image = pygame.transform.scale(self.image, (size, size)).convert_alpha()
@@ -2462,8 +2491,7 @@ class Icon:
         if self.active and ( (self.rect.centery > randomTimerUY) or (self.rect.centery < randomTimerLY) or (self.rect.centerx> randomTimerUX) or (self.rect.centerx < randomTimerLX) ):
             self.movement = getMovement("ALL")
             self.direction = self.movement[1]
-            randomChoice = random.randint(0,10)
-            if randomChoice < 7: self.image = menuList[1]
+            if random.randint(0,10) < 7: self.image = menuList[1]
             else: self.image = menuList[random.randint(5,len(menuList)-1)]
             self.speed = random.randint(1,maxIconSpeed)
             self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
