@@ -43,7 +43,7 @@ jobs:
 
       - name: Build MacOS app
         run: |
-          pyinstaller -y --name Navigator.app --onefile --noconsole --add-data Assets:Assets --add-data gameRecords.txt:. -i ".github/Icon.icns" Navigator.py
+          pyinstaller -y --name Navigator --onefile --noconsole --add-data Assets:Assets --add-data gameRecords.txt:. -i ".github/Icon.icns" Navigator.py
 
       - name: Upload MacOS (Intel Based) artifact
         uses: actions/upload-artifact@v3
