@@ -646,7 +646,7 @@ for shipInd in range(len(assets.spaceShipList)):
     if timePerUnlock == totalTime: unlockTimePerLevels.append(None) # No other skins for this level
     else: unlockTimePerLevels.append(int(timePerUnlock))
 
-expectedPointsPerLevel = 12 # In testing
+expectedPointsPerLevel = 12 # Temporary solution
 totalShipTypes = len(assets.spaceShipList) # For score based unlocks
 totalPointsForUnlock = totalLevels * expectedPointsPerLevel # Points in game for all unlocks
 pointsForUnlock = int(totalPointsForUnlock/expectedPointsPerLevel)
