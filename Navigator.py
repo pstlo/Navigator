@@ -127,7 +127,7 @@ class Settings:
         self.invalidKeyMessage = "Invalid key, could not save records." # Saved to game records file if settings.encryptGameRecords == True and key is invalid
 
         # EXPERIMENTAL
-        self.loadPreferencesFromFile = False # Default = False / load settings from txt file
+        self.loadPreferencesFromFile = False # Default = False / load settings from txt file / WORK IN PROGRESS
         self.devMode = False # Default = False
         self.showSpawnArea = False # Default = False / show powerup spawn area
         self.rawCursorMode = False # Default = False / sets player position to cursor position
