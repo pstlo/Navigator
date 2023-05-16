@@ -13,124 +13,131 @@ pygame.font.init()
 pygame.mixer.init()
 
 version = "v0.4.8"
-#------------------GAME CONSTANTS--------------------------------------------------------------------------
-# SCREEN
-screenSize = [800,800] # Default = [800,800]
-fps = 60 # Default = 60
-fullScreen = False
 
-# INPUT
-useController = True # Default = True / Allow controller input
-cursorMode = True # Default = True / Allow cursor input
-cursorFollowDistance = 25 # Default = 30 / Cursor follow deadzone
-cursorRotateDistance = 10 # Default = 15 / Cursor rotate deadzone
-cursorThickness = 2 # Default = 2
 
-# HUD
-showHUD = True
-shieldColor = [0,0,255] # Default = [0,0,255] / Color of shield gauge / Blue
-fullShieldColor = [0,255,255] # Default = [0,255,255] / Color of active shield gauge / Cyan
-fuelColor = [255,0,0] # Default = [255,0,0] / Color of fuel gauge /  Red
-timerDelay = 1000 # Default = 1000
-pauseMax = 5 # Default = 5 / max pauses per game
 
-# POWER UPS
-spawnRange = [0.15, 0.85]
-spawnVertices = 8 # Default = 8 / Vertices in shape of point spawn area (Octagon)
-pointSize = 25  # Default = 20
-shieldChunkSize = screenSize[0]/40 # Default = screen width / 40
-boostCooldownTime = 2000 # Default = 2000 / Activates when fuel runs out to allow regen
-powerUpList = ["Shield", "Fuel", "Default", "Default"] # Shield/Fuel/Default, chances of spawn
-playerShieldSize = 48 # Default = 64 / Shield visual size
-shieldVisualDuration = 250 # Default = 250 / Shield visual duration
-minDistanceToPoint = (screenSize[0] + screenSize[1]) / 16 # Default = 100
-maxRandomAttempts = 100 # Default = 100 / For random generator distances / max random attempts at finding a valid point
+class Settings:
+    def __init__(self):
+        # SCREEN
+        self.screenSize = [800,800] # Default = [800,800]
+        self.fps = 60 # Default = 60
+        self.fullScreen = False
 
-# BACKGROUND CLOUD
-showBackgroundCloud = True # Default = True
-cloudSpeed = 1 # Default = 1
-cloudStart = -1000 # Default = -1000
-cloudSpeedAdder = 0.5 # Default = 0.5 / cloud speed increment per level
+        # INPUT
+        self.useController = True # Default = True / Allow controller input
+        self.cursorMode = True # Default = True / Allow cursor input
+        self.cursorFollowDistance = 25 # Default = 30 / Cursor follow deadzone
+        self.cursorRotateDistance = 10 # Default = 15 / Cursor rotate deadzone
+        self.cursorThickness = 2 # Default = 2
 
-# FONT COLORS
-primaryFontColor = [0,255,0] # Default = [0,255,0] / Green
-secondaryFontColor = [255,255,255] # Default = [255,255,255] / White
+        # HUD
+        self.showHUD = True
+        self.shieldColor = [0,0,255] # Default = [0,0,255] / Color of shield gauge / Blue
+        self.fullShieldColor = [0,255,255] # Default = [0,255,255] / Color of active shield gauge / Cyan
+        self.fuelColor = [255,0,0] # Default = [255,0,0] / Color of fuel gauge /  Red
+        self.timerDelay = 1000 # Default = 1000
+        self.pauseMax = 5 # Default = 5 / max pauses per game
 
-# START MENU
-maxIcons = 5 # Default = 5
-maxIconSpeed = 5 # Default = 5
-maxIconRotationSpeed = 3 # Default = 3
-minIconSize = 30 # Default = 30
-maxIconSize = 100  # Default = 100
-showVersion = True # show version info
-showMenuIcons = True # show menu icons
+        # POWER UPS
+        self.spawnRange = [0.15, 0.85]
+        self.spawnVertices = 8 # Default = 8 / Vertices in shape of point spawn area (Octagon)
+        self.pointSize = 25  # Default = 20
+        self.shieldChunkSize = self.screenSize[0]/40 # Default = screen width / 40
+        self.boostCooldownTime = 2000 # Default = 2000 / Activates when fuel runs out to allow regen
+        self.powerUpList = ["Shield", "Fuel", "Default", "Default"] # Shield/Fuel/Default, chances of spawn
+        self.playerShieldSize = 48 # Default = 64 / Shield visual size
+        self.shieldVisualDuration = 250 # Default = 250 / Shield visual duration
+        self.minDistanceToPoint = (self.screenSize[0] + self.screenSize[1]) / 16 # Default = 100
+        self.maxRandomAttempts = 100 # Default = 100 / For random generator distances / max random attempts at finding a valid point
 
-# STAGE UP
-stageUpCloudStartPos = -900 # Default = -900
-stageUpCloudSpeed = 8  # Default = 8
+        # BACKGROUND CLOUD
+        self.showBackgroundCloud = True # Default = True
+        self.cloudSpeed = 1 # Default = 1
+        self.cloudStart = -1000 # Default = -1000
+        self.cloudSpeedAdder = 0.5 # Default = 0.5 / cloud speed increment per level
 
-# CREDITS
-mainCreditsSpeed = 1 # Default = 1
-mainCreditsDelay = 10 # Default = 10
-extraCreditsSize = 30  # Default = 30 / background ships text size
-maxExtras = 3 # Default = 3 / # max background ships
-minBackgroundShipSpeed = 2 # Default = 1
-maxBackgroundShipSpeed = 3 # Default = 3
-minBackgroundShipSize = 50 # Default = 50
-maxBackgroundShipSize = 100 # Default = 150
-backgroundShipDelay = 15 # Default = 15 / Higher is slower
-minBackgroundShipSpawnDelay = 500 # / Min delay (ms) before a ship spawns
-maxBackgroundShipSpawnDelay = 3000 # / Max delay (ms) before a ship spawns
-showBackgroundShips = True # Default = True
-showSupporterNames = True # Default = True
+        # FONT COLORS
+        self.primaryFontColor = [0,255,0] # Default = [0,255,0] / Green
+        self.secondaryFontColor = [255,255,255] # Default = [255,255,255] / White
 
-# SOUNDS
-musicVolume = 10 # Default = 10 / Music volume / 100
-sfxVolume = 5 # Default = 5 / SFX volume / 100
-musicMuted = False
+        # START MENU
+        self.maxIcons = 5 # Default = 5
+        self.maxIconSpeed = 5 # Default = 5
+        self.maxIconRotationSpeed = 3 # Default = 3
+        self.minIconSize = 30 # Default = 30
+        self.maxIconSize = 100  # Default = 100
+        self.showVersion = True # show version info
+        self.showMenuIcons = True # show menu icons
 
-# MUSIC LOOP DURATION
-menuLoopStart = 1100 # Default = 1100
-menuLoopEnd = 12800 # Default = 12800
-musicLoopStart = 25000 # Default = 25000
-musicLoopEnd = 76000 # Default = 76000
+        # STAGE UP
+        self.stageUpCloudStartPos = -900 # Default = -900
+        self.stageUpCloudSpeed = 8  # Default = 8
 
-# PLAYER
-resetPlayerOrientation = True # Default = True / reset orientation if player is not moving
-drawExhaust = True # Default = True / draw exhaust animation
-exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
-defaultToHighSkin = True # Default = True / Default to highest skin unlocked on game launch
-defaultToHighShip = False # Default = False / Default to highest ship unlocked on game launch
-heatSeekDelay = 15 # Default = 15 / time before projectile starts homing
-heatSeekNeedsTarget = False # Default = False / projectile will explode if target not found
+        # CREDITS
+        self.mainCreditsSpeed = 1 # Default = 1
+        self.mainCreditsDelay = 10 # Default = 10
+        self.extraCreditsSize = 30  # Default = 30 / background ships text size
+        self.maxExtras = 3 # Default = 3 / # max background ships
+        self.minBackgroundShipSpeed = 2 # Default = 1
+        self.maxBackgroundShipSpeed = 3 # Default = 3
+        self.minBackgroundShipSize = 50 # Default = 50
+        self.maxBackgroundShipSize = 100 # Default = 150
+        self.backgroundShipDelay = 15 # Default = 15 / Higher is slower
+        self.minBackgroundShipSpawnDelay = 500 # / Min delay (ms) before a ship spawns
+        self.maxBackgroundShipSpawnDelay = 3000 # / Max delay (ms) before a ship spawns
+        self.showBackgroundShips = True # Default = True
+        self.showSupporterNames = True # Default = True
 
-# LEVELS
-levelUpCloudSpeed = 25 # Default = 25 / Only affects levels preceded by wipe
+        # SOUNDS
+        self.musicVolume = 10 # Default = 10 / Music volume / 100
+        self.sfxVolume = 5 # Default = 5 / SFX volume / 100
+        self.musicMuted = False
 
-# OBSTACLES
-explosionDelay = 1 # Default = 1
-slowerDiagonalObstacles = True # Default = True / use the hypotenuse or whatever
-spawnDistance = 0 # Default = 0 / Distance past screen border required before new obstacle spawned
-activationDelay = 2 # Default = 2 / frames before activation after entering screen
+        # MUSIC LOOP DURATION
+        self.menuLoopStart = 1100 # Default = 1100
+        self.menuLoopEnd = 12800 # Default = 12800
+        self.musicLoopStart = 25000 # Default = 25000
+        self.musicLoopEnd = 76000 # Default = 76000
 
-# CAVES
-caveStartPos = screenSize[1]*-2 # Default = -1600 / Cave start Y coordinate
-caveSpeed = 20 # Default = 20 / Cave flyby speed
+        # PLAYER
+        self.resetPlayerOrientation = True # Default = True / reset orientation if player is not moving
+        self.drawExhaust = True # Default = True / draw exhaust animation
+        self.exhaustUpdateDelay = 50 # Default = 50 / Delay (ms) between exhaust animation frames
+        self.defaultToHighSkin = True # Default = True / Default to highest skin unlocked on game launch
+        self.defaultToHighShip = False # Default = False / Default to highest ship unlocked on game launch
+        self.heatSeekDelay = 15 # Default = 15 / time before projectile starts homing
+        self.heatSeekNeedsTarget = False # Default = False / projectile will explode if target not found
 
-# SAVING
-encryptGameRecords = True # Hide game records from user to prevent manual unlocks
-invalidKeyMessage = "Invalid key, could not save records." # Saved to game records file if encryptGameRecords == True and key is invalid
+        # LEVELS
+        self.levelUpCloudSpeed = 25 # Default = 25 / Only affects levels preceded by wipe
 
-# EXPERIMENTAL
-loadPreferencesFromFile = False # Default = False / load settings from txt file
-devMode = False # Default = False
-showSpawnArea = False # Default = False / show powerup spawn area
-rawCursorMode = False # Default = False / sets player position to cursor position
-playerMovement = "DEFAULT" # Default = "DEFAULT" /  (DEFAULT, ORIGINAL)
-performanceMode = False
-qualityMode = False
-showPresence = True
-#----------------------------------------------------------------------------------------------------------------------
+        # OBSTACLES
+        self.explosionDelay = 1 # Default = 1
+        self.slowerDiagonalObstacles = True # Default = True / use the hypotenuse or whatever
+        self.spawnDistance = 0 # Default = 0 / Distance past screen border required before new obstacle spawned
+        self.activationDelay = 2 # Default = 2 / frames before activation after entering screen
+
+        # CAVES
+        self.caveStartPos = self.screenSize[1]*-2 # Default = -1600 / Cave start Y coordinate
+        self.caveSpeed = 20 # Default = 20 / Cave flyby speed
+
+        # SAVING
+        self.encryptGameRecords = True # Hide game records from user to prevent manual unlocks
+        self.invalidKeyMessage = "Invalid key, could not save records." # Saved to game records file if settings.encryptGameRecords == True and key is invalid
+
+        # EXPERIMENTAL
+        self.loadPreferencesFromFile = False # Default = False / load settings from txt file
+        self.devMode = False # Default = False
+        self.showSpawnArea = False # Default = False / show powerup spawn area
+        self.rawCursorMode = False # Default = False / sets player position to cursor position
+        self.playerMovement = "DEFAULT" # Default = "DEFAULT" /  (DEFAULT, ORIGINAL)
+        self.performanceMode = False
+        self.qualityMode = False
+        self.showPresence = True
+
+
+
+settings = Settings() # INITIALIZE SETTINGS
 
 # KEY BINDS
 leftInput = [pygame.K_a, pygame.K_LEFT]
@@ -186,14 +193,14 @@ def getKey():
 # STORE GAME RECORDS
 def storeRecords(records):
     # No encryption
-    if not encryptGameRecords:
+    if not settings.encryptGameRecords:
         try:
             with open(recordsPath, 'w') as file: file.write(json.dumps(records))
         except: return # Continue without saving game records
     # With encryption
     else:
         if getKey() is None:
-            with open(recordsPath,'w') as file: file.write(invalidKeyMessage)
+            with open(recordsPath,'w') as file: file.write(settings.invalidKeyMessage)
             return # No key, continue without saving
         else:
             try:
@@ -205,7 +212,7 @@ def storeRecords(records):
 # LOAD GAME RECORDS
 def loadRecords():
     # No encryption
-    if not encryptGameRecords:
+    if not settings.encryptGameRecords:
         try:
             with open(recordsPath,'r') as file: return json.load(file)
         except:
@@ -226,36 +233,12 @@ def loadRecords():
             return gameRecords
 
 
-def loadPreferences():
-    try:
-        with open(preferencesPath, 'r') as file:
-            prefs = json.load(file)
-            return {'fullScreen': bool(prefs['fullScreen']), 'muted':bool(prefs['muted']), 'performanceMode':bool(prefs['performanceMode']), 'qualityMode':bool(prefs['qualityMode']), 'showDiscordPresence':bool(prefs['showDiscordPresence']) } # Sanitize dictionary
-    except: return
-
-
-def savePreferences(prefs):
-    try:
-        with open(preferencesPath, 'w') as file: file.write(json.dumps(prefs))
-    except: return
-
-
-# APPLY PREFERENCES
-if loadPreferencesFromFile:
-    preferences = loadPreferences()
-    fullScreen = preferences['fullScreen']
-    musicMuted = preferences['muted']
-    performanceMode = preferences['performanceMode']
-    qualityMode = preferences['qualityMode']
-    showPresence = preferences['showDiscordPresence']
-
-
 # SET SCREEN UPDATE METHOD
-if qualityMode and not performanceMode: updateNotFlip = False
+if settings.qualityMode and not settings.performanceMode: updateNotFlip = False
 else: updateNotFlip = True # use update instead of flip for display updates
 
 # SET PERFORMANCE SETTINGS
-if performanceMode:showBackgroundCloud,drawExhaust = False,False
+if settings.performanceMode:settings.showBackgroundCloud,settings.drawExhaust = False,False
 
 
 # UPDATE DISPLAY
@@ -266,24 +249,24 @@ def displayUpdate():
 
 # GET SCREEN
 def getScreen():
-    if performanceMode:
-        if fullScreen: return pygame.display.set_mode(screenSize, pygame.FULLSCREEN | pygame.DOUBLEBUF | pygame.SCALED , depth = 16)
-        else: return pygame.display.set_mode(screenSize,pygame.DOUBLEBUF,depth=16)
-    elif qualityMode:
-        if fullScreen: return pygame.display.set_mode(screenSize, pygame.FULLSCREEN| pygame.NOFRAME | pygame.SRCALPHA,depth = 32)
-        else: return pygame.display.set_mode(screenSize, pygame.NOFRAME | pygame.SRCALPHA,depth = 32)
+    if settings.performanceMode:
+        if settings.fullScreen: return pygame.display.set_mode(settings.screenSize, pygame.FULLSCREEN | pygame.DOUBLEBUF | pygame.SCALED , depth = 16)
+        else: return pygame.display.set_mode(settings.screenSize,pygame.DOUBLEBUF,depth=16)
+    elif settings.qualityMode:
+        if settings.fullScreen: return pygame.display.set_mode(settings.screenSize, pygame.FULLSCREEN| pygame.NOFRAME | pygame.SRCALPHA,depth = 32)
+        else: return pygame.display.set_mode(settings.screenSize, pygame.NOFRAME | pygame.SRCALPHA,depth = 32)
     # Default
     else:
-        if fullScreen: return pygame.display.set_mode(screenSize,pygame.FULLSCREEN | pygame.SCALED, depth = 0)
-        else: return pygame.display.set_mode(screenSize,pygame.SCALED,depth = 0)
+        if settings.fullScreen: return pygame.display.set_mode(settings.screenSize,pygame.FULLSCREEN | pygame.SCALED, depth = 0)
+        else: return pygame.display.set_mode(settings.screenSize,pygame.SCALED,depth = 0)
 
 
 # TOGGLE FULLSCREEN
 def toggleScreen():
-    if qualityMode and not performanceMode:
-        global screen,fullScreen
+    if settings.qualityMode and not settings.performanceMode:
+        global screen
         pygame.display.quit()
-        fullScreen = not fullScreen
+        settings.settings.fullScreen = not settings.settings.fullScreen
         pygame.display.set_caption('Navigator')
         pygame.display.set_icon(windowIcon)
         screen = getScreen()
@@ -292,16 +275,16 @@ def toggleScreen():
 
 # GAMEPLAY MUSIC LOOP
 def musicLoop():
-    if pygame.mixer.music.get_pos() >= musicLoopEnd:
+    if pygame.mixer.music.get_pos() >= settings.musicLoopEnd:
         pygame.mixer.music.rewind()
-        pygame.mixer.music.set_pos(musicLoopStart)
+        pygame.mixer.music.set_pos(settings.musicLoopStart)
         pygame.mixer.music.play()
 
 
 # TOGGLE MUSIC MUTE
 def toggleMusic(game):
     game.musicMuted = not game.musicMuted
-    if pygame.mixer.music.get_volume() == 0: pygame.mixer.music.set_volume(musicVolume/100)
+    if pygame.mixer.music.get_volume() == 0: pygame.mixer.music.set_volume(settings.musicVolume/100)
     else: pygame.mixer.music.set_volume(0)
 
 
@@ -325,7 +308,7 @@ async def getPresence(presence):
         return None
 
 
-if showPresence:
+if settings.showPresence:
     try:
         presence = pypresence.AioPresence((Fernet(base64.b64decode(os.getenv('KEY1'))).decrypt(os.getenv('TOKEN'))).decode())
         asyncio.run(getPresence(presence))
@@ -333,20 +316,20 @@ if showPresence:
 
 # CURSOR
 curSurf = pygame.Surface((40, 40), pygame.SRCALPHA)
-pygame.draw.line(curSurf, (0, 255, 0), (10, 20), (30, 20), cursorThickness)
-pygame.draw.line(curSurf, (0, 255, 0), (20, 10), (20, 30), cursorThickness)
+pygame.draw.line(curSurf, (0, 255, 0), (10, 20), (30, 20), settings.cursorThickness)
+pygame.draw.line(curSurf, (0, 255, 0), (20, 10), (20, 30), settings.cursorThickness)
 cursor = pygame.cursors.Cursor((20, 20), curSurf)
 pygame.mouse.set_cursor(cursor)
-pygame.mouse.set_visible(cursorMode)
+pygame.mouse.set_visible(settings.cursorMode)
 
 
 def resetCursor():
-    if cursorMode:
+    if settings.cursorMode:
         pos = list(pygame.mouse.get_pos())
         if pos[0] <= 1: pygame.mouse.set_pos(5,pos[1])
-        if pos[0] >= screenSize[0]-2: pygame.mouse.set_pos(screenSize[0]-5,pos[1])
+        if pos[0] >= settings.screenSize[0]-2: pygame.mouse.set_pos(settings.screenSize[0]-5,pos[1])
         if pos[1] <= 1: pygame.mouse.set_pos(pos[0],5)
-        if pos[1] >= screenSize[1]-1: pygame.mouse.set_pos(pos[0],screenSize[1]-5)
+        if pos[1] >= settings.screenSize[1]-1: pygame.mouse.set_pos(pos[0],settings.screenSize[1]-5)
 
 
 # CONTROLLER BINDS
@@ -370,7 +353,7 @@ controllerBinds = {
         'exit':6,
         'pause':15,
         'menu':15,
-        'fullScreen': 4,
+        'settings.fullScreen': 4,
         'credits':3
         },
 
@@ -393,7 +376,7 @@ controllerBinds = {
         'exit':7,
         'pause':6,
         'menu':6,
-        'fullScreen': 10,
+        'settings.fullScreen': 10,
         'credits':3
         },
 
@@ -416,7 +399,7 @@ controllerBinds = {
         'exit':6,
         'pause':4,
         'menu':4,
-        'fullScreen': 15,
+        'settings.fullScreen': 15,
         'credits':2
         }
     }
@@ -424,7 +407,7 @@ controllerBinds = {
 # CONTROLLER INPUT
 gamePad = None
 compatibleController = False
-if useController:
+if settings.useController:
     pygame.joystick.init()
     if pygame.joystick.get_count() > 0:
         gamePad = pygame.joystick.Joystick(0)
@@ -447,7 +430,7 @@ if useController:
                 controllerExit = controllerBinds[controllerType]['exit']
                 controllerPause = controllerBinds[controllerType]['pause']
                 controllerMenu = controllerBinds[controllerType]['menu']
-                controllerFullScreen = controllerBinds[controllerType]['fullScreen']
+                controllerFullScreen = controllerBinds[controllerType]['settings.fullScreen']
                 controllerCredits = controllerBinds[controllerType]['credits']
                 compatibleController = True
                 break
@@ -455,11 +438,11 @@ if useController:
         # Incompatible controller
         if not compatibleController:
             pygame.joystick.quit()
-            if useController: useController = False
+            if settings.useController: settings.useController = False
 
     else:
         pygame.joystick.quit()
-        if useController: useController = False
+        if settings.useController: settings.useController = False
 
 # LOAD LEVELS
 stageList = []
@@ -588,26 +571,26 @@ for levelFolder in sorted(os.listdir(shipDirectory)):
         spaceShipList.append(shipLevelDict)
 
 # PLAYER SHIELD ASSET
-playerShield = pygame.transform.scale(pygame.image.load(resources(os.path.join(assetDirectory,"Shield.png"))),(playerShieldSize,playerShieldSize)).convert_alpha()
+playerShield = pygame.transform.scale(pygame.image.load(resources(os.path.join(assetDirectory,"Shield.png"))),(settings.playerShieldSize,settings.playerShieldSize)).convert_alpha()
 
 # MUSIC ASSET
 pygame.mixer.music.load(resources(os.path.join(soundDirectory,"Soundtrack.mp3")))
 
 # EXPLOSION NOISE ASSET
 explosionNoise = pygame.mixer.Sound(resources(os.path.join(soundDirectory,"Explosion.wav")))
-explosionNoise.set_volume(sfxVolume/100)
+explosionNoise.set_volume(settings.sfxVolume/100)
 
 # POINT NOISE ASSET
 powerUpNoise = pygame.mixer.Sound(resources(os.path.join(soundDirectory,"Point.wav")))
-powerUpNoise.set_volume(sfxVolume/100)
+powerUpNoise.set_volume(settings.sfxVolume/100)
 
 # LASER NOISE ASSET
 laserNoise = pygame.mixer.Sound(resources(os.path.join(soundDirectory,"Laser.wav")))
-laserNoise.set_volume(sfxVolume/100)
+laserNoise.set_volume(settings.sfxVolume/100)
 
 # LASER IMPACT NOISE ASSET
 impactNoise = pygame.mixer.Sound(resources(os.path.join(soundDirectory,"Impact.wav")))
-impactNoise.set_volume(sfxVolume/100)
+impactNoise.set_volume(settings.sfxVolume/100)
 
 # SHIP ATTRIBUTES DATA
 shipConstants = []
@@ -668,16 +651,16 @@ totalPointsForUnlock = totalLevels * expectedPointsPerLevel # Points in game for
 pointsForUnlock = int(totalPointsForUnlock/expectedPointsPerLevel)
 
 # POINT SPAWN AREA
-spawnWidth = int(screenSize[0] * (spawnRange[1] - spawnRange[0]))
-spawnHeight = int(screenSize[1] * (spawnRange[1] - spawnRange[0]))
-spawnOffsetX = int((screenSize[0] - spawnWidth) / 2)
-spawnOffsetY = int((screenSize[1] - spawnHeight) / 2)
+spawnWidth = int(settings.screenSize[0] * (settings.spawnRange[1] - settings.spawnRange[0]))
+spawnHeight = int(settings.screenSize[1] * (settings.spawnRange[1] - settings.spawnRange[0]))
+spawnOffsetX = int((settings.screenSize[0] - spawnWidth) / 2)
+spawnOffsetY = int((settings.screenSize[1] - spawnHeight) / 2)
 spawnAreaPoints = []
 
-for i in range(spawnVertices):
-    angle = i * 2 * 3.14159 / spawnVertices + (3.14159 / spawnVertices)
-    x = screenSize[0]/2 + (spawnWidth / 2) * math.cos(angle)
-    y = screenSize[1]/2 + (spawnHeight / 2) * math.sin(angle)
+for i in range(settings.spawnVertices):
+    angle = i * 2 * 3.14159 / settings.spawnVertices + (3.14159 / settings.spawnVertices)
+    x = settings.screenSize[0]/2 + (spawnWidth / 2) * math.cos(angle)
+    y = settings.screenSize[1]/2 + (spawnHeight / 2) * math.sin(angle)
     spawnAreaPoints.append((x, y)) # Vertices of spawn area
 
 # "ALL" Spawn pattern / also used for random bounces in credits screen
@@ -712,7 +695,7 @@ class Game:
         self.angle = self.gameConstants[0][0]["levelAngle"] # Game rotation
         self.target = self.gameConstants[0][0]["obstacleTarget"]
         self.obsHealth = self.gameConstants[0][0]["obstacleHealth"]
-        self.cloudSpeed = cloudSpeed
+        self.cloudSpeed = settings.cloudSpeed
 
         self.currentLevel = 1
         self.currentStage = 1
@@ -729,13 +712,13 @@ class Game:
         self.savedShipLevel = 0 # Saved ship type
         self.shipUnlockNumber = 0 # Number of unlocked ships
         self.skinUnlockNumber = 0 # Number of unlocked skins for current ship
-        self.cloudPos = cloudStart # Background cloud position
+        self.cloudPos = settings.cloudStart # Background cloud position
         self.explosions = [] # Obstacle explosions
         self.cave,self.caveIndex = None, 0 # For cave levels
-        self.musicMuted = musicMuted
+        self.musicMuted = settings.musicMuted
         self.clk = pygame.time.Clock() # Gameclock
         self.records = records # Game records dictionary
-        self.usingController = useController # Using controller for movement
+        self.usingController = settings.useController # Using controller for movement
         self.usingCursor = False # Using cursor for movement
 
         # STORE LEVEL 1 VALUES
@@ -767,7 +750,7 @@ class Game:
             if (event.type == pygame.KEYDOWN and event.key in muteInput) or (gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
 
             # PAUSE GAME
-            if game.pauseCount < pauseMax and ( (event.type == pygame.KEYDOWN and event.key in pauseInput) or (gamePad is not None and event.type == pygame.JOYBUTTONDOWN and gamePad.get_button(controllerPause)==1) ):
+            if game.pauseCount < settings.pauseMax and ( (event.type == pygame.KEYDOWN and event.key in pauseInput) or (gamePad is not None and event.type == pygame.JOYBUTTONDOWN and gamePad.get_button(controllerPause)==1) ):
                 game.pauseCount += 1
                 menu.pause(game,player,obstacles,lasers)
 
@@ -794,15 +777,15 @@ class Game:
         screen.blit(bgList[self.currentStage - 1][0], (0,0) )
 
         # CLOUD ANIMATION
-        if showBackgroundCloud:
+        if settings.showBackgroundCloud:
             cloudImg = bgList[self.currentStage - 1][1]
-            cloudRect = cloudImg.get_rect(center = (screenSize[0]/2,self.cloudPos))
-            if cloudRect.bottom >= 0 and cloudRect.top <= screenSize[1]: screen.blit(cloudImg, cloudRect) # Draw cloud
-            elif cloudRect.top > screenSize[1]: self.cloudPos = cloudStart
+            cloudRect = cloudImg.get_rect(center = (settings.screenSize[0]/2,self.cloudPos))
+            if cloudRect.bottom >= 0 and cloudRect.top <= settings.screenSize[1]: screen.blit(cloudImg, cloudRect) # Draw cloud
+            elif cloudRect.top > settings.screenSize[1]: self.cloudPos = settings.cloudStart
             self.cloudPos += self.cloudSpeed
 
         # SHOW POINT SPAWN AREA (Testing)
-        if showSpawnArea: pygame.draw.polygon(screen, (255, 0, 0), spawnAreaPoints,1)
+        if settings.showSpawnArea: pygame.draw.polygon(screen, (255, 0, 0), spawnAreaPoints,1)
 
         # DRAW POINT
         screen.blit(self.thisPoint.image, self.thisPoint.rect)
@@ -825,7 +808,7 @@ class Game:
 
         # EXITING CAVE
         elif self.cave is not None and self.cave.leave:
-            if self.cave.rect.top > screenSize[1]:
+            if self.cave.rect.top > settings.screenSize[1]:
                 self.cave.kill()
                 self.cave = None
             else:
@@ -841,7 +824,7 @@ class Game:
                         menu.gameOver(self,player,obstacles) # Game over
 
         # HUD
-        if showHUD: self.showHUD(player)
+        if settings.showHUD: self.showHUD(player)
 
         # PLAYER/POWERUP COLLISION DETECTION
         if pygame.sprite.collide_mask(player,self.thisPoint):
@@ -870,7 +853,7 @@ class Game:
         screen.blit(newBlit[0],newBlit[1])
 
         # DRAW EXHAUST/BOOST
-        if drawExhaust:
+        if settings.drawExhaust:
             if player.boosting: newBlit = rotateImage(spaceShipList[game.savedShipLevel]['boost'][player.boostState],player.rect,player.angle) # Boost frames
             else: newBlit = rotateImage(spaceShipList[game.savedShipLevel]['exhaust'][player.exhaustState-1],player.rect,player.angle) # Regular exhaust frames
             screen.blit(newBlit[0],newBlit[1])
@@ -914,7 +897,7 @@ class Game:
                         obs.kill()
 
                     # ROTATE AND DRAW OBSTACLE
-                    if not performanceMode:
+                    if not settings.performanceMode:
                         obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle
                         if obs.angle >= 360: obs.angle = -360
                         if obs.angle < 0: obs.angle +=360
@@ -924,7 +907,7 @@ class Game:
                     # OBSTACLE BOUNDARY HANDLING
                     obs.bound(obstacles)
 
-            if performanceMode:obstacles.draw(screen) # Potential performance improvement
+            if settings.performanceMode:obstacles.draw(screen) # Potential performance improvement
 
             # DRAW EXPLOSIONS
             for debris in self.explosions:
@@ -942,10 +925,10 @@ class Game:
 
         # UPDATE SCREEN
         player.lastAngle = player.angle # Save recent player orientation
-        if resetPlayerOrientation: player.angle = self.angle # Reset player orientation
+        if settings.resetPlayerOrientation: player.angle = self.angle # Reset player orientation
         player.boosting = False
         displayUpdate()
-        self.clk.tick(fps)
+        self.clk.tick(settings.fps)
 
 
     # SET GAME CONSTANTS TO DEFAULT
@@ -961,16 +944,16 @@ class Game:
         self.angle = self.savedConstants["levelAngle"]
         self.target = self.savedConstants["obstacleTarget"]
         self.obsHealth = self.savedConstants["obstacleHealth"]
-        self.cloudSpeed = cloudSpeed
-        self.cloudPos = cloudStart
+        self.cloudSpeed = settings.cloudSpeed
+        self.cloudPos = settings.cloudStart
 
 
     # DRAW CLOUD OUTSIDE OF MAIN LOOP
     def showBackgroundCloud(self):
-        if showBackgroundCloud:
+        if settings.showBackgroundCloud:
             cloudImg = bgList[game.currentStage - 1][1]
-            cloudRect = cloudImg.get_rect(center = (screenSize[0]/2,game.cloudPos))
-            if cloudRect.bottom >= 0 and cloudRect.top <= screenSize[1]: screen.blit(cloudImg, cloudRect) # Draw cloud
+            cloudRect = cloudImg.get_rect(center = (settings.screenSize[0]/2,game.cloudPos))
+            if cloudRect.bottom >= 0 and cloudRect.top <= settings.screenSize[1]: screen.blit(cloudImg, cloudRect) # Draw cloud
 
 
     # Draw frame outside of main loop
@@ -986,7 +969,7 @@ class Game:
         self.cloudPos += self.cloudSpeed
         if self.cave is not None:
             self.cave.update()
-            if self.cave.rect.top <= screenSize[1] and self.cave.rect.bottom >= 0: screen.blit(self.cave.image,self.cave.rect) # DRAW CAVE
+            if self.cave.rect.top <= settings.screenSize[1] and self.cave.rect.bottom >= 0: screen.blit(self.cave.image,self.cave.rect) # DRAW CAVE
 
         for obs in obstacles:
             obs.move(player)
@@ -995,7 +978,7 @@ class Game:
             screen.blit(newBlit[0],newBlit[1])
             obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle
 
-        self.clk.tick(fps)
+        self.clk.tick(settings.fps)
 
 
     # UPDATE GAME CONSTANTS
@@ -1007,9 +990,9 @@ class Game:
                 self.gameConstants[self.currentStage][0]["START"] = True # Mark as activated
                 stageUpCloud = stageCloudImg
 
-                stageUpDisplay = stageUpFont.render("STAGE UP", True, primaryFontColor)
+                stageUpDisplay = stageUpFont.render("STAGE UP", True, settings.primaryFontColor)
                 stageUpRect = stageUpCloud.get_rect()
-                stageUpRect.center = (screenSize[0]/2, stageUpCloudStartPos)
+                stageUpRect.center = (settings.screenSize[0]/2, settings.stageUpCloudStartPos)
                 stageUp , stageWipe = True , True
 
                 # STAGE UP ANIMATION / Removes old obstacles
@@ -1020,18 +1003,18 @@ class Game:
                         if obs.rect.top <= stageUpRect.bottom: obs.kill()
 
                     screen.blit(stageUpCloud,stageUpRect) # Draw cloud
-                    screen.blit(stageUpDisplay,(stageUpRect.centerx - screenSize[0]/5, stageUpRect.centery)) # Draw "STAGE UP" text
+                    screen.blit(stageUpDisplay,(stageUpRect.centerx - settings.screenSize[0]/5, stageUpRect.centery)) # Draw "STAGE UP" text
                     game.showHUD(player)
                     img, imgRect = rotateImage(player.image, player.rect, player.angle)
                     screen.blit(img,imgRect) # Draw player
-                    stageUpRect.centery += stageUpCloudSpeed
+                    stageUpRect.centery += settings.stageUpCloudSpeed
 
-                    if stageUpRect.centery >= screenSize[1]/2 and stageWipe:
+                    if stageUpRect.centery >= settings.screenSize[1]/2 and stageWipe:
                         self.currentStage += 1
                         self.currentLevel = 1
                         stageWipe = False
 
-                    elif stageUpRect.centery >= screenSize[1] * 2: stageUp = False
+                    elif stageUpRect.centery >= settings.screenSize[1] * 2: stageUp = False
                     displayUpdate()
                     player.angle = self.angle
 
@@ -1041,7 +1024,7 @@ class Game:
                 if self.gameConstants[self.currentStage-1][self.currentLevel-1]["wipeObstacles"]:
                     levelUpCloud = stageCloudImg
                     levelUpRect = levelUpCloud.get_rect()
-                    levelUpRect.center = (screenSize[0]/2, stageUpCloudStartPos)
+                    levelUpRect.center = (settings.screenSize[0]/2, settings.stageUpCloudStartPos)
                     levelUp = True
 
                     # LEVEL UP ANIMATION / Removes old obstacles
@@ -1056,8 +1039,8 @@ class Game:
                         img, imgRect = rotateImage(player.image, player.rect, player.angle)
                         screen.blit(img,imgRect) # Draw player
 
-                        levelUpRect.centery += levelUpCloudSpeed
-                        if levelUpRect.top >= screenSize[1]: levelUp = False
+                        levelUpRect.centery += settings.levelUpCloudSpeed
+                        if levelUpRect.top >= settings.screenSize[1]: levelUp = False
                         displayUpdate()
                         player.angle = self.angle
 
@@ -1074,7 +1057,7 @@ class Game:
                 self.target = levelDict["obstacleTarget"]
                 self.obsHealth = levelDict["obstacleHealth"]
                 if self.cave is not None: self.cave.leave = True # Set cave for exit
-                self.cloudSpeed += cloudSpeedAdder
+                self.cloudSpeed += settings.cloudSpeedAdder
                 self.currentLevel += 1
                 break
 
@@ -1095,7 +1078,7 @@ class Game:
     def showHUD(self,player):
 
         # BORDER
-        barBorder = pygame.Rect(screenSize[0]/3, 0, (screenSize[0]/3), 10)
+        barBorder = pygame.Rect(settings.screenSize[0]/3, 0, (settings.screenSize[0]/3), 10)
         if player.hasShields or player.laserCost>0 or player.boostSpeed > player.baseSpeed or player.boostDrain > 0: pygame.draw.rect(screen,[0,0,0],barBorder)
 
         # SHIELDS DISPLAY
@@ -1103,41 +1086,41 @@ class Game:
             currentShieldPieces = player.shieldPieces/player.shieldPiecesNeeded
             shieldRectWidth = (0.9*barBorder.width) * currentShieldPieces
             if player.shields > 0: shieldRectWidth = barBorder.width*0.99
-            shieldRect = pygame.Rect(screenSize[0]/3, 5, shieldRectWidth, 5)
+            shieldRect = pygame.Rect(settings.screenSize[0]/3, 5, shieldRectWidth, 5)
             shieldRect.centerx = barBorder.centerx
-            fullShieldRectWidth = shieldChunkSize * player.shieldPiecesNeeded
-            if player.shields > 0: pygame.draw.rect(screen,fullShieldColor,shieldRect)
-            elif player.shieldPieces > 0: pygame.draw.rect(screen,shieldColor,shieldRect)
+            fullShieldRectWidth = settings.shieldChunkSize * player.shieldPiecesNeeded
+            if player.shields > 0: pygame.draw.rect(screen,settings.fullShieldColor,shieldRect)
+            elif player.shieldPieces > 0: pygame.draw.rect(screen,settings.shieldColor,shieldRect)
 
         # FUEL DISPLAY
         if player.boostDrain > 0 or player.laserCost > 0:
             currentFuel = player.fuel/player.maxFuel
             fuelRectWidth = currentFuel * (0.99*barBorder.width)
-            fuelRect = pygame.Rect(screenSize[0]/3, 0, fuelRectWidth, 5)
+            fuelRect = pygame.Rect(settings.screenSize[0]/3, 0, fuelRectWidth, 5)
             if player.hasShields:fuelRect.centerx = barBorder.centerx
             else: fuelRect.center = barBorder.center
-            pygame.draw.rect(screen, fuelColor,fuelRect)
+            pygame.draw.rect(screen, settings.fuelColor,fuelRect)
 
         # TIMER DISPLAY
-        timerDisplay = timerFont.render(str(self.gameClock), True, secondaryFontColor)
+        timerDisplay = timerFont.render(str(self.gameClock), True, settings.secondaryFontColor)
         timerRect = timerDisplay.get_rect(topright = screen.get_rect().topright)
 
         # STAGE DISPLAY
         stageNum = "Stage " + str(self.currentStage)
-        stageDisplay = stageFont.render( str(stageNum), True, secondaryFontColor )
+        stageDisplay = stageFont.render( str(stageNum), True, settings.secondaryFontColor )
         stageRect = stageDisplay.get_rect(topleft = screen.get_rect().topleft)
 
         # LEVEL DISPLAY
         levelNum = "-  Level " + str(self.currentLevel)
-        levelDisplay = levelFont.render( str(levelNum), True, secondaryFontColor )
+        levelDisplay = levelFont.render( str(levelNum), True, settings.secondaryFontColor )
         levelRect = levelDisplay.get_rect()
         levelRect.center = (stageRect.right + levelRect.width*0.65, stageRect.centery)
 
         # SCORE DISPLAY
         scoreNum = "Score " + str(self.score)
-        scoreDisplay = scoreFont.render(scoreNum, True, secondaryFontColor)
+        scoreDisplay = scoreFont.render(scoreNum, True, settings.secondaryFontColor)
         scoreRect = scoreDisplay.get_rect()
-        scoreRect.topleft = (screenSize[0] - (2*scoreRect.width), levelRect.y)
+        scoreRect.topleft = (settings.screenSize[0] - (2*scoreRect.width), levelRect.y)
 
         screen.blit(timerDisplay, timerRect)
         screen.blit(stageDisplay, stageRect)
@@ -1222,19 +1205,19 @@ class Event:
 
     # SETS EVENTS
     def set(self,player):
-        pygame.time.set_timer(self.timerEvent, timerDelay)
+        pygame.time.set_timer(self.timerEvent, settings.timerDelay)
         pygame.time.set_timer(self.fuelReplenish, player.fuelRegenDelay)
-        pygame.time.set_timer(self.exhaustUpdate, exhaustUpdateDelay)
+        pygame.time.set_timer(self.exhaustUpdate, settings.exhaustUpdateDelay)
 
     def laserCharge(self,player):
         pygame.time.set_timer(self.laserCooldown, player.laserFireRate)
         player.laserReady = False
 
     def boostCharge(self,player):
-        pygame.time.set_timer(self.boostCooldown, boostCooldownTime)
+        pygame.time.set_timer(self.boostCooldown, settings.boostCooldownTime)
         player.boostReady = False
 
-    def showShield(self): pygame.time.set_timer(self.shieldVisualDuration,shieldVisualDuration)
+    def showShield(self): pygame.time.set_timer(self.shieldVisualDuration,settings.shieldVisualDuration)
 
 
 
@@ -1245,34 +1228,34 @@ class Menu:
     def home(self,game,player):
 
         icons = []
-        for icon in range(maxIcons): icons.append(Icon())
+        for icon in range(settings.maxIcons): icons.append(Icon())
 
-        startDisplay = startFont.render("N  VIGAT  R", True, primaryFontColor)
-        startRect = startDisplay.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
+        startDisplay = startFont.render("N  VIGAT  R", True, settings.primaryFontColor)
+        startRect = startDisplay.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/2))
 
         if not game.usingController or gamePad is None:
-            startHelpDisplay = startHelpFont.render("ESCAPE = Quit   SPACE = Start   F = Fullscreen   M = Mute   C = Credits", True, primaryFontColor)
-            skinHelpDisplay = shipHelpFont.render("A/LEFT = Last skin     D/RIGHT = Next skin", True, primaryFontColor)
-            shipHelpDisplay = shipHelpFont.render("S/DOWN = Last ship     W/UP = Next ship", True, primaryFontColor)
-            boostHelp = shipHelpFont.render("SHIFT = Boost", True, primaryFontColor)
-            shootHelp = shipHelpFont.render("CTRL = Shoot", True, primaryFontColor)
+            startHelpDisplay = startHelpFont.render("ESCAPE = Quit   SPACE = Start   F = Fullscreen   M = Mute   C = Credits", True, settings.primaryFontColor)
+            skinHelpDisplay = shipHelpFont.render("A/LEFT = Last skin     D/RIGHT = Next skin", True, settings.primaryFontColor)
+            shipHelpDisplay = shipHelpFont.render("S/DOWN = Last ship     W/UP = Next ship", True, settings.primaryFontColor)
+            boostHelp = shipHelpFont.render("SHIFT = Boost", True, settings.primaryFontColor)
+            shootHelp = shipHelpFont.render("CTRL = Shoot", True, settings.primaryFontColor)
 
         else:
-            startHelpDisplay = startHelpFont.render("START = Quit   A = Start   GUIDE = Fullscreen   LB = Mute   Y = Credits", True, primaryFontColor)
-            boostHelp = shipHelpFont.render("LT = Boost", True, primaryFontColor)
-            shootHelp = shipHelpFont.render("RT = Shoot", True, primaryFontColor)
-            skinHelpDisplay = shipHelpFont.render("D-PAD LEFT = Last skin   D-PAD RIGHT = Next skin", True, primaryFontColor)
-            shipHelpDisplay = shipHelpFont.render("D-PAD DOWN = Last ship   D-PAD UP = Next ship", True, primaryFontColor)
+            startHelpDisplay = startHelpFont.render("START = Quit   A = Start   GUIDE = Fullscreen   LB = Mute   Y = Credits", True, settings.primaryFontColor)
+            boostHelp = shipHelpFont.render("LT = Boost", True, settings.primaryFontColor)
+            shootHelp = shipHelpFont.render("RT = Shoot", True, settings.primaryFontColor)
+            skinHelpDisplay = shipHelpFont.render("D-PAD LEFT = Last skin   D-PAD RIGHT = Next skin", True, settings.primaryFontColor)
+            shipHelpDisplay = shipHelpFont.render("D-PAD DOWN = Last ship   D-PAD UP = Next ship", True, settings.primaryFontColor)
 
-        startHelpRect = startHelpDisplay.get_rect(center = (screenSize[0]/2,screenSize[1]-screenSize[1]/7))
-        skinHelpRect = skinHelpDisplay.get_rect(center = (screenSize[0]/4 + 40, screenSize[1]-screenSize[1]/7 + 70))
-        shipHelpRect = shipHelpDisplay.get_rect(center = (screenSize[0]/4 + 40, screenSize[1]-screenSize[1]/7 + 40))
+        startHelpRect = startHelpDisplay.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]-settings.screenSize[1]/7))
+        skinHelpRect = skinHelpDisplay.get_rect(center = (settings.screenSize[0]/4 + 40, settings.screenSize[1]-settings.screenSize[1]/7 + 70))
+        shipHelpRect = shipHelpDisplay.get_rect(center = (settings.screenSize[0]/4 + 40, settings.screenSize[1]-settings.screenSize[1]/7 + 40))
         boostHelpRect = boostHelp.get_rect()
         shootHelpRect = shootHelp.get_rect()
-        leftRect = menuList[3].get_rect(center = (screenSize[0] * 0.2 , screenSize[1]/3) )
-        rightRect = menuList[4].get_rect(center = (screenSize[0] * 0.8 , screenSize[1]/3) )
+        leftRect = menuList[3].get_rect(center = (settings.screenSize[0] * 0.2 , settings.screenSize[1]/3) )
+        rightRect = menuList[4].get_rect(center = (settings.screenSize[0] * 0.8 , settings.screenSize[1]/3) )
 
-        versionDisplay = versionFont.render(version,True,primaryFontColor)
+        versionDisplay = versionFont.render(version,True,settings.primaryFontColor)
         versionRect = versionDisplay.get_rect(topright = (startRect.right-25,startRect.bottom-25))
         bounceDelay = 5
         bounceCount = 0
@@ -1294,11 +1277,11 @@ class Menu:
         game.skinUnlockNumber = game.skinsUnlocked(game.savedShipLevel)
         if game.skinUnlockNumber >= len(spaceShipList[game.savedShipLevel]['skins']): game.skinUnlockNumber = len(spaceShipList[game.savedShipLevel]['skins']) - 1
 
-        if defaultToHighSkin and not game.skipAutoSkinSelect:
+        if settings.defaultToHighSkin and not game.skipAutoSkinSelect:
             for i in range(game.skinUnlockNumber): player.nextSkin() # Gets highest unlocked skin by default
         elif game.skipAutoSkinSelect:
             for i in range(game.savedSkin): player.nextSkin()
-        if defaultToHighShip:
+        if settings.defaultToHighShip:
             if game.savedShipLevel != game.shipUnlockNumber:
                 for i in range(game.shipUnlockNumber): player.toggleSpaceShip(game,True) # Gets highest unlocked ship by default
 
@@ -1325,7 +1308,7 @@ class Menu:
 
                     elif (event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]==1):
                         game.usingCursor, game.usingController = True, False
-                        pygame.mouse.set_visible(not rawCursorMode)
+                        pygame.mouse.set_visible(not settings.rawCursorMode)
 
                     game.savedSkin = player.currentImageNum
 
@@ -1378,38 +1361,38 @@ class Menu:
                  # SWITCH CONTROL TYPE
                 if game.usingController and event.type == pygame.KEYDOWN:
                     game.usingController = False
-                    startHelpDisplay = startHelpFont.render("ESCAPE = Quit   SPACE = Start   F = Fullscreen   M = Mute   C = Credits", True, primaryFontColor)
-                    boostHelp = shipHelpFont.render("SHIFT = Boost", True, primaryFontColor)
-                    shootHelp = shipHelpFont.render("CTRL = Shoot", True, primaryFontColor)
-                    skinHelpDisplay = shipHelpFont.render("A/LEFT = Last skin     D/RIGHT = Next skin", True, primaryFontColor)
-                    shipHelpDisplay = shipHelpFont.render("S/DOWN = Last ship     W/UP = Next ship", True, primaryFontColor)
+                    startHelpDisplay = startHelpFont.render("ESCAPE = Quit   SPACE = Start   F = Fullscreen   M = Mute   C = Credits", True, settings.primaryFontColor)
+                    boostHelp = shipHelpFont.render("SHIFT = Boost", True, settings.primaryFontColor)
+                    shootHelp = shipHelpFont.render("CTRL = Shoot", True, settings.primaryFontColor)
+                    skinHelpDisplay = shipHelpFont.render("A/LEFT = Last skin     D/RIGHT = Next skin", True, settings.primaryFontColor)
+                    shipHelpDisplay = shipHelpFont.render("S/DOWN = Last ship     W/UP = Next ship", True, settings.primaryFontColor)
 
                 elif gamePad is not None and not game.usingController and (event.type == pygame.JOYHATMOTION or event.type == pygame.JOYAXISMOTION or event.type == pygame.JOYBUTTONUP):
                     game.usingController = True
-                    startHelpDisplay = startHelpFont.render("START = Quit   A = Start   GUIDE = Fullscreen   LB = Mute   Y = Credits", True, primaryFontColor)
-                    boostHelp = shipHelpFont.render("LT = Boost", True, primaryFontColor)
-                    shootHelp = shipHelpFont.render("RT = Shoot", True, primaryFontColor)
-                    skinHelpDisplay = shipHelpFont.render("D-PAD LEFT = Last skin   D-PAD RIGHT = Next skin", True, primaryFontColor)
-                    shipHelpDisplay = shipHelpFont.render("D-PAD DOWN = Last ship   D-PAD UP = Next ship", True, primaryFontColor)
+                    startHelpDisplay = startHelpFont.render("START = Quit   A = Start   GUIDE = Fullscreen   LB = Mute   Y = Credits", True, settings.primaryFontColor)
+                    boostHelp = shipHelpFont.render("LT = Boost", True, settings.primaryFontColor)
+                    shootHelp = shipHelpFont.render("RT = Shoot", True, settings.primaryFontColor)
+                    skinHelpDisplay = shipHelpFont.render("D-PAD LEFT = Last skin   D-PAD RIGHT = Next skin", True, settings.primaryFontColor)
+                    shipHelpDisplay = shipHelpFont.render("D-PAD DOWN = Last ship   D-PAD UP = Next ship", True, settings.primaryFontColor)
 
             # GET SHIP CONTROLS
             if player.hasGuns and player.boostSpeed > player.baseSpeed: # has guns and boost
-                boostHelpRect.center = screenSize[0]*3/4 - 60, screenSize[1]-screenSize[1]/7 + 40
-                shootHelpRect.center = screenSize[0]*3/4 + 60, screenSize[1]-screenSize[1]/7 + 40
-            elif player.hasGuns: shootHelpRect.center = screenSize[0]*3/4, screenSize[1]-screenSize[1]/7 + 40 # has guns only
-            elif player.boostSpeed > player.baseSpeed: boostHelpRect.center = screenSize[0]*3/4, screenSize[1]-screenSize[1]/7 + 40 # has boost only
+                boostHelpRect.center = settings.screenSize[0]*3/4 - 60, settings.screenSize[1]-settings.screenSize[1]/7 + 40
+                shootHelpRect.center = settings.screenSize[0]*3/4 + 60, settings.screenSize[1]-settings.screenSize[1]/7 + 40
+            elif player.hasGuns: shootHelpRect.center = settings.screenSize[0]*3/4, settings.screenSize[1]-settings.screenSize[1]/7 + 40 # has guns only
+            elif player.boostSpeed > player.baseSpeed: boostHelpRect.center = settings.screenSize[0]*3/4, settings.screenSize[1]-settings.screenSize[1]/7 + 40 # has boost only
 
             screen.fill(screenColor)
             screen.blit(bgList[game.currentStage - 1][0],(0,0))
 
             # ANIMATION
-            if showMenuIcons:
+            if settings.showMenuIcons:
                 for icon in icons:
                     if bounceCount == bounceDelay: icon.move()
                     icon.draw()
 
             screen.blit(startDisplay,startRect) # Menu Logo
-            if showVersion: screen.blit(versionDisplay,versionRect) # Version info
+            if settings.showVersion: screen.blit(versionDisplay,versionRect) # Version info
             screen.blit(startHelpDisplay, startHelpRect) # Game controls
 
             # SHOW SHIP CONTROLS
@@ -1420,12 +1403,12 @@ class Menu:
             screen.blit(player.image, (player.rect.x,player.rect.y + startOffset)) # Current spaceship
 
             # LOGO LETTERS
-            screen.blit(menuList[0],(-14 + startRect.left + menuList[0].get_width() - menuList[0].get_width()/10,screenSize[1]/2 - 42)) # "A" symbol
-            screen.blit(menuList[1],(-16 + screenSize[0] - startRect.centerx + menuList[1].get_width() * 2,screenSize[1]/2 - 35)) # "O" symbol
+            screen.blit(menuList[0],(-14 + startRect.left + menuList[0].get_width() - menuList[0].get_width()/10,settings.screenSize[1]/2 - 42)) # "A" symbol
+            screen.blit(menuList[1],(-16 + settings.screenSize[0] - startRect.centerx + menuList[1].get_width() * 2,settings.screenSize[1]/2 - 35)) # "O" symbol
 
             # UFO ICONS
-            if showMenuIcons:
-                screen.blit(menuList[2],(screenSize[0]/2 - menuList[2].get_width()/2,screenSize[1]/8)) # Big icon
+            if settings.showMenuIcons:
+                screen.blit(menuList[2],(settings.screenSize[0]/2 - menuList[2].get_width()/2,settings.screenSize[1]/8)) # Big icon
                 screen.blit(menuList[3],leftRect) # Left UFO
                 screen.blit(menuList[4],rightRect) # Right UFO
 
@@ -1438,18 +1421,18 @@ class Menu:
         playerBlit = rotateImage(player.image,player.rect,player.lastAngle)
         paused = True
 
-        pausedDisplay = pausedFont.render("Paused", True, secondaryFontColor)
+        pausedDisplay = pausedFont.render("Paused", True, settings.secondaryFontColor)
         pausedRect = pausedDisplay.get_rect()
-        pausedRect.center = (screenSize[0]/2, screenSize[1]/2)
+        pausedRect.center = (settings.screenSize[0]/2, settings.screenSize[1]/2)
 
         # REMAINING PAUSES
-        pauseNum = str(pauseMax - game.pauseCount) + " Pauses left"
+        pauseNum = str(settings.pauseMax - game.pauseCount) + " Pauses left"
 
-        if game.pauseCount >= pauseMax: pauseNum = "Out of pauses"
+        if game.pauseCount >= settings.pauseMax: pauseNum = "Out of pauses"
 
-        pauseDisplay = pauseCountFont.render(pauseNum,True,secondaryFontColor)
+        pauseDisplay = pauseCountFont.render(pauseNum,True,settings.secondaryFontColor)
         pauseRect = pauseDisplay.get_rect()
-        pauseRect.center = (screenSize[0]/2,screenSize[1]-16)
+        pauseRect.center = (settings.screenSize[0]/2,settings.screenSize[1]-16)
 
         while paused:
             screen.fill(screenColor)
@@ -1467,7 +1450,7 @@ class Menu:
                 shieldImg,shieldImgRect = rotateImage(playerShield, player.rect, player.angle)
                 screen.blit(shieldImg,shieldImgRect)
 
-            if not performanceMode:
+            if not settings.performanceMode:
                 for obs in obstacles: # Draw obstacles
                     newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
                     screen.blit(newBlit[0],newBlit[1])
@@ -1500,7 +1483,7 @@ class Menu:
         pygame.mixer.music.stop()
 
         # Show cursor
-        pygame.mouse.set_visible(cursorMode)
+        pygame.mouse.set_visible(settings.cursorMode)
 
         # Update game records
         newLongRun = False
@@ -1522,13 +1505,13 @@ class Menu:
 
         storeRecords(game.records)
 
-        statsOffsetY = screenSize[1]/10
-        statsSpacingY = screenSize[1]/20
+        statsOffsetY = settings.screenSize[1]/10
+        statsSpacingY = settings.screenSize[1]/20
 
         # "GAME OVER" text
         gameOverDisplay = gameOverFont.render("GAME OVER", True, [255,0,0])
         gameOverRect = gameOverDisplay.get_rect()
-        gameOverRect.center = (screenSize[0]/2, screenSize[1]/3)
+        gameOverRect.center = (settings.screenSize[0]/2, settings.screenSize[1]/3)
 
         # Text
         scoreLine = "Score " + str(game.score)
@@ -1542,29 +1525,29 @@ class Menu:
         timeWasted = "Time played = " + str(game.records["timePlayed"]) + " seconds"
 
         # Display
-        scoreDisplay = statFont.render(scoreLine, True, primaryFontColor)
-        highScoreDisplay = statFont.render(highScoreLine, True, primaryFontColor)
-        newHighScoreDisplay = statFont.render(newHighScoreLine, True, primaryFontColor)
-        longestRunDisplay = statFont.render(overallLongestRunLine, True, primaryFontColor)
-        survivedDisplay = statFont.render(survivedLine, True, primaryFontColor)
-        levelDisplay = statFont.render(levelLine, True, primaryFontColor)
-        newLongestRunDisplay = statFont.render(newLongestRunLine, True, primaryFontColor)
-        attemptDisplay = statFont.render(attemptLine, True, primaryFontColor)
-        timeWastedDisplay = statFont.render(timeWasted,True,primaryFontColor)
-        if not game.usingController or gamePad is None: exitDisplay = exitFont.render("TAB = Menu     SPACE = Restart    ESCAPE = Quit    C = Credits", True, primaryFontColor)
-        else: exitDisplay = exitFont.render("SELECT = Menu    A = Restart    START = Quit    Y = Credits", True, primaryFontColor)
+        scoreDisplay = statFont.render(scoreLine, True, settings.primaryFontColor)
+        highScoreDisplay = statFont.render(highScoreLine, True, settings.primaryFontColor)
+        newHighScoreDisplay = statFont.render(newHighScoreLine, True, settings.primaryFontColor)
+        longestRunDisplay = statFont.render(overallLongestRunLine, True, settings.primaryFontColor)
+        survivedDisplay = statFont.render(survivedLine, True, settings.primaryFontColor)
+        levelDisplay = statFont.render(levelLine, True, settings.primaryFontColor)
+        newLongestRunDisplay = statFont.render(newLongestRunLine, True, settings.primaryFontColor)
+        attemptDisplay = statFont.render(attemptLine, True, settings.primaryFontColor)
+        timeWastedDisplay = statFont.render(timeWasted,True,settings.primaryFontColor)
+        if not game.usingController or gamePad is None: exitDisplay = exitFont.render("TAB = Menu     SPACE = Restart    ESCAPE = Quit    C = Credits", True, settings.primaryFontColor)
+        else: exitDisplay = exitFont.render("SELECT = Menu    A = Restart    START = Quit    Y = Credits", True, settings.primaryFontColor)
 
         # Rects
-        scoreRect = scoreDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 + statsOffsetY +statsSpacingY * 1))
-        highScoreRect = highScoreDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 + statsOffsetY +statsSpacingY * 2))
-        newHighScoreRect = newHighScoreDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 + statsOffsetY +statsSpacingY * 1.5))
-        survivedRect = survivedDisplay.get_rect(center =(screenSize[0]/2, screenSize[1]/3 + statsOffsetY + statsSpacingY * 3))
-        longestRunRect = longestRunDisplay.get_rect(center =(screenSize[0]/2, screenSize[1]/3 + statsOffsetY +statsSpacingY * 4))
-        newLongestRunRect = newLongestRunDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 + statsOffsetY +statsSpacingY * 3.5))
-        levelRect = levelDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 +statsOffsetY +statsSpacingY * 5))
-        attemptRect = attemptDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 + statsOffsetY +statsSpacingY * 6))
-        wastedRect = timeWastedDisplay.get_rect(center = (screenSize[0]/2, screenSize[1]/3 +statsOffsetY +statsSpacingY * 7))
-        exitRect = exitDisplay.get_rect(center =(screenSize[0]/2, screenSize[1]/3 + 2* statsOffsetY +statsSpacingY * 8))
+        scoreRect = scoreDisplay.get_rect(center = (settings.screenSize[0]/2, settings.screenSize[1]/3 + statsOffsetY +statsSpacingY * 1))
+        highScoreRect = highScoreDisplay.get_rect(center = (settings.screenSize[0]/2, settings.screenSize[1]/3 + statsOffsetY +statsSpacingY * 2))
+        newHighScoreRect = newHighScoreDisplay.get_rect(center = (settings.screenSize[0]/2, settings.screenSize[1]/3 + statsOffsetY +statsSpacingY * 1.5))
+        survivedRect = survivedDisplay.get_rect(center =(settings.screenSize[0]/2, settings.screenSize[1]/3 + statsOffsetY + statsSpacingY * 3))
+        longestRunRect = longestRunDisplay.get_rect(center =(settings.screenSize[0]/2, settings.screenSize[1]/3 + statsOffsetY +statsSpacingY * 4))
+        newLongestRunRect = newLongestRunDisplay.get_rect(center = (settings.screenSize[0]/2, settings.screenSize[1]/3 + statsOffsetY +statsSpacingY * 3.5))
+        levelRect = levelDisplay.get_rect(center = (settings.screenSize[0]/2, settings.screenSize[1]/3 +statsOffsetY +statsSpacingY * 5))
+        attemptRect = attemptDisplay.get_rect(center = (settings.screenSize[0]/2, settings.screenSize[1]/3 + statsOffsetY +statsSpacingY * 6))
+        wastedRect = timeWastedDisplay.get_rect(center = (settings.screenSize[0]/2, settings.screenSize[1]/3 +statsOffsetY +statsSpacingY * 7))
+        exitRect = exitDisplay.get_rect(center =(settings.screenSize[0]/2, settings.screenSize[1]/3 + 2* statsOffsetY +statsSpacingY * 8))
 
         # [display,rect] lists
         scoreText = scoreDisplay,scoreRect
@@ -1614,7 +1597,7 @@ class Menu:
                     if (event.type == pygame.KEYDOWN and event.key in backInput): game.usingController,game.usingCursor = False,False
                     elif (gamePad is not None and gamePad.get_button(controllerBack) == 1): game.usingController,game.usingCursor = True,False
                     elif (event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[1]==1): game.usingCursor, game.usingController = True, False
-                    pygame.mouse.set_visible(cursorMode) # Show cursor at menu
+                    pygame.mouse.set_visible(settings.cursorMode) # Show cursor at menu
                     game.reset(player,obstacles)
                     game.mainMenu = True
                     game.skipAutoSkinSelect = True
@@ -1625,7 +1608,7 @@ class Menu:
                     if (event.type == pygame.KEYDOWN and event.key in startInput): game.usingController,game.usingCursor = False,False
                     elif (gamePad is not None and gamePad.get_button(controllerBack) == 1): game.usingController,game.usingCursor = True,False
                     elif (event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]==1): game.usingCursor, game.usingController = True, False
-                    pygame.mouse.set_visible(game.usingCursor and not rawCursorMode)
+                    pygame.mouse.set_visible(game.usingCursor and not settings.rawCursorMode)
                     game.reset(player,obstacles)
                     player.updatePlayerConstants(game)
                     running = True
@@ -1641,7 +1624,7 @@ class Menu:
         if conditionOne and conditionTwo:
             for x in range(len(textList)):
                 if x != 0 and x!= 1 and x!= 3 and x!= 4: # Skip 1st, 2nd, 4th, and 5th items
-                    textList[x][1].center = screenSize[0]/2, screenSize[1]/3 + statsOffsetY + statsSpacingY * (x+1 - skipped)
+                    textList[x][1].center = settings.screenSize[0]/2, settings.screenSize[1]/3 + statsOffsetY + statsSpacingY * (x+1 - skipped)
                     screen.blit(textList[x][0],textList[x][1])
                 else: skipped+=1
 
@@ -1649,7 +1632,7 @@ class Menu:
         elif conditionOne and not conditionTwo:
             for x in range(len(textList)):
                 if x != 0 and x!= 1 and x!= 5: # Skip 1st, 2nd, and 6th items
-                    textList[x][1].center = screenSize[0]/2, screenSize[1]/3+ statsOffsetY + statsSpacingY * (x+1 - skipped)
+                    textList[x][1].center = settings.screenSize[0]/2, settings.screenSize[1]/3+ statsOffsetY + statsSpacingY * (x+1 - skipped)
                     screen.blit(textList[x][0],textList[x][1])
                 else: skipped+=1
 
@@ -1657,14 +1640,14 @@ class Menu:
         elif conditionTwo and not conditionOne:
             for x in range(len(textList)):
                 if x != 2 and x!= 3 and x!= 4: # Skip 3rd, 4th, and 5th items
-                    textList[x][1].center = screenSize[0]/2, screenSize[1]/3 + statsOffsetY + statsSpacingY * (x+1 - skipped)
+                    textList[x][1].center = settings.screenSize[0]/2, settings.screenSize[1]/3 + statsOffsetY + statsSpacingY * (x+1 - skipped)
                     screen.blit(textList[x][0],textList[x][1])
                 else: skipped+=1
 
         else:
             for x in range(len(textList)):
                 if x != 2 and x != 5: # Skip 3rd and 6th items
-                    textList[x][1].center = screenSize[0]/2, screenSize[1]/3 + statsOffsetY + statsSpacingY * (x+1 - skipped)
+                    textList[x][1].center = settings.screenSize[0]/2, settings.screenSize[1]/3 + statsOffsetY + statsSpacingY * (x+1 - skipped)
                     screen.blit(textList[x][0],textList[x][1])
                 else: skipped+=1
 
@@ -1673,20 +1656,20 @@ class Menu:
     def creditScreen(self):
         global screen
         rollCredits = True
-        posX = screenSize[0]/2
-        posY = screenSize[1]/2
+        posX = settings.screenSize[0]/2
+        posY = settings.screenSize[1]/2
 
         createdByLine = "Created by Mike Pistolesi"
         creditsLine = "with art by Collin Guetta"
         musicCreditsLine = '& music by Dylan Kusenko'
 
-        createdByDisplay = creatorFont.render(createdByLine, True, secondaryFontColor)
-        creditsDisplay = creditsFont.render(creditsLine, True, secondaryFontColor)
-        musicCreditsDisplay = creditsFont.render(musicCreditsLine, True, secondaryFontColor)
+        createdByDisplay = creatorFont.render(createdByLine, True, settings.secondaryFontColor)
+        creditsDisplay = creditsFont.render(creditsLine, True, settings.secondaryFontColor)
+        musicCreditsDisplay = creditsFont.render(musicCreditsLine, True, settings.secondaryFontColor)
 
-        createdByRect = createdByDisplay.get_rect(center = (posX, posY - screenSize[1]/15) )
+        createdByRect = createdByDisplay.get_rect(center = (posX, posY - settings.screenSize[1]/15) )
         creditsRect = creditsDisplay.get_rect(center = (posX,posY))
-        musicCreditsRect = musicCreditsDisplay.get_rect(center = (posX,posY+ screenSize[1]/15))
+        musicCreditsRect = musicCreditsDisplay.get_rect(center = (posX,posY+ settings.screenSize[1]/15))
 
         bounceCount = 0
         direction = self.randomEightDirection()
@@ -1695,13 +1678,13 @@ class Menu:
         bgShips = []
         waitToSpawn = True
         backGroundShipSpawnEvent = pygame.USEREVENT + 6
-        pygame.time.set_timer(backGroundShipSpawnEvent, random.randint(minBackgroundShipSpawnDelay,maxBackgroundShipSpawnDelay))
+        pygame.time.set_timer(backGroundShipSpawnEvent, random.randint(settings.minBackgroundShipSpawnDelay,settings.maxBackgroundShipSpawnDelay))
 
-        if len(donations) == 0: extrasCap = maxExtras
+        if len(donations) == 0: extrasCap = settings.maxExtras
 
         elif len(donations) > 0:
-            if len(donations) < maxExtras: extrasCap = len(donations)
-            else: extrasCap = maxExtras
+            if len(donations) < settings.maxExtras: extrasCap = len(donations)
+            else: extrasCap = settings.maxExtras
 
         while rollCredits:
             self.menuMusicLoop()
@@ -1732,11 +1715,11 @@ class Menu:
             for ship in bgShips:
                 ship.move()
                 if ship.active:
-                    if len(donations) == 0: ship.draw(False,showSupporterNames)
-                    else: ship.draw(showBackgroundShips,showSupporterNames)
+                    if len(donations) == 0: ship.draw(False,settings.showSupporterNames)
+                    else: ship.draw(settings.showBackgroundShips,settings.showSupporterNames)
                     # off screen, add name back to pool and remove
                     if ship.offScreen():
-                        pygame.time.set_timer(backGroundShipSpawnEvent, random.randint(minBackgroundShipSpawnDelay,maxBackgroundShipSpawnDelay))
+                        pygame.time.set_timer(backGroundShipSpawnEvent, random.randint(settings.minBackgroundShipSpawnDelay,settings.maxBackgroundShipSpawnDelay))
                         bgShips.remove(ship)
                         for i in extras:
                             if i[0] == ship.text:
@@ -1749,14 +1732,14 @@ class Menu:
                     if len(bgShips)==0:
                         bgShips.append(BackgroundShip(version,1))
                         waitToSpawn = True
-                        pygame.time.set_timer(backGroundShipSpawnEvent, random.randint(minBackgroundShipSpawnDelay,maxBackgroundShipSpawnDelay))
+                        pygame.time.set_timer(backGroundShipSpawnEvent, random.randint(settings.minBackgroundShipSpawnDelay,settings.maxBackgroundShipSpawnDelay))
 
                 elif len(donations) == 1:
                     if len(bgShips) == 0:
                         name,value = list(donations.items())[0]
                         bgShips.append(BackgroundShip(name,value))
                         waitToSpawn = True
-                        pygame.time.set_timer(backGroundShipSpawnEvent, random.randint(minBackgroundShipSpawnDelay,maxBackgroundShipSpawnDelay))
+                        pygame.time.set_timer(backGroundShipSpawnEvent, random.randint(settings.minBackgroundShipSpawnDelay,settings.maxBackgroundShipSpawnDelay))
 
                 else:
                     pool = list(donations.keys())
@@ -1770,7 +1753,7 @@ class Menu:
                         extras.append(extra)
                         bgShips.append(BackgroundShip(extra[0],extra[1]))
                         waitToSpawn = True
-                        pygame.time.set_timer(backGroundShipSpawnEvent, random.randint(minBackgroundShipSpawnDelay,maxBackgroundShipSpawnDelay))
+                        pygame.time.set_timer(backGroundShipSpawnEvent, random.randint(settings.minBackgroundShipSpawnDelay,settings.maxBackgroundShipSpawnDelay))
 
             screen.blit(createdByDisplay,createdByRect)
             screen.blit(creditsDisplay,creditsRect)
@@ -1778,34 +1761,34 @@ class Menu:
             displayUpdate()
 
             # BOUNCE OFF EDGES
-            if createdByRect.right > screenSize[0]: direction = rightDir[random.randint(0, len(rightDir) - 1)]
+            if createdByRect.right > settings.screenSize[0]: direction = rightDir[random.randint(0, len(rightDir) - 1)]
             if createdByRect.left < 0: direction = leftDir[random.randint(0, len(leftDir) - 1)]
-            if musicCreditsRect.bottom > screenSize[1]: direction = bottomDir[random.randint(0, len(bottomDir) - 1)]
+            if musicCreditsRect.bottom > settings.screenSize[1]: direction = bottomDir[random.randint(0, len(bottomDir) - 1)]
             if createdByRect.top < 0 : direction = topDir[random.randint(0, len(topDir) - 1)]
 
             if bounceCount == 0:
                 if "N" in direction:
-                    createdByRect.centery-= mainCreditsSpeed
-                    creditsRect.centery-= mainCreditsSpeed
-                    musicCreditsRect.centery-= mainCreditsSpeed
+                    createdByRect.centery-= settings.mainCreditsSpeed
+                    creditsRect.centery-= settings.mainCreditsSpeed
+                    musicCreditsRect.centery-= settings.mainCreditsSpeed
 
                 if "S" in direction:
-                    createdByRect.centery+= mainCreditsSpeed
-                    creditsRect.centery+= mainCreditsSpeed
-                    musicCreditsRect.centery+= mainCreditsSpeed
+                    createdByRect.centery+= settings.mainCreditsSpeed
+                    creditsRect.centery+= settings.mainCreditsSpeed
+                    musicCreditsRect.centery+= settings.mainCreditsSpeed
 
                 if "E" in direction:
-                    createdByRect.centerx+= mainCreditsSpeed
-                    creditsRect.centerx+= mainCreditsSpeed
-                    musicCreditsRect.centerx+= mainCreditsSpeed
+                    createdByRect.centerx+= settings.mainCreditsSpeed
+                    creditsRect.centerx+= settings.mainCreditsSpeed
+                    musicCreditsRect.centerx+= settings.mainCreditsSpeed
 
                 if "W" in direction:
-                    createdByRect.centerx-= mainCreditsSpeed
-                    creditsRect.centerx-= mainCreditsSpeed
-                    musicCreditsRect.centerx-= mainCreditsSpeed
+                    createdByRect.centerx-= settings.mainCreditsSpeed
+                    creditsRect.centerx-= settings.mainCreditsSpeed
+                    musicCreditsRect.centerx-= settings.mainCreditsSpeed
 
             bounceCount +=1
-            if bounceCount >= mainCreditsDelay: bounceCount = 0
+            if bounceCount >= settings.mainCreditsDelay: bounceCount = 0
 
 
     # GET RANDOM DIRECTION - include diagonal
@@ -1817,9 +1800,9 @@ class Menu:
 
     # MENU MUSIC LOOP
     def menuMusicLoop(self):
-        if pygame.mixer.music.get_pos() >= menuLoopEnd:
+        if pygame.mixer.music.get_pos() >= settings.menuLoopEnd:
             pygame.mixer.music.rewind()
-            pygame.mixer.music.set_pos(menuLoopStart)
+            pygame.mixer.music.set_pos(settings.menuLoopStart)
             pygame.mixer.music.play()
 
 
@@ -1834,7 +1817,7 @@ class Player(pygame.sprite.Sprite):
             self.speed,self.baseSpeed,self.boostSpeed = spaceShipList[game.savedShipLevel]['stats']["speed"],spaceShipList[game.savedShipLevel]['stats']["speed"],spaceShipList[game.savedShipLevel]['stats']["boostSpeed"]
             self.image = spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum]
             self.laserImage = spaceShipList[game.savedShipLevel]['laser']
-            self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
+            self.rect = self.image.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
             self.fuel, self.maxFuel = spaceShipList[game.savedShipLevel]['stats']["startingFuel"], spaceShipList[game.savedShipLevel]['stats']["maxFuel"]
             self.angle, self.lastAngle = 0, 0
@@ -1855,8 +1838,8 @@ class Player(pygame.sprite.Sprite):
             self.damage = spaceShipList[game.savedShipLevel]['stats']["laserDamage"]
             self.laserType = spaceShipList[game.savedShipLevel]['stats']["laserType"]
             self.showShield,self.boosting = False,False
-            self.movementType = playerMovement
-            if rawCursorMode: self.lastCursor = pygame.Vector2(0,0)
+            self.movementType = settings.playerMovement
+            if settings.cursorMode: self.lastCursor = pygame.Vector2(0,0)
 
 
         # MOVEMENT
@@ -1909,7 +1892,7 @@ class Player(pygame.sprite.Sprite):
             elif game.usingCursor:
                 resetCursor()
                 # RAW CURSOR MODE
-                if rawCursorMode:
+                if settings.rawCursorMode:
                     cursor = pygame.Vector2(pygame.mouse.get_pos())
                     self.rect.center = cursor
                     if pygame.Vector2.distance_to(cursor, self.lastCursor) > 0.5: self.angle = (cursor - self.lastCursor).angle_to(pygame.Vector2(1, 0))-90
@@ -1919,14 +1902,14 @@ class Player(pygame.sprite.Sprite):
                     # FOLLOW CURSOR MODE
                     cursorX, cursorY = pygame.mouse.get_pos()
                     cursorDirection = pygame.Vector2(cursorX, cursorY)
-                    if math.dist(self.rect.center,(cursorX,cursorY)) >= cursorRotateDistance:
+                    if math.dist(self.rect.center,(cursorX,cursorY)) >= settings.cursorRotateDistance:
                         direction = cursorDirection - pygame.Vector2(self.rect.centerx, self.rect.centery)
                         if direction.magnitude_squared() > 0:
                             direction.normalize_ip()
                             direction *= 1.414
                         velocity = direction * self.speed
                         self.angle = direction.angle_to(pygame.Vector2(0, -1))
-                        if math.dist(self.rect.center,(cursorX,cursorY)) >= cursorFollowDistance:
+                        if math.dist(self.rect.center,(cursorX,cursorY)) >= settings.cursorFollowDistance:
                             self.rect.centerx += velocity.x
                             self.rect.centery += velocity.y
 
@@ -1967,7 +1950,7 @@ class Player(pygame.sprite.Sprite):
                     elif game.usingCursor:
                         button = pygame.mouse.get_pressed()
                         pygame.mouse.get_pos()
-                        if math.dist(self.rect.center,pygame.mouse.get_pos()) >= cursorFollowDistance and pygame.mouse.get_pressed()[2] == 1:
+                        if math.dist(self.rect.center,pygame.mouse.get_pos()) >= settings.cursorFollowDistance and pygame.mouse.get_pressed()[2] == 1:
                             self.speed = self.boostSpeed
                             self.fuel -= self.boostDrain
                             if not self.boosting: self.boosting = True
@@ -2014,16 +1997,16 @@ class Player(pygame.sprite.Sprite):
 
         # WRAP AROUND SCREEN
         def wrapping(self):
-            if self.rect.centery > screenSize[1]: self.rect.centery = 0
-            if self.rect.centery < 0: self.rect.centery = screenSize[1]
-            if self.rect.centerx > screenSize[0]: self.rect.centerx = 0
-            if self.rect.centerx < 0: self.rect.centerx = screenSize[0]
+            if self.rect.centery > settings.screenSize[1]: self.rect.centery = 0
+            if self.rect.centery < 0: self.rect.centery = settings.screenSize[1]
+            if self.rect.centerx > settings.screenSize[0]: self.rect.centerx = 0
+            if self.rect.centerx < 0: self.rect.centerx = settings.screenSize[0]
 
 
         # GET NEXT SKIN
         def nextSkin(self):
             if self.currentImageNum + 1 < len(spaceShipList[game.savedShipLevel]['skins']):
-                if not devMode and self.currentImageNum + 1 > game.skinUnlockNumber:
+                if not settings.devMode and self.currentImageNum + 1 > game.skinUnlockNumber:
                     self.image = spaceShipList[game.savedShipLevel]['skins'][0]
                     self.currentImageNum = 0
                 else:
@@ -2032,7 +2015,7 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.image = spaceShipList[game.savedShipLevel]['skins'][0]
                 self.currentImageNum = 0
-            self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
+            self.rect = self.image.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
 
 
@@ -2042,26 +2025,26 @@ class Player(pygame.sprite.Sprite):
                 self.currentImageNum-=1
                 self.image = spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum]
             else:
-                if game.skinUnlockNumber == 0 and not devMode: return
+                if game.skinUnlockNumber == 0 and not settings.devMode: return
                 else:
-                    if devMode: self.currentImageNum = len(spaceShipList[game.savedShipLevel]['skins']) - 1
+                    if settings.devMode: self.currentImageNum = len(spaceShipList[game.savedShipLevel]['skins']) - 1
                     else: self.currentImageNum = game.skinUnlockNumber
                     self.image = spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum]
 
-            self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
+            self.rect = self.image.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
 
 
         # SWITCH SHIP TYPE
         def toggleSpaceShip(self,game,toggleDirection): # toggleDirection == True -> next ship / False -> last ship
-            if game.shipUnlockNumber == 0 and not devMode: return
+            if game.shipUnlockNumber == 0 and not settings.devMode: return
             else:
                 if toggleDirection:
-                    if game.savedShipLevel + 1  < len(spaceShipList) and (devMode or game.savedShipLevel + 1 <= game.shipUnlockNumber): game.savedShipLevel +=1
+                    if game.savedShipLevel + 1  < len(spaceShipList) and (settings.devMode or game.savedShipLevel + 1 <= game.shipUnlockNumber): game.savedShipLevel +=1
                     else: game.savedShipLevel = 0
                 else:
                     if game.savedShipLevel - 1 < 0:
-                        if devMode: game.savedShipLevel = len(spaceShipList) - 1
+                        if settings.devMode: game.savedShipLevel = len(spaceShipList) - 1
                         else:game.savedShipLevel = game.shipUnlockNumber
                     else: game.savedShipLevel -=1
                 game.skinUnlockNumber = game.skinsUnlocked(game.savedShipLevel) # Get skin unlocks for new ship type
@@ -2073,7 +2056,7 @@ class Player(pygame.sprite.Sprite):
             self.image = spaceShipList[game.savedShipLevel]['skins'][0]
             self.laserImage = spaceShipList[game.savedShipLevel]['laser']
             self.currentImageNum = 0
-            self.rect = self.image.get_rect(center = (screenSize[0]/2,screenSize[1]/2))
+            self.rect = self.image.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
             self.speed,self.baseSpeed = spaceShipList[game.savedShipLevel]['stats']["speed"],spaceShipList[game.savedShipLevel]['stats']["speed"]
             self.fuel = spaceShipList[game.savedShipLevel]['stats']["startingFuel"]
@@ -2124,7 +2107,7 @@ class Player(pygame.sprite.Sprite):
                 screen.blit(img,imgRect) # Draw explosion
                 screen.blit(explosionList[self.explosionState],self.rect)
                 displayUpdate()
-                game.clk.tick(fps)
+                game.clk.tick(settings.fps)
                 self.explosionState += 1
                 self.finalImg,self.finalRect = img,imgRect # Explosion effect on game over screen
 
@@ -2168,7 +2151,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.active = False
         self.activating = False
         self.activationDelay = 0
-        self.slowerDiagonal = slowerDiagonalObstacles
+        self.slowerDiagonal = settings.slowerDiagonalObstacles
 
 
     # For levels with multiple obstacle types
@@ -2218,8 +2201,8 @@ class Obstacle(pygame.sprite.Sprite):
 
     # HEAT SEEKING -> direction is an angle
     def homingMove(self,player):
-        dirX = (player.rect.centerx - self.rect.centerx + screenSize[0]/2) % screenSize[0]-screenSize[0]/2 # Shortest horizontal path
-        dirY = (player.rect.centery - self.rect.centery + screenSize[1]/2) % screenSize[1]-screenSize[1]/2 # Shortest vetical path
+        dirX = (player.rect.centerx - self.rect.centerx + settings.screenSize[0]/2) % settings.screenSize[0]-settings.screenSize[0]/2 # Shortest horizontal path
+        dirY = (player.rect.centery - self.rect.centery + settings.screenSize[1]/2) % settings.screenSize[1]-settings.screenSize[1]/2 # Shortest vetical path
         self.direction = math.atan2(dirY,dirX) # Angle to shortest path
         self.targetMove()
 
@@ -2227,10 +2210,10 @@ class Obstacle(pygame.sprite.Sprite):
     # BOUNDARY HANDLING
     def bound(self,obstacles):
         if self.bounds == "KILL": # Remove obstacle
-            if self.rect.left > screenSize[0] + spawnDistance or self.rect.right < -spawnDistance:
+            if self.rect.left > settings.screenSize[0] + settings.spawnDistance or self.rect.right < -settings.spawnDistance:
                 obstacles.remove(self)
                 self.kill()
-            elif  self.rect.top > screenSize[1] + spawnDistance or self.rect.bottom < 0 - spawnDistance:
+            elif  self.rect.top > settings.screenSize[1] + settings.spawnDistance or self.rect.bottom < 0 - settings.spawnDistance:
                 obstacles.remove(self)
                 self.kill()
 
@@ -2240,46 +2223,46 @@ class Obstacle(pygame.sprite.Sprite):
                 else: self.direction = math.atan2(math.sin(self.direction + math.pi), math.cos(self.direction + math.pi))
                 self.rect.left = 1
 
-            elif self.rect.right > screenSize[0]:
+            elif self.rect.right > settings.screenSize[0]:
                 if self.target == "NONE": self.direction = self.movementReverse(self.direction)
                 else: self.direction = math.atan2(math.sin(self.direction + math.pi), math.cos(self.direction + math.pi))
-                self.rect.right = screenSize[0] - 1
+                self.rect.right = settings.screenSize[0] - 1
 
             elif self.rect.top < 0:
                 if self.target == "NONE": self.direction = self.movementReverse(self.direction)
                 else: self.direction = math.atan2(math.sin(self.direction + math.pi), math.cos(self.direction + math.pi))
                 self.rect.top = 1
 
-            elif self.rect.bottom > screenSize[1]:
+            elif self.rect.bottom > settings.screenSize[1]:
                 if self.target == "NONE": self.direction = self.movementReverse(self.direction)
                 else: self.direction = math.atan2(math.sin(self.direction + math.pi), math.cos(self.direction + math.pi))
-                self.rect.bottom = screenSize[1]-1
+                self.rect.bottom = settings.screenSize[1]-1
 
         elif self.bounds == "WRAP": # Wrap around screen
-            if self.rect.centery > screenSize[1]: self.rect.centery = 0
-            if self.rect.centery < 0: self.rect.centery = screenSize[1]
-            if self.rect.centerx > screenSize[0]: self.rect.centerx = 0
-            if self.rect.centerx < 0: self.rect.centerx = screenSize[0]
+            if self.rect.centery > settings.screenSize[1]: self.rect.centery = 0
+            if self.rect.centery < 0: self.rect.centery = settings.screenSize[1]
+            if self.rect.centerx > settings.screenSize[0]: self.rect.centerx = 0
+            if self.rect.centerx < 0: self.rect.centerx = settings.screenSize[0]
 
 
     # ACTIVATE OBSTACLE
     def activate(self):
         if not self.active:
-            if self.rect.right > 0 and self.rect.left < screenSize[0] and self.rect.bottom > 0 and self.rect.top < screenSize[1]: self.activating = True
+            if self.rect.right > 0 and self.rect.left < settings.screenSize[0] and self.rect.bottom > 0 and self.rect.top < settings.screenSize[1]: self.activating = True
         if self.activating:
-            if self.activationDelay >= activationDelay: self.active = True
+            if self.activationDelay >= settings.activationDelay: self.active = True
             else: self.activationDelay +=1
 
 
     # VALIDATE OBSTACLE POSTITION
     def validate(self):
         if type(self.direction) == str:
-            if self.rect.right > screenSize[0] or self.rect.left < 0:
-                if self.direction == "N": self.rect.center = (random.randint(screenSize[0]*0.02, screenSize[0]*0.98) , screenSize[1])
-                elif self.direction == "S": self.rect.center= (random.randint(screenSize[0]*0.02, screenSize[0]*0.98) , 0)
-            if self.rect.top < 0 or self.rect.bottom > screenSize[1]:
-                if self.direction == "W":self.rect.center = (screenSize[0], random.randint(screenSize[1]*0.02, screenSize[1]*0.98))
-                elif self.direction == "E":self.rect.center = (0, random.randint(screenSize[1]*0.02, screenSize[1]*0.98))
+            if self.rect.right > settings.screenSize[0] or self.rect.left < 0:
+                if self.direction == "N": self.rect.center = (random.randint(settings.screenSize[0]*0.02, settings.screenSize[0]*0.98) , settings.screenSize[1])
+                elif self.direction == "S": self.rect.center= (random.randint(settings.screenSize[0]*0.02, settings.screenSize[0]*0.98) , 0)
+            if self.rect.top < 0 or self.rect.bottom > settings.screenSize[1]:
+                if self.direction == "W":self.rect.center = (settings.screenSize[0], random.randint(settings.screenSize[1]*0.02, settings.screenSize[1]*0.98))
+                elif self.direction == "E":self.rect.center = (0, random.randint(settings.screenSize[1]*0.02, settings.screenSize[1]*0.98))
 
 
     # GET INVERSE MOVEMENT DIRECTION
@@ -2299,17 +2282,17 @@ class Obstacle(pygame.sprite.Sprite):
 class Cave(pygame.sprite.Sprite):
     def __init__(self,index):
         super().__init__()
-        self.speed = caveSpeed
+        self.speed = settings.caveSpeed
         self.background = caveList[index][0]
         self.image = caveList[index][1]
-        self.rect = self.image.get_rect(bottomleft = (0,caveStartPos))
+        self.rect = self.image.get_rect(bottomleft = (0,settings.caveStartPos))
         self.mask = pygame.mask.from_surface(self.image)
         self.leave = False # Mark cave for exit
 
 
     def update(self):
         self.rect.centery += self.speed # Move
-        if not self.leave and self.rect.top > screenSize[1] * -1: self.rect.bottom = screenSize[1]*2
+        if not self.leave and self.rect.top > settings.screenSize[1] * -1: self.rect.bottom = settings.screenSize[1]*2
 
 
 
@@ -2324,13 +2307,13 @@ class Laser(pygame.sprite.Sprite):
         self.image = newBlit[0]
         self.rect = newBlit[1]
         self.mask = pygame.mask.from_surface(self.image)
-        self.target, self.seek, self.seekWaitTime, self.seekDelay = None, False, 0, heatSeekDelay # For heat seeking lasers
+        self.target, self.seek, self.seekWaitTime, self.seekDelay = None, False, 0, settings.heatSeekDelay # For heat seeking lasers
 
 
     # MOVE LASERS
     def update(self,player,lasers,obstacles):
         # Remove offscreen lasers
-        if self.rect.centerx > screenSize[0] or self.rect.centery > screenSize[1] or self.rect.centerx < 0 or self.rect.centery < 0: self.kill()
+        if self.rect.centerx > settings.screenSize[0] or self.rect.centery > settings.screenSize[1] or self.rect.centerx < 0 or self.rect.centery < 0: self.kill()
         elif self.laserType == "NORMAL": self.normalMove(player)
         elif self.laserType == "HOME": self.homingMove(player,lasers,obstacles)
         else: self.normalMove(player)
@@ -2369,13 +2352,13 @@ class Laser(pygame.sprite.Sprite):
 
 
     def homingMove(self,player,lasers,obstacles):
-        if self.seekWaitTime < heatSeekDelay:
+        if self.seekWaitTime < settings.heatSeekDelay:
             self.seekWaitTime += 1
             self.normalMove(player)
         elif self.seek == False: self.target, self.seek = self.getClosestPoint(obstacles), True # Get target
         else:
             if self.target is None or not obstacles.has(self.target):
-                if heatSeekNeedsTarget:
+                if settings.heatSeekNeedsTarget:
                     game.explosions.append(Explosion(self))
                     self.kill()
                 else:
@@ -2383,8 +2366,8 @@ class Laser(pygame.sprite.Sprite):
                     self.rect.centery +=self.speed * math.sin(self.angle) # Vertical movement
 
             else: # Homing
-                dirX = (self.target.rect.centerx - self.rect.centerx + screenSize[0]/2) % screenSize[0]-screenSize[0]/2 # Shortest horizontal path
-                dirY = (self.target.rect.centery - self.rect.centery + screenSize[1]/2) % screenSize[1]-screenSize[1]/2 # Shortest vetical path
+                dirX = (self.target.rect.centerx - self.rect.centerx + settings.screenSize[0]/2) % settings.screenSize[0]-settings.screenSize[0]/2 # Shortest horizontal path
+                dirY = (self.target.rect.centery - self.rect.centery + settings.screenSize[1]/2) % settings.screenSize[1]-settings.screenSize[1]/2 # Shortest vetical path
                 self.angle = math.atan2(dirY,dirX) # Angle to shortest path
                 self.rect.centerx += (player.speed + self.speed) * math.cos(self.angle) # Horizontal movement
                 self.rect.centery +=self.speed * math.sin(self.angle) # Vertical movement
@@ -2407,7 +2390,7 @@ class Explosion:
         self.rect = laser.rect.copy()
         self.image = explosionList[self.state]
         self.updateFrame = 0
-        self.delay = explosionDelay
+        self.delay = settings.explosionDelay
 
 
     def update(self):
@@ -2428,7 +2411,7 @@ class Point(pygame.sprite.Sprite):
     def __init__(self,player,lastPos):
         super().__init__()
         self.powerUp = ''
-        pointChoices = powerUpList[:]
+        pointChoices = settings.powerUpList[:]
         if not player or (not player.hasShields and player.boostDrain == 0 and player.laserCost == 0  and player.baseSpeed == player.boostSpeed): self.powerUp = "Default"
         else:
             powerUps = pointChoices
@@ -2438,7 +2421,7 @@ class Point(pygame.sprite.Sprite):
         if self.powerUp == "Shield": self.image = pointsList[2]
         elif self.powerUp == "Fuel": self.image = pointsList[1]
         elif self.powerUp == "Default": self.image = pointsList[0]
-        self.image = pygame.transform.scale(self.image, (pointSize, pointSize))
+        self.image = pygame.transform.scale(self.image, (settings.pointSize, settings.pointSize))
         if lastPos == None: self.rect = self.image.get_rect(center = self.positionGenerator())
         else:self.rect = self.image.get_rect(center = self.spacedPositionGenerator(lastPos))
         self.mask = pygame.mask.from_surface(self.image)
@@ -2446,8 +2429,8 @@ class Point(pygame.sprite.Sprite):
 
     # POINT POSITION GENERATION
     def getPosition(self):
-        xRange = [screenSize[0] * spawnRange[0] , screenSize[0] * spawnRange[1] ]
-        yRange = [screenSize[1] * spawnRange[0] , screenSize[1] * spawnRange[1] ]
+        xRange = [settings.screenSize[0] * settings.spawnRange[0] , settings.screenSize[0] * settings.spawnRange[1] ]
+        yRange = [settings.screenSize[1] * settings.spawnRange[0] , settings.screenSize[1] * settings.spawnRange[1] ]
         xNum = random.randint(xRange[0],xRange[1])
         yNum = random.randint(yRange[0],yRange[1])
         return [xNum,yNum]
@@ -2455,8 +2438,8 @@ class Point(pygame.sprite.Sprite):
 
     # CHECK IF POINT IS IN SPAWN AREA
     def pointValid(self,point):
-        centerX, centerY = screenSize[0]/2, screenSize[1]/2
-        lines = [((centerX + math.cos(angle + math.pi/spawnVertices)*spawnWidth/2, centerY + math.sin(angle + math.pi/spawnVertices)*spawnHeight/2), (centerX + math.cos(angle - math.pi/spawnVertices)*spawnWidth/2, centerY + math.sin(angle - math.pi/spawnVertices)*spawnHeight/2)) for angle in (i * math.pi/4 for i in range(8))]
+        centerX, centerY = settings.screenSize[0]/2, settings.screenSize[1]/2
+        lines = [((centerX + math.cos(angle + math.pi/settings.spawnVertices)*spawnWidth/2, centerY + math.sin(angle + math.pi/settings.spawnVertices)*spawnHeight/2), (centerX + math.cos(angle - math.pi/settings.spawnVertices)*spawnWidth/2, centerY + math.sin(angle - math.pi/settings.spawnVertices)*spawnHeight/2)) for angle in (i * math.pi/4 for i in range(8))]
         sameSide = [((point[0]-l[0][0])*(l[1][1]-l[0][1]) - (point[1]-l[0][1])*(l[1][0]-l[0][0]))  * ((centerX-l[0][0])*(l[1][1]-l[0][1]) - (centerY-l[0][1])*(l[1][0]-l[0][0])) >= 0  for l in lines]
         return all(sameSide)
 
@@ -2466,7 +2449,7 @@ class Point(pygame.sprite.Sprite):
         attempts = 0
         while True:
             point = self.getPosition()
-            if attempts < maxRandomAttempts and self.pointValid(point):return point
+            if attempts < settings.maxRandomAttempts and self.pointValid(point):return point
             else: attempts+=1
 
 
@@ -2475,7 +2458,7 @@ class Point(pygame.sprite.Sprite):
         attempts = 0
         while True:
             point = self.positionGenerator()
-            if attempts < maxRandomAttempts and math.dist(point,lastPos) >= minDistanceToPoint: return point
+            if attempts < settings.maxRandomAttempts and math.dist(point,lastPos) >= settings.minDistanceToPoint: return point
             else: attempts+=1
 
 
@@ -2484,13 +2467,13 @@ class Point(pygame.sprite.Sprite):
 class Icon:
     def __init__(self):
         spins = [-1,1]
-        self.speed = random.randint(1,maxIconSpeed)
+        self.speed = random.randint(1,settings.maxIconSpeed)
         self.movement = getMovement("AGGRO")
         self.direction = self.movement[1]
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
         if random.randint(0,10) < 7: self.image = menuList[1]
         else: self.image = menuList[random.randint(5,len(menuList)-1)]
-        size = random.randint(minIconSize,maxIconSize)
+        size = random.randint(settings.minIconSize,settings.maxIconSize)
         self.image = pygame.transform.scale(self.image, (size, size)).convert_alpha()
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
         self.angle = 0
@@ -2506,28 +2489,28 @@ class Icon:
 
         if self.angle >= 360 or self.angle <= -360: self.angle = 0
 
-        self.angle += self.spinDirection * random.uniform(0, maxIconRotationSpeed)
+        self.angle += self.spinDirection * random.uniform(0, settings.maxIconRotationSpeed)
 
-        randomTimerUX = random.randint(screenSize[0] * 2,screenSize[0] * 4)
-        randomTimerUY = random.randint(screenSize[1] * 2,screenSize[1] * 4)
-        randomTimerLX = -1 * random.randint(screenSize[0], screenSize[0] * 3)
-        randomTimerLY = -1 * random.randint(screenSize[0], screenSize[1] * 3)
+        randomTimerUX = random.randint(settings.screenSize[0] * 2,settings.screenSize[0] * 4)
+        randomTimerUY = random.randint(settings.screenSize[1] * 2,settings.screenSize[1] * 4)
+        randomTimerLX = -1 * random.randint(settings.screenSize[0], settings.screenSize[0] * 3)
+        randomTimerLY = -1 * random.randint(settings.screenSize[0], settings.screenSize[1] * 3)
 
         if self.active and ( (self.rect.centery > randomTimerUY) or (self.rect.centery < randomTimerLY) or (self.rect.centerx> randomTimerUX) or (self.rect.centerx < randomTimerLX) ):
             self.movement = getMovement("ALL")
             self.direction = self.movement[1]
             if random.randint(0,10) < 7: self.image = menuList[1]
             else: self.image = menuList[random.randint(5,len(menuList)-1)]
-            self.speed = random.randint(1,maxIconSpeed)
+            self.speed = random.randint(1,settings.maxIconSpeed)
             self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
-            size = random.randint(minIconSize,maxIconSize)
+            size = random.randint(settings.minIconSize,settings.maxIconSize)
             self.image = pygame.transform.scale(self.image, (size, size))
             self.active = False
 
 
     def activate(self):
         if not self.active:
-            if ("W" in self.direction and self.rect.right >= 0) or ("E" in self.direction and self.rect.left <= screenSize[0]) or ("N" in self.direction and self.rect.top <= screenSize[1]) or ("S" in self.direction and self.rect.bottom >= 0): self.active = True
+            if ("W" in self.direction and self.rect.right >= 0) or ("E" in self.direction and self.rect.left <= settings.screenSize[0]) or ("N" in self.direction and self.rect.top <= settings.screenSize[1]) or ("S" in self.direction and self.rect.bottom >= 0): self.active = True
 
 
     def draw(self):
@@ -2541,16 +2524,16 @@ class Icon:
 class BackgroundShip:
     def __init__(self,text,scale):
         self.scale = scale
-        self.size = self.valueScaler(scale,minBackgroundShipSize,maxBackgroundShipSize,lowDon,maxDon)
-        if self.size < minBackgroundShipSize:
-            self.size = minBackgroundShipSize
-            self.speed = maxBackgroundShipSpeed
-        elif self.size > maxBackgroundShipSize:
-            self.size = minBackgroundShipSize
-            self.speed = minBackgroundShipSpeed
-        self.speed = maxBackgroundShipSpeed/self.size
-        if self.speed > maxBackgroundShipSpeed: self.speed = maxBackgroundShipSpeed
-        elif self.speed < minBackgroundShipSpeed: self.speed = minBackgroundShipSpeed
+        self.size = self.valueScaler(scale,settings.minBackgroundShipSize,settings.maxBackgroundShipSize,lowDon,maxDon)
+        if self.size < settings.minBackgroundShipSize:
+            self.size = settings.minBackgroundShipSize
+            self.speed = settings.maxBackgroundShipSpeed
+        elif self.size > settings.maxBackgroundShipSize:
+            self.size = settings.minBackgroundShipSize
+            self.speed = settings.minBackgroundShipSpeed
+        self.speed = settings.maxBackgroundShipSpeed/self.size
+        if self.speed > settings.maxBackgroundShipSpeed: self.speed = settings.maxBackgroundShipSpeed
+        elif self.speed < settings.minBackgroundShipSpeed: self.speed = settings.minBackgroundShipSpeed
         self.movement = getMovement("AGGRO")
         self.direction = self.movement[1]
         self.angle = self.getAngle()
@@ -2565,7 +2548,7 @@ class BackgroundShip:
 
 
     def move(self):
-        if self.count >= backgroundShipDelay:
+        if self.count >= settings.backgroundShipDelay:
             if "N" in self.direction: self.rect.centery -= self.speed
             if "S" in self.direction: self.rect.centery += self.speed
             if "E" in self.direction: self.rect.centerx += self.speed
@@ -2588,10 +2571,10 @@ class BackgroundShip:
 
     # Returns true if off screen
     def offScreen(self):
-        if showSupporterNames and not showBackgroundShips:
-            if self.displayRect.bottom < 0 or self.displayRect.top > screenSize[1] or self.displayRect.left > screenSize[0] or self.displayRect.right < 0: return True
+        if settings.showSupporterNames and not settings.showBackgroundShips:
+            if self.displayRect.bottom < 0 or self.displayRect.top > settings.screenSize[1] or self.displayRect.left > settings.screenSize[0] or self.displayRect.right < 0: return True
         else:
-            if self.rect.bottom < 0 or self.rect.top > screenSize[1] or self.rect.left > screenSize[0] or self.rect.right < 0: return True
+            if self.rect.bottom < 0 or self.rect.top > settings.screenSize[1] or self.rect.left > settings.screenSize[0] or self.rect.right < 0: return True
 
 
     def activate(self):
@@ -2635,13 +2618,13 @@ def getMovement(spawnPattern):
     elif spawnPattern == "VERT": top, bottom = ["SE", "SW", "S"], ["N", "NE", "NW"]
     else: top, bottom, left, right = topDir, bottomDir, leftDir, rightDir # Default / "All"
 
-    X = random.randint(screenSize[0] * 0.1, screenSize[0] * 0.99)
-    Y = random.randint(screenSize[1] * 0.1, screenSize[1] * 0.99)
+    X = random.randint(settings.screenSize[0] * 0.1, settings.screenSize[0] * 0.99)
+    Y = random.randint(settings.screenSize[1] * 0.1, settings.screenSize[1] * 0.99)
 
     lowerX = random.randint(-1,0)
-    upperX =  random.randint(screenSize[0], screenSize[0] + 1)
+    upperX =  random.randint(settings.screenSize[0], settings.screenSize[0] + 1)
     lowerY  = random.randint(-1,0)
-    upperY = random.randint(screenSize[1],screenSize[1] + 1)
+    upperY = random.randint(settings.screenSize[1],settings.screenSize[1] + 1)
 
     possible = []
     if len(top) != 0: possible.append([X, lowerY, random.choice(top)])
@@ -2661,7 +2644,7 @@ game = Game(loadRecords()) # Initialize game with records loaded
 menu = Menu() # Initialize menus
 
 # SET VOLUME
-if not game.musicMuted: pygame.mixer.music.set_volume(musicVolume / 100)
+if not game.musicMuted: pygame.mixer.music.set_volume(settings.musicVolume / 100)
 else: pygame.mixer.music.set_volume(0)
 
 
