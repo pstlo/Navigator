@@ -16,7 +16,7 @@ version = "v0.4.8"
 
 
 
-# SETTINGS
+# GAME SETTINGS
 class Settings:
     def __init__(self):
         # SCREEN
@@ -135,14 +135,14 @@ class Settings:
         self.performanceMode = False
         self.qualityMode = False
         self.showPresence = True
-        
+
         # SET SCREEN UPDATE METHOD
         if settings.qualityMode and not settings.performanceMode: self.updateNotFlip = False
         else: self.updateNotFlip = True # use update instead of flip for display updates
 
         # SET PERFORMANCE SETTINGS
         if settings.performanceMode:settings.showBackgroundCloud,settings.drawExhaust = False,False
-        
+
         # CONTROLLER BINDS
         self.controllerBinds = {
             'PS': # Dualshock
@@ -546,7 +546,6 @@ fullScreenInput = [pygame.K_f]
 startInput = [pygame.K_SPACE]
 
 
-
 # UPDATE DISPLAY
 def displayUpdate():
     if not settings.updateNotFlip: pygame.display.flip()
@@ -591,7 +590,6 @@ def resetCursor():
         if pos[0] >= settings.screenSize[0]-2: pygame.mouse.set_pos(settings.screenSize[0]-5,pos[1])
         if pos[1] <= 1: pygame.mouse.set_pos(pos[0],5)
         if pos[1] >= settings.screenSize[1]-1: pygame.mouse.set_pos(pos[0],settings.screenSize[1]-5)
-
 
 
 # CONTROLLER INPUT
