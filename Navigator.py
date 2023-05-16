@@ -714,7 +714,7 @@ def getMovement(spawnPattern):
 # GAME
 class Game:
     def __init__(self,records):
-
+        
         self.gameConstants = assets.stageList
 
         # Level constants
@@ -769,6 +769,11 @@ class Game:
                 "obstacleTarget":self.target,
                 "obstacleHealth":self.obsHealth
                 }
+                
+        # SET VOLUME
+        if not self.musicMuted: pygame.mixer.music.set_volume(settings.musicVolume / 100)
+        else: pygame.mixer.music.set_volume(0)
+
 
 
     # MAIN GAME LOOP
@@ -2640,10 +2645,6 @@ class BackgroundShip:
 # INITIALIZE GAME
 game = Game(assets.loadRecords()) # Initialize game with records loaded
 menu = Menu() # Initialize menus
-
-# SET VOLUME
-if not game.musicMuted: pygame.mixer.music.set_volume(settings.musicVolume / 100)
-else: pygame.mixer.music.set_volume(0)
 
 
 # START GAME LOOP
