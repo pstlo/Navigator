@@ -15,6 +15,7 @@ pygame.mixer.init()
 version = "v0.4.8"
 
 
+
 # SETTINGS
 class Settings:
     def __init__(self):
@@ -134,6 +135,85 @@ class Settings:
         self.performanceMode = False
         self.qualityMode = False
         self.showPresence = True
+        
+        # SET SCREEN UPDATE METHOD
+        if settings.qualityMode and not settings.performanceMode: self.updateNotFlip = False
+        else: self.updateNotFlip = True # use update instead of flip for display updates
+
+        # SET PERFORMANCE SETTINGS
+        if settings.performanceMode:settings.showBackgroundCloud,settings.drawExhaust = False,False
+        
+        # CONTROLLER BINDS
+        self.controllerBinds = {
+            'PS': # Dualshock
+                {
+                'name': ["PS4 Controller"],
+                'moveX': 0,
+                'moveY': 1,
+                'rotX' : 2,
+                'rotY' : 3,
+                'boost':4,
+                'shoot':5,
+                'nextShip':11,
+                'lastShip':12,
+                'nextSkin':14,
+                'lastSkin':13,
+                'select':0,
+                'back':1,
+                'mute':9,
+                'exit':6,
+                'pause':15,
+                'menu':15,
+                'settings.fullScreen': 4,
+                'credits':3
+                },
+
+            'XB': # Xbox controller
+                {
+                'name': ["Controller (Xbox One For Windows)", "Controller (XBOX 360 For Windows)"],
+                'moveX': 0,
+                'moveY': 1,
+                'rotX' : 2,
+                'rotY' : 3,
+                'boost':4,
+                'shoot':5,
+                'nextShip':(0,1),
+                'lastShip':(0,-1),
+                'nextSkin':(1,0),
+                'lastSkin':(-1,0),
+                'select':0,
+                'back':1,
+                'mute':4,
+                'exit':7,
+                'pause':6,
+                'menu':6,
+                'settings.fullScreen': 10,
+                'credits':3
+                },
+
+            'NS': # Switch pro controller
+                {
+                'name': ["Nintendo Switch Pro Controller"],
+                'moveX': 0,
+                'moveY': 1,
+                'rotX' : 2,
+                'rotY' : 3,
+                'boost':4,
+                'shoot':5,
+                'nextShip':11,
+                'lastShip':12,
+                'nextSkin':14,
+                'lastSkin':13,
+                'select':0,
+                'back':1,
+                'mute':9,
+                'exit':6,
+                'pause':4,
+                'menu':4,
+                'settings.fullScreen': 15,
+                'credits':2
+                }
+            }
 
 
 
@@ -294,7 +374,6 @@ class Assets:
         self.powerUpNoise = pygame.mixer.Sound(self.resources(os.path.join(soundDirectory,"Point.wav")))
         self.powerUpNoise.set_volume(settings.sfxVolume/100)
 
-
         # LASER NOISE ASSET
         self.laserNoise = pygame.mixer.Sound(self.resources(os.path.join(soundDirectory,"Laser.wav")))
         self.laserNoise.set_volume(settings.sfxVolume/100)
@@ -404,7 +483,6 @@ class Assets:
                 return gameRecords
 
 
-settings = Settings() # INITIALIZE SETTINGS
 
 # GET SCREEN
 def getScreen():
@@ -447,11 +525,9 @@ def toggleMusic(game):
     else: pygame.mixer.music.set_volume(0)
 
 
-# INITIALIZE SCREEN
-screen = getScreen()
-
-assets = Assets()
-
+settings = Settings() # INITIALIZE SETTINGS
+screen = getScreen() # INITIALIZE SCREEN
+assets = Assets() # LOAD ASSETS
 
 # KEY BINDS
 leftInput = [pygame.K_a, pygame.K_LEFT]
@@ -470,17 +546,10 @@ fullScreenInput = [pygame.K_f]
 startInput = [pygame.K_SPACE]
 
 
-# SET SCREEN UPDATE METHOD
-if settings.qualityMode and not settings.performanceMode: updateNotFlip = False
-else: updateNotFlip = True # use update instead of flip for display updates
-
-# SET PERFORMANCE SETTINGS
-if settings.performanceMode:settings.showBackgroundCloud,settings.drawExhaust = False,False
-
 
 # UPDATE DISPLAY
 def displayUpdate():
-    if not updateNotFlip: pygame.display.flip()
+    if not settings.updateNotFlip: pygame.display.flip()
     else: pygame.display.update()
 
 
@@ -524,77 +593,6 @@ def resetCursor():
         if pos[1] >= settings.screenSize[1]-1: pygame.mouse.set_pos(pos[0],settings.screenSize[1]-5)
 
 
-# CONTROLLER BINDS
-controllerBinds = {
-    'PS': # Dualshock
-        {
-        'name': ["PS4 Controller"],
-        'moveX': 0,
-        'moveY': 1,
-        'rotX' : 2,
-        'rotY' : 3,
-        'boost':4,
-        'shoot':5,
-        'nextShip':11,
-        'lastShip':12,
-        'nextSkin':14,
-        'lastSkin':13,
-        'select':0,
-        'back':1,
-        'mute':9,
-        'exit':6,
-        'pause':15,
-        'menu':15,
-        'settings.fullScreen': 4,
-        'credits':3
-        },
-
-    'XB': # Xbox controller
-        {
-        'name': ["Controller (Xbox One For Windows)", "Controller (XBOX 360 For Windows)"],
-        'moveX': 0,
-        'moveY': 1,
-        'rotX' : 2,
-        'rotY' : 3,
-        'boost':4,
-        'shoot':5,
-        'nextShip':(0,1),
-        'lastShip':(0,-1),
-        'nextSkin':(1,0),
-        'lastSkin':(-1,0),
-        'select':0,
-        'back':1,
-        'mute':4,
-        'exit':7,
-        'pause':6,
-        'menu':6,
-        'settings.fullScreen': 10,
-        'credits':3
-        },
-
-    'NS': # Switch pro controller
-        {
-        'name': ["Nintendo Switch Pro Controller"],
-        'moveX': 0,
-        'moveY': 1,
-        'rotX' : 2,
-        'rotY' : 3,
-        'boost':4,
-        'shoot':5,
-        'nextShip':11,
-        'lastShip':12,
-        'nextSkin':14,
-        'lastSkin':13,
-        'select':0,
-        'back':1,
-        'mute':9,
-        'exit':6,
-        'pause':4,
-        'menu':4,
-        'settings.fullScreen': 15,
-        'credits':2
-        }
-    }
 
 # CONTROLLER INPUT
 gamePad = None
@@ -604,26 +602,26 @@ if settings.useController:
     if pygame.joystick.get_count() > 0:
         gamePad = pygame.joystick.Joystick(0)
         gamePad.init()
-        for controllerType in controllerBinds:
-            if gamePad.get_name() in controllerBinds[controllerType]['name']:
-                controllerMoveX = controllerBinds[controllerType]['moveX']
-                controllerMoveY = controllerBinds[controllerType]['moveY']
-                controllerRotateX = controllerBinds[controllerType]['rotX']
-                controllerRotateY = controllerBinds[controllerType]['rotY']
-                controllerBoost = controllerBinds[controllerType]['boost']
-                controllerShoot = controllerBinds[controllerType]['shoot']
-                controllerNextShip =controllerBinds[controllerType]['nextShip']
-                controllerLastShip =controllerBinds[controllerType]['lastShip']
-                controllerNextSkin =controllerBinds[controllerType]['nextSkin']
-                controllerLastSkin = controllerBinds[controllerType]['lastSkin']
-                controllerSelect = controllerBinds[controllerType]['select']
-                controllerBack = controllerBinds[controllerType]['back']
-                controllerMute = controllerBinds[controllerType]['mute']
-                controllerExit = controllerBinds[controllerType]['exit']
-                controllerPause = controllerBinds[controllerType]['pause']
-                controllerMenu = controllerBinds[controllerType]['menu']
-                controllerFullScreen = controllerBinds[controllerType]['settings.fullScreen']
-                controllerCredits = controllerBinds[controllerType]['credits']
+        for controllerType in settings.controllerBinds:
+            if gamePad.get_name() in settings.controllerBinds[controllerType]['name']:
+                controllerMoveX = settings.controllerBinds[controllerType]['moveX']
+                controllerMoveY = settings.controllerBinds[controllerType]['moveY']
+                controllerRotateX = settings.controllerBinds[controllerType]['rotX']
+                controllerRotateY = settings.controllerBinds[controllerType]['rotY']
+                controllerBoost = settings.controllerBinds[controllerType]['boost']
+                controllerShoot = settings.controllerBinds[controllerType]['shoot']
+                controllerNextShip =settings.controllerBinds[controllerType]['nextShip']
+                controllerLastShip =settings.controllerBinds[controllerType]['lastShip']
+                controllerNextSkin =settings.controllerBinds[controllerType]['nextSkin']
+                controllerLastSkin = settings.controllerBinds[controllerType]['lastSkin']
+                controllerSelect = settings.controllerBinds[controllerType]['select']
+                controllerBack = settings.controllerBinds[controllerType]['back']
+                controllerMute = settings.controllerBinds[controllerType]['mute']
+                controllerExit = settings.controllerBinds[controllerType]['exit']
+                controllerPause = settings.controllerBinds[controllerType]['pause']
+                controllerMenu = settings.controllerBinds[controllerType]['menu']
+                controllerFullScreen = settings.controllerBinds[controllerType]['settings.fullScreen']
+                controllerCredits = settings.controllerBinds[controllerType]['credits']
                 compatibleController = True
                 break
 
@@ -633,7 +631,7 @@ if settings.useController:
             if settings.useController: settings.useController = False
 
     else:
-        pygame.joystick.quit()
+        pygame.joystick.quit() # This may be causing delay on startup ?
         if settings.useController: settings.useController = False
 
 
@@ -2525,7 +2523,7 @@ class Icon:
 
 
 
-# BACKGROUND SHIPS
+# CREDITS SCREEN BACKGROUND SHIPS
 class BackgroundShip:
     def __init__(self,text,scale):
         self.scale = scale
@@ -2608,7 +2606,7 @@ class BackgroundShip:
 
 
 
-# ROTATE IMAGE
+# ROTATE IMAGES
 def rotateImage(image, rect, angle):
     rotated = pygame.transform.rotate(image, angle)
     rotatedRect = rotated.get_rect(center=rect.center)
