@@ -137,11 +137,11 @@ class Settings:
         self.showPresence = True
 
         # SET SCREEN UPDATE METHOD
-        if settings.qualityMode and not settings.performanceMode: self.updateNotFlip = False
+        if self.qualityMode and not self.performanceMode: self.updateNotFlip = False
         else: self.updateNotFlip = True # use update instead of flip for display updates
 
         # SET PERFORMANCE SETTINGS
-        if settings.performanceMode:settings.showBackgroundCloud,settings.drawExhaust = False,False
+        if self.performanceMode:self.showBackgroundCloud,self.drawExhaust = False,False
 
         # CONTROLLER BINDS
         self.controllerBinds = {
