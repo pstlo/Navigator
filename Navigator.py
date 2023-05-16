@@ -231,16 +231,12 @@ def loadPreferences():
         with open(preferencesPath, 'r') as file:
             prefs = json.load(file)
             return {'fullScreen': bool(prefs['fullScreen']), 'muted':bool(prefs['muted']), 'performanceMode':bool(prefs['performanceMode']), 'qualityMode':bool(prefs['qualityMode']), 'showDiscordPresence':bool(prefs['showDiscordPresence']) } # Sanitize dictionary
-    except:
-        prefs = defaultPreferences # Default preferences
-        with open(preferencesPath, 'w') as file: file.write(json.dumps(prefs))
-        return prefs
+    except: return
 
 
 def savePreferences(prefs):
     try:
         with open(preferencesPath, 'w') as file: file.write(json.dumps(prefs))
-
     except: return
 
 
