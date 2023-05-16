@@ -156,24 +156,95 @@ def resources(relative):
     return os.path.join(base, relative)
 
 
-# LOAD PREFERENCES ( Work in progress )
-defaultPreferences = {'fullScreen':False, 'muted':False, 'performanceMode':False, 'qualityMode':False, 'showDiscordPresence':True}
+# RECORD AND PREFERENCE PATHS
+if platform.system().lower() == 'windows' or platform.system().lower == 'linux': recordsPath,preferencesPath = './gameRecords.txt','./gamePreferences.txt'  # For windows and linux
+else: recordsPath,preferencesPath = resources('gameRecords.txt'), resources('gamePreferences.txt') # For MacOS
+
+assetDirectory = resources('Assets') # ASSET DIRECTORY
+load_dotenv(os.path.join(assetDirectory,'.env')) # LOAD ENV VARS
+
+# ASSET PATHS
+obstacleDirectory = os.path.join(assetDirectory, 'Obstacles') # Obstacle asset directory
+meteorDirectory = os.path.join(obstacleDirectory, 'Meteors') # Meteor asset directory
+ufoDirectory = os.path.join(obstacleDirectory, 'UFOs') # UFO asset directory
+shipDirectory = os.path.join(assetDirectory, 'Spaceships') # Spaceship asset directory
+caveDirectory = os.path.join(assetDirectory,'Caves') # Cave asset directory
+backgroundDirectory = os.path.join(assetDirectory, 'Backgrounds') # Background asset directory
+menuDirectory = os.path.join(assetDirectory, 'MainMenu') # Start menu asset directory
+explosionDirectory = os.path.join(assetDirectory, 'Explosion') # Explosion animation directory
+pointsDirectory = os.path.join(assetDirectory, 'Points') # Point image directory
+soundDirectory = os.path.join(assetDirectory, 'Sounds') # Sound assets directory
+supportersDirectory = os.path.join(assetDirectory,'Supporters') # Supporters directory
+
+
+# GET KEY
+def getKey():
+    try: return base64.b64decode(os.getenv('KEY'))
+    except: return None # Could not load key
+
+
+# STORE GAME RECORDS
+def storeRecords(records):
+    # No encryption
+    if not encryptGameRecords:
+        try:
+            with open(recordsPath, 'w') as file: file.write(json.dumps(records))
+        except: return # Continue without saving game records
+    # With encryption
+    else:
+        if getKey() is None:
+            with open(recordsPath,'w') as file: file.write(invalidKeyMessage)
+            return # No key, continue without saving
+        else:
+            try:
+                encrypted = Fernet(getKey()).encrypt(json.dumps(records).encode())
+                with open(recordsPath,'wb') as file: file.write(encrypted)
+            except: return # Failed to load encrypted records, continue without saving
+
+
+# LOAD GAME RECORDS
+def loadRecords():
+    # No encryption
+    if not encryptGameRecords:
+        try:
+            with open(recordsPath,'r') as file: return json.load(file)
+        except:
+            # Could not load records, try overwrite with default values
+            gameRecords = {'highScore':0, 'longestRun':0, 'attempts':0, 'timePlayed':0, 'points':0}
+            storeRecords(gameRecords)
+            return gameRecords
+    # With encryption
+    else:
+        try:
+            # Return dictionary from encrypted records file
+            with open(recordsPath,'rb') as file: encrypted = file.read()
+            return json.loads(Fernet(getKey()).decrypt(encrypted))
+        except:
+            # Failed to load records
+            gameRecords = {'highScore':0, 'longestRun':0, 'attempts':0, 'timePlayed':0, 'points':0}
+            storeRecords(gameRecords) # Try creating new encrypted records file
+            return gameRecords
 
 
 def loadPreferences():
-    if platform.system().lower() == 'windows' or platform.system().lower == 'linux': preferencesPath = './gamePreferences.txt' # For windows and linux
-    else: preferencesPath = resources('gamePreferences.txt') # For MacOS
     try:
         with open(preferencesPath, 'r') as file:
             prefs = json.load(file)
             return {'fullScreen': bool(prefs['fullScreen']), 'muted':bool(prefs['muted']), 'performanceMode':bool(prefs['performanceMode']), 'qualityMode':bool(prefs['qualityMode']), 'showDiscordPresence':bool(prefs['showDiscordPresence']) } # Sanitize dictionary
     except:
-        preferences = defaultPreferences # Default preferences
-        with open(preferencesPath, 'w') as file: file.write(json.dumps(preferences))
-        return preferences
+        prefs = defaultPreferences # Default preferences
+        with open(preferencesPath, 'w') as file: file.write(json.dumps(prefs))
+        return prefs
 
 
-# LOADED PREFERENCES
+def savePreferences(prefs):
+    try:
+        with open(preferencesPath, 'w') as file: file.write(json.dumps(prefs))
+
+    except: return
+
+
+# APPLY PREFERENCES
 if loadPreferencesFromFile:
     preferences = loadPreferences()
     fullScreen = preferences['fullScreen']
@@ -183,14 +254,12 @@ if loadPreferencesFromFile:
     showPresence = preferences['showDiscordPresence']
 
 
-# SCREEN UPDATE METHOD
+# SET SCREEN UPDATE METHOD
 if qualityMode and not performanceMode: updateNotFlip = False
 else: updateNotFlip = True # use update instead of flip for display updates
 
-# PERFORMANCE SETTINGS
-if performanceMode:
-    showBackgroundCloud = False
-    drawExhaust = False
+# SET PERFORMANCE SETTINGS
+if performanceMode:showBackgroundCloud,drawExhaust = False,False
 
 
 # UPDATE DISPLAY
@@ -215,7 +284,7 @@ def getScreen():
 
 # TOGGLE FULLSCREEN
 def toggleScreen():
-    if qualityMode:
+    if qualityMode and not performanceMode:
         global screen,fullScreen
         pygame.display.quit()
         fullScreen = not fullScreen
@@ -240,15 +309,11 @@ def toggleMusic(game):
     else: pygame.mixer.music.set_volume(0)
 
 
-# ASSET DIRECTORY
-currentDirectory = resources('Assets')
-load_dotenv(os.path.join(currentDirectory,'.env'))
-
 # INITIALIZE SCREEN
 screen = getScreen()
 
 # WINDOW
-windowIcon = pygame.image.load(resources(os.path.join(currentDirectory,'Icon.png'))).convert_alpha()
+windowIcon = pygame.image.load(resources(os.path.join(assetDirectory,'Icon.png'))).convert_alpha()
 pygame.display.set_caption('Navigator')
 pygame.display.set_icon(windowIcon)
 screenColor = [0,0,0] # Screen fill color
@@ -400,36 +465,9 @@ if useController:
         pygame.joystick.quit()
         if useController: useController = False
 
-
-# QUIT GAME
-def quitGame():
-    pygame.quit()
-    sys.exit()
-
-
-# Get path to game records based on OS
-def getRecordsPath():
-    if platform.system().lower() == 'windows' or platform.system().lower == 'linux': return './gameRecords.txt' # For windows and linux
-    else: return resources('gameRecords.txt') # For MacOS
-
-
-# ASSET LOADING
-obstacleDirectory = os.path.join(currentDirectory, 'Obstacles') # Obstacle asset directory
-meteorDirectory = os.path.join(obstacleDirectory, 'Meteors') # Meteor asset directory
-ufoDirectory = os.path.join(obstacleDirectory, 'UFOs') # UFO asset directory
-shipDirectory = os.path.join(currentDirectory, 'Spaceships') # Spaceship asset directory
-caveDirectory = os.path.join(currentDirectory,'Caves') # Cave asset directory
-backgroundDirectory = os.path.join(currentDirectory, 'Backgrounds') # Background asset directory
-menuDirectory = os.path.join(currentDirectory, 'MainMenu') # Start menu asset directory
-explosionDirectory = os.path.join(currentDirectory, 'Explosion') # Explosion animation directory
-pointsDirectory = os.path.join(currentDirectory, 'Points') # Point image directory
-soundDirectory = os.path.join(currentDirectory, 'Sounds') # Sound assets directory
-supportersDirectory = os.path.join(currentDirectory,'Supporters') # Supporters directory
-recordsPath = getRecordsPath() # Game records path
-
 # LOAD LEVELS
 stageList = []
-with open(resources(os.path.join(currentDirectory, 'Levels.json')), 'r') as file:
+with open(resources(os.path.join(assetDirectory, 'Levels.json')), 'r') as file:
     stages = json.load(file)
     for stage in stages.values():
         levels = []
@@ -438,58 +476,8 @@ with open(resources(os.path.join(currentDirectory, 'Levels.json')), 'r') as file
             levels.append(level)
         stageList.append(levels)
 
-
-# GET KEY
-def getKey():
-    try: return base64.b64decode(os.getenv('KEY'))
-    except: return None # Could not load key
-
-
-# STORE GAME RECORDS
-def storeRecords(records):
-    # No encryption
-    if not encryptGameRecords:
-        try:
-            with open(recordsPath, 'w') as file: file.write(json.dumps(records))
-        except: return # Continue without saving game records
-    # With encryption
-    else:
-        if getKey() is None:
-            with open(recordsPath,'w') as file: file.write(invalidKeyMessage)
-            return # No key, continue without saving
-        else:
-            try:
-                encrypted = Fernet(getKey()).encrypt(json.dumps(records).encode())
-                with open(recordsPath,'wb') as file: file.write(encrypted)
-            except: return # Failed to load encrypted records, continue without saving
-
-
-# LOAD GAME RECORDS
-def loadRecords():
-    # No encryption
-    if not encryptGameRecords:
-        try:
-            with open(recordsPath,'r') as file: return json.load(file)
-        except:
-            # Could not load records, try overwrite with default values
-            gameRecords = {'highScore':0, 'longestRun':0, 'attempts':0, 'timePlayed':0, 'points':0}
-            storeRecords(gameRecords)
-            return gameRecords
-    # With encryption
-    else:
-        try:
-            # Return dictionary from encrypted records file
-            with open(recordsPath,'rb') as file: encrypted = file.read()
-            return json.loads(Fernet(getKey()).decrypt(encrypted))
-        except:
-            # Failed to load records
-            gameRecords = {'highScore':0, 'longestRun':0, 'attempts':0, 'timePlayed':0, 'points':0}
-            storeRecords(gameRecords) # Try creating new encrypted records file
-            return gameRecords
-
-
 # FONTS
-gameFont = os.path.join(currentDirectory, 'Font.ttf')
+gameFont = os.path.join(assetDirectory, 'Font.ttf')
 stageFont = pygame.font.Font(gameFont, 30)
 levelFont = pygame.font.Font(gameFont, 30)
 scoreFont = pygame.font.Font(gameFont, 30)
@@ -508,7 +496,7 @@ creatorFont = pygame.font.Font(gameFont, 55)
 creditsFont = pygame.font.Font(gameFont, 40)
 
 # STAGE WIPE CLOUD
-stageCloudImg = pygame.image.load(resources(os.path.join(currentDirectory,'StageCloud.png') ) ).convert_alpha()
+stageCloudImg = pygame.image.load(resources(os.path.join(assetDirectory,'StageCloud.png') ) ).convert_alpha()
 
 # METEOR ASSETS
 meteorList = []
@@ -541,19 +529,11 @@ bgList = []
 for filename in sorted(os.listdir(backgroundDirectory)):
     filePath = os.path.join(backgroundDirectory,filename)
     if os.path.isdir(filePath):
-
         bgPath = os.path.join(backgroundDirectory,filename)
         stageBgPath = os.path.join(bgPath,'Background.png')
         stageCloudPath = os.path.join(bgPath,'Cloud.png')
-
-        if screenSize != [800,800]: # Stretching resolution
-            bg = pygame.transform.scale(pygame.image.load(resources(stageBgPath)).convert_alpha(), (screenSize[0], screenSize[1]))
-            cloud = pygame.transform.scale(pygame.image.load(resources(stageCloudPath)).convert_alpha(), (screenSize[0], screenSize[1]))
-
-        else:
-            bg = pygame.image.load(resources(stageBgPath)).convert_alpha()
-            cloud = pygame.image.load(resources(stageCloudPath)).convert_alpha()
-
+        bg = pygame.image.load(resources(stageBgPath)).convert_alpha()
+        cloud = pygame.image.load(resources(stageCloudPath)).convert_alpha()
         bgList.append([bg,cloud])
 
 # EXPLOSION ASSETS
@@ -612,7 +592,7 @@ for levelFolder in sorted(os.listdir(shipDirectory)):
         spaceShipList.append(shipLevelDict)
 
 # PLAYER SHIELD ASSET
-playerShield = pygame.transform.scale(pygame.image.load(resources(os.path.join(currentDirectory,"Shield.png"))),(playerShieldSize,playerShieldSize)).convert_alpha()
+playerShield = pygame.transform.scale(pygame.image.load(resources(os.path.join(assetDirectory,"Shield.png"))),(playerShieldSize,playerShieldSize)).convert_alpha()
 
 # MUSIC ASSET
 pygame.mixer.music.load(resources(os.path.join(soundDirectory,"Soundtrack.mp3")))
@@ -711,6 +691,13 @@ bottomDir = ["N", "W", "E", "NE", "NW"]
 rightDir = ["W", "N", "S", "NW", "SW"]
 
 
+# QUIT GAME
+def quitGame():
+    pygame.quit()
+    sys.exit()
+
+
+
 # GAME
 class Game:
     def __init__(self,records):
@@ -752,6 +739,8 @@ class Game:
         self.musicMuted = musicMuted
         self.clk = pygame.time.Clock() # Gameclock
         self.records = records # Game records dictionary
+        self.usingController = useController # Using controller for movement
+        self.usingCursor = False # Using cursor for movement
 
         # STORE LEVEL 1 VALUES
         self.savedConstants = {
@@ -767,8 +756,6 @@ class Game:
                 "obstacleTarget":self.target,
                 "obstacleHealth":self.obsHealth
                 }
-        self.usingController = useController
-        self.usingCursor = False
 
 
     # MAIN GAME LOOP
@@ -992,7 +979,7 @@ class Game:
 
     # Draw frame outside of main loop
     def alternateUpdate(self,player,obstacles,events):
-        for event in pygame.event.get(): pass # Movement during stage-up animation does not work without this loop for some reason?
+        for event in pygame.event.get(): pass # Pull events
 
         player.movement(self)
         player.wrapping()
@@ -1005,8 +992,9 @@ class Game:
             self.cave.update()
             if self.cave.rect.top <= screenSize[1] and self.cave.rect.bottom >= 0: screen.blit(self.cave.image,self.cave.rect) # DRAW CAVE
 
-        obstacleMove(player,obstacles)
         for obs in obstacles:
+            obs.move(player)
+            obs.activate()
             newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
             screen.blit(newBlit[0],newBlit[1])
             obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle
@@ -1173,10 +1161,6 @@ class Game:
         for laser in lasers:
             laser.update(player,lasers,obstacles)
             screen.blit(laser.image,laser.rect)
-
-
-    # Reset gameclock to 0
-    def resetClock(self): self.gameClock = 0
 
 
     # Gets number of skins unlocked
@@ -2135,8 +2119,9 @@ class Player(pygame.sprite.Sprite):
                     screen.blit(game.cave.image,game.cave.rect) # Draw cave
 
                 # Draw obstacles during explosion
-                obstacleMove(self,obstacles)
                 for obs in obstacles:
+                    obs.move(self)
+                    obs.activate()
                     newBlit = rotateImage(obs.image,obs.rect,obs.angle)
                     screen.blit(newBlit[0],newBlit[1])
 
@@ -2678,13 +2663,6 @@ def getMovement(spawnPattern):
     return move
 
 
-# OBSTACLE MOVEMENT (outside of main loop)
-def obstacleMove(player,obstacles):
-    for obs in obstacles:
-        obs.move(player)
-        obs.activate()
-
-
 # INITIALIZE GAME
 game = Game(loadRecords()) # Initialize game with records loaded
 menu = Menu() # Initialize menus
@@ -2699,7 +2677,7 @@ def gameLoop():
     pygame.mixer.music.play()
     game.resetGameConstants() # Reset level settings
     game.pauseCount = 0 # Reset pause uses
-    game.resetClock() # Restart game clock
+    game.gameClock = 0 # Restart game clock
     player = Player(game) # Initialize player
     if game.mainMenu: menu.home(game,player)
     else:
