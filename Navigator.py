@@ -810,7 +810,7 @@ class Game:
         # CAVES
         if self.levelType == "CAVE":
             if self.cave is None: # SPAWN A CAVE
-                self.cave = Caves(self.caveIndex)
+                self.cave = Cave(self.caveIndex)
                 if self.caveIndex + 1 < len(caveList) - 1: self.caveIndex+=1
             self.cave.update()
             screen.blit(self.cave.background,self.cave.rect)
@@ -1244,7 +1244,6 @@ class Menu:
     # START MENU
     def home(self,game,player):
 
-        global screen
         icons = []
         for icon in range(maxIcons): icons.append(Icon())
 
@@ -1422,7 +1421,7 @@ class Menu:
 
             # LOGO LETTERS
             screen.blit(menuList[0],(-14 + startRect.left + menuList[0].get_width() - menuList[0].get_width()/10,screenSize[1]/2 - 42)) # "A" symbol
-            screen.blit(menuList[1],(-16+screenSize[0] - startRect.centerx + menuList[1].get_width() * 2,screenSize[1]/2 - 35)) # "O" symbol
+            screen.blit(menuList[1],(-16 + screenSize[0] - startRect.centerx + menuList[1].get_width() * 2,screenSize[1]/2 - 35)) # "O" symbol
 
             # UFO ICONS
             if showMenuIcons:
@@ -1435,7 +1434,6 @@ class Menu:
 
     # PAUSE SCREEN
     def pause(self,game,player,obstacles,lasers):
-        global screen
         pygame.mixer.music.pause()
         playerBlit = rotateImage(player.image,player.rect,player.lastAngle)
         paused = True
@@ -1497,7 +1495,6 @@ class Menu:
 
     # GAME OVER SCREEN
     def gameOver(self,game,player,obstacles):
-        global screen
         gameOver = True
         game.thisPoint = Point(None,None)
         pygame.mixer.music.stop()
@@ -2299,7 +2296,7 @@ class Obstacle(pygame.sprite.Sprite):
 
 
 # CAVES
-class Caves(pygame.sprite.Sprite):
+class Cave(pygame.sprite.Sprite):
     def __init__(self,index):
         super().__init__()
         self.speed = caveSpeed
