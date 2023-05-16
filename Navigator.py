@@ -2447,9 +2447,44 @@ class Point(pygame.sprite.Sprite):
         elif self.powerUp == "Fuel": self.image = pointsList[1]
         elif self.powerUp == "Default": self.image = pointsList[0]
         self.image = pygame.transform.scale(self.image, (pointSize, pointSize))
-        if lastPos == None: self.rect = self.image.get_rect(center = positionGenerator())
-        else:self.rect = self.image.get_rect(center = spacedPositionGenerator(lastPos))
+        if lastPos == None: self.rect = self.image.get_rect(center = self.positionGenerator())
+        else:self.rect = self.image.get_rect(center = self.spacedPositionGenerator(lastPos))
         self.mask = pygame.mask.from_surface(self.image)
+
+
+    # POINT POSITION GENERATION
+    def getPosition(self):
+        xRange = [screenSize[0] * spawnRange[0] , screenSize[0] * spawnRange[1] ]
+        yRange = [screenSize[1] * spawnRange[0] , screenSize[1] * spawnRange[1] ]
+        xNum = random.randint(xRange[0],xRange[1])
+        yNum = random.randint(yRange[0],yRange[1])
+        return [xNum,yNum]
+
+
+    # CHECK IF POINT IS IN SPAWN AREA
+    def pointValid(self,point):
+        centerX, centerY = screenSize[0]/2, screenSize[1]/2
+        lines = [((centerX + math.cos(angle + math.pi/spawnVertices)*spawnWidth/2, centerY + math.sin(angle + math.pi/spawnVertices)*spawnHeight/2), (centerX + math.cos(angle - math.pi/spawnVertices)*spawnWidth/2, centerY + math.sin(angle - math.pi/spawnVertices)*spawnHeight/2)) for angle in (i * math.pi/4 for i in range(8))]
+        sameSide = [((point[0]-l[0][0])*(l[1][1]-l[0][1]) - (point[1]-l[0][1])*(l[1][0]-l[0][0]))  * ((centerX-l[0][0])*(l[1][1]-l[0][1]) - (centerY-l[0][1])*(l[1][0]-l[0][0])) >= 0  for l in lines]
+        return all(sameSide)
+
+
+    # GET POSITION IN SPAWN AREA
+    def positionGenerator(self):
+        attempts = 0
+        while True:
+            point = self.getPosition()
+            if attempts < maxRandomAttempts and self.pointValid(point):return point
+            else: attempts+=1
+
+
+    # Get new position at valid distance from last position
+    def spacedPositionGenerator(self,lastPos):
+        attempts = 0
+        while True:
+            point = self.positionGenerator()
+            if attempts < maxRandomAttempts and math.dist(point,lastPos) >= minDistanceToPoint: return point
+            else: attempts+=1
 
 
 
@@ -2633,41 +2668,6 @@ def obstacleMove(player,obstacles):
     for obs in obstacles:
         obs.move(player)
         obs.activate()
-
-
-# POINT POSITION GENERATION
-def getPosition():
-    xRange = [screenSize[0] * spawnRange[0] , screenSize[0] * spawnRange[1] ]
-    yRange = [screenSize[1] * spawnRange[0] , screenSize[1] * spawnRange[1] ]
-    xNum = random.randint(xRange[0],xRange[1])
-    yNum = random.randint(yRange[0],yRange[1])
-    return [xNum,yNum]
-
-
-# CHECK IF POINT IS IN SPAWN AREA
-def pointValid(point):
-    centerX, centerY = screenSize[0]/2, screenSize[1]/2
-    lines = [((centerX + math.cos(angle + math.pi/spawnVertices)*spawnWidth/2, centerY + math.sin(angle + math.pi/spawnVertices)*spawnHeight/2), (centerX + math.cos(angle - math.pi/spawnVertices)*spawnWidth/2, centerY + math.sin(angle - math.pi/spawnVertices)*spawnHeight/2)) for angle in (i * math.pi/4 for i in range(8))]
-    sameSide = [((point[0]-l[0][0])*(l[1][1]-l[0][1]) - (point[1]-l[0][1])*(l[1][0]-l[0][0]))  * ((centerX-l[0][0])*(l[1][1]-l[0][1]) - (centerY-l[0][1])*(l[1][0]-l[0][0])) >= 0  for l in lines]
-    return all(sameSide)
-
-
-# GET POSITION IN SPAWN AREA
-def positionGenerator():
-    attempts = 0
-    while True:
-        point = getPosition()
-        if attempts < maxRandomAttempts and pointValid(point):return point
-        else: attempts+=1
-
-
-# Get new position at valid distance from last position
-def spacedPositionGenerator(lastPos):
-    attempts = 0
-    while True:
-        point = positionGenerator()
-        if attempts < maxRandomAttempts and math.dist(point,lastPos) >= minDistanceToPoint: return point
-        else: attempts+=1
 
 
 # GET ANGLE FOR CORRESPONDING DIRECTION
