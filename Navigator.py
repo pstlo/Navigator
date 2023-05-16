@@ -168,7 +168,7 @@ def loadPreferences():
             prefs = json.load(file)
             return {'fullScreen': bool(prefs['fullScreen']), 'muted':bool(prefs['muted']), 'performanceMode':bool(prefs['performanceMode']), 'qualityMode':bool(prefs['qualityMode']), 'showDiscordPresence':bool(prefs['showDiscordPresence']) } # Sanitize dictionary
     except:
-        preferences = {'fullScreen':False, 'muted':False, 'performanceMode':False, 'qualityMode':False, 'showDiscordPresence':True} # Default preferences
+        preferences = defaultPreferences # Default preferences
         with open(preferencesPath, 'w') as file: file.write(json.dumps(preferences))
         return preferences
 
@@ -223,14 +223,6 @@ def toggleScreen():
         pygame.display.set_icon(windowIcon)
         screen = getScreen()
     else: pygame.display.toggle_fullscreen()
-
-
-# MENU MUSIC LOOP
-def menuMusicLoop():
-    if pygame.mixer.music.get_pos() >= menuLoopEnd:
-        pygame.mixer.music.rewind()
-        pygame.mixer.music.set_pos(menuLoopStart)
-        pygame.mixer.music.play()
 
 
 # GAMEPLAY MUSIC LOOP
@@ -641,9 +633,6 @@ laserNoise.set_volume(sfxVolume/100)
 impactNoise = pygame.mixer.Sound(resources(os.path.join(soundDirectory,"Impact.wav")))
 impactNoise.set_volume(sfxVolume/100)
 
-# SHIELD BREAK NOISE ASSET
-# coming soon
-
 # SHIP ATTRIBUTES DATA
 shipConstants = []
 for i in range(len(spaceShipList)): shipConstants.append(spaceShipList[i]["stats"])
@@ -720,16 +709,6 @@ topDir = ["S", "E", "W", "SE", "SW"]
 leftDir = ["E", "S", "N", "NE", "SE"]
 bottomDir = ["N", "W", "E", "NE", "NW"]
 rightDir = ["W", "N", "S", "NW", "SW"]
-
-
-# Get closest point out of a group
-def getClosestPoint(point, points):
-    closest,shortest = None,None
-    for pt in points:
-        if closest is None or math.dist(point.rect.center,closest.rect.center) > math.dist(point.rect.center,pt.rect.center):
-            closest,shortest = pt, math.dist(point.rect.center,pt.rect.center)
-    return closest
-
 
 
 # GAME
@@ -1350,7 +1329,7 @@ class Menu:
 
         while game.mainMenu:
 
-            menuMusicLoop() # Keep music looping
+            self.menuMusicLoop() # Keep music looping
             if bounceCount >= bounceDelay: bounceCount = 0
             else: bounceCount +=1
 
@@ -1713,7 +1692,6 @@ class Menu:
                 else: skipped+=1
 
 
-
     # CREDITS
     def creditScreen(self):
         global screen
@@ -1734,7 +1712,7 @@ class Menu:
         musicCreditsRect = musicCreditsDisplay.get_rect(center = (posX,posY+ screenSize[1]/15))
 
         bounceCount = 0
-        direction = randomEightDirection()
+        direction = self.randomEightDirection()
 
         extras = []
         bgShips = []
@@ -1749,7 +1727,7 @@ class Menu:
             else: extrasCap = maxExtras
 
         while rollCredits:
-            menuMusicLoop()
+            self.menuMusicLoop()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
@@ -1851,6 +1829,21 @@ class Menu:
 
             bounceCount +=1
             if bounceCount >= mainCreditsDelay: bounceCount = 0
+
+
+    # GET RANDOM DIRECTION - include diagonal
+    def randomEightDirection(self):
+        directions = ["N","S","E","W","NW","SW","NE","SE"]
+        direction = directions[random.randint(0, len(directions)-1)]
+        return direction
+
+
+    # MENU MUSIC LOOP
+    def menuMusicLoop(self):
+        if pygame.mixer.music.get_pos() >= menuLoopEnd:
+            pygame.mixer.music.rewind()
+            pygame.mixer.music.set_pos(menuLoopStart)
+            pygame.mixer.music.play()
 
 
 
@@ -2309,8 +2302,8 @@ class Obstacle(pygame.sprite.Sprite):
             if self.rect.top < 0 or self.rect.bottom > screenSize[1]:
                 if self.direction == "W":self.rect.center = (screenSize[0], random.randint(screenSize[1]*0.02, screenSize[1]*0.98))
                 elif self.direction == "E":self.rect.center = (0, random.randint(screenSize[1]*0.02, screenSize[1]*0.98))
-    
-    
+
+
     # GET INVERSE MOVEMENT DIRECTION
     def movementReverse(self):
         if self.direction == "N": self.direction = "S"
@@ -2401,7 +2394,7 @@ class Laser(pygame.sprite.Sprite):
         if self.seekWaitTime < heatSeekDelay:
             self.seekWaitTime += 1
             self.normalMove(player)
-        elif self.seek == False: self.target, self.seek = getClosestPoint(self,obstacles), True # Get target
+        elif self.seek == False: self.target, self.seek = self.getClosestPoint(obstacles), True # Get target
         else:
             if self.target is None or not obstacles.has(self.target):
                 if heatSeekNeedsTarget:
@@ -2417,6 +2410,15 @@ class Laser(pygame.sprite.Sprite):
                 self.angle = math.atan2(dirY,dirX) # Angle to shortest path
                 self.rect.centerx += (player.speed + self.speed) * math.cos(self.angle) # Horizontal movement
                 self.rect.centery +=self.speed * math.sin(self.angle) # Vertical movement
+
+
+    # Get closest target out of a group
+    def getClosestPoint(self, points):
+        closest,shortest = None,None
+        for pt in points:
+            if closest is None or math.dist(self.rect.center,closest.rect.center) > math.dist(self.rect.center,pt.rect.center):
+                closest,shortest = pt, math.dist(self.rect.center,pt.rect.center)
+        return closest
 
 
 
@@ -2561,7 +2563,7 @@ class Icon:
 class BackgroundShip:
     def __init__(self,text,scale):
         self.scale = scale
-        self.size = int(valueScaler(scale,minBackgroundShipSize,maxBackgroundShipSize,lowDon,maxDon))
+        self.size = self.valueScaler(scale,minBackgroundShipSize,maxBackgroundShipSize,lowDon,maxDon)
         if self.size < minBackgroundShipSize:
             self.size = minBackgroundShipSize
             self.speed = maxBackgroundShipSpeed
@@ -2573,7 +2575,7 @@ class BackgroundShip:
         elif self.speed < minBackgroundShipSpeed: self.speed = minBackgroundShipSpeed
         self.movement = getMovement("AGGRO")
         self.direction = self.movement[1]
-        self.angle = getAngle(self.direction)
+        self.angle = self.getAngle()
         self.text = text
         self.image = pygame.transform.scale(donationShips[random.randint(0, len(donationShips) - 1)], (self.size, self.size) ).convert_alpha()
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
@@ -2615,8 +2617,28 @@ class BackgroundShip:
 
 
     def activate(self):
-        if not self.active:
-            if not self.offScreen(): self.active = True
+        if not self.active and not self.offScreen(): self.active = True
+
+
+    # GET ANGLE FOR CORRESPONDING DIRECTION
+    def getAngle(self):
+        if self.direction == "N": return 0
+        elif self.direction == "S": return 180
+        elif self.direction == "E": return -90
+        elif self.direction == "W": return 90
+        elif self.direction == "NW": return 45
+        elif self.direction == "NE": return -45
+        elif self.direction == "SE": return -135
+        elif self.direction == "SW": return 135
+
+
+    # GET SCALED VALUE
+    def valueScaler(self, amount, minimum, maximum, bottom, top):
+        if bottom is None or top is None: return minimum
+        elif top - bottom == 0: return (maximum + minimum) / 2
+        else:
+            scaled = (amount - bottom) / (top - bottom) * (maximum - minimum) + minimum
+            return int(min(max(scaled, minimum), maximum))
 
 
 
@@ -2625,13 +2647,6 @@ def rotateImage(image, rect, angle):
     rotated = pygame.transform.rotate(image, angle)
     rotatedRect = rotated.get_rect(center=rect.center)
     return rotated,rotatedRect
-
-
-# GET RANDOM DIRECTION - include diagonal
-def randomEightDirection():
-    directions = ["N","S","E","W","NW","SW","NE","SE"]
-    direction = directions[random.randint(0, len(directions)-1)]
-    return direction
 
 
 # MOVEMENT AND POSITION GENERATION
@@ -2668,29 +2683,6 @@ def obstacleMove(player,obstacles):
     for obs in obstacles:
         obs.move(player)
         obs.activate()
-
-
-# GET ANGLE FOR CORRESPONDING DIRECTION
-def getAngle(direction):
-    if direction == "N": return 0
-    elif direction == "S": return 180
-    elif direction == "E": return -90
-    elif direction == "W": return 90
-    elif direction == "NW": return 45
-    elif direction == "NE": return -45
-    elif direction == "SE": return -135
-    elif direction == "SW": return 135
-
-
-# GET SCALED VALUE
-def valueScaler(amount, minimum, maximum, bottom, top):
-    if bottom is None or top is None:
-        return minimum
-    elif top - bottom == 0:
-        return (maximum + minimum) / 2
-    else:
-        scaled = (amount - bottom) / (top - bottom) * (maximum - minimum) + minimum
-        return min(max(scaled, minimum), maximum)
 
 
 # INITIALIZE GAME
