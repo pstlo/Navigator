@@ -297,14 +297,12 @@ class Assets:
                 path = os.path.join(explosionDirectory, filename)
                 self.explosionList.append(pygame.image.load(self.resources(path)).convert_alpha())
 
-
         # POINTS ASSETS
         self.pointsList = []
         for filename in sorted(os.listdir(pointsDirectory)):
             if filename.endswith('png'):
                 path = os.path.join(pointsDirectory, filename)
                 self.pointsList.append(pygame.image.load(self.resources(path)).convert_alpha())
-
 
         # SPACESHIP ASSETS
         self.spaceShipList = []
@@ -358,7 +356,6 @@ class Assets:
         self.menuList.append(pygame.image.load(self.resources(os.path.join(menuDirectory,'center.png'))).convert_alpha()) # Center icon
         self.menuList.append(pygame.image.load(self.resources(os.path.join(menuDirectory,'left.png'))).convert_alpha()) # Left icon
         self.menuList.append(pygame.image.load(self.resources(os.path.join(menuDirectory,'right.png'))).convert_alpha()) # Right icon
-
 
         menuMeteorDir = os.path.join(menuDirectory,'FlyingObjects')
         for objPath in sorted(os.listdir(menuMeteorDir)): self.menuList.append(pygame.image.load(self.resources(os.path.join(menuMeteorDir,objPath))).convert_alpha())
@@ -675,6 +672,42 @@ rightDir = ["W", "N", "S", "NW", "SW"]
 def quitGame():
     pygame.quit()
     sys.exit()
+
+
+# ROTATE IMAGES
+def rotateImage(image, rect, angle):
+    rotated = pygame.transform.rotate(image, angle)
+    rotatedRect = rotated.get_rect(center=rect.center)
+    return rotated,rotatedRect
+
+
+# MOVEMENT AND POSITION GENERATION
+def getMovement(spawnPattern):
+    top,bottom,left,right = [],[],[],[]
+    if spawnPattern == "AGGRO": top, bottom, left, right, = ["SE", "SW", "S"], ["N", "NE", "NW"], ["E", "NE", "SE"], ["NW", "SW", "W"]
+    elif spawnPattern == "TOP": top = ["SE", "SW", "S"]
+    elif spawnPattern == "VERT": top, bottom = ["SE", "SW", "S"], ["N", "NE", "NW"]
+    else: top, bottom, left, right = topDir, bottomDir, leftDir, rightDir # Default / "All"
+
+    X = random.randint(settings.screenSize[0] * 0.1, settings.screenSize[0] * 0.99)
+    Y = random.randint(settings.screenSize[1] * 0.1, settings.screenSize[1] * 0.99)
+
+    lowerX = random.randint(-1,0)
+    upperX =  random.randint(settings.screenSize[0], settings.screenSize[0] + 1)
+    lowerY  = random.randint(-1,0)
+    upperY = random.randint(settings.screenSize[1],settings.screenSize[1] + 1)
+
+    possible = []
+    if len(top) != 0: possible.append([X, lowerY, random.choice(top)])
+    if len(bottom) != 0: possible.append([X, upperY, random.choice(bottom)])
+    if len(left) != 0: possible.append([lowerX, Y, random.choice(left)])
+    if len(right) != 0: possible.append([upperX, Y, random.choice(right)])
+
+    movement = random.choice(possible)
+    position = [movement[0], movement[1]]
+    direction = movement[2]
+    move = [position,direction]
+    return move
 
 
 
@@ -2602,42 +2635,6 @@ class BackgroundShip:
             scaled = (amount - bottom) / (top - bottom) * (maximum - minimum) + minimum
             return int(min(max(scaled, minimum), maximum))
 
-
-
-# ROTATE IMAGES
-def rotateImage(image, rect, angle):
-    rotated = pygame.transform.rotate(image, angle)
-    rotatedRect = rotated.get_rect(center=rect.center)
-    return rotated,rotatedRect
-
-
-# MOVEMENT AND POSITION GENERATION
-def getMovement(spawnPattern):
-    top,bottom,left,right = [],[],[],[]
-    if spawnPattern == "AGGRO": top, bottom, left, right, = ["SE", "SW", "S"], ["N", "NE", "NW"], ["E", "NE", "SE"], ["NW", "SW", "W"]
-    elif spawnPattern == "TOP": top = ["SE", "SW", "S"]
-    elif spawnPattern == "VERT": top, bottom = ["SE", "SW", "S"], ["N", "NE", "NW"]
-    else: top, bottom, left, right = topDir, bottomDir, leftDir, rightDir # Default / "All"
-
-    X = random.randint(settings.screenSize[0] * 0.1, settings.screenSize[0] * 0.99)
-    Y = random.randint(settings.screenSize[1] * 0.1, settings.screenSize[1] * 0.99)
-
-    lowerX = random.randint(-1,0)
-    upperX =  random.randint(settings.screenSize[0], settings.screenSize[0] + 1)
-    lowerY  = random.randint(-1,0)
-    upperY = random.randint(settings.screenSize[1],settings.screenSize[1] + 1)
-
-    possible = []
-    if len(top) != 0: possible.append([X, lowerY, random.choice(top)])
-    if len(bottom) != 0: possible.append([X, upperY, random.choice(bottom)])
-    if len(left) != 0: possible.append([lowerX, Y, random.choice(left)])
-    if len(right) != 0: possible.append([upperX, Y, random.choice(right)])
-
-    movement = random.choice(possible)
-    position = [movement[0], movement[1]]
-    direction = movement[2]
-    move = [position,direction]
-    return move
 
 
 # INITIALIZE GAME
