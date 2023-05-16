@@ -2265,22 +2265,22 @@ class Obstacle(pygame.sprite.Sprite):
 
         elif self.bounds == "BOUNCE": # Bounce off walls
             if self.rect.left < 0:
-                if self.target == "NONE": self.direction = movementReverse(self.direction)
+                if self.target == "NONE": self.direction = self.movementReverse(self.direction)
                 else: self.direction = math.atan2(math.sin(self.direction + math.pi), math.cos(self.direction + math.pi))
                 self.rect.left = 1
 
             elif self.rect.right > screenSize[0]:
-                if self.target == "NONE": self.direction = movementReverse(self.direction)
+                if self.target == "NONE": self.direction = self.movementReverse(self.direction)
                 else: self.direction = math.atan2(math.sin(self.direction + math.pi), math.cos(self.direction + math.pi))
                 self.rect.right = screenSize[0] - 1
 
             elif self.rect.top < 0:
-                if self.target == "NONE": self.direction = movementReverse(self.direction)
+                if self.target == "NONE": self.direction = self.movementReverse(self.direction)
                 else: self.direction = math.atan2(math.sin(self.direction + math.pi), math.cos(self.direction + math.pi))
                 self.rect.top = 1
 
             elif self.rect.bottom > screenSize[1]:
-                if self.target == "NONE": self.direction = movementReverse(self.direction)
+                if self.target == "NONE": self.direction = self.movementReverse(self.direction)
                 else: self.direction = math.atan2(math.sin(self.direction + math.pi), math.cos(self.direction + math.pi))
                 self.rect.bottom = screenSize[1]-1
 
@@ -2309,6 +2309,18 @@ class Obstacle(pygame.sprite.Sprite):
             if self.rect.top < 0 or self.rect.bottom > screenSize[1]:
                 if self.direction == "W":self.rect.center = (screenSize[0], random.randint(screenSize[1]*0.02, screenSize[1]*0.98))
                 elif self.direction == "E":self.rect.center = (0, random.randint(screenSize[1]*0.02, screenSize[1]*0.98))
+    
+    
+    # GET INVERSE MOVEMENT DIRECTION
+    def movementReverse(self):
+        if self.direction == "N": self.direction = "S"
+        elif self.direction == "S": self.direction = "N"
+        elif self.direction == "E": self.direction = "W"
+        elif self.direction == "W": self.direction = "E"
+        elif self.direction == "NW": self.direction = "SE"
+        elif self.direction == "NE": self.direction = "SW"
+        elif self.direction == "SE": self.direction = "NW"
+        elif self.direction == "SW": self.direction = "NE"
 
 
 
@@ -2613,18 +2625,6 @@ def rotateImage(image, rect, angle):
     rotated = pygame.transform.rotate(image, angle)
     rotatedRect = rotated.get_rect(center=rect.center)
     return rotated,rotatedRect
-
-
-# GET INVERSE MOVEMENT DIRECTION
-def movementReverse(direction):
-    if direction == "N": return "S"
-    elif direction == "S": return "N"
-    elif direction == "E": return "W"
-    elif direction == "W": return "E"
-    elif direction == "NW": return "SE"
-    elif direction == "NE": return "SW"
-    elif direction == "SE": return "NW"
-    elif direction == "SW": return "NE"
 
 
 # GET RANDOM DIRECTION - include diagonal
