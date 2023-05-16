@@ -15,7 +15,7 @@ pygame.mixer.init()
 version = "v0.4.8"
 
 
-
+# SETTINGS
 class Settings:
     def __init__(self):
         # SCREEN
@@ -137,115 +137,274 @@ class Settings:
 
 
 
-settings = Settings() # INITIALIZE SETTINGS
+# ASSETS
+class Assets:
+    def __init__(self):
+        # RECORD AND PREFERENCE PATHS
+        if platform.system().lower() == 'windows' or platform.system().lower == 'linux': self.recordsPath,self.preferencesPath = './gameRecords.txt','./gamePreferences.txt'  # For windows and linux
+        else: self.recordsPath,self.preferencesPath = self.resources('gameRecords.txt'), self.resources('gamePreferences.txt') # For MacOS
 
-# KEY BINDS
-leftInput = [pygame.K_a, pygame.K_LEFT]
-rightInput = [pygame.K_d,pygame.K_RIGHT]
-upInput = [pygame.K_w,pygame.K_UP]
-downInput = [pygame.K_s,pygame.K_DOWN]
-boostInput = [pygame.K_LSHIFT,pygame.K_RSHIFT]
-pauseInput = [pygame.K_SPACE]
-shootInput = [pygame.K_LCTRL,pygame.K_RCTRL]
-escapeInput = [pygame.K_ESCAPE]
-backInput = [pygame.K_TAB]
-creditsInput = [pygame.K_c]
-brakeInput = [pygame.K_LALT,pygame.K_RALT]
-muteInput = [pygame.K_m]
-fullScreenInput = [pygame.K_f]
-startInput = [pygame.K_SPACE]
+        # ASSET PATHS
+        assetDirectory = self.resources('Assets') # ASSET DIRECTORY
+        load_dotenv(os.path.join(assetDirectory,'.env')) # LOAD ENV VARS
+        obstacleDirectory = os.path.join(assetDirectory, 'Obstacles') # Obstacle asset directory
+        meteorDirectory = os.path.join(obstacleDirectory, 'Meteors') # Meteor asset directory
+        ufoDirectory = os.path.join(obstacleDirectory, 'UFOs') # UFO asset directory
+        shipDirectory = os.path.join(assetDirectory, 'Spaceships') # Spaceship asset directory
+        caveDirectory = os.path.join(assetDirectory,'Caves') # Cave asset directory
+        backgroundDirectory = os.path.join(assetDirectory, 'Backgrounds') # Background asset directory
+        menuDirectory = os.path.join(assetDirectory, 'MainMenu') # Start menu asset directory
+        explosionDirectory = os.path.join(assetDirectory, 'Explosion') # Explosion animation directory
+        pointsDirectory = os.path.join(assetDirectory, 'Points') # Point image directory
+        soundDirectory = os.path.join(assetDirectory, 'Sounds') # Sound assets directory
+        supportersDirectory = os.path.join(assetDirectory,'Supporters') # Supporters directory
+
+        self.windowIcon = pygame.image.load(self.resources(os.path.join(assetDirectory,'Icon.png'))).convert_alpha()
+        self.stageCloudImg = pygame.image.load(self.resources(os.path.join(assetDirectory,'StageCloud.png') ) ).convert_alpha() # STAGE WIPE CLOUD
+
+        # LOAD LEVELS
+        self.stageList = []
+        with open(self.resources(os.path.join(assetDirectory, 'Levels.json')), 'r') as file:
+            stages = json.load(file)
+            for stage in stages.values():
+                levels = []
+                for level in stage.values():
+                    level["START"] = False
+                    levels.append(level)
+                self.stageList.append(levels)
+
+        # OBSTACLE ASSETS
+        meteorList = []
+        for filename in sorted(os.listdir(meteorDirectory)):
+            if filename.endswith('.png'):
+                path = os.path.join(meteorDirectory, filename)
+                meteorList.append(pygame.image.load(self.resources(path)).convert_alpha())
+
+        # UFO ASSETS
+        ufoList = []
+        for filename in sorted(os.listdir(ufoDirectory)):
+            if filename.endswith('.png'):
+                path = os.path.join(ufoDirectory, filename)
+                ufoList.append(pygame.image.load(self.resources(path)).convert_alpha())
+
+        self.obstacleImages = [meteorList,ufoList] # Seperated by stage
+
+        # CAVE ASSETS
+        self.caveList = []
+        for caveNum in sorted(os.listdir(caveDirectory)):
+            caveAssets = os.path.join(caveDirectory,caveNum)
+            cave = []
+            cave.append(pygame.image.load(self.resources(os.path.join(caveAssets,"Background.png"))).convert_alpha())
+            cave.append(pygame.image.load(self.resources(os.path.join(caveAssets,"Cave.png"))).convert_alpha())
+            self.caveList.append(cave)
+
+        # BACKGROUND ASSETS
+        self.bgList = []
+        for filename in sorted(os.listdir(backgroundDirectory)):
+            filePath = os.path.join(backgroundDirectory,filename)
+            if os.path.isdir(filePath):
+                bgPath = os.path.join(backgroundDirectory,filename)
+                stageBgPath = os.path.join(bgPath,'Background.png')
+                stageCloudPath = os.path.join(bgPath,'Cloud.png')
+                bg = pygame.image.load(self.resources(stageBgPath)).convert_alpha()
+                cloud = pygame.image.load(self.resources(stageCloudPath)).convert_alpha()
+                self.bgList.append([bg,cloud])
+
+        # EXPLOSION ASSETS
+        self.explosionList = []
+        for filename in sorted(os.listdir(explosionDirectory)):
+            if filename.endswith('.png'):
+                path = os.path.join(explosionDirectory, filename)
+                self.explosionList.append(pygame.image.load(self.resources(path)).convert_alpha())
 
 
-# EXE/APP RESOURCES
-def resources(relative):
-    try: base = sys._MEIPASS # Running from EXE/APP
-    except Exception: base = os.path.abspath(".") # Running fron script
-    return os.path.join(base, relative)
+        # POINTS ASSETS
+        self.pointsList = []
+        for filename in sorted(os.listdir(pointsDirectory)):
+            if filename.endswith('png'):
+                path = os.path.join(pointsDirectory, filename)
+                self.pointsList.append(pygame.image.load(self.resources(path)).convert_alpha())
 
 
-# RECORD AND PREFERENCE PATHS
-if platform.system().lower() == 'windows' or platform.system().lower == 'linux': recordsPath,preferencesPath = './gameRecords.txt','./gamePreferences.txt'  # For windows and linux
-else: recordsPath,preferencesPath = resources('gameRecords.txt'), resources('gamePreferences.txt') # For MacOS
+        # SPACESHIP ASSETS
+        self.spaceShipList = []
+        for levelFolder in sorted(os.listdir(shipDirectory)):
+            levelFolderPath = os.path.join(shipDirectory,levelFolder) # level folder path
+            if os.path.isdir(levelFolderPath): # Ignore DS_STORE on MacOS
+                shipLevelDict = {'skins':[],'exhaust':[], 'boost':[], 'laser':'', 'stats':''}
 
-assetDirectory = resources('Assets') # ASSET DIRECTORY
-load_dotenv(os.path.join(assetDirectory,'.env')) # LOAD ENV VARS
+                # Load ship skins
+                skinsPath = os.path.join(levelFolderPath,'Skins')
+                for imageAsset in sorted(os.listdir(skinsPath)):
+                    if imageAsset.endswith('.png'):
+                        imageAssetPath = os.path.join(skinsPath,imageAsset)
+                        shipLevelDict['skins'].append(pygame.image.load(self.resources((imageAssetPath))).convert_alpha())
 
-# ASSET PATHS
-obstacleDirectory = os.path.join(assetDirectory, 'Obstacles') # Obstacle asset directory
-meteorDirectory = os.path.join(obstacleDirectory, 'Meteors') # Meteor asset directory
-ufoDirectory = os.path.join(obstacleDirectory, 'UFOs') # UFO asset directory
-shipDirectory = os.path.join(assetDirectory, 'Spaceships') # Spaceship asset directory
-caveDirectory = os.path.join(assetDirectory,'Caves') # Cave asset directory
-backgroundDirectory = os.path.join(assetDirectory, 'Backgrounds') # Background asset directory
-menuDirectory = os.path.join(assetDirectory, 'MainMenu') # Start menu asset directory
-explosionDirectory = os.path.join(assetDirectory, 'Explosion') # Explosion animation directory
-pointsDirectory = os.path.join(assetDirectory, 'Points') # Point image directory
-soundDirectory = os.path.join(assetDirectory, 'Sounds') # Sound assets directory
-supportersDirectory = os.path.join(assetDirectory,'Supporters') # Supporters directory
+                # Load exhaust frames
+                exhaustPath = os.path.join(levelFolderPath,'Exhaust')
+                for imageAsset in sorted(os.listdir(exhaustPath)):
+                    if imageAsset.endswith('.png'):
+                        imageAssetPath = os.path.join(exhaustPath,imageAsset)
+                        shipLevelDict['exhaust'].append(pygame.image.load(self.resources((imageAssetPath))).convert_alpha())
+
+                # Load boost frames
+                boostPath = os.path.join(levelFolderPath,'Boost')
+                for imageAsset in sorted(os.listdir(boostPath)):
+                    if imageAsset.endswith('.png'):
+                        imageAssetPath = os.path.join(boostPath,imageAsset)
+                        shipLevelDict['boost'].append(pygame.image.load(self.resources((imageAssetPath))).convert_alpha())
+
+                # Load laser image
+                laserPath = os.path.join(levelFolderPath,'Laser.png')
+                shipLevelDict['laser'] = pygame.image.load(self.resources(laserPath)).convert_alpha()
+
+                # Load ship stats
+                statsPath = os.path.join(levelFolderPath,'Stats.json')
+                with open(self.resources(statsPath), 'r') as file: shipLevelDict['stats'] = json.load(file)
+
+                self.spaceShipList.append(shipLevelDict)
+
+        # SHIP ATTRIBUTES DATA
+        self.shipConstants = []
+        for i in range(len(self.spaceShipList)): self.shipConstants.append(self.spaceShipList[i]["stats"])
+
+        # PLAYER SHIELD ASSET
+        self.playerShield = pygame.transform.scale(pygame.image.load(self.resources(os.path.join(assetDirectory,"Shield.png"))),(settings.playerShieldSize,settings.playerShieldSize))
+
+        # MAIN MENU ASSETS
+        self.menuList = []
+        self.menuList.append(pygame.image.load(self.resources(os.path.join(menuDirectory,'A.png'))).convert_alpha()) # 'A' icon
+        self.menuList.append(pygame.image.load(self.resources(os.path.join(menuDirectory,'O.png'))).convert_alpha()) # 'O' icon
+        self.menuList.append(pygame.image.load(self.resources(os.path.join(menuDirectory,'center.png'))).convert_alpha()) # Center icon
+        self.menuList.append(pygame.image.load(self.resources(os.path.join(menuDirectory,'left.png'))).convert_alpha()) # Left icon
+        self.menuList.append(pygame.image.load(self.resources(os.path.join(menuDirectory,'right.png'))).convert_alpha()) # Right icon
 
 
-# GET KEY
-def getKey():
-    try: return base64.b64decode(os.getenv('KEY'))
-    except: return None # Could not load key
+        menuMeteorDir = os.path.join(menuDirectory,'FlyingObjects')
+        for objPath in sorted(os.listdir(menuMeteorDir)): self.menuList.append(pygame.image.load(self.resources(os.path.join(menuMeteorDir,objPath))).convert_alpha())
+
+        # MUSIC ASSET
+        pygame.mixer.music.load(self.resources(os.path.join(soundDirectory,"Soundtrack.mp3")))
+
+        # EXPLOSION NOISE ASSET
+        self.explosionNoise = pygame.mixer.Sound(self.resources(os.path.join(soundDirectory,"Explosion.wav")))
+        self.explosionNoise.set_volume(settings.sfxVolume/100)
+
+        # POINT NOISE ASSET
+        self.powerUpNoise = pygame.mixer.Sound(self.resources(os.path.join(soundDirectory,"Point.wav")))
+        self.powerUpNoise.set_volume(settings.sfxVolume/100)
 
 
-# STORE GAME RECORDS
-def storeRecords(records):
-    # No encryption
-    if not settings.encryptGameRecords:
+        # LASER NOISE ASSET
+        self.laserNoise = pygame.mixer.Sound(self.resources(os.path.join(soundDirectory,"Laser.wav")))
+        self.laserNoise.set_volume(settings.sfxVolume/100)
+
+        # LASER IMPACT NOISE ASSET
+        self.impactNoise = pygame.mixer.Sound(self.resources(os.path.join(soundDirectory,"Impact.wav")))
+        self.impactNoise.set_volume(settings.sfxVolume/100)
+
+        # LOAD DONATION RECORDS
+        self.donations = {}
         try:
-            with open(recordsPath, 'w') as file: file.write(json.dumps(records))
-        except: return # Continue without saving game records
-    # With encryption
-    else:
-        if getKey() is None:
-            with open(recordsPath,'w') as file: file.write(settings.invalidKeyMessage)
-            return # No key, continue without saving
+            path = os.path.join(supportersDirectory,'Supporters.txt')
+            with open(path,'r') as file:
+                for line in file:
+                    try:
+                        key,value = line.strip().split(':')
+                        self.donations[key] = int(value)
+                    except:pass
+        except: pass
+
+        if len(self.donations) > 0:
+            self.maxDon = max(self.donations.values())
+            self.lowDon = min(self.donations.values())
+        else: self.maxDon,self.lowDon = None,None
+
+        # LOAD DONATION SHIP ASSETS
+        self.donationShips = []
+        donationShipsDir = os.path.join(supportersDirectory,'Images')
+        for filename in sorted(os.listdir(donationShipsDir)):
+            if filename.endswith('.png'):
+                path = os.path.join(donationShipsDir, filename)
+                self.donationShips.append(pygame.image.load(self.resources(path)).convert_alpha())
+
+        # FONTS
+        self.gameFont = os.path.join(assetDirectory, 'Font.ttf')
+        self.stageFont = pygame.font.Font(self.gameFont, 30)
+        self.levelFont = pygame.font.Font(self.gameFont, 30)
+        self.scoreFont = pygame.font.Font(self.gameFont, 30)
+        self.timerFont = pygame.font.Font(self.gameFont, 30)
+        self.stageUpFont = pygame.font.Font(self.gameFont, 90)
+        self.startFont = pygame.font.Font(self.gameFont, 120)
+        self.shipHelpFont = pygame.font.Font(self.gameFont, 20)
+        self.startHelpFont = pygame.font.Font(self.gameFont, 30)
+        self.pausedFont = pygame.font.Font(self.gameFont, 100)
+        self.pauseCountFont = pygame.font.Font(self.gameFont,40)
+        self.versionFont = pygame.font.Font(self.gameFont,25)
+        self.gameOverFont = pygame.font.Font(self.gameFont, 100)
+        self.statFont = pygame.font.Font(self.gameFont, 30)
+        self.exitFont = pygame.font.Font(self.gameFont, 30)
+        self.creatorFont = pygame.font.Font(self.gameFont, 55)
+        self.creditsFont = pygame.font.Font(self.gameFont, 40)
+
+
+    # EXE/APP RESOURCES
+    def resources(self,relative):
+        try: base = sys._MEIPASS # Running from EXE/APP
+        except: base = os.path.abspath(".") # Running fron script
+        return os.path.join(base, relative)
+
+
+    # GET KEY
+    def getKey(self):
+        try: return base64.b64decode(os.getenv('KEY'))
+        except: return None # Could not load key
+
+
+    # STORE GAME RECORDS
+    def storeRecords(self,records):
+        # No encryption
+        if not settings.encryptGameRecords:
+            try:
+                with open(self.recordsPath, 'w') as file: file.write(json.dumps(records))
+            except: return # Continue without saving game records
+        # With encryption
+        else:
+            if self.getKey() is None:
+                with open(self.recordsPath,'w') as file: file.write(settings.invalidKeyMessage)
+                return # No key, continue without saving
+            else:
+                try:
+                    encrypted = Fernet(self.getKey()).encrypt(json.dumps(records).encode())
+                    with open(self.recordsPath,'wb') as file: file.write(encrypted)
+                except: return # Failed to load encrypted records, continue without saving
+
+
+    # LOAD GAME RECORDS
+    def loadRecords(self):
+        # No encryption
+        if not settings.encryptGameRecords:
+            try:
+                with open(self.recordsPath,'r') as file: return json.load(file)
+            except:
+                # Could not load records, try overwrite with default values
+                gameRecords = {'highScore':0, 'longestRun':0, 'attempts':0, 'timePlayed':0, 'points':0}
+                self.storeRecords(gameRecords)
+                return gameRecords
+        # With encryption
         else:
             try:
-                encrypted = Fernet(getKey()).encrypt(json.dumps(records).encode())
-                with open(recordsPath,'wb') as file: file.write(encrypted)
-            except: return # Failed to load encrypted records, continue without saving
+                # Return dictionary from encrypted records file
+                with open(self.recordsPath,'rb') as file: encrypted = file.read()
+                return json.loads(Fernet(self.getKey()).decrypt(encrypted))
+            except:
+                # Failed to load records
+                gameRecords = {'highScore':0, 'longestRun':0, 'attempts':0, 'timePlayed':0, 'points':0}
+                self.storeRecords(gameRecords) # Try creating new encrypted records file
+                return gameRecords
 
 
-# LOAD GAME RECORDS
-def loadRecords():
-    # No encryption
-    if not settings.encryptGameRecords:
-        try:
-            with open(recordsPath,'r') as file: return json.load(file)
-        except:
-            # Could not load records, try overwrite with default values
-            gameRecords = {'highScore':0, 'longestRun':0, 'attempts':0, 'timePlayed':0, 'points':0}
-            storeRecords(gameRecords)
-            return gameRecords
-    # With encryption
-    else:
-        try:
-            # Return dictionary from encrypted records file
-            with open(recordsPath,'rb') as file: encrypted = file.read()
-            return json.loads(Fernet(getKey()).decrypt(encrypted))
-        except:
-            # Failed to load records
-            gameRecords = {'highScore':0, 'longestRun':0, 'attempts':0, 'timePlayed':0, 'points':0}
-            storeRecords(gameRecords) # Try creating new encrypted records file
-            return gameRecords
-
-
-# SET SCREEN UPDATE METHOD
-if settings.qualityMode and not settings.performanceMode: updateNotFlip = False
-else: updateNotFlip = True # use update instead of flip for display updates
-
-# SET PERFORMANCE SETTINGS
-if settings.performanceMode:settings.showBackgroundCloud,settings.drawExhaust = False,False
-
-
-# UPDATE DISPLAY
-def displayUpdate():
-    if not updateNotFlip: pygame.display.flip()
-    else: pygame.display.update()
-
+settings = Settings() # INITIALIZE SETTINGS
 
 # GET SCREEN
 def getScreen():
@@ -268,7 +427,7 @@ def toggleScreen():
         pygame.display.quit()
         settings.settings.fullScreen = not settings.settings.fullScreen
         pygame.display.set_caption('Navigator')
-        pygame.display.set_icon(windowIcon)
+        pygame.display.set_icon(assets.windowIcon)
         screen = getScreen()
     else: pygame.display.toggle_fullscreen()
 
@@ -291,10 +450,43 @@ def toggleMusic(game):
 # INITIALIZE SCREEN
 screen = getScreen()
 
+assets = Assets()
+
+
+# KEY BINDS
+leftInput = [pygame.K_a, pygame.K_LEFT]
+rightInput = [pygame.K_d,pygame.K_RIGHT]
+upInput = [pygame.K_w,pygame.K_UP]
+downInput = [pygame.K_s,pygame.K_DOWN]
+boostInput = [pygame.K_LSHIFT,pygame.K_RSHIFT]
+pauseInput = [pygame.K_SPACE]
+shootInput = [pygame.K_LCTRL,pygame.K_RCTRL]
+escapeInput = [pygame.K_ESCAPE]
+backInput = [pygame.K_TAB]
+creditsInput = [pygame.K_c]
+brakeInput = [pygame.K_LALT,pygame.K_RALT]
+muteInput = [pygame.K_m]
+fullScreenInput = [pygame.K_f]
+startInput = [pygame.K_SPACE]
+
+
+# SET SCREEN UPDATE METHOD
+if settings.qualityMode and not settings.performanceMode: updateNotFlip = False
+else: updateNotFlip = True # use update instead of flip for display updates
+
+# SET PERFORMANCE SETTINGS
+if settings.performanceMode:settings.showBackgroundCloud,settings.drawExhaust = False,False
+
+
+# UPDATE DISPLAY
+def displayUpdate():
+    if not updateNotFlip: pygame.display.flip()
+    else: pygame.display.update()
+
+
 # WINDOW
-windowIcon = pygame.image.load(resources(os.path.join(assetDirectory,'Icon.png'))).convert_alpha()
 pygame.display.set_caption('Navigator')
-pygame.display.set_icon(windowIcon)
+pygame.display.set_icon(assets.windowIcon)
 screenColor = [0,0,0] # Screen fill color
 presence = None # DISCORD PRESENCE
 
@@ -444,209 +636,22 @@ if settings.useController:
         pygame.joystick.quit()
         if settings.useController: settings.useController = False
 
-# LOAD LEVELS
-stageList = []
-with open(resources(os.path.join(assetDirectory, 'Levels.json')), 'r') as file:
-    stages = json.load(file)
-    for stage in stages.values():
-        levels = []
-        for level in stage.values():
-            level["START"] = False
-            levels.append(level)
-        stageList.append(levels)
-
-# FONTS
-gameFont = os.path.join(assetDirectory, 'Font.ttf')
-stageFont = pygame.font.Font(gameFont, 30)
-levelFont = pygame.font.Font(gameFont, 30)
-scoreFont = pygame.font.Font(gameFont, 30)
-timerFont = pygame.font.Font(gameFont, 30)
-stageUpFont = pygame.font.Font(gameFont, 90)
-startFont = pygame.font.Font(gameFont, 120)
-shipHelpFont = pygame.font.Font(gameFont, 20)
-startHelpFont = pygame.font.Font(gameFont, 30)
-pausedFont = pygame.font.Font(gameFont, 100)
-pauseCountFont = pygame.font.Font(gameFont,40)
-versionFont = pygame.font.Font(gameFont,25)
-gameOverFont = pygame.font.Font(gameFont, 100)
-statFont = pygame.font.Font(gameFont, 30)
-exitFont = pygame.font.Font(gameFont, 30)
-creatorFont = pygame.font.Font(gameFont, 55)
-creditsFont = pygame.font.Font(gameFont, 40)
-
-# STAGE WIPE CLOUD
-stageCloudImg = pygame.image.load(resources(os.path.join(assetDirectory,'StageCloud.png') ) ).convert_alpha()
-
-# METEOR ASSETS
-meteorList = []
-for filename in sorted(os.listdir(meteorDirectory)):
-    if filename.endswith('.png'):
-        path = os.path.join(meteorDirectory, filename)
-        meteorList.append(pygame.image.load(resources(path)).convert_alpha())
-
-# UFO ASSETS
-ufoList = []
-for filename in sorted(os.listdir(ufoDirectory)):
-    if filename.endswith('.png'):
-        path = os.path.join(ufoDirectory, filename)
-        ufoList.append(pygame.image.load(resources(path)).convert_alpha())
-
-# ALL OBSTACLE ASSETS
-obstacleImages = [meteorList,ufoList] # Seperated by stage
-
-# CAVE ASSETS
-caveList = []
-for caveNum in sorted(os.listdir(caveDirectory)):
-    caveAssets = os.path.join(caveDirectory,caveNum)
-    cave = []
-    cave.append(pygame.image.load(resources(os.path.join(caveAssets,"Background.png"))).convert_alpha())
-    cave.append(pygame.image.load(resources(os.path.join(caveAssets,"Cave.png"))).convert_alpha())
-    caveList.append(cave)
-
-# BACKGROUND ASSETS
-bgList = []
-for filename in sorted(os.listdir(backgroundDirectory)):
-    filePath = os.path.join(backgroundDirectory,filename)
-    if os.path.isdir(filePath):
-        bgPath = os.path.join(backgroundDirectory,filename)
-        stageBgPath = os.path.join(bgPath,'Background.png')
-        stageCloudPath = os.path.join(bgPath,'Cloud.png')
-        bg = pygame.image.load(resources(stageBgPath)).convert_alpha()
-        cloud = pygame.image.load(resources(stageCloudPath)).convert_alpha()
-        bgList.append([bg,cloud])
-
-# EXPLOSION ASSETS
-explosionList = []
-for filename in sorted(os.listdir(explosionDirectory)):
-    if filename.endswith('.png'):
-        path = os.path.join(explosionDirectory, filename)
-        explosionList.append(pygame.image.load(resources(path)).convert_alpha())
-
-# POINTS ASSETS
-pointsList = []
-for filename in sorted(os.listdir(pointsDirectory)):
-    if filename.endswith('png'):
-        path = os.path.join(pointsDirectory, filename)
-        pointsList.append(pygame.image.load(resources(path)).convert_alpha())
-
-# SPACESHIP ASSETS
-spaceShipList = []
-for levelFolder in sorted(os.listdir(shipDirectory)):
-    levelFolderPath = os.path.join(shipDirectory,levelFolder) # level folder path
-    if os.path.isdir(levelFolderPath): # Ignore DS_STORE on MacOS
-        shipLevelDict = {'skins':[],'exhaust':[], 'boost':[], 'laser':'', 'stats':''}
-
-        # Load ship skins
-        skinsPath = os.path.join(levelFolderPath,'Skins')
-        assetList = []
-        for imageAsset in sorted(os.listdir(skinsPath)):
-            if imageAsset.endswith('.png'):
-                imageAssetPath = os.path.join(skinsPath,imageAsset)
-                shipLevelDict['skins'].append(pygame.image.load(resources((imageAssetPath))).convert_alpha())
-
-        # Load exhaust frames
-        exhaustPath = os.path.join(levelFolderPath,'Exhaust')
-        assetList = []
-        for imageAsset in sorted(os.listdir(exhaustPath)):
-            if imageAsset.endswith('.png'):
-                imageAssetPath = os.path.join(exhaustPath,imageAsset)
-                shipLevelDict['exhaust'].append(pygame.image.load(resources((imageAssetPath))).convert_alpha())
-
-        # Load boost frames
-        boostPath = os.path.join(levelFolderPath,'Boost')
-        assetList = []
-        for imageAsset in sorted(os.listdir(boostPath)):
-            if imageAsset.endswith('.png'):
-                imageAssetPath = os.path.join(boostPath,imageAsset)
-                shipLevelDict['boost'].append(pygame.image.load(resources((imageAssetPath))).convert_alpha())
-
-        # Load laser image
-        laserPath = os.path.join(levelFolderPath,'Laser.png')
-        shipLevelDict['laser'] = pygame.image.load(resources(laserPath)).convert_alpha()
-
-        # Load ship stats
-        statsPath = os.path.join(levelFolderPath,'Stats.json')
-        with open(resources(statsPath), 'r') as file: shipLevelDict['stats'] = json.load(file)
-
-        spaceShipList.append(shipLevelDict)
-
-# PLAYER SHIELD ASSET
-playerShield = pygame.transform.scale(pygame.image.load(resources(os.path.join(assetDirectory,"Shield.png"))),(settings.playerShieldSize,settings.playerShieldSize)).convert_alpha()
-
-# MUSIC ASSET
-pygame.mixer.music.load(resources(os.path.join(soundDirectory,"Soundtrack.mp3")))
-
-# EXPLOSION NOISE ASSET
-explosionNoise = pygame.mixer.Sound(resources(os.path.join(soundDirectory,"Explosion.wav")))
-explosionNoise.set_volume(settings.sfxVolume/100)
-
-# POINT NOISE ASSET
-powerUpNoise = pygame.mixer.Sound(resources(os.path.join(soundDirectory,"Point.wav")))
-powerUpNoise.set_volume(settings.sfxVolume/100)
-
-# LASER NOISE ASSET
-laserNoise = pygame.mixer.Sound(resources(os.path.join(soundDirectory,"Laser.wav")))
-laserNoise.set_volume(settings.sfxVolume/100)
-
-# LASER IMPACT NOISE ASSET
-impactNoise = pygame.mixer.Sound(resources(os.path.join(soundDirectory,"Impact.wav")))
-impactNoise.set_volume(settings.sfxVolume/100)
-
-# SHIP ATTRIBUTES DATA
-shipConstants = []
-for i in range(len(spaceShipList)): shipConstants.append(spaceShipList[i]["stats"])
-
-# MAIN MENU ASSETS
-menuList = []
-menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'A.png'))).convert_alpha()) # 'A' icon
-menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'O.png'))).convert_alpha()) # 'O' icon
-menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'center.png'))).convert_alpha()) # Center icon
-menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'left.png'))).convert_alpha()) # Left icon
-menuList.append(pygame.image.load(resources(os.path.join(menuDirectory,'right.png'))).convert_alpha()) # Right icon
-
-menuMeteorDir = os.path.join(menuDirectory,'FlyingObjects')
-for objPath in sorted(os.listdir(menuMeteorDir)): menuList.append(pygame.image.load(resources(os.path.join(menuMeteorDir,objPath))).convert_alpha())
-
-# LOAD DONATION RECORDS
-donations = {}
-try:
-    path = os.path.join(supportersDirectory,'Supporters.txt')
-    with open(path,'r') as file:
-        for line in file:
-            try:
-                key,value = line.strip().split(':')
-                donations[key] = int(value)
-            except:pass
-except: pass
-
-if len(donations) > 0:
-    maxDon = max(donations.values())
-    lowDon = min(donations.values())
-else: maxDon,lowDon = None,None
-
-# LOAD DONATION SHIP ASSETS
-donationShips = []
-donationShipsDir = os.path.join(supportersDirectory,'Images')
-for filename in sorted(os.listdir(donationShipsDir)):
-    if filename.endswith('.png'):
-        path = os.path.join(donationShipsDir, filename)
-        donationShips.append(pygame.image.load(resources(path)).convert_alpha())
 
 # UNLOCKS
 unlockTimePerLevels = [] # For time based unlocks
 totalLevels = 0
 
-for stage in stageList: totalLevels += len(stage) # Get total number of levels
+for stage in assets.stageList: totalLevels += len(stage) # Get total number of levels
 totalTime = totalLevels * 15 # multiply by (average) time per level
 
 # Calculate time per unlock for each ship level
-for shipInd in range(len(spaceShipList)):
-    timePerUnlock = totalTime/len(spaceShipList[shipInd]['skins'])
+for shipInd in range(len(assets.spaceShipList)):
+    timePerUnlock = totalTime/len(assets.spaceShipList[shipInd]['skins'])
     if timePerUnlock == totalTime: unlockTimePerLevels.append(None) # No other skins for this level
     else: unlockTimePerLevels.append(int(timePerUnlock))
 
 expectedPointsPerLevel = 12 # In testing
-totalShipTypes = len(spaceShipList) # For score based unlocks
+totalShipTypes = len(assets.spaceShipList) # For score based unlocks
 totalPointsForUnlock = totalLevels * expectedPointsPerLevel # Points in game for all unlocks
 pointsForUnlock = int(totalPointsForUnlock/expectedPointsPerLevel)
 
@@ -681,7 +686,7 @@ def quitGame():
 class Game:
     def __init__(self,records):
 
-        self.gameConstants = stageList
+        self.gameConstants = assets.stageList
 
         # Level constants
         self.obstacleSpeed = self.gameConstants[0][0]["obstacleSpeed"]
@@ -774,11 +779,11 @@ class Game:
 
         # BACKGROUND
         screen.fill(screenColor)
-        screen.blit(bgList[self.currentStage - 1][0], (0,0) )
+        screen.blit(assets.bgList[self.currentStage - 1][0], (0,0) )
 
         # CLOUD ANIMATION
         if settings.showBackgroundCloud:
-            cloudImg = bgList[self.currentStage - 1][1]
+            cloudImg = assets.bgList[self.currentStage - 1][1]
             cloudRect = cloudImg.get_rect(center = (settings.screenSize[0]/2,self.cloudPos))
             if cloudRect.bottom >= 0 and cloudRect.top <= settings.screenSize[1]: screen.blit(cloudImg, cloudRect) # Draw cloud
             elif cloudRect.top > settings.screenSize[1]: self.cloudPos = settings.cloudStart
@@ -794,7 +799,7 @@ class Game:
         if self.levelType == "CAVE":
             if self.cave is None: # SPAWN A CAVE
                 self.cave = Cave(self.caveIndex)
-                if self.caveIndex + 1 < len(caveList) - 1: self.caveIndex+=1
+                if self.caveIndex + 1 < len(assets.caveList) - 1: self.caveIndex+=1
             self.cave.update()
             screen.blit(self.cave.background,self.cave.rect)
             screen.blit(self.cave.image,self.cave.rect) # DRAW CAVE
@@ -803,7 +808,7 @@ class Game:
                 if player.shields > 0: player.shieldDown(events)
                 else:
                     player.explode(game,obstacles) # explosion
-                    if not self.musicMuted: explosionNoise.play()
+                    if not self.musicMuted: assets.explosionNoise.play()
                     menu.gameOver(self,player,obstacles) # Game over
 
         # EXITING CAVE
@@ -820,7 +825,7 @@ class Game:
                     if player.shields > 0: player.shieldDown(events)
                     else:
                         player.explode(game,obstacles) # explosion
-                        if not self.musicMuted: explosionNoise.play()
+                        if not self.musicMuted: assets.explosionNoise.play()
                         menu.gameOver(self,player,obstacles) # Game over
 
         # HUD
@@ -835,7 +840,7 @@ class Game:
             elif self.thisPoint.powerUp == "Shield": player.shieldUp() # Shield piece collected
             self.score += 1
             self.thisPoint.kill()
-            if not self.musicMuted: powerUpNoise.play()
+            if not self.musicMuted: assets.powerUpNoise.play()
             self.lastPointPos = self.thisPoint.rect.center # Save last points position
             self.thisPoint = Point(player,self.lastPointPos) # spawn new point
 
@@ -854,13 +859,13 @@ class Game:
 
         # DRAW EXHAUST/BOOST
         if settings.drawExhaust:
-            if player.boosting: newBlit = rotateImage(spaceShipList[game.savedShipLevel]['boost'][player.boostState],player.rect,player.angle) # Boost frames
-            else: newBlit = rotateImage(spaceShipList[game.savedShipLevel]['exhaust'][player.exhaustState-1],player.rect,player.angle) # Regular exhaust frames
+            if player.boosting: newBlit = rotateImage(assets.spaceShipList[game.savedShipLevel]['boost'][player.boostState],player.rect,player.angle) # Boost frames
+            else: newBlit = rotateImage(assets.spaceShipList[game.savedShipLevel]['exhaust'][player.exhaustState-1],player.rect,player.angle) # Regular exhaust frames
             screen.blit(newBlit[0],newBlit[1])
 
         # DRAW SHIELD
         if player.showShield:
-            shieldImg,shieldImgRect = rotateImage(playerShield, player.rect, player.angle)
+            shieldImg,shieldImgRect = rotateImage(assets.playerShield, player.rect, player.angle)
             screen.blit(shieldImg,shieldImgRect)
 
         # DRAW LASERS
@@ -873,7 +878,7 @@ class Game:
                 if player.shields > 0:player.shieldDown(events)
                 else:
                     player.explode(game,obstacles) # Animation
-                    if not self.musicMuted: explosionNoise.play()
+                    if not self.musicMuted: assets.explosionNoise.play()
                     menu.gameOver(self,player,obstacles) # Game over
 
             # OBSTACLE MOVEMENT
@@ -887,12 +892,12 @@ class Game:
                         else:
                             obs.kill()
                             obstacles.remove(obs)
-                            if not self.musicMuted: impactNoise.play()
+                            if not self.musicMuted: assets.impactNoise.play()
                             self.explosions.append(Explosion(obs))
 
                     # OBSTACLE/CAVE COLLISION DETECTION
                     elif self.cave is not None and pygame.sprite.collide_mask(obs,self.cave):
-                        if not self.musicMuted: impactNoise.play()
+                        if not self.musicMuted: assets.impactNoise.play()
                         self.explosions.append(Explosion(obs))
                         obs.kill()
 
@@ -951,7 +956,7 @@ class Game:
     # DRAW CLOUD OUTSIDE OF MAIN LOOP
     def showBackgroundCloud(self):
         if settings.showBackgroundCloud:
-            cloudImg = bgList[game.currentStage - 1][1]
+            cloudImg = assets.bgList[game.currentStage - 1][1]
             cloudRect = cloudImg.get_rect(center = (settings.screenSize[0]/2,game.cloudPos))
             if cloudRect.bottom >= 0 and cloudRect.top <= settings.screenSize[1]: screen.blit(cloudImg, cloudRect) # Draw cloud
 
@@ -963,7 +968,7 @@ class Game:
         player.movement(self)
         player.wrapping()
         screen.fill(screenColor)
-        screen.blit(bgList[self.currentStage - 1][0], (0,0) )
+        screen.blit(assets.bgList[self.currentStage - 1][0], (0,0) )
         if self.cave is not None: screen.blit(self.cave.background,self.cave.rect)
         self.showBackgroundCloud()
         self.cloudPos += self.cloudSpeed
@@ -988,9 +993,9 @@ class Game:
         if self.currentStage < len(self.gameConstants): # Make sure there is a next stage
             if self.gameConstants[self.currentStage][0]["startTime"] == self.gameClock and not self.gameConstants[self.currentStage][0]["START"]: # Next stage's first level's activation time reached
                 self.gameConstants[self.currentStage][0]["START"] = True # Mark as activated
-                stageUpCloud = stageCloudImg
+                stageUpCloud = assets.stageCloudImg
 
-                stageUpDisplay = stageUpFont.render("STAGE UP", True, settings.primaryFontColor)
+                stageUpDisplay = assets.stageUpFont.render("STAGE UP", True, settings.primaryFontColor)
                 stageUpRect = stageUpCloud.get_rect()
                 stageUpRect.center = (settings.screenSize[0]/2, settings.stageUpCloudStartPos)
                 stageUp , stageWipe = True , True
@@ -1022,7 +1027,7 @@ class Game:
         for levelDict in self.gameConstants[self.currentStage-1]:
             if levelDict["startTime"] == self.gameClock and not levelDict["START"] and ( (self.currentLevel > 1 or self.currentStage > 1) or (len(self.gameConstants[0]) > 1 and self.gameClock >= self.gameConstants[0][1]["startTime"]) ):
                 if self.gameConstants[self.currentStage-1][self.currentLevel-1]["wipeObstacles"]:
-                    levelUpCloud = stageCloudImg
+                    levelUpCloud = assets.stageCloudImg
                     levelUpRect = levelUpCloud.get_rect()
                     levelUpRect.center = (settings.screenSize[0]/2, settings.stageUpCloudStartPos)
                     levelUp = True
@@ -1102,23 +1107,23 @@ class Game:
             pygame.draw.rect(screen, settings.fuelColor,fuelRect)
 
         # TIMER DISPLAY
-        timerDisplay = timerFont.render(str(self.gameClock), True, settings.secondaryFontColor)
+        timerDisplay = assets.timerFont.render(str(self.gameClock), True, settings.secondaryFontColor)
         timerRect = timerDisplay.get_rect(topright = screen.get_rect().topright)
 
         # STAGE DISPLAY
         stageNum = "Stage " + str(self.currentStage)
-        stageDisplay = stageFont.render( str(stageNum), True, settings.secondaryFontColor )
+        stageDisplay = assets.stageFont.render( str(stageNum), True, settings.secondaryFontColor )
         stageRect = stageDisplay.get_rect(topleft = screen.get_rect().topleft)
 
         # LEVEL DISPLAY
         levelNum = "-  Level " + str(self.currentLevel)
-        levelDisplay = levelFont.render( str(levelNum), True, settings.secondaryFontColor )
+        levelDisplay = assets.levelFont.render( str(levelNum), True, settings.secondaryFontColor )
         levelRect = levelDisplay.get_rect()
         levelRect.center = (stageRect.right + levelRect.width*0.65, stageRect.centery)
 
         # SCORE DISPLAY
         scoreNum = "Score " + str(self.score)
-        scoreDisplay = scoreFont.render(scoreNum, True, settings.secondaryFontColor)
+        scoreDisplay = assets.scoreFont.render(scoreNum, True, settings.secondaryFontColor)
         scoreRect = scoreDisplay.get_rect()
         scoreRect.topleft = (settings.screenSize[0] - (2*scoreRect.width), levelRect.y)
 
@@ -1163,7 +1168,7 @@ class Game:
 
 
     # Get number of skins unlocked for a specified level number
-    def skinsUnlocked(self,level): return self.getUnlocks(len(spaceShipList[level]['skins']),unlockTimePerLevels[level])
+    def skinsUnlocked(self,level): return self.getUnlocks(len(assets.spaceShipList[level]['skins']),unlockTimePerLevels[level])
 
 
     # RESTART GAME
@@ -1230,39 +1235,39 @@ class Menu:
         icons = []
         for icon in range(settings.maxIcons): icons.append(Icon())
 
-        startDisplay = startFont.render("N  VIGAT  R", True, settings.primaryFontColor)
+        startDisplay = assets.startFont.render("N  VIGAT  R", True, settings.primaryFontColor)
         startRect = startDisplay.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/2))
 
         if not game.usingController or gamePad is None:
-            startHelpDisplay = startHelpFont.render("ESCAPE = Quit   SPACE = Start   F = Fullscreen   M = Mute   C = Credits", True, settings.primaryFontColor)
-            skinHelpDisplay = shipHelpFont.render("A/LEFT = Last skin     D/RIGHT = Next skin", True, settings.primaryFontColor)
-            shipHelpDisplay = shipHelpFont.render("S/DOWN = Last ship     W/UP = Next ship", True, settings.primaryFontColor)
-            boostHelp = shipHelpFont.render("SHIFT = Boost", True, settings.primaryFontColor)
-            shootHelp = shipHelpFont.render("CTRL = Shoot", True, settings.primaryFontColor)
+            startHelpDisplay = assets.startHelpFont.render("ESCAPE = Quit   SPACE = Start   F = Fullscreen   M = Mute   C = Credits", True, settings.primaryFontColor)
+            skinHelpDisplay = assets.shipHelpFont.render("A/LEFT = Last skin     D/RIGHT = Next skin", True, settings.primaryFontColor)
+            shipHelpDisplay = assets.shipHelpFont.render("S/DOWN = Last ship     W/UP = Next ship", True, settings.primaryFontColor)
+            boostHelp = assets.shipHelpFont.render("SHIFT = Boost", True, settings.primaryFontColor)
+            shootHelp = assets.shipHelpFont.render("CTRL = Shoot", True, settings.primaryFontColor)
 
         else:
-            startHelpDisplay = startHelpFont.render("START = Quit   A = Start   GUIDE = Fullscreen   LB = Mute   Y = Credits", True, settings.primaryFontColor)
-            boostHelp = shipHelpFont.render("LT = Boost", True, settings.primaryFontColor)
-            shootHelp = shipHelpFont.render("RT = Shoot", True, settings.primaryFontColor)
-            skinHelpDisplay = shipHelpFont.render("D-PAD LEFT = Last skin   D-PAD RIGHT = Next skin", True, settings.primaryFontColor)
-            shipHelpDisplay = shipHelpFont.render("D-PAD DOWN = Last ship   D-PAD UP = Next ship", True, settings.primaryFontColor)
+            startHelpDisplay = assets.startHelpFont.render("START = Quit   A = Start   GUIDE = Fullscreen   LB = Mute   Y = Credits", True, settings.primaryFontColor)
+            boostHelp = assets.shipHelpFont.render("LT = Boost", True, settings.primaryFontColor)
+            shootHelp = assets.shipHelpFont.render("RT = Shoot", True, settings.primaryFontColor)
+            skinHelpDisplay = assets.shipHelpFont.render("D-PAD LEFT = Last skin   D-PAD RIGHT = Next skin", True, settings.primaryFontColor)
+            shipHelpDisplay = assets.shipHelpFont.render("D-PAD DOWN = Last ship   D-PAD UP = Next ship", True, settings.primaryFontColor)
 
         startHelpRect = startHelpDisplay.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]-settings.screenSize[1]/7))
         skinHelpRect = skinHelpDisplay.get_rect(center = (settings.screenSize[0]/4 + 40, settings.screenSize[1]-settings.screenSize[1]/7 + 70))
         shipHelpRect = shipHelpDisplay.get_rect(center = (settings.screenSize[0]/4 + 40, settings.screenSize[1]-settings.screenSize[1]/7 + 40))
         boostHelpRect = boostHelp.get_rect()
         shootHelpRect = shootHelp.get_rect()
-        leftRect = menuList[3].get_rect(center = (settings.screenSize[0] * 0.2 , settings.screenSize[1]/3) )
-        rightRect = menuList[4].get_rect(center = (settings.screenSize[0] * 0.8 , settings.screenSize[1]/3) )
+        leftRect = assets.menuList[3].get_rect(center = (settings.screenSize[0] * 0.2 , settings.screenSize[1]/3) )
+        rightRect = assets.menuList[4].get_rect(center = (settings.screenSize[0] * 0.8 , settings.screenSize[1]/3) )
 
-        versionDisplay = versionFont.render(version,True,settings.primaryFontColor)
+        versionDisplay = assets.versionFont.render(version,True,settings.primaryFontColor)
         versionRect = versionDisplay.get_rect(topright = (startRect.right-25,startRect.bottom-25))
         bounceDelay = 5
         bounceCount = 0
 
         # UPDATE UNLOCKS
         if game.records["highScore"] < pointsForUnlock: game.shipUnlockNumber = 0
-        elif game.records["highScore"] >= totalPointsForUnlock: game.shipUnlockNumber = len(spaceShipList) - 1
+        elif game.records["highScore"] >= totalPointsForUnlock: game.shipUnlockNumber = len(assets.spaceShipList) - 1
         else:
             if game.records["highScore"] == pointsForUnlock or game.records["highScore"] < 2 * pointsForUnlock: game.shipUnlockNumber = 1
             else:
@@ -1273,9 +1278,9 @@ class Menu:
                     else: break
                     startPoints += pointsForUnlock
 
-        if game.shipUnlockNumber >= len(spaceShipList): game.shipUnlockNumber = len(spaceShipList)-1
+        if game.shipUnlockNumber >= len(assets.spaceShipList): game.shipUnlockNumber = len(assets.spaceShipList)-1
         game.skinUnlockNumber = game.skinsUnlocked(game.savedShipLevel)
-        if game.skinUnlockNumber >= len(spaceShipList[game.savedShipLevel]['skins']): game.skinUnlockNumber = len(spaceShipList[game.savedShipLevel]['skins']) - 1
+        if game.skinUnlockNumber >= len(assets.spaceShipList[game.savedShipLevel]['skins']): game.skinUnlockNumber = len(assets.spaceShipList[game.savedShipLevel]['skins']) - 1
 
         if settings.defaultToHighSkin and not game.skipAutoSkinSelect:
             for i in range(game.skinUnlockNumber): player.nextSkin() # Gets highest unlocked skin by default
@@ -1319,7 +1324,7 @@ class Menu:
 
                         # Start animation
                         screen.fill(screenColor)
-                        screen.blit(bgList[game.currentStage - 1][0],(0,0))
+                        screen.blit(assets.bgList[game.currentStage - 1][0],(0,0))
                         screen.blit(player.image, (player.rect.x,player.rect.y + iconPosition)) # Current spaceship
                         displayUpdate()
 
@@ -1361,19 +1366,19 @@ class Menu:
                  # SWITCH CONTROL TYPE
                 if game.usingController and event.type == pygame.KEYDOWN:
                     game.usingController = False
-                    startHelpDisplay = startHelpFont.render("ESCAPE = Quit   SPACE = Start   F = Fullscreen   M = Mute   C = Credits", True, settings.primaryFontColor)
-                    boostHelp = shipHelpFont.render("SHIFT = Boost", True, settings.primaryFontColor)
-                    shootHelp = shipHelpFont.render("CTRL = Shoot", True, settings.primaryFontColor)
-                    skinHelpDisplay = shipHelpFont.render("A/LEFT = Last skin     D/RIGHT = Next skin", True, settings.primaryFontColor)
-                    shipHelpDisplay = shipHelpFont.render("S/DOWN = Last ship     W/UP = Next ship", True, settings.primaryFontColor)
+                    startHelpDisplay = assets.startHelpFont.render("ESCAPE = Quit   SPACE = Start   F = Fullscreen   M = Mute   C = Credits", True, settings.primaryFontColor)
+                    boostHelp = assets.shipHelpFont.render("SHIFT = Boost", True, settings.primaryFontColor)
+                    shootHelp = assets.shipHelpFont.render("CTRL = Shoot", True, settings.primaryFontColor)
+                    skinHelpDisplay = assets.shipHelpFont.render("A/LEFT = Last skin     D/RIGHT = Next skin", True, settings.primaryFontColor)
+                    shipHelpDisplay = assets.shipHelpFont.render("S/DOWN = Last ship     W/UP = Next ship", True, settings.primaryFontColor)
 
                 elif gamePad is not None and not game.usingController and (event.type == pygame.JOYHATMOTION or event.type == pygame.JOYAXISMOTION or event.type == pygame.JOYBUTTONUP):
                     game.usingController = True
-                    startHelpDisplay = startHelpFont.render("START = Quit   A = Start   GUIDE = Fullscreen   LB = Mute   Y = Credits", True, settings.primaryFontColor)
-                    boostHelp = shipHelpFont.render("LT = Boost", True, settings.primaryFontColor)
-                    shootHelp = shipHelpFont.render("RT = Shoot", True, settings.primaryFontColor)
-                    skinHelpDisplay = shipHelpFont.render("D-PAD LEFT = Last skin   D-PAD RIGHT = Next skin", True, settings.primaryFontColor)
-                    shipHelpDisplay = shipHelpFont.render("D-PAD DOWN = Last ship   D-PAD UP = Next ship", True, settings.primaryFontColor)
+                    startHelpDisplay = assets.startHelpFont.render("START = Quit   A = Start   GUIDE = Fullscreen   LB = Mute   Y = Credits", True, settings.primaryFontColor)
+                    boostHelp = assets.shipHelpFont.render("LT = Boost", True, settings.primaryFontColor)
+                    shootHelp = assets.shipHelpFont.render("RT = Shoot", True, settings.primaryFontColor)
+                    skinHelpDisplay = assets.shipHelpFont.render("D-PAD LEFT = Last skin   D-PAD RIGHT = Next skin", True, settings.primaryFontColor)
+                    shipHelpDisplay = assets.shipHelpFont.render("D-PAD DOWN = Last ship   D-PAD UP = Next ship", True, settings.primaryFontColor)
 
             # GET SHIP CONTROLS
             if player.hasGuns and player.boostSpeed > player.baseSpeed: # has guns and boost
@@ -1383,7 +1388,7 @@ class Menu:
             elif player.boostSpeed > player.baseSpeed: boostHelpRect.center = settings.screenSize[0]*3/4, settings.screenSize[1]-settings.screenSize[1]/7 + 40 # has boost only
 
             screen.fill(screenColor)
-            screen.blit(bgList[game.currentStage - 1][0],(0,0))
+            screen.blit(assets.bgList[game.currentStage - 1][0],(0,0))
 
             # ANIMATION
             if settings.showMenuIcons:
@@ -1398,19 +1403,19 @@ class Menu:
             # SHOW SHIP CONTROLS
             if player.hasGuns: screen.blit(shootHelp,shootHelpRect)
             if player.boostSpeed > player.baseSpeed: screen.blit(boostHelp,boostHelpRect)
-            if unlockTimePerLevels[game.savedShipLevel] != None and game.records["longestRun"] >= unlockTimePerLevels[game.savedShipLevel] and len(spaceShipList[game.savedShipLevel]['skins']) > 1: screen.blit(skinHelpDisplay,skinHelpRect) # Show switch skin controls
+            if unlockTimePerLevels[game.savedShipLevel] != None and game.records["longestRun"] >= unlockTimePerLevels[game.savedShipLevel] and len(assets.spaceShipList[game.savedShipLevel]['skins']) > 1: screen.blit(skinHelpDisplay,skinHelpRect) # Show switch skin controls
             if game.shipUnlockNumber > 0: screen.blit(shipHelpDisplay,shipHelpRect)
             screen.blit(player.image, (player.rect.x,player.rect.y + startOffset)) # Current spaceship
 
             # LOGO LETTERS
-            screen.blit(menuList[0],(-14 + startRect.left + menuList[0].get_width() - menuList[0].get_width()/10,settings.screenSize[1]/2 - 42)) # "A" symbol
-            screen.blit(menuList[1],(-16 + settings.screenSize[0] - startRect.centerx + menuList[1].get_width() * 2,settings.screenSize[1]/2 - 35)) # "O" symbol
+            screen.blit(assets.menuList[0],(-14 + startRect.left + assets.menuList[0].get_width() - assets.menuList[0].get_width()/10,settings.screenSize[1]/2 - 42)) # "A" symbol
+            screen.blit(assets.menuList[1],(-16 + settings.screenSize[0] - startRect.centerx + assets.menuList[1].get_width() * 2,settings.screenSize[1]/2 - 35)) # "O" symbol
 
             # UFO ICONS
             if settings.showMenuIcons:
-                screen.blit(menuList[2],(settings.screenSize[0]/2 - menuList[2].get_width()/2,settings.screenSize[1]/8)) # Big icon
-                screen.blit(menuList[3],leftRect) # Left UFO
-                screen.blit(menuList[4],rightRect) # Right UFO
+                screen.blit(assets.menuList[2],(settings.screenSize[0]/2 - assets.menuList[2].get_width()/2,settings.screenSize[1]/8)) # Big icon
+                screen.blit(assets.menuList[3],leftRect) # Left UFO
+                screen.blit(assets.menuList[4],rightRect) # Right UFO
 
             displayUpdate()
 
@@ -1421,7 +1426,7 @@ class Menu:
         playerBlit = rotateImage(player.image,player.rect,player.lastAngle)
         paused = True
 
-        pausedDisplay = pausedFont.render("Paused", True, settings.secondaryFontColor)
+        pausedDisplay = assets.pausedFont.render("Paused", True, settings.secondaryFontColor)
         pausedRect = pausedDisplay.get_rect()
         pausedRect.center = (settings.screenSize[0]/2, settings.screenSize[1]/2)
 
@@ -1430,13 +1435,13 @@ class Menu:
 
         if game.pauseCount >= settings.pauseMax: pauseNum = "Out of pauses"
 
-        pauseDisplay = pauseCountFont.render(pauseNum,True,settings.secondaryFontColor)
+        pauseDisplay = assets.pauseCountFont.render(pauseNum,True,settings.secondaryFontColor)
         pauseRect = pauseDisplay.get_rect()
         pauseRect.center = (settings.screenSize[0]/2,settings.screenSize[1]-16)
 
         while paused:
             screen.fill(screenColor)
-            screen.blit(bgList[game.currentStage - 1][0], (0,0) )
+            screen.blit(assets.bgList[game.currentStage - 1][0], (0,0) )
             game.showBackgroundCloud()
             if game.cave is not None:
                 screen.blit(game.cave.background,game.cave.rect)
@@ -1447,7 +1452,7 @@ class Menu:
             screen.blit(playerBlit[0],playerBlit[1])
 
             if player.showShield:
-                shieldImg,shieldImgRect = rotateImage(playerShield, player.rect, player.angle)
+                shieldImg,shieldImgRect = rotateImage(assets.playerShield, player.rect, player.angle)
                 screen.blit(shieldImg,shieldImgRect)
 
             if not settings.performanceMode:
@@ -1503,13 +1508,13 @@ class Menu:
             newHighScore = True
             game.records["highScore"] = game.score
 
-        storeRecords(game.records)
+        assets.storeRecords(game.records)
 
         statsOffsetY = settings.screenSize[1]/10
         statsSpacingY = settings.screenSize[1]/20
 
         # "GAME OVER" text
-        gameOverDisplay = gameOverFont.render("GAME OVER", True, [255,0,0])
+        gameOverDisplay = assets.gameOverFont.render("GAME OVER", True, [255,0,0])
         gameOverRect = gameOverDisplay.get_rect()
         gameOverRect.center = (settings.screenSize[0]/2, settings.screenSize[1]/3)
 
@@ -1525,17 +1530,17 @@ class Menu:
         timeWasted = "Time played = " + str(game.records["timePlayed"]) + " seconds"
 
         # Display
-        scoreDisplay = statFont.render(scoreLine, True, settings.primaryFontColor)
-        highScoreDisplay = statFont.render(highScoreLine, True, settings.primaryFontColor)
-        newHighScoreDisplay = statFont.render(newHighScoreLine, True, settings.primaryFontColor)
-        longestRunDisplay = statFont.render(overallLongestRunLine, True, settings.primaryFontColor)
-        survivedDisplay = statFont.render(survivedLine, True, settings.primaryFontColor)
-        levelDisplay = statFont.render(levelLine, True, settings.primaryFontColor)
-        newLongestRunDisplay = statFont.render(newLongestRunLine, True, settings.primaryFontColor)
-        attemptDisplay = statFont.render(attemptLine, True, settings.primaryFontColor)
-        timeWastedDisplay = statFont.render(timeWasted,True,settings.primaryFontColor)
-        if not game.usingController or gamePad is None: exitDisplay = exitFont.render("TAB = Menu     SPACE = Restart    ESCAPE = Quit    C = Credits", True, settings.primaryFontColor)
-        else: exitDisplay = exitFont.render("SELECT = Menu    A = Restart    START = Quit    Y = Credits", True, settings.primaryFontColor)
+        scoreDisplay = assets.statFont.render(scoreLine, True, settings.primaryFontColor)
+        highScoreDisplay = assets.statFont.render(highScoreLine, True, settings.primaryFontColor)
+        newHighScoreDisplay = assets.statFont.render(newHighScoreLine, True, settings.primaryFontColor)
+        longestRunDisplay = assets.statFont.render(overallLongestRunLine, True, settings.primaryFontColor)
+        survivedDisplay = assets.statFont.render(survivedLine, True, settings.primaryFontColor)
+        levelDisplay = assets.statFont.render(levelLine, True, settings.primaryFontColor)
+        newLongestRunDisplay = assets.statFont.render(newLongestRunLine, True, settings.primaryFontColor)
+        attemptDisplay = assets.statFont.render(attemptLine, True, settings.primaryFontColor)
+        timeWastedDisplay = assets.statFont.render(timeWasted,True,settings.primaryFontColor)
+        if not game.usingController or gamePad is None: exitDisplay = assets.exitFont.render("TAB = Menu     SPACE = Restart    ESCAPE = Quit    C = Credits", True, settings.primaryFontColor)
+        else: exitDisplay = assets.exitFont.render("SELECT = Menu    A = Restart    START = Quit    Y = Credits", True, settings.primaryFontColor)
 
         # Rects
         scoreRect = scoreDisplay.get_rect(center = (settings.screenSize[0]/2, settings.screenSize[1]/3 + statsOffsetY +statsSpacingY * 1))
@@ -1565,7 +1570,7 @@ class Menu:
         while gameOver:
             # BACKGROUND
             screen.fill(screenColor)
-            screen.blit(bgList[game.currentStage - 1][0], (0,0) )
+            screen.blit(assets.bgList[game.currentStage - 1][0], (0,0) )
             game.showBackgroundCloud()
             if game.cave is not None:
                 screen.blit(game.cave.background,game.cave.rect)
@@ -1663,9 +1668,9 @@ class Menu:
         creditsLine = "with art by Collin Guetta"
         musicCreditsLine = '& music by Dylan Kusenko'
 
-        createdByDisplay = creatorFont.render(createdByLine, True, settings.secondaryFontColor)
-        creditsDisplay = creditsFont.render(creditsLine, True, settings.secondaryFontColor)
-        musicCreditsDisplay = creditsFont.render(musicCreditsLine, True, settings.secondaryFontColor)
+        createdByDisplay = assets.creatorFont.render(createdByLine, True, settings.secondaryFontColor)
+        creditsDisplay = assets.creditsFont.render(creditsLine, True, settings.secondaryFontColor)
+        musicCreditsDisplay = assets.creditsFont.render(musicCreditsLine, True, settings.secondaryFontColor)
 
         createdByRect = createdByDisplay.get_rect(center = (posX, posY - settings.screenSize[1]/15) )
         creditsRect = creditsDisplay.get_rect(center = (posX,posY))
@@ -1680,10 +1685,10 @@ class Menu:
         backGroundShipSpawnEvent = pygame.USEREVENT + 6
         pygame.time.set_timer(backGroundShipSpawnEvent, random.randint(settings.minBackgroundShipSpawnDelay,settings.maxBackgroundShipSpawnDelay))
 
-        if len(donations) == 0: extrasCap = settings.maxExtras
+        if len(assets.donations) == 0: extrasCap = settings.maxExtras
 
-        elif len(donations) > 0:
-            if len(donations) < settings.maxExtras: extrasCap = len(donations)
+        elif len(assets.donations) > 0:
+            if len(assets.donations) < settings.maxExtras: extrasCap = len(assets.donations)
             else: extrasCap = settings.maxExtras
 
         while rollCredits:
@@ -1709,13 +1714,13 @@ class Menu:
                     rollCredits = False
 
             screen.fill(screenColor)
-            screen.blit(bgList[game.currentStage - 1][0],(0,0))
+            screen.blit(assets.bgList[game.currentStage - 1][0],(0,0))
             game.showBackgroundCloud()
 
             for ship in bgShips:
                 ship.move()
                 if ship.active:
-                    if len(donations) == 0: ship.draw(False,settings.showSupporterNames)
+                    if len(assets.donations) == 0: ship.draw(False,settings.showSupporterNames)
                     else: ship.draw(settings.showBackgroundShips,settings.showSupporterNames)
                     # off screen, add name back to pool and remove
                     if ship.offScreen():
@@ -1728,28 +1733,28 @@ class Menu:
 
             # Assign a background ship object
             if not waitToSpawn and extrasCap-len(bgShips) > 0: # make sure there is room
-                if len(donations) == 0: # If failed to load dictionary, display defaults to version number
+                if len(assets.donations) == 0: # If failed to load dictionary, display defaults to version number
                     if len(bgShips)==0:
                         bgShips.append(BackgroundShip(version,1))
                         waitToSpawn = True
                         pygame.time.set_timer(backGroundShipSpawnEvent, random.randint(settings.minBackgroundShipSpawnDelay,settings.maxBackgroundShipSpawnDelay))
 
-                elif len(donations) == 1:
+                elif len(assets.donations) == 1:
                     if len(bgShips) == 0:
-                        name,value = list(donations.items())[0]
+                        name,value = list(assets.donations.items())[0]
                         bgShips.append(BackgroundShip(name,value))
                         waitToSpawn = True
                         pygame.time.set_timer(backGroundShipSpawnEvent, random.randint(settings.minBackgroundShipSpawnDelay,settings.maxBackgroundShipSpawnDelay))
 
                 else:
-                    pool = list(donations.keys())
+                    pool = list(assets.donations.keys())
 
                     for xtra in extras:
                         if xtra[0] in pool: pool.remove(xtra[0]) # Already on screen
 
                     if len(pool) > 0:
                         chosen = random.choice(pool) # get name from pool
-                        extra = chosen,donations[chosen]
+                        extra = chosen,assets.donations[chosen]
                         extras.append(extra)
                         bgShips.append(BackgroundShip(extra[0],extra[1]))
                         waitToSpawn = True
@@ -1814,29 +1819,29 @@ class Player(pygame.sprite.Sprite):
 
             # GET DEFAULT SHIP CONSTANTS
             self.currentImageNum = 0
-            self.speed,self.baseSpeed,self.boostSpeed = spaceShipList[game.savedShipLevel]['stats']["speed"],spaceShipList[game.savedShipLevel]['stats']["speed"],spaceShipList[game.savedShipLevel]['stats']["boostSpeed"]
-            self.image = spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum]
-            self.laserImage = spaceShipList[game.savedShipLevel]['laser']
+            self.speed,self.baseSpeed,self.boostSpeed = assets.spaceShipList[game.savedShipLevel]['stats']["speed"],assets.spaceShipList[game.savedShipLevel]['stats']["speed"],assets.spaceShipList[game.savedShipLevel]['stats']["boostSpeed"]
+            self.image = assets.spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum]
+            self.laserImage = assets.spaceShipList[game.savedShipLevel]['laser']
             self.rect = self.image.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
-            self.fuel, self.maxFuel = spaceShipList[game.savedShipLevel]['stats']["startingFuel"], spaceShipList[game.savedShipLevel]['stats']["maxFuel"]
+            self.fuel, self.maxFuel = assets.spaceShipList[game.savedShipLevel]['stats']["startingFuel"], assets.spaceShipList[game.savedShipLevel]['stats']["maxFuel"]
             self.angle, self.lastAngle = 0, 0
             self.exhaustState, self.boostState, self.explosionState = 0, 0, 0 # Indexes of animation frames
             self.finalImg, self.finalRect = '','' # Last frame of exhaust animation for boost
-            self.fuelRegenNum = spaceShipList[game.savedShipLevel]['stats']["fuelRegen"]
-            self.fuelRegenDelay = spaceShipList[game.savedShipLevel]['stats']["fuelRegenDelay"]
-            self.boostDrain = spaceShipList[game.savedShipLevel]['stats']["boostDrain"]
-            self.laserCost = spaceShipList[game.savedShipLevel]['stats']["laserCost"]
-            self.laserSpeed = spaceShipList[game.savedShipLevel]['stats']["laserSpeed"]
-            self.laserFireRate = spaceShipList[game.savedShipLevel]['stats']["fireRate"]
-            self.laserCollat = spaceShipList[game.savedShipLevel]['stats']["collats"]
-            self.hasGuns, self.laserReady, self.boostReady = spaceShipList[game.savedShipLevel]['stats']["hasGuns"], True, True
-            self.hasShields = spaceShipList[game.savedShipLevel]['stats']["hasShields"]
-            self.shields = spaceShipList[game.savedShipLevel]['stats']["startingShields"]
-            self.shieldPieces = spaceShipList[game.savedShipLevel]['stats']["startingShieldPieces"]
-            self.shieldPiecesNeeded = spaceShipList[game.savedShipLevel]['stats']["shieldPiecesNeeded"]
-            self.damage = spaceShipList[game.savedShipLevel]['stats']["laserDamage"]
-            self.laserType = spaceShipList[game.savedShipLevel]['stats']["laserType"]
+            self.fuelRegenNum = assets.spaceShipList[game.savedShipLevel]['stats']["fuelRegen"]
+            self.fuelRegenDelay = assets.spaceShipList[game.savedShipLevel]['stats']["fuelRegenDelay"]
+            self.boostDrain = assets.spaceShipList[game.savedShipLevel]['stats']["boostDrain"]
+            self.laserCost = assets.spaceShipList[game.savedShipLevel]['stats']["laserCost"]
+            self.laserSpeed = assets.spaceShipList[game.savedShipLevel]['stats']["laserSpeed"]
+            self.laserFireRate = assets.spaceShipList[game.savedShipLevel]['stats']["fireRate"]
+            self.laserCollat = assets.spaceShipList[game.savedShipLevel]['stats']["collats"]
+            self.hasGuns, self.laserReady, self.boostReady = assets.spaceShipList[game.savedShipLevel]['stats']["hasGuns"], True, True
+            self.hasShields = assets.spaceShipList[game.savedShipLevel]['stats']["hasShields"]
+            self.shields = assets.spaceShipList[game.savedShipLevel]['stats']["startingShields"]
+            self.shieldPieces = assets.spaceShipList[game.savedShipLevel]['stats']["startingShieldPieces"]
+            self.shieldPiecesNeeded = assets.spaceShipList[game.savedShipLevel]['stats']["shieldPiecesNeeded"]
+            self.damage = assets.spaceShipList[game.savedShipLevel]['stats']["laserDamage"]
+            self.laserType = assets.spaceShipList[game.savedShipLevel]['stats']["laserType"]
             self.showShield,self.boosting = False,False
             self.movementType = settings.playerMovement
             if settings.cursorMode: self.lastCursor = pygame.Vector2(0,0)
@@ -1928,7 +1933,7 @@ class Player(pygame.sprite.Sprite):
                             self.speed = self.boostSpeed
                             self.fuel -= self.boostDrain
                             if not self.boosting: self.boosting = True
-                            if self.boostState + 1 < len(spaceShipList[game.savedShipLevel]['boost']): self.boostState += 1
+                            if self.boostState + 1 < len(assets.spaceShipList[game.savedShipLevel]['boost']): self.boostState += 1
                             else: self.boostState = 0
 
                         else: self.speed = self.baseSpeed
@@ -1942,7 +1947,7 @@ class Player(pygame.sprite.Sprite):
                             self.speed = self.boostSpeed
                             self.fuel -= self.boostDrain
                             if not self.boosting: self.boosting = True
-                            if self.boostState + 1 < len(spaceShipList[game.savedShipLevel]['boost']): self.boostState += 1
+                            if self.boostState + 1 < len(assets.spaceShipList[game.savedShipLevel]['boost']): self.boostState += 1
                             else: self.boostState = 0
 
                         else: self.speed = self.baseSpeed
@@ -1954,7 +1959,7 @@ class Player(pygame.sprite.Sprite):
                             self.speed = self.boostSpeed
                             self.fuel -= self.boostDrain
                             if not self.boosting: self.boosting = True
-                            if self.boostState + 1 < len(spaceShipList[game.savedShipLevel]['boost']): self.boostState += 1
+                            if self.boostState + 1 < len(assets.spaceShipList[game.savedShipLevel]['boost']): self.boostState += 1
                             else: self.boostState = 0
 
                         else: self.speed = self.baseSpeed
@@ -1974,7 +1979,7 @@ class Player(pygame.sprite.Sprite):
                     key = pygame.key.get_pressed()
                     if any(key[bind] for bind in shootInput) and self.fuel - self.laserCost > 0:
                         lasers.add(Laser(self,obstacles))
-                        if not game.musicMuted: laserNoise.play()
+                        if not game.musicMuted: assets.laserNoise.play()
                         self.fuel -= self.laserCost
                         events.laserCharge(self)
 
@@ -1982,7 +1987,7 @@ class Player(pygame.sprite.Sprite):
                 elif game.usingController and not game.usingCursor:
                     if gamePad.get_axis(controllerShoot) > 0.5 and self.fuel - self.laserCost > 0:
                         lasers.add(Laser(self,obstacles))
-                        if not game.musicMuted: laserNoise.play()
+                        if not game.musicMuted: assets.laserNoise.play()
                         self.fuel -= self.laserCost
                         events.laserCharge(self)
 
@@ -1990,7 +1995,7 @@ class Player(pygame.sprite.Sprite):
                 elif game.usingCursor:
                     if pygame.mouse.get_pressed()[0]== 1 and self.fuel - self.laserCost > 0:
                         lasers.add(Laser(self,obstacles))
-                        if not game.musicMuted: laserNoise.play()
+                        if not game.musicMuted: assets.laserNoise.play()
                         self.fuel -= self.laserCost
                         events.laserCharge(self)
 
@@ -2005,15 +2010,15 @@ class Player(pygame.sprite.Sprite):
 
         # GET NEXT SKIN
         def nextSkin(self):
-            if self.currentImageNum + 1 < len(spaceShipList[game.savedShipLevel]['skins']):
+            if self.currentImageNum + 1 < len(assets.spaceShipList[game.savedShipLevel]['skins']):
                 if not settings.devMode and self.currentImageNum + 1 > game.skinUnlockNumber:
-                    self.image = spaceShipList[game.savedShipLevel]['skins'][0]
+                    self.image = assets.spaceShipList[game.savedShipLevel]['skins'][0]
                     self.currentImageNum = 0
                 else:
                     self.currentImageNum+=1
-                    self.image = spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum]
+                    self.image = assets.spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum]
             else:
-                self.image = spaceShipList[game.savedShipLevel]['skins'][0]
+                self.image = assets.spaceShipList[game.savedShipLevel]['skins'][0]
                 self.currentImageNum = 0
             self.rect = self.image.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
@@ -2023,13 +2028,13 @@ class Player(pygame.sprite.Sprite):
         def lastSkin(self):
             if self.currentImageNum >= 1:
                 self.currentImageNum-=1
-                self.image = spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum]
+                self.image = assets.spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum]
             else:
                 if game.skinUnlockNumber == 0 and not settings.devMode: return
                 else:
-                    if settings.devMode: self.currentImageNum = len(spaceShipList[game.savedShipLevel]['skins']) - 1
+                    if settings.devMode: self.currentImageNum = len(assets.spaceShipList[game.savedShipLevel]['skins']) - 1
                     else: self.currentImageNum = game.skinUnlockNumber
-                    self.image = spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum]
+                    self.image = assets.spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum]
 
             self.rect = self.image.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
@@ -2040,11 +2045,11 @@ class Player(pygame.sprite.Sprite):
             if game.shipUnlockNumber == 0 and not settings.devMode: return
             else:
                 if toggleDirection:
-                    if game.savedShipLevel + 1  < len(spaceShipList) and (settings.devMode or game.savedShipLevel + 1 <= game.shipUnlockNumber): game.savedShipLevel +=1
+                    if game.savedShipLevel + 1  < len(assets.spaceShipList) and (settings.devMode or game.savedShipLevel + 1 <= game.shipUnlockNumber): game.savedShipLevel +=1
                     else: game.savedShipLevel = 0
                 else:
                     if game.savedShipLevel - 1 < 0:
-                        if settings.devMode: game.savedShipLevel = len(spaceShipList) - 1
+                        if settings.devMode: game.savedShipLevel = len(assets.spaceShipList) - 1
                         else:game.savedShipLevel = game.shipUnlockNumber
                     else: game.savedShipLevel -=1
                 game.skinUnlockNumber = game.skinsUnlocked(game.savedShipLevel) # Get skin unlocks for new ship type
@@ -2053,42 +2058,42 @@ class Player(pygame.sprite.Sprite):
 
         # Update player attributes
         def updatePlayerConstants(self,game):
-            self.image = spaceShipList[game.savedShipLevel]['skins'][0]
-            self.laserImage = spaceShipList[game.savedShipLevel]['laser']
+            self.image = assets.spaceShipList[game.savedShipLevel]['skins'][0]
+            self.laserImage = assets.spaceShipList[game.savedShipLevel]['laser']
             self.currentImageNum = 0
             self.rect = self.image.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/2))
             self.mask = pygame.mask.from_surface(self.image)
-            self.speed,self.baseSpeed = spaceShipList[game.savedShipLevel]['stats']["speed"],spaceShipList[game.savedShipLevel]['stats']["speed"]
-            self.fuel = spaceShipList[game.savedShipLevel]['stats']["startingFuel"]
-            self.maxFuel = spaceShipList[game.savedShipLevel]['stats']["maxFuel"]
-            self.fuelRegenNum = spaceShipList[game.savedShipLevel]['stats']["fuelRegen"]
-            self.fuelRegenDelay = spaceShipList[game.savedShipLevel]['stats']["fuelRegenDelay"]
-            self.boostSpeed = spaceShipList[game.savedShipLevel]['stats']["boostSpeed"]
-            self.boostDrain = spaceShipList[game.savedShipLevel]['stats']["boostDrain"]
-            self.laserCost = spaceShipList[game.savedShipLevel]['stats']["laserCost"]
-            self.laserSpeed = spaceShipList[game.savedShipLevel]['stats']["laserSpeed"]
-            self.laserFireRate = spaceShipList[game.savedShipLevel]['stats']["fireRate"]
-            self.hasGuns = spaceShipList[game.savedShipLevel]['stats']["hasGuns"]
-            self.laserCollat = spaceShipList[game.savedShipLevel]['stats']["collats"]
-            self.hasShields = spaceShipList[game.savedShipLevel]['stats']["hasShields"]
-            self.shields = spaceShipList[game.savedShipLevel]['stats']["startingShields"]
-            self.shieldPieces = spaceShipList[game.savedShipLevel]['stats']["startingShieldPieces"]
-            self.shieldPiecesNeeded = spaceShipList[game.savedShipLevel]['stats']["shieldPiecesNeeded"]
-            self.damage = spaceShipList[game.savedShipLevel]['stats']["laserDamage"]
-            self.laserType = spaceShipList[game.savedShipLevel]['stats']["laserType"]
+            self.speed,self.baseSpeed = assets.spaceShipList[game.savedShipLevel]['stats']["speed"],assets.spaceShipList[game.savedShipLevel]['stats']["speed"]
+            self.fuel = assets.spaceShipList[game.savedShipLevel]['stats']["startingFuel"]
+            self.maxFuel = assets.spaceShipList[game.savedShipLevel]['stats']["maxFuel"]
+            self.fuelRegenNum = assets.spaceShipList[game.savedShipLevel]['stats']["fuelRegen"]
+            self.fuelRegenDelay = assets.spaceShipList[game.savedShipLevel]['stats']["fuelRegenDelay"]
+            self.boostSpeed = assets.spaceShipList[game.savedShipLevel]['stats']["boostSpeed"]
+            self.boostDrain = assets.spaceShipList[game.savedShipLevel]['stats']["boostDrain"]
+            self.laserCost = assets.spaceShipList[game.savedShipLevel]['stats']["laserCost"]
+            self.laserSpeed = assets.spaceShipList[game.savedShipLevel]['stats']["laserSpeed"]
+            self.laserFireRate = assets.spaceShipList[game.savedShipLevel]['stats']["fireRate"]
+            self.hasGuns = assets.spaceShipList[game.savedShipLevel]['stats']["hasGuns"]
+            self.laserCollat = assets.spaceShipList[game.savedShipLevel]['stats']["collats"]
+            self.hasShields = assets.spaceShipList[game.savedShipLevel]['stats']["hasShields"]
+            self.shields = assets.spaceShipList[game.savedShipLevel]['stats']["startingShields"]
+            self.shieldPieces = assets.spaceShipList[game.savedShipLevel]['stats']["startingShieldPieces"]
+            self.shieldPiecesNeeded = assets.spaceShipList[game.savedShipLevel]['stats']["shieldPiecesNeeded"]
+            self.damage = assets.spaceShipList[game.savedShipLevel]['stats']["laserDamage"]
+            self.laserType = assets.spaceShipList[game.savedShipLevel]['stats']["laserType"]
 
 
         def updateExhaust(self,game):
-            if self.exhaustState+1 > len(spaceShipList[game.savedShipLevel]['exhaust']): self.exhaustState = 0
+            if self.exhaustState+1 > len(assets.spaceShipList[game.savedShipLevel]['exhaust']): self.exhaustState = 0
             else: self.exhaustState += 1
 
 
         def explode(self,game,obstacles):
-            while self.explosionState < len(explosionList):
-                height = explosionList[self.explosionState].get_height()
-                width = explosionList[self.explosionState].get_width()
+            while self.explosionState < len(assets.explosionList):
+                height = assets.explosionList[self.explosionState].get_height()
+                width = assets.explosionList[self.explosionState].get_width()
                 screen.fill(screenColor)
-                screen.blit(bgList[game.currentStage - 1][0], (0,0) )
+                screen.blit(assets.bgList[game.currentStage - 1][0], (0,0) )
                 game.showBackgroundCloud()
                 if game.cave is not None:
                     screen.blit(game.cave.background,game.cave.rect)
@@ -2101,11 +2106,11 @@ class Player(pygame.sprite.Sprite):
                     newBlit = rotateImage(obs.image,obs.rect,obs.angle)
                     screen.blit(newBlit[0],newBlit[1])
 
-                img = pygame.transform.scale(explosionList[self.explosionState], (height * self.explosionState, width * self.explosionState)) # Blow up explosion
+                img = pygame.transform.scale(assets.explosionList[self.explosionState], (height * self.explosionState, width * self.explosionState)) # Blow up explosion
                 img, imgRect = rotateImage(img, self.rect, self.lastAngle) # Rotate
 
                 screen.blit(img,imgRect) # Draw explosion
-                screen.blit(explosionList[self.explosionState],self.rect)
+                screen.blit(assets.explosionList[self.explosionState],self.rect)
                 displayUpdate()
                 game.clk.tick(settings.fps)
                 self.explosionState += 1
@@ -2139,8 +2144,8 @@ class Obstacle(pygame.sprite.Sprite):
         self.spinSpeed = self.getAttributes(game.spinSpeed)
         self.health = self.getAttributes(game.obsHealth)
         self.bounds = self.getAttributes(game.obstacleBoundaries)
-        try: self.image = obstacleImages[game.currentStage - 1][game.currentLevel-1]
-        except: self.image = meteorList[random.randint(0,len(meteorList)-1)] # Not enough assets for this level yet
+        try: self.image = assets.obstacleImages[game.currentStage - 1][game.currentLevel-1]
+        except: self.image = assets.meteorList[random.randint(0,len(assets.meteorList)-1)] # Not enough assets for this level yet
         self.image = pygame.transform.scale(self.image, (self.size, self.size)).convert_alpha()
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
         self.getDirection(playerPos)
@@ -2283,8 +2288,8 @@ class Cave(pygame.sprite.Sprite):
     def __init__(self,index):
         super().__init__()
         self.speed = settings.caveSpeed
-        self.background = caveList[index][0]
-        self.image = caveList[index][1]
+        self.background = assets.caveList[index][0]
+        self.image = assets.caveList[index][1]
         self.rect = self.image.get_rect(bottomleft = (0,settings.caveStartPos))
         self.mask = pygame.mask.from_surface(self.image)
         self.leave = False # Mark cave for exit
@@ -2386,9 +2391,9 @@ class Laser(pygame.sprite.Sprite):
 # EXPLOSIONS
 class Explosion:
     def __init__(self,laser):
-        self.state,self.finalState,self.finished = 0,len(explosionList)-1,False
+        self.state,self.finalState,self.finished = 0,len(assets.explosionList)-1,False
         self.rect = laser.rect.copy()
-        self.image = explosionList[self.state]
+        self.image = assets.explosionList[self.state]
         self.updateFrame = 0
         self.delay = settings.explosionDelay
 
@@ -2397,10 +2402,10 @@ class Explosion:
         self.updateFrame +=1
         if self.updateFrame >= self.delay:
             self.updateFrame = 0
-            if self.state +1 >= len(explosionList): self.finished = True
+            if self.state +1 >= len(assets.explosionList): self.finished = True
             else:
                 self.state +=1
-                self.image = explosionList[self.state]
+                self.image = assets.explosionList[self.state]
 
         screen.blit(self.image,self.rect)
 
@@ -2418,9 +2423,9 @@ class Point(pygame.sprite.Sprite):
             if not player.hasShields and "Shield" in powerUps: pointChoices.remove("Shield")
             if not player.hasGuns and player.baseSpeed == player.boostSpeed and "Fuel" in powerUps: pointChoices.remove("Fuel")
             self.powerUp = random.choice(pointChoices)
-        if self.powerUp == "Shield": self.image = pointsList[2]
-        elif self.powerUp == "Fuel": self.image = pointsList[1]
-        elif self.powerUp == "Default": self.image = pointsList[0]
+        if self.powerUp == "Shield": self.image = assets.pointsList[2]
+        elif self.powerUp == "Fuel": self.image = assets.pointsList[1]
+        elif self.powerUp == "Default": self.image = assets.pointsList[0]
         self.image = pygame.transform.scale(self.image, (settings.pointSize, settings.pointSize))
         if lastPos == None: self.rect = self.image.get_rect(center = self.positionGenerator())
         else:self.rect = self.image.get_rect(center = self.spacedPositionGenerator(lastPos))
@@ -2471,8 +2476,8 @@ class Icon:
         self.movement = getMovement("AGGRO")
         self.direction = self.movement[1]
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
-        if random.randint(0,10) < 7: self.image = menuList[1]
-        else: self.image = menuList[random.randint(5,len(menuList)-1)]
+        if random.randint(0,10) < 7: self.image = assets.menuList[1]
+        else: self.image = assets.menuList[random.randint(5,len(assets.menuList)-1)]
         size = random.randint(settings.minIconSize,settings.maxIconSize)
         self.image = pygame.transform.scale(self.image, (size, size)).convert_alpha()
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
@@ -2499,8 +2504,8 @@ class Icon:
         if self.active and ( (self.rect.centery > randomTimerUY) or (self.rect.centery < randomTimerLY) or (self.rect.centerx> randomTimerUX) or (self.rect.centerx < randomTimerLX) ):
             self.movement = getMovement("ALL")
             self.direction = self.movement[1]
-            if random.randint(0,10) < 7: self.image = menuList[1]
-            else: self.image = menuList[random.randint(5,len(menuList)-1)]
+            if random.randint(0,10) < 7: self.image = assets.menuList[1]
+            else: self.image = assets.menuList[random.randint(5,len(assets.menuList)-1)]
             self.speed = random.randint(1,settings.maxIconSpeed)
             self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
             size = random.randint(settings.minIconSize,settings.maxIconSize)
@@ -2524,7 +2529,7 @@ class Icon:
 class BackgroundShip:
     def __init__(self,text,scale):
         self.scale = scale
-        self.size = self.valueScaler(scale,settings.minBackgroundShipSize,settings.maxBackgroundShipSize,lowDon,maxDon)
+        self.size = self.valueScaler(scale,settings.minBackgroundShipSize,settings.maxBackgroundShipSize,assets.lowDon,assets.maxDon)
         if self.size < settings.minBackgroundShipSize:
             self.size = settings.minBackgroundShipSize
             self.speed = settings.maxBackgroundShipSpeed
@@ -2538,10 +2543,10 @@ class BackgroundShip:
         self.direction = self.movement[1]
         self.angle = self.getAngle()
         self.text = text
-        self.image = pygame.transform.scale(donationShips[random.randint(0, len(donationShips) - 1)], (self.size, self.size) ).convert_alpha()
+        self.image = pygame.transform.scale(assets.donationShips[random.randint(0, len(assets.donationShips) - 1)], (self.size, self.size) ).convert_alpha()
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
         self.count = 0
-        self.font = pygame.font.Font(gameFont, int(self.size * 2/3))
+        self.font = pygame.font.Font(assets.gameFont, int(self.size * 2/3))
         self.display = self.font.render(self.text, True, [0,0,0])
         self.displayRect = self.display.get_rect(center = self.rect.center)
         self.active = False
@@ -2640,7 +2645,7 @@ def getMovement(spawnPattern):
 
 
 # INITIALIZE GAME
-game = Game(loadRecords()) # Initialize game with records loaded
+game = Game(assets.loadRecords()) # Initialize game with records loaded
 menu = Menu() # Initialize menus
 
 # SET VOLUME
