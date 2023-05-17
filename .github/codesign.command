@@ -1,0 +1,1 @@
+codesign --deep --force --sign "Navigator" "Navigator.app" -info
