@@ -92,9 +92,8 @@ class Settings:
         # SOUNDS
         self.musicVolume = 10 # Default = 10 / Music volume / 100
         self.sfxVolume = 5 # Default = 5 / SFX volume / 100
-        self.musicMuted = False
-
-        # MUSIC LOOP DURATION
+        self.numChannels = 16 # Default = 16
+        self.musicMuted = False # Default = False
         self.menuLoopStart = 1100 # Default = 1100
         self.menuLoopEnd = 12800 # Default = 12800
         self.musicLoopStart = 25000 # Default = 25000
@@ -132,9 +131,9 @@ class Settings:
         self.showSpawnArea = False # Default = False / show powerup spawn area
         self.rawCursorMode = False # Default = False / sets player position to cursor position
         self.playerMovement = "DEFAULT" # Default = "DEFAULT" /  (DEFAULT, ORIGINAL)
-        self.performanceMode = False
-        self.qualityMode = False
-        self.showPresence = True
+        self.performanceMode = False # Default = False
+        self.qualityMode = False # Default = False # Overridden by performance mode
+        self.showPresence = True # Default = True / Discord presence using pypresence
 
         # SET SCREEN UPDATE METHOD
         if self.qualityMode and not self.performanceMode: self.updateNotFlip = False
@@ -524,6 +523,7 @@ def toggleMusic(game):
 
 settings = Settings() # INITIALIZE SETTINGS
 screen = getScreen() # INITIALIZE SCREEN
+pygame.mixer.set_num_channels(settings.numChannels)
 assets = Assets() # LOAD ASSETS
 
 # KEY BINDS
