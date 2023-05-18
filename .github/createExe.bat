@@ -1,0 +1,1 @@
+pyinstaller --onefile --noconsole --add-data ..\Assets;Assets -i="Icons\Icon.ico" --version-file version.txt ..\Navigator.py
