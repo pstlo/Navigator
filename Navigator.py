@@ -221,7 +221,7 @@ class Settings:
 class Assets:
     def __init__(self):
         # RECORD AND PREFERENCE PATHS
-        if platform.system().lower() == 'windows' or platform.system().lower == 'linux': self.recordsPath,self.preferencesPath = './gameRecords.txt','./gamePreferences.txt'  # For windows and linux
+        if platform.system().lower() == 'windows' or platform.system().lower() == 'linux': self.recordsPath,self.preferencesPath = './gameRecords.txt','./gamePreferences.txt'  # For windows and linux
         else: self.recordsPath,self.preferencesPath = self.resources('gameRecords.txt'), self.resources('gamePreferences.txt') # For MacOS
 
         # ASSET PATHS
