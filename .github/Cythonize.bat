@@ -1,0 +1,1 @@
+python setupCython.py build_ext --inplace
