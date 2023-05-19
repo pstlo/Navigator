@@ -1738,10 +1738,10 @@ class Menu:
         musicCreditsDisplay = assets.creditsFont.render(musicCreditsLine, True, settings.secondaryFontColor)
         moreMusicCreditsDisplay = assets.creditsFont.render(moreMusicCreditsLine, True, settings.secondaryFontColor)
 
-        createdByRect = createdByDisplay.get_rect(center = (posX, posY - settings.screenSize[1]/15) )
-        creditsRect = creditsDisplay.get_rect(center = (posX,posY))
-        musicCreditsRect = musicCreditsDisplay.get_rect(center = (posX,posY+ (settings.screenSize[1]/15)/2))
-        moreMusicCreditsRect = moreMusicCreditsDisplay.get_rect(center = (posX,posY+ settings.screenSize[1]/15))
+        createdByRect = createdByDisplay.get_rect(center = (posX,posY))
+        creditsRect = creditsDisplay.get_rect(center = (posX, posY +45))
+        musicCreditsRect = musicCreditsDisplay.get_rect(center = (posX,posY+75))
+        moreMusicCreditsRect = moreMusicCreditsDisplay.get_rect(center = (posX,posY+105))
 
         bounceCount = 0
         direction = self.randomEightDirection()
