@@ -494,6 +494,71 @@ class Assets:
 
 
 
+# UNLOCKS
+class Unlocks:
+    def __init__(self):
+        self.unlockTimePerLevels = [] # For time based unlocks
+        totalLevels = 0
+
+        for stage in assets.stageList: totalLevels += len(stage) # Get total number of levels
+        self.totalTime = totalLevels * 15 # multiply by (average) time per level
+
+        # Calculate time per unlock for each ship level
+        for shipInd in range(len(assets.spaceShipList)):
+            timePerUnlock = self.totalTime/len(assets.spaceShipList[shipInd]['skins'])
+            if timePerUnlock == self.totalTime: self.unlockTimePerLevels.append(None) # No other skins for this level
+            else: self.unlockTimePerLevels.append(int(timePerUnlock))
+
+        expectedPointsPerLevel = 12 # Temporary solution
+        self.totalShipTypes = len(assets.spaceShipList) # For score based unlocks
+        self.totalPointsForUnlock = totalLevels * expectedPointsPerLevel # Points in game for all unlocks
+        self.pointsForUnlock = int(self.totalPointsForUnlock/expectedPointsPerLevel)
+
+
+    # Gets number of skins unlocked
+    def getUnlocks(self,game,numSkins,time):
+        if time == None: return 0
+        else:
+            unlockTime = self.totalTime
+            prevUnlockIndex = 0
+            unlockNum = 0
+            for unlock in range(numSkins-1):
+                if game.records["longestRun"] >= unlockTime: return numSkins - prevUnlockIndex
+                else:
+                    prevUnlockIndex +=1
+                    unlockTime -= time
+            if unlockNum <= 0:
+                if game.records["longestRun"] >= time: return 1
+                else: return 0
+            else:
+                if unlockNum >= numSkins: unlockNum = numSkins - 1
+                return unlockNum
+
+
+    # Get number of skins unlocked for a specified level number
+    def skinsUnlocked(self,game): return self.getUnlocks(game,len(assets.spaceShipList[game.savedShipLevel]['skins']),self.unlockTimePerLevels[game.savedShipLevel])
+        
+        
+    # UPDATE UNLOCKS
+    def update(self,game):   
+        if game.records["highScore"] < self.pointsForUnlock: game.shipUnlockNumber = 0
+        elif game.records["highScore"] >= self.totalPointsForUnlock: game.shipUnlockNumber = len(assets.spaceShipList) - 1
+        else:
+            if game.records["highScore"] == self.pointsForUnlock or game.records["highScore"] < 2 * self.pointsForUnlock: game.shipUnlockNumber = 1
+            else:
+                game.shipUnlockNumber = 0
+                startPoints = self.pointsForUnlock
+                for i in range(self.totalShipTypes):
+                    if game.records["highScore"] >= startPoints: game.shipUnlockNumber += 1
+                    else: break
+                    startPoints += self.pointsForUnlock
+
+        if game.shipUnlockNumber >= len(assets.spaceShipList): game.shipUnlockNumber = len(assets.spaceShipList)-1
+        game.skinUnlockNumber = self.skinsUnlocked(game)
+        if game.skinUnlockNumber >= len(assets.spaceShipList[game.savedShipLevel]['skins']): game.skinUnlockNumber = len(assets.spaceShipList[game.savedShipLevel]['skins']) - 1
+
+
+
 # GET SCREEN
 def getScreen():
     if settings.performanceMode:
@@ -539,6 +604,7 @@ settings = Settings() # INITIALIZE SETTINGS
 screen = getScreen() # INITIALIZE SCREEN
 pygame.mixer.set_num_channels(settings.numChannels)
 assets = Assets() # LOAD ASSETS
+unlocks = Unlocks() # UNLOCKS
 
 # KEY BINDS
 leftInput = [pygame.K_a, pygame.K_LEFT]
@@ -593,7 +659,7 @@ cursor = pygame.cursors.Cursor((20, 20), curSurf)
 pygame.mouse.set_cursor(cursor)
 pygame.mouse.set_visible(settings.cursorMode)
 
-
+# KEEP CURSOR ON SCREEN (Cursor mode only)
 def resetCursor():
     if settings.cursorMode:
         pos = list(pygame.mouse.get_pos())
@@ -642,25 +708,6 @@ if settings.useController:
     else:
         pygame.joystick.quit() # This may be causing delay on startup ?
         if settings.useController: settings.useController = False
-
-
-# UNLOCKS
-unlockTimePerLevels = [] # For time based unlocks
-totalLevels = 0
-
-for stage in assets.stageList: totalLevels += len(stage) # Get total number of levels
-totalTime = totalLevels * 15 # multiply by (average) time per level
-
-# Calculate time per unlock for each ship level
-for shipInd in range(len(assets.spaceShipList)):
-    timePerUnlock = totalTime/len(assets.spaceShipList[shipInd]['skins'])
-    if timePerUnlock == totalTime: unlockTimePerLevels.append(None) # No other skins for this level
-    else: unlockTimePerLevels.append(int(timePerUnlock))
-
-expectedPointsPerLevel = 12 # Temporary solution
-totalShipTypes = len(assets.spaceShipList) # For score based unlocks
-totalPointsForUnlock = totalLevels * expectedPointsPerLevel # Points in game for all unlocks
-pointsForUnlock = int(totalPointsForUnlock/expectedPointsPerLevel)
 
 # POINT SPAWN AREA
 spawnWidth = int(settings.screenSize[0] * (settings.spawnRange[1] - settings.spawnRange[0]))
@@ -1203,30 +1250,6 @@ class Game:
             screen.blit(laser.image,laser.rect)
 
 
-    # Gets number of skins unlocked
-    def getUnlocks(self,numSkins,time):
-        if time == None: return 0
-        else:
-            unlockTime = totalTime
-            prevUnlockIndex = 0
-            unlockNum = 0
-            for unlock in range(numSkins-1):
-                if self.records["longestRun"] >= unlockTime: return numSkins - prevUnlockIndex
-                else:
-                    prevUnlockIndex +=1
-                    unlockTime -= time
-            if unlockNum <= 0:
-                if self.records["longestRun"] >= time: return 1
-                else: return 0
-            else:
-                if unlockNum >= numSkins: unlockNum = numSkins - 1
-                return unlockNum
-
-
-    # Get number of skins unlocked for a specified level number
-    def skinsUnlocked(self,level): return self.getUnlocks(len(assets.spaceShipList[level]['skins']),unlockTimePerLevels[level])
-
-
     # RESTART GAME
     def reset(self,player,obstacles):
         self.gameClock = 0
@@ -1324,22 +1347,7 @@ class Menu:
         bounceDelay = 5
         bounceCount = 0
 
-        # UPDATE UNLOCKS
-        if game.records["highScore"] < pointsForUnlock: game.shipUnlockNumber = 0
-        elif game.records["highScore"] >= totalPointsForUnlock: game.shipUnlockNumber = len(assets.spaceShipList) - 1
-        else:
-            if game.records["highScore"] == pointsForUnlock or game.records["highScore"] < 2 * pointsForUnlock: game.shipUnlockNumber = 1
-            else:
-                game.shipUnlockNumber = 0
-                startPoints = pointsForUnlock
-                for i in range(totalShipTypes):
-                    if game.records["highScore"] >= startPoints: game.shipUnlockNumber += 1
-                    else: break
-                    startPoints += pointsForUnlock
-
-        if game.shipUnlockNumber >= len(assets.spaceShipList): game.shipUnlockNumber = len(assets.spaceShipList)-1
-        game.skinUnlockNumber = game.skinsUnlocked(game.savedShipLevel)
-        if game.skinUnlockNumber >= len(assets.spaceShipList[game.savedShipLevel]['skins']): game.skinUnlockNumber = len(assets.spaceShipList[game.savedShipLevel]['skins']) - 1
+        unlocks.update(game)
 
         if settings.defaultToHighSkin and not game.skipAutoSkinSelect:
             for i in range(game.skinUnlockNumber): player.nextSkin() # Gets highest unlocked skin by default
@@ -1462,7 +1470,7 @@ class Menu:
             # SHOW SHIP CONTROLS
             if player.hasGuns: screen.blit(shootHelp,shootHelpRect)
             if player.boostSpeed > player.baseSpeed: screen.blit(boostHelp,boostHelpRect)
-            if unlockTimePerLevels[game.savedShipLevel] != None and game.records["longestRun"] >= unlockTimePerLevels[game.savedShipLevel] and len(assets.spaceShipList[game.savedShipLevel]['skins']) > 1: screen.blit(skinHelpDisplay,skinHelpRect) # Show switch skin controls
+            if unlocks.unlockTimePerLevels[game.savedShipLevel] != None and game.records["longestRun"] >= unlocks.unlockTimePerLevels[game.savedShipLevel] and len(assets.spaceShipList[game.savedShipLevel]['skins']) > 1: screen.blit(skinHelpDisplay,skinHelpRect) # Show switch skin controls
             if game.shipUnlockNumber > 0: screen.blit(shipHelpDisplay,shipHelpRect)
             screen.blit(player.image, (player.rect.x,player.rect.y + startOffset)) # Current spaceship
 
