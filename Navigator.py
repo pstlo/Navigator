@@ -22,7 +22,8 @@ class Settings:
         # SCREEN
         self.screenSize = [800,800] # Default = [800,800]
         self.fps = 60 # Default = 60
-        self.fullScreen = False
+        self.fullScreen = False # Default = False / start game in fullscreen
+        self.showFPS = False # Default = False / shows fps counter in window caption
 
         # INPUT
         self.useController = True # Default = True / Allow controller input
@@ -235,11 +236,10 @@ class Assets:
         menuDirectory = os.path.join(assetDirectory, 'MainMenu') # Start menu asset directory
         explosionDirectory = os.path.join(assetDirectory, 'Explosion') # Explosion animation directory
         pointsDirectory = os.path.join(assetDirectory, 'Points') # Point image directory
-        soundDirectory = os.path.join(assetDirectory, 'Sounds') # Sound assets directory
         supportersDirectory = os.path.join(assetDirectory,'Supporters') # Supporters directory
-
         self.windowIcon = pygame.image.load(self.resources(os.path.join(assetDirectory,'Icon.png'))).convert_alpha()
         self.stageCloudImg = pygame.image.load(self.resources(os.path.join(assetDirectory,'StageCloud.png') ) ).convert_alpha() # STAGE WIPE CLOUD
+        self.soundDirectory = os.path.join(assetDirectory, 'Sounds') # Sound assets directory / will be referenced again for music loading
 
         # LOAD LEVELS
         self.stageList = []
@@ -359,23 +359,27 @@ class Assets:
         menuMeteorDir = os.path.join(menuDirectory,'FlyingObjects')
         for objPath in sorted(os.listdir(menuMeteorDir)): self.menuList.append(pygame.image.load(self.resources(os.path.join(menuMeteorDir,objPath))).convert_alpha())
 
-        # MUSIC ASSET
-        pygame.mixer.music.load(self.resources(os.path.join(soundDirectory,"Soundtrack.mp3")))
+        # LOAD SOUNDTRACK
+        self.loadSoundtrack()
 
         # EXPLOSION NOISE ASSET
-        self.explosionNoise = pygame.mixer.Sound(self.resources(os.path.join(soundDirectory,"Explosion.wav")))
+        self.explosionNoise = pygame.mixer.Sound(self.resources(os.path.join(self.soundDirectory,"Explosion.wav")))
         self.explosionNoise.set_volume(settings.sfxVolume/100)
 
         # POINT NOISE ASSET
-        self.powerUpNoise = pygame.mixer.Sound(self.resources(os.path.join(soundDirectory,"Point.wav")))
+        self.pointNoise = pygame.mixer.Sound(self.resources(os.path.join(self.soundDirectory,"Point.wav")))
+        self.pointNoise.set_volume(settings.sfxVolume/100 *1.25)
+
+        # POWERUP NOISE ASSET
+        self.powerUpNoise = pygame.mixer.Sound(self.resources(os.path.join(self.soundDirectory,"PowerUp.wav")))
         self.powerUpNoise.set_volume(settings.sfxVolume/100)
 
         # LASER NOISE ASSET
-        self.laserNoise = pygame.mixer.Sound(self.resources(os.path.join(soundDirectory,"Laser.wav")))
+        self.laserNoise = pygame.mixer.Sound(self.resources(os.path.join(self.soundDirectory,"Laser.wav")))
         self.laserNoise.set_volume(settings.sfxVolume/100)
 
         # LASER IMPACT NOISE ASSET
-        self.impactNoise = pygame.mixer.Sound(self.resources(os.path.join(soundDirectory,"Impact.wav")))
+        self.impactNoise = pygame.mixer.Sound(self.resources(os.path.join(self.soundDirectory,"Impact.wav")))
         self.impactNoise.set_volume(settings.sfxVolume/100)
 
         # LOAD DONATION RECORDS
@@ -420,7 +424,7 @@ class Assets:
         self.statFont = pygame.font.Font(self.gameFont, 30)
         self.exitFont = pygame.font.Font(self.gameFont, 30)
         self.creatorFont = pygame.font.Font(self.gameFont, 55)
-        self.creditsFont = pygame.font.Font(self.gameFont, 40)
+        self.creditsFont = pygame.font.Font(self.gameFont, 30)
 
 
     # EXE/APP RESOURCES
@@ -477,6 +481,16 @@ class Assets:
                 gameRecords = {'highScore':0, 'longestRun':0, 'attempts':0, 'timePlayed':0, 'points':0}
                 self.storeRecords(gameRecords) # Try creating new encrypted records file
                 return gameRecords
+
+
+    def loadGameOverMusic(self):
+        pygame.mixer.music.load(self.resources(os.path.join(self.soundDirectory,"GameOver.mp3")))
+        pygame.mixer.music.set_volume(settings.musicVolume/100 *1.5)
+
+
+    def loadSoundtrack(self):
+        pygame.mixer.music.load(self.resources(os.path.join(self.soundDirectory,"Soundtrack.mp3")))
+        pygame.mixer.music.set_volume(settings.musicVolume/100)
 
 
 
@@ -714,7 +728,7 @@ def getMovement(spawnPattern):
 # GAME
 class Game:
     def __init__(self,records):
-        
+
         self.gameConstants = assets.stageList
 
         # Level constants
@@ -769,7 +783,7 @@ class Game:
                 "obstacleTarget":self.target,
                 "obstacleHealth":self.obsHealth
                 }
-                
+
         # SET VOLUME
         if not self.musicMuted: pygame.mixer.music.set_volume(settings.musicVolume / 100)
         else: pygame.mixer.music.set_volume(0)
@@ -870,11 +884,17 @@ class Game:
             if self.thisPoint.powerUp == "Fuel": # Fuel cell collected
                 player.fuel += player.maxFuel/4 # Replenish quarter tank
                 if player.fuel > player.maxFuel: player.fuel = player.maxFuel
+                if not self.musicMuted: assets.powerUpNoise.play()
 
-            elif self.thisPoint.powerUp == "Shield": player.shieldUp() # Shield piece collected
+            elif self.thisPoint.powerUp == "Shield": # Shield piece collected
+                player.shieldUp()
+                if not self.musicMuted: assets.powerUpNoise.play()
+
+            else:
+                if not self.musicMuted: assets.pointNoise.play()
+
             self.score += 1
             self.thisPoint.kill()
-            if not self.musicMuted: assets.powerUpNoise.play()
             self.lastPointPos = self.thisPoint.rect.center # Save last points position
             self.thisPoint = Point(player,self.lastPointPos) # spawn new point
 
@@ -966,6 +986,7 @@ class Game:
         player.lastAngle = player.angle # Save recent player orientation
         if settings.resetPlayerOrientation: player.angle = self.angle # Reset player orientation
         player.boosting = False
+        if settings.showFPS: pygame.display.set_caption("Navigator {} FPS".format(int(self.clk.get_fps())))
         displayUpdate()
         self.clk.tick(settings.fps)
 
@@ -1017,6 +1038,7 @@ class Game:
             screen.blit(newBlit[0],newBlit[1])
             obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle
 
+        if settings.showFPS: pygame.display.set_caption("Navigator {} FPS".format(int(self.clk.get_fps())))
         self.clk.tick(settings.fps)
 
 
@@ -1215,6 +1237,9 @@ class Game:
         self.cave = None
         self.killAllObstacles(obstacles)
         self.resetAllLevels()
+        assets.loadSoundtrack()
+        pygame.mixer.music.play()
+        if self.musicMuted: pygame.mixer.music.set_volume(0)
         player.kill()
 
 
@@ -1395,7 +1420,7 @@ class Menu:
                 if (event.type == pygame.KEYDOWN) and (event.key in muteInput) or (gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
 
                 # CREDITS
-                if (event.type == pygame.KEYDOWN and event.key in creditsInput) or (gamePad is not None and gamePad.get_button(controllerCredits) == 1): menu.creditScreen()
+                if (event.type == pygame.KEYDOWN and event.key in creditsInput) or (gamePad is not None and gamePad.get_button(controllerCredits) == 1): menu.creditScreen(True)
 
                  # SWITCH CONTROL TYPE
                 if game.usingController and event.type == pygame.KEYDOWN:
@@ -1519,7 +1544,9 @@ class Menu:
     def gameOver(self,game,player,obstacles):
         gameOver = True
         game.thisPoint = Point(None,None)
-        pygame.mixer.music.stop()
+        assets.loadGameOverMusic()
+        if game.musicMuted: pygame.mixer.music.set_volume(0)
+        pygame.mixer.music.play(-1)
 
         # Show cursor
         pygame.mouse.set_visible(settings.cursorMode)
@@ -1621,12 +1648,15 @@ class Menu:
             for event in pygame.event.get():
 
                 # CREDITS
-                if event.type == pygame.KEYDOWN and event.key in creditsInput or (gamePad is not None and gamePad.get_button(controllerCredits) == 1): menu.creditScreen()
+                if event.type == pygame.KEYDOWN and event.key in creditsInput or (gamePad is not None and gamePad.get_button(controllerCredits) == 1): menu.creditScreen(False)
 
                 # EXIT
                 if (event.type == pygame.KEYDOWN and event.key in escapeInput) or (gamePad is not None and gamePad.get_button(controllerExit) == 1) or event.type == pygame.QUIT:
                     running = False
                     quitGame()
+
+                # MUTE
+                if (event.type == pygame.KEYDOWN) and (event.key in muteInput) or (gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
 
                 # TOGGLE FULLSCREEN
                 if (event.type == pygame.KEYDOWN and event.key in fullScreenInput) or (gamePad is not None and event.type == pygame.JOYBUTTONDOWN and gamePad.get_button(controllerFullScreen) == 1): toggleScreen()
@@ -1692,7 +1722,7 @@ class Menu:
 
 
     # CREDITS
-    def creditScreen(self):
+    def creditScreen(self,loopMusic):
         global screen
         rollCredits = True
         posX = settings.screenSize[0]/2
@@ -1700,15 +1730,18 @@ class Menu:
 
         createdByLine = "Created by Mike Pistolesi"
         creditsLine = "with art by Collin Guetta"
-        musicCreditsLine = '& music by Dylan Kusenko'
+        musicCreditsLine = "music by Dylan Kusenko"
+        moreMusicCreditsLine = "& game over music by Simon Colker"
 
         createdByDisplay = assets.creatorFont.render(createdByLine, True, settings.secondaryFontColor)
         creditsDisplay = assets.creditsFont.render(creditsLine, True, settings.secondaryFontColor)
         musicCreditsDisplay = assets.creditsFont.render(musicCreditsLine, True, settings.secondaryFontColor)
+        moreMusicCreditsDisplay = assets.creditsFont.render(moreMusicCreditsLine, True, settings.secondaryFontColor)
 
         createdByRect = createdByDisplay.get_rect(center = (posX, posY - settings.screenSize[1]/15) )
         creditsRect = creditsDisplay.get_rect(center = (posX,posY))
-        musicCreditsRect = musicCreditsDisplay.get_rect(center = (posX,posY+ settings.screenSize[1]/15))
+        musicCreditsRect = musicCreditsDisplay.get_rect(center = (posX,posY+ (settings.screenSize[1]/15)/2))
+        moreMusicCreditsRect = moreMusicCreditsDisplay.get_rect(center = (posX,posY+ settings.screenSize[1]/15))
 
         bounceCount = 0
         direction = self.randomEightDirection()
@@ -1726,7 +1759,7 @@ class Menu:
             else: extrasCap = settings.maxExtras
 
         while rollCredits:
-            self.menuMusicLoop()
+            if loopMusic: self.menuMusicLoop()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
@@ -1797,12 +1830,13 @@ class Menu:
             screen.blit(createdByDisplay,createdByRect)
             screen.blit(creditsDisplay,creditsRect)
             screen.blit(musicCreditsDisplay,musicCreditsRect)
+            screen.blit(moreMusicCreditsDisplay,moreMusicCreditsRect)
             displayUpdate()
 
             # BOUNCE OFF EDGES
             if createdByRect.right > settings.screenSize[0]: direction = rightDir[random.randint(0, len(rightDir) - 1)]
             if createdByRect.left < 0: direction = leftDir[random.randint(0, len(leftDir) - 1)]
-            if musicCreditsRect.bottom > settings.screenSize[1]: direction = bottomDir[random.randint(0, len(bottomDir) - 1)]
+            if moreMusicCreditsRect.bottom > settings.screenSize[1]: direction = bottomDir[random.randint(0, len(bottomDir) - 1)]
             if createdByRect.top < 0 : direction = topDir[random.randint(0, len(topDir) - 1)]
 
             if bounceCount == 0:
@@ -1810,21 +1844,25 @@ class Menu:
                     createdByRect.centery-= settings.mainCreditsSpeed
                     creditsRect.centery-= settings.mainCreditsSpeed
                     musicCreditsRect.centery-= settings.mainCreditsSpeed
+                    moreMusicCreditsRect.centery-= settings.mainCreditsSpeed
 
                 if "S" in direction:
                     createdByRect.centery+= settings.mainCreditsSpeed
                     creditsRect.centery+= settings.mainCreditsSpeed
                     musicCreditsRect.centery+= settings.mainCreditsSpeed
+                    moreMusicCreditsRect.centery+= settings.mainCreditsSpeed
 
                 if "E" in direction:
                     createdByRect.centerx+= settings.mainCreditsSpeed
                     creditsRect.centerx+= settings.mainCreditsSpeed
                     musicCreditsRect.centerx+= settings.mainCreditsSpeed
+                    moreMusicCreditsRect.centerx+= settings.mainCreditsSpeed
 
                 if "W" in direction:
                     createdByRect.centerx-= settings.mainCreditsSpeed
                     creditsRect.centerx-= settings.mainCreditsSpeed
                     musicCreditsRect.centerx-= settings.mainCreditsSpeed
+                    moreMusicCreditsRect.centerx-= settings.mainCreditsSpeed
 
             bounceCount +=1
             if bounceCount >= settings.mainCreditsDelay: bounceCount = 0
