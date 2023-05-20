@@ -2132,7 +2132,7 @@ class Player(pygame.sprite.Sprite):
                         if settings.devMode: game.savedShipLevel = len(assets.spaceShipList) - 1
                         else:game.savedShipLevel = game.shipUnlockNumber
                     else: game.savedShipLevel -=1
-                game.skinUnlockNumber = game.skinsUnlocked(game.savedShipLevel) # Get skin unlocks for new ship type
+                game.skinUnlockNumber = unlocks.skinsUnlocked(game) # Get skin unlocks for new ship type
                 self.updatePlayerConstants(game) # Update attributes
 
 
