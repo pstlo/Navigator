@@ -46,7 +46,8 @@ class Settings:
         self.pointSize = 25  # Default = 20
         self.shieldChunkSize = self.screenSize[0]/40 # Default = screen width / 40
         self.boostCooldownTime = 2000 # Default = 2000 / Activates when fuel runs out to allow regen
-        self.powerUpList = ["Shield", "Fuel", "Default", "Default"] # Shield/Fuel/Default, chances of spawn
+        self.powerUpList = {"Default":55,"Shield":20, "Fuel":20, "Coin":5} # Default = ["Default","Shield", "Fuel", "Coin"]
+
         self.playerShieldSize = 48 # Default = 64 / Shield visual size
         self.shieldVisualDuration = 250 # Default = 250 / Shield visual duration
         self.minDistanceToPoint = (self.screenSize[0] + self.screenSize[1]) / 16 # Default = 100
@@ -297,11 +298,11 @@ class Assets:
                 self.explosionList.append(pygame.image.load(self.resources(path)).convert_alpha())
 
         # POINTS ASSETS
-        self.pointsList = []
+        self.pointsList = {}
         for filename in sorted(os.listdir(pointsDirectory)):
             if filename.endswith('png'):
                 path = os.path.join(pointsDirectory, filename)
-                self.pointsList.append(pygame.image.load(self.resources(path)).convert_alpha())
+                self.pointsList[filename[:-4]] = pygame.image.load(self.resources(path)).convert_alpha()
 
         # SPACESHIP ASSETS
         self.spaceShipList = []
@@ -373,6 +374,10 @@ class Assets:
         # POWERUP NOISE ASSET
         self.powerUpNoise = pygame.mixer.Sound(self.resources(os.path.join(self.soundDirectory,"PowerUp.wav")))
         self.powerUpNoise.set_volume(settings.sfxVolume/100)
+
+        # COIN NOISE ASSET
+        self.coinNoise = pygame.mixer.Sound(self.resources(os.path.join(self.soundDirectory,"Coin.wav")))
+        self.coinNoise.set_volume(settings.sfxVolume/100)
 
         # LASER NOISE ASSET
         self.laserNoise = pygame.mixer.Sound(self.resources(os.path.join(self.soundDirectory,"Laser.wav")))
@@ -461,15 +466,15 @@ class Assets:
 
     # LOAD GAME RECORDS
     def loadRecords(self):
+        defaultRecords = {'highScore':0, 'longestRun':0, 'attempts':0, 'timePlayed':0, 'points':0, 'coins':0}
         # No encryption
         if not settings.encryptGameRecords:
             try:
                 with open(self.recordsPath,'r') as file: return json.load(file)
             except:
                 # Could not load records, try overwrite with default values
-                gameRecords = {'highScore':0, 'longestRun':0, 'attempts':0, 'timePlayed':0, 'points':0}
-                self.storeRecords(gameRecords)
-                return gameRecords
+                self.storeRecords(defaultRecords)
+                return defaultRecords
         # With encryption
         else:
             try:
@@ -478,9 +483,8 @@ class Assets:
                 return json.loads(Fernet(self.getKey()).decrypt(encrypted))
             except:
                 # Failed to load records
-                gameRecords = {'highScore':0, 'longestRun':0, 'attempts':0, 'timePlayed':0, 'points':0}
-                self.storeRecords(gameRecords) # Try creating new encrypted records file
-                return gameRecords
+                self.storeRecords(defaultRecords) # Try creating new encrypted records file
+                return defaultRecords
 
 
     def loadGameOverMusic(self):
@@ -537,10 +541,10 @@ class Unlocks:
 
     # Get number of skins unlocked for a specified level number
     def skinsUnlocked(self,game): return self.getUnlocks(game,len(assets.spaceShipList[game.savedShipLevel]['skins']),self.unlockTimePerLevels[game.savedShipLevel])
-        
-        
+
+
     # UPDATE UNLOCKS
-    def update(self,game):   
+    def update(self,game):
         if game.records["highScore"] < self.pointsForUnlock: game.shipUnlockNumber = 0
         elif game.records["highScore"] >= self.totalPointsForUnlock: game.shipUnlockNumber = len(assets.spaceShipList) - 1
         else:
@@ -795,6 +799,7 @@ class Game:
         self.currentLevel = 1
         self.currentStage = 1
         self.score = 0 # Points collected
+        self.coinsCollected = 0 # Coins collected
         self.thisPoint = Point(None,None) # Currently active point (starts with default)
         self.lastPointPos = self.thisPoint.rect.center # Last point's position for spacing
         self.gameClock = 1
@@ -936,6 +941,10 @@ class Game:
             elif self.thisPoint.powerUp == "Shield": # Shield piece collected
                 player.shieldUp()
                 if not self.musicMuted: assets.powerUpNoise.play()
+
+            elif self.thisPoint.powerUp == "Coin": # Coin collected
+                self.coinsCollected += 1
+                if not self.musicMuted: assets.coinNoise.play()
 
             else:
                 if not self.musicMuted: assets.pointNoise.play()
@@ -1256,6 +1265,7 @@ class Game:
         self.currentLevel = 1
         self.currentStage = 1
         self.score = 0
+        self.coinsCollected = 0
         self.attemptNumber += 1
         self.cave = None
         self.killAllObstacles(obstacles)
@@ -1566,6 +1576,7 @@ class Menu:
         game.records["timePlayed"] += game.gameClock # Update total time played
         game.records["attempts"] += 1 # Update total attempts
         game.records["points"] += game.score # Update saved points
+        game.records["coins"] += game.coinsCollected # Update coin balance
 
         # NEW LONGEST RUN
         if game.sessionLongRun > game.records["longestRun"]:
@@ -2496,17 +2507,17 @@ class Point(pygame.sprite.Sprite):
     def __init__(self,player,lastPos):
         super().__init__()
         self.powerUp = ''
-        pointChoices = settings.powerUpList[:]
+        pointChoices = settings.powerUpList.copy()
         if not player or (not player.hasShields and player.boostDrain == 0 and player.laserCost == 0  and player.baseSpeed == player.boostSpeed): self.powerUp = "Default"
         else:
             powerUps = pointChoices
-            if not player.hasShields and "Shield" in powerUps: pointChoices.remove("Shield")
-            if not player.hasGuns and player.baseSpeed == player.boostSpeed and "Fuel" in powerUps: pointChoices.remove("Fuel")
-            self.powerUp = random.choice(pointChoices)
-        if self.powerUp == "Shield": self.image = assets.pointsList[2]
-        elif self.powerUp == "Fuel": self.image = assets.pointsList[1]
-        elif self.powerUp == "Default": self.image = assets.pointsList[0]
-        self.image = pygame.transform.scale(self.image, (settings.pointSize, settings.pointSize))
+            if not player.hasShields and "Shield" in powerUps: del pointChoices["Shield"]
+            if not player.hasGuns and player.baseSpeed == player.boostSpeed and "Fuel" in powerUps: del pointChoices["Fuel"]
+            self.powerUp = random.choices(list(pointChoices.keys()),weights = list(pointChoices.values()) )[0]
+
+        self.image = assets.pointsList[self.powerUp] # GET IMAGE
+        self.image = pygame.transform.scale(self.image, (settings.pointSize, settings.pointSize)) # SCALE IMAGE / not ideal
+
         if lastPos == None: self.rect = self.image.get_rect(center = self.positionGenerator())
         else:self.rect = self.image.get_rect(center = self.spacedPositionGenerator(lastPos))
         self.mask = pygame.mask.from_surface(self.image)
