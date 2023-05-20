@@ -466,13 +466,13 @@ class Assets:
 
     # LOAD GAME RECORDS
     def loadRecords(self):
-        defaultRecords = {'highScore':0, 'longestRun':0, 'attempts':0, 'timePlayed':0, 'points':0, 'coins':0}
         # No encryption
         if not settings.encryptGameRecords:
             try:
                 with open(self.recordsPath,'r') as file: return json.load(file)
             except:
                 # Could not load records, try overwrite with default values
+                defaultRecords = self.getDefaultRecords()
                 self.storeRecords(defaultRecords)
                 return defaultRecords
         # With encryption
@@ -483,6 +483,7 @@ class Assets:
                 return json.loads(Fernet(self.getKey()).decrypt(encrypted))
             except:
                 # Failed to load records
+                defaultRecords = self.getDefaultRecords()
                 self.storeRecords(defaultRecords) # Try creating new encrypted records file
                 return defaultRecords
 
@@ -497,69 +498,127 @@ class Assets:
         pygame.mixer.music.set_volume(settings.musicVolume/100)
 
 
+    def getDefaultRecords(self): return {'highScore':0, 'longestRun':0, 'attempts':0, 'timePlayed':0, 'points':0, 'coins':0, 'unlocks':self.getDefaultUnlocks()}
+
+
+    def getDefaultUnlocks(self):
+        ships = []
+        for ship in self.spaceShipList:
+            skins = []
+            for skin in ship['skins']: skins.append(False)
+            ships.append(skins)
+        ships[0][0] = True # default ship starts unlocked
+        return ships
+
+
 
 # UNLOCKS
 class Unlocks:
-    def __init__(self):
-        self.unlockTimePerLevels = [] # For time based unlocks
-        totalLevels = 0
-
-        for stage in assets.stageList: totalLevels += len(stage) # Get total number of levels
-        self.totalTime = totalLevels * 15 # multiply by (average) time per level
-
-        # Calculate time per unlock for each ship level
-        for shipInd in range(len(assets.spaceShipList)):
-            timePerUnlock = self.totalTime/len(assets.spaceShipList[shipInd]['skins'])
-            if timePerUnlock == self.totalTime: self.unlockTimePerLevels.append(None) # No other skins for this level
-            else: self.unlockTimePerLevels.append(int(timePerUnlock))
-
-        expectedPointsPerLevel = 12 # Temporary solution
-        self.totalShipTypes = len(assets.spaceShipList) # For score based unlocks
-        self.totalPointsForUnlock = totalLevels * expectedPointsPerLevel # Points in game for all unlocks
-        self.pointsForUnlock = int(self.totalPointsForUnlock/expectedPointsPerLevel)
+    def __init__(self): self.ships = assets.loadRecords()['unlocks']
 
 
-    # Gets number of skins unlocked
-    def getUnlocks(self,game,numSkins,time):
-        if time == None: return 0
-        else:
-            unlockTime = self.totalTime
-            prevUnlockIndex = 0
-            unlockNum = 0
-            for unlock in range(numSkins-1):
-                if game.records["longestRun"] >= unlockTime: return numSkins - prevUnlockIndex
-                else:
-                    prevUnlockIndex +=1
-                    unlockTime -= time
-            if unlockNum <= 0:
-                if game.records["longestRun"] >= time: return 1
-                else: return 0
-            else:
-                if unlockNum >= numSkins: unlockNum = numSkins - 1
-                return unlockNum
-
-
-    # Get number of skins unlocked for a specified level number
-    def skinsUnlocked(self,game): return self.getUnlocks(game,len(assets.spaceShipList[game.savedShipLevel]['skins']),self.unlockTimePerLevels[game.savedShipLevel])
-
-
-    # UPDATE UNLOCKS
+    # UPDATE UNLOCKS IN MENU
     def update(self,game):
-        if game.records["highScore"] < self.pointsForUnlock: game.shipUnlockNumber = 0
-        elif game.records["highScore"] >= self.totalPointsForUnlock: game.shipUnlockNumber = len(assets.spaceShipList) - 1
-        else:
-            if game.records["highScore"] == self.pointsForUnlock or game.records["highScore"] < 2 * self.pointsForUnlock: game.shipUnlockNumber = 1
-            else:
-                game.shipUnlockNumber = 0
-                startPoints = self.pointsForUnlock
-                for i in range(self.totalShipTypes):
-                    if game.records["highScore"] >= startPoints: game.shipUnlockNumber += 1
-                    else: break
-                    startPoints += self.pointsForUnlock
+        preUpdate = self.ships[:] # copy previous list to check for update
 
-        if game.shipUnlockNumber >= len(assets.spaceShipList): game.shipUnlockNumber = len(assets.spaceShipList)-1
-        game.skinUnlockNumber = self.skinsUnlocked(game)
-        if game.skinUnlockNumber >= len(assets.spaceShipList[game.savedShipLevel]['skins']): game.skinUnlockNumber = len(assets.spaceShipList[game.savedShipLevel]['skins']) - 1
+        # Default ship - L1
+        if not self.ships[0][1] and game.records["longestRun"] >= 15: self.ships[0][1] = True
+        if not self.ships[0][2] and game.records["longestRun"] >= 30: self.ships[0][2] = True
+        if not self.ships[0][3] and game.records["longestRun"] >= 45: self.ships[0][3] = True
+        if not self.ships[0][4] and game.records["longestRun"] >= 60: self.ships[0][4] = True
+        if not self.ships[0][5] and game.records["longestRun"] >= 75: self.ships[0][5] = True
+        if not self.ships[0][6] and game.records["longestRun"] >= 90: self.ships[0][6] = True
+        if not self.ships[0][7] and game.records["longestRun"] >= 105:self.ships[0][7] = True
+        if not self.ships[0][8] and game.records["longestRun"] >= 120:self.ships[0][8] = True
+        if not self.ships[0][9] and game.records["longestRun"] >= 135:self.ships[0][9] = True
+        if not self.ships[0][10] and game.records["longestRun"] >= 150:self.ships[0][10] = True
+        if not self.ships[0][11] and game.records["longestRun"] >= 165:self.ships[0][11] = True
+
+        # Rocket buggy - L2
+        if not self.ships[1][0] and game.records["highScore"] >= 25: self.ships[1][0] = True
+
+        # Laser ship - L3
+        if not self.ships[2][0] and game.records["highScore"] >= 50: self.ships[2][0] = True
+
+        # Hyper yacht - L4
+        if not self.ships[3][0] and game.records["points"] >= 200: self.ships[3][0] = True
+
+        # Rusty ship - L5
+        if not self.ships[4][0] and game.records["timePlayed"] >= 1200: self.ships[4][0] = True
+
+        # Icon ship - L6
+        if not self.ships[5][0] and game.records["points"] >= 500: self.ships[5][0] = True
+        if not self.ships[5][1] and game.records["points"] >= 600: self.ships[5][1] = True
+        if not self.ships[5][2] and game.records["points"] >= 700: self.ships[5][2] = True
+        if not self.ships[5][3] and game.records["points"] >= 800: self.ships[5][3] = True
+
+        if preUpdate != self.ships: # Save unlocks if list was updated
+            game.records["unlocks"] = self.ships
+            assets.storeRecords(game.records)
+
+
+    # Skin other than default for a specific ship is unlocked
+    def hasSkinUnlock(self, shipIndex):
+        if len(self.ships[shipIndex]) <= 1: return False
+        else:
+            for skin in self.ships[shipIndex][1:]:
+                if skin: return True
+            return False
+
+
+    # Ship other than default is unlocked
+    def hasShipUnlock(self):
+        for ship in self.ships[1:]:
+            if ship[0]: return True
+        return False
+
+
+    # Index of highest ship unlock
+    def highestShip(self):
+        highest = 0
+        for shipIndex in range(len(self.ships)-1):
+            if self.ships[shipIndex][0]: highest = shipIndex
+        return highest
+
+
+    # Index of highest skin unlock
+    def highestSkin(self,shipNum):
+        highest = 0
+        for skinIndex in range(len(self.ships[shipNum])-1):
+            if self.ships[shipNum][skinIndex]: highest = skinIndex
+        return highest
+
+
+    # Index of next unlocked skin
+    def nextUnlockedSkin(self,shipNum,skinNum):
+        if self.hasSkinUnlock(shipNum):
+            for skinIndex in range(len(self.ships[shipNum])):
+                if skinIndex > skinNum and self.ships[shipNum][skinIndex]: return skinIndex
+        return None
+
+
+    # Index of last unlocked skin
+    def lastUnlockedSkin(self,shipNum,skinNum):
+        if self.hasSkinUnlock(shipNum):
+            for skinIndex in reversed(range(len(self.ships[shipNum]))):
+                if skinIndex < skinNum and self.ships[shipNum][skinIndex]: return skinIndex
+        return None
+
+
+    # Index of next unlocked ship
+    def nextUnlockedShip(self,shipNum):
+        if self.hasShipUnlock():
+            for shipIndex in range(len(self.ships)):
+                if shipIndex > shipNum and self.ships[shipIndex][0]: return shipIndex
+        return None
+
+
+    # Index of last unlocked ship
+    def lastUnlockedShip(self,shipNum):
+        if self.hasShipUnlock():
+            for shipIndex in reversed(range(len(self.ships))):
+                if shipIndex < shipNum and self.ships[shipIndex][0]: return shipIndex
+        return None
 
 
 
@@ -810,8 +869,6 @@ class Game:
         self.skipAutoSkinSelect = False # For re-entering home menu from game over screen
         self.savedSkin = 0 # Saved ship skin
         self.savedShipLevel = 0 # Saved ship type
-        self.shipUnlockNumber = 0 # Number of unlocked ships
-        self.skinUnlockNumber = 0 # Number of unlocked skins for current ship
         self.cloudPos = settings.cloudStart # Background cloud position
         self.explosions = [] # Obstacle explosions
         self.cave,self.caveIndex = None, 0 # For cave levels
@@ -1357,15 +1414,13 @@ class Menu:
         bounceDelay = 5
         bounceCount = 0
 
-        unlocks.update(game)
+        unlocks.update(game) # GET NEW UNLOCKS
 
-        if settings.defaultToHighSkin and not game.skipAutoSkinSelect:
-            for i in range(game.skinUnlockNumber): player.nextSkin() # Gets highest unlocked skin by default
-        elif game.skipAutoSkinSelect:
-            for i in range(game.savedSkin): player.nextSkin()
         if settings.defaultToHighShip:
-            if game.savedShipLevel != game.shipUnlockNumber:
-                for i in range(game.shipUnlockNumber): player.toggleSpaceShip(game,True) # Gets highest unlocked ship by default
+            if unlocks.hasShipUnlock(): player.getShip(unlocks.highestShip()) # Gets highest unlocked ship by default
+
+        if settings.defaultToHighSkin and not game.skipAutoSkinSelect: player.getSkin(unlocks.highestSkin(game.savedShipLevel)) # Gets highest unlocked skin by default
+        elif game.skipAutoSkinSelect: player.getSkin(game.savedSkin)
 
         startOffset = 100
         startDelay = 1
@@ -1415,19 +1470,19 @@ class Menu:
 
                 # NEXT SPACESHIP SKIN
                 elif (event.type == pygame.KEYDOWN and event.key in rightInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerNextSkin) or (event.type == pygame.JOYBUTTONDOWN and type(controllerNextSkin) == int and gamePad.get_button(controllerNextSkin)==1))):
-                    player.nextSkin()
+                    player.toggleSkin(True)
 
                 # PREVIOUS SPACESHIP SKIN
                 elif (event.type == pygame.KEYDOWN and event.key in leftInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerLastSkin) or (event.type == pygame.JOYBUTTONDOWN and type(controllerLastSkin) == int and gamePad.get_button(controllerLastSkin)==1))):
-                    player.lastSkin()
+                    player.toggleSkin(False)
 
                 # NEXT SHIP TYPE
                 elif (event.type == pygame.KEYDOWN and event.key in upInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerNextShip) or (event.type == pygame.JOYBUTTONDOWN and type(controllerNextShip) == int and gamePad.get_button(controllerNextShip)==1))):
-                    player.toggleSpaceShip(game,True)
+                    player.toggleSpaceShip(True)
 
                 # PREVIOUS SHIP TYPE
                 elif (event.type == pygame.KEYDOWN and event.key in downInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerLastShip) or (event.type == pygame.JOYBUTTONDOWN and type(controllerLastShip) == int and gamePad.get_button(controllerLastShip)==1))):
-                    player.toggleSpaceShip(game,False)
+                    player.toggleSpaceShip(False)
 
                 # EXIT
                 if (event.type == pygame.KEYDOWN and event.key in escapeInput) or (gamePad is not None and gamePad.get_button(controllerExit) == 1) or event.type == pygame.QUIT:
@@ -1480,8 +1535,8 @@ class Menu:
             # SHOW SHIP CONTROLS
             if player.hasGuns: screen.blit(shootHelp,shootHelpRect)
             if player.boostSpeed > player.baseSpeed: screen.blit(boostHelp,boostHelpRect)
-            if unlocks.unlockTimePerLevels[game.savedShipLevel] != None and game.records["longestRun"] >= unlocks.unlockTimePerLevels[game.savedShipLevel] and len(assets.spaceShipList[game.savedShipLevel]['skins']) > 1: screen.blit(skinHelpDisplay,skinHelpRect) # Show switch skin controls
-            if game.shipUnlockNumber > 0: screen.blit(shipHelpDisplay,shipHelpRect)
+            if unlocks.hasSkinUnlock(game.savedShipLevel) and len(assets.spaceShipList[game.savedShipLevel]['skins']) > 1: screen.blit(skinHelpDisplay,skinHelpRect) # Show switch skin controls
+            if unlocks.hasShipUnlock(): screen.blit(shipHelpDisplay,shipHelpRect)
             screen.blit(player.image, (player.rect.x,player.rect.y + startOffset)) # Current spaceship
 
             # LOGO LETTERS
@@ -1698,7 +1753,7 @@ class Menu:
                     elif (event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]==1): game.usingCursor, game.usingController = True, False
                     pygame.mouse.set_visible(game.usingCursor and not settings.rawCursorMode)
                     game.reset(player,obstacles)
-                    player.updatePlayerConstants(game)
+                    player.updatePlayerConstants()
                     running = True
                     gameLoop()
 
@@ -2099,56 +2154,65 @@ class Player(pygame.sprite.Sprite):
             if self.rect.centerx < 0: self.rect.centerx = settings.screenSize[0]
 
 
-        # GET NEXT SKIN
-        def nextSkin(self):
-            if self.currentImageNum + 1 < len(assets.spaceShipList[game.savedShipLevel]['skins']):
-                if not settings.devMode and self.currentImageNum + 1 > game.skinUnlockNumber:
-                    self.image = assets.spaceShipList[game.savedShipLevel]['skins'][0]
-                    self.currentImageNum = 0
+        # SWITCH SHIP SKIN
+        def toggleSkin(self, toggleDirection):
+            if toggleDirection: # Next skin
+                if not settings.devMode:
+                    skin = unlocks.nextUnlockedSkin(game.savedShipLevel,self.currentImageNum)
+                    if skin is not None: self.getSkin(skin)
+                    elif skin != self.currentImageNum: self.getSkin(0) # Wrap to first skin
                 else:
-                    self.currentImageNum+=1
-                    self.image = assets.spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum]
-            else:
-                self.image = assets.spaceShipList[game.savedShipLevel]['skins'][0]
-                self.currentImageNum = 0
-            self.rect = self.image.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/2))
-            self.mask = pygame.mask.from_surface(self.image)
+                    if self.currentImageNum +1 < len(assets.spaceShipList[game.savedShipLevel]['skins']): self.getSkin(self.currentImageNum+1)
+                    elif len(assets.spaceShipList[game.savedShipLevel]['skins'])-1 != 0: self.getSkin(0)
+            else: # Last skin
+                if self.currentImageNum >= 1:
+                    if not settings.devMode: skin = unlocks.lastUnlockedSkin(game.savedShipLevel,self.currentImageNum) # previous skin
+                    else: skin = self.currentImageNum - 1
+                else: # Wrap to last skin
+                    if not settings.devMode: skin = unlocks.highestSkin(game.savedShipLevel)
+                    else: skin = len(assets.spaceShipList[game.savedShipLevel]['skins'])-1
+                if skin is not None: self.getSkin(skin)
 
 
-        # GET PREVIOUS SKIN
-        def lastSkin(self):
-            if self.currentImageNum >= 1:
-                self.currentImageNum-=1
+        # SWITCH TO SPECIFIC SKIN
+        def getSkin(self, skinNum):
+            if assets.spaceShipList[game.savedShipLevel]['skins'][skinNum] or settings.devMode:
+                self.currentImageNum = skinNum
                 self.image = assets.spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum]
-            else:
-                if game.skinUnlockNumber == 0 and not settings.devMode: return
-                else:
-                    if settings.devMode: self.currentImageNum = len(assets.spaceShipList[game.savedShipLevel]['skins']) - 1
-                    else: self.currentImageNum = game.skinUnlockNumber
-                    self.image = assets.spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum]
-
-            self.rect = self.image.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/2))
-            self.mask = pygame.mask.from_surface(self.image)
+                self.rect = self.image.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/2))
+                self.mask = pygame.mask.from_surface(self.image)
 
 
         # SWITCH SHIP TYPE
-        def toggleSpaceShip(self,game,toggleDirection): # toggleDirection == True -> next ship / False -> last ship
-            if game.shipUnlockNumber == 0 and not settings.devMode: return
-            else:
-                if toggleDirection:
-                    if game.savedShipLevel + 1  < len(assets.spaceShipList) and (settings.devMode or game.savedShipLevel + 1 <= game.shipUnlockNumber): game.savedShipLevel +=1
-                    else: game.savedShipLevel = 0
+        def toggleSpaceShip(self,toggleDirection): # toggleDirection == True -> next ship / False -> last ship
+            if toggleDirection:
+                if not settings.devMode:
+                    ship = unlocks.nextUnlockedShip(game.savedShipLevel)
+                    if ship is not None: self.getShip(ship)
+                    elif game.savedShipLevel != 0: self.getShip(0)
                 else:
-                    if game.savedShipLevel - 1 < 0:
-                        if settings.devMode: game.savedShipLevel = len(assets.spaceShipList) - 1
-                        else:game.savedShipLevel = game.shipUnlockNumber
-                    else: game.savedShipLevel -=1
-                game.skinUnlockNumber = unlocks.skinsUnlocked(game) # Get skin unlocks for new ship type
-                self.updatePlayerConstants(game) # Update attributes
+                    if game.savedShipLevel +1 < len(assets.spaceShipList): self.getShip(game.savedShipLevel+1) # get next ship
+                    elif game.savedShipLevel != 0: self.getShip(0) # Wrap to first ship
+            else:
+                if not settings.devMode:
+                    ship = unlocks.lastUnlockedShip(game.savedShipLevel)
+                    if ship is not None: self.getShip(ship)
+                    elif ship != game.savedShipLevel: self.getShip(unlocks.highestShip()) # Wrap to first ship
+                else:
+                    if game.savedShipLevel >= 1: self.getShip(game.savedShipLevel-1)
+                    else: self.getShip(len(assets.spaceShipList)-1) # Wrap to last ship
+
+
+        # SWITCH TO SPECIFIC SHIP TYPE
+        def getShip(self,shipNum):
+            if unlocks.hasShipUnlock() and len(assets.spaceShipList) >= shipNum:
+                if unlocks.ships[shipNum][0] or settings.devMode:
+                    game.savedShipLevel = shipNum
+                    self.updatePlayerConstants()
 
 
         # Update player attributes
-        def updatePlayerConstants(self,game):
+        def updatePlayerConstants(self):
             self.image = assets.spaceShipList[game.savedShipLevel]['skins'][0]
             self.laserImage = assets.spaceShipList[game.savedShipLevel]['laser']
             self.currentImageNum = 0
@@ -2712,8 +2776,7 @@ def gameLoop():
     game.gameClock = 0 # Restart game clock
     player = Player(game) # Initialize player
     if game.mainMenu: menu.home(game,player)
-    else:
-        for i in range(game.savedSkin): player.nextSkin()
+    else: player.getSkin(game.savedSkin)
 
     events = Event() # Initialize events
     events.set(player) # Events manipulate player cooldowns
