@@ -46,7 +46,7 @@ class Settings:
         self.pointSize = 25  # Default = 20
         self.shieldChunkSize = self.screenSize[0]/40 # Default = screen width / 40
         self.boostCooldownTime = 2000 # Default = 2000 / Activates when fuel runs out to allow regen
-        self.powerUpList = {"Default":55,"Shield":20, "Fuel":20, "Coin":5} # Default = ["Default","Shield", "Fuel", "Coin"]
+        self.powerUpList = {"Default":55,"Shield":20, "Fuel":20, "Coin":5} # Default = {"Default":55,"Shield":20, "Fuel":20, "Coin":5}
 
         self.playerShieldSize = 48 # Default = 64 / Shield visual size
         self.shieldVisualDuration = 250 # Default = 250 / Shield visual duration
@@ -128,14 +128,25 @@ class Settings:
         self.invalidKeyMessage = "Invalid key, could not save records." # Saved to game records file if settings.encryptGameRecords == True and key is invalid
 
         # EXPERIMENTAL
-        self.loadPreferencesFromFile = False # Default = False / load settings from txt file / WORK IN PROGRESS
-        self.devMode = False # Default = False
-        self.showSpawnArea = False # Default = False / show powerup spawn area
         self.rawCursorMode = False # Default = False / sets player position to cursor position
         self.playerMovement = "DEFAULT" # Default = "DEFAULT" /  (DEFAULT, ORIGINAL)
         self.performanceMode = False # Default = False
         self.qualityMode = False # Default = False # Overridden by performance mode
         self.showPresence = True # Default = True / Discord presence using pypresence
+
+        # TESTING
+        self.devMode = False # Default = False
+        self.useArgs = True # Default = False / accept args
+        self.showSpawnArea = False # Default = False / show powerup spawn area
+        self.startupDebug = False # Default = False / print status messages on startup
+        
+        # ARGS
+        if self.useArgs: self.arguments = sys.argv[1:]
+        else: self.arguments = None
+        
+        if self.arguments is not None:
+            if "debug" in self.arguments: self.startupDebug = True
+
 
         # SET SCREEN UPDATE METHOD
         if self.qualityMode and not self.performanceMode: self.updateNotFlip = False
@@ -216,6 +227,8 @@ class Settings:
                 }
             }
 
+        if self.startupDebug: print("Loaded settings")
+
 
 
 # ASSETS
@@ -253,6 +266,8 @@ class Assets:
                     levels.append(level)
                 self.stageList.append(levels)
 
+        if settings.startupDebug: print("Loaded levels")
+
         # OBSTACLE ASSETS
         meteorList = []
         for filename in sorted(os.listdir(meteorDirectory)):
@@ -268,6 +283,7 @@ class Assets:
                 ufoList.append(pygame.image.load(self.resources(path)).convert_alpha())
 
         self.obstacleImages = [meteorList,ufoList] # Seperated by stage
+        if settings.startupDebug: print("Loaded obstacles")
 
         # CAVE ASSETS
         self.caveList = []
@@ -277,6 +293,8 @@ class Assets:
             cave.append(pygame.image.load(self.resources(os.path.join(caveAssets,"Background.png"))).convert_alpha())
             cave.append(pygame.image.load(self.resources(os.path.join(caveAssets,"Cave.png"))).convert_alpha())
             self.caveList.append(cave)
+
+        if settings.startupDebug: print("Loaded caves")
 
         # BACKGROUND ASSETS
         self.bgList = []
@@ -289,6 +307,7 @@ class Assets:
                 bg = pygame.image.load(self.resources(stageBgPath)).convert_alpha()
                 cloud = pygame.image.load(self.resources(stageCloudPath)).convert_alpha()
                 self.bgList.append([bg,cloud])
+        if settings.startupDebug: print("Loaded backgrounds")
 
         # EXPLOSION ASSETS
         self.explosionList = []
@@ -296,6 +315,7 @@ class Assets:
             if filename.endswith('.png'):
                 path = os.path.join(explosionDirectory, filename)
                 self.explosionList.append(pygame.image.load(self.resources(path)).convert_alpha())
+        if settings.startupDebug: print("Loaded explosions")
 
         # POINTS ASSETS
         self.pointsList = {}
@@ -303,6 +323,7 @@ class Assets:
             if filename.endswith('png'):
                 path = os.path.join(pointsDirectory, filename)
                 self.pointsList[filename[:-4]] = pygame.image.load(self.resources(path)).convert_alpha()
+        if settings.startupDebug: print("Loaded points")
 
         # SPACESHIP ASSETS
         self.spaceShipList = []
@@ -346,6 +367,8 @@ class Assets:
         self.shipConstants = []
         for i in range(len(self.spaceShipList)): self.shipConstants.append(self.spaceShipList[i]["stats"])
 
+        if settings.startupDebug: print("Loaded ships")
+
         # PLAYER SHIELD ASSET
         self.playerShield = pygame.transform.scale(pygame.image.load(self.resources(os.path.join(assetDirectory,"Shield.png"))),(settings.playerShieldSize,settings.playerShieldSize))
 
@@ -359,6 +382,8 @@ class Assets:
 
         menuMeteorDir = os.path.join(menuDirectory,'FlyingObjects')
         for objPath in sorted(os.listdir(menuMeteorDir)): self.menuList.append(pygame.image.load(self.resources(os.path.join(menuMeteorDir,objPath))).convert_alpha())
+
+        if settings.startupDebug: print("Loaded menu assets")
 
         # LOAD SOUNDTRACK
         self.loadSoundtrack()
@@ -386,6 +411,8 @@ class Assets:
         # LASER IMPACT NOISE ASSET
         self.impactNoise = pygame.mixer.Sound(self.resources(os.path.join(self.soundDirectory,"Impact.wav")))
         self.impactNoise.set_volume(settings.sfxVolume/100)
+
+        if settings.startupDebug: print("Loaded sounds")
 
         # LOAD DONATION RECORDS
         self.donations = {}
@@ -430,6 +457,8 @@ class Assets:
         self.exitFont = pygame.font.Font(self.gameFont, 30)
         self.creatorFont = pygame.font.Font(self.gameFont, 55)
         self.creditsFont = pygame.font.Font(self.gameFont, 30)
+
+        if settings.startupDebug: print("Loaded fonts")
 
 
     # EXE/APP RESOURCES
@@ -514,7 +543,9 @@ class Assets:
 
 # UNLOCKS
 class Unlocks:
-    def __init__(self): self.ships = assets.loadRecords()['unlocks']
+    def __init__(self):
+        self.ships = assets.loadRecords()['unlocks']
+        if settings.startupDebug: print("Loaded unlocks")
 
 
     # UPDATE UNLOCKS IN MENU
@@ -665,8 +696,10 @@ def toggleMusic(game):
 
 settings = Settings() # INITIALIZE SETTINGS
 screen = getScreen() # INITIALIZE SCREEN
+if settings.startupDebug: print("Initialized screen")
 pygame.mixer.set_num_channels(settings.numChannels)
 assets = Assets() # LOAD ASSETS
+if settings.startupDebug: print("Assets loaded")
 unlocks = Unlocks() # UNLOCKS
 
 # KEY BINDS
@@ -684,6 +717,8 @@ brakeInput = [pygame.K_LALT,pygame.K_RALT]
 muteInput = [pygame.K_m]
 fullScreenInput = [pygame.K_f]
 startInput = [pygame.K_SPACE]
+
+if settings.startupDebug: print("Loaded keybinds")
 
 
 # UPDATE DISPLAY
@@ -704,8 +739,7 @@ async def getPresence(presence):
     try:
         await asyncio.wait_for(presence.connect(),timeout = 0.5)
         await presence.update(details='Playing Navigator', state='Navigating the depths of space', large_image='background', small_image = 'icon', buttons=[{'label': 'Play Navigator', 'url': 'https://pstlo.github.io/navigator'}],start=int(time.time()))
-    except:
-        return None
+    except: return None
 
 
 if settings.showPresence:
@@ -721,6 +755,8 @@ pygame.draw.line(curSurf, (0, 255, 0), (20, 10), (20, 30), settings.cursorThickn
 cursor = pygame.cursors.Cursor((20, 20), curSurf)
 pygame.mouse.set_cursor(cursor)
 pygame.mouse.set_visible(settings.cursorMode)
+if settings.startupDebug: print("Initialized cursor")
+
 
 # KEEP CURSOR ON SCREEN (Cursor mode only)
 def resetCursor():
@@ -761,14 +797,17 @@ if settings.useController:
                 controllerFullScreen = settings.controllerBinds[controllerType]['settings.fullScreen']
                 controllerCredits = settings.controllerBinds[controllerType]['credits']
                 compatibleController = True
+                if settings.startupDebug: print("Compatible controller found")
                 break
 
         # Incompatible controller
         if not compatibleController:
+            print("Incompatible controller")
             pygame.joystick.quit()
             if settings.useController: settings.useController = False
 
     else:
+        if settings.startupDebug: print("Controller not found")
         pygame.joystick.quit() # This may be causing delay on startup ?
         if settings.useController: settings.useController = False
 
@@ -2766,6 +2805,7 @@ class BackgroundShip:
 # INITIALIZE GAME
 game = Game(assets.loadRecords()) # Initialize game with records loaded
 menu = Menu() # Initialize menus
+if settings.startupDebug: print("Game started")
 
 
 # START GAME LOOP
