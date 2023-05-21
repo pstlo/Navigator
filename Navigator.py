@@ -12,7 +12,7 @@ pygame.display.init()
 pygame.font.init()
 pygame.mixer.init()
 
-version = "v0.4.8"
+version = "v0.4.9"
 
 
 
