@@ -990,7 +990,7 @@ class Game:
         screen.blit(self.thisPoint.image, self.thisPoint.rect)
 
         # CAVES
-        if self.levelType == "CAVE":
+        if "CAVE" in self.levelType:
             if self.cave is None: # SPAWN A CAVE
                 self.cave = Cave(self.caveIndex)
                 if self.caveIndex + 1 < len(assets.caveList) - 1: self.caveIndex+=1
@@ -2341,7 +2341,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (self.size, self.size)).convert_alpha()
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
         self.getDirection(playerPos)
-        self.validate()
+        if self.target == "NONE": self.validate()
         self.angle = 0 # Image rotation
         spins = [-1,1]
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
