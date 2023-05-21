@@ -898,21 +898,13 @@ def getAngle(direction):
 class Game:
     def __init__(self,records):
 
-        self.gameConstants = assets.stageList
+        assets.stageList = assets.stageList
 
         # Level constants
-        self.obstacleSpeed = self.gameConstants[0][0]["obstacleSpeed"]
-        self.obstacleSize = self.gameConstants[0][0]["obstacleSize"]
-        self.maxObstacles = self.gameConstants[0][0]["maxObstacles"]
-        self.spawnPattern = self.gameConstants[0][0]["obstacleSpawn"]
-        self.obstacleBoundaries = self.gameConstants[0][0]["obstacleBounds"] # Obstacle handling at screen border
-        self.levelType = self.gameConstants[0][0]["levelType"]
-        self.wipe = self.gameConstants[0][0]["wipeObstacles"] # Old obstacle handling
-        self.spinSpeed = self.gameConstants[0][0]["obstacleSpin"] # Obstacle spin speed
-        self.angle = self.gameConstants[0][0]["levelAngle"] # Game rotation
-        self.target = self.gameConstants[0][0]["obstacleTarget"]
-        self.obsHealth = self.gameConstants[0][0]["obstacleHealth"]
-        self.obsLaserType = self.gameConstants[0][0]["obstacleLaserType"]
+        self.maxObstacles = assets.stageList[0][0]["maxObstacles"]
+        self.levelType = assets.stageList[0][0]["levelType"]
+        self.wipe = assets.stageList[0][0]["wipeObstacles"] # Old obstacle handling
+        self.angle = assets.stageList[0][0]["levelAngle"] # Game rotation
         self.cloudSpeed = settings.cloudSpeed
 
         self.currentLevel = 1
@@ -921,7 +913,7 @@ class Game:
         self.coinsCollected = 0 # Coins collected
         self.thisPoint = Point(None,None) # Currently active point (starts with default)
         self.lastPointPos = self.thisPoint.rect.center # Last point's position for spacing
-        self.gameClock = 1
+        self.gameClock = 0
         self.pauseCount = 0
         self.attemptNumber = 1
         self.mainMenu = True # Assures start menu only runs when called
@@ -940,18 +932,10 @@ class Game:
 
         # STORE LEVEL 1 VALUES
         self.savedConstants = {
-                "obstacleSpeed" : self.obstacleSpeed,
-                "obstacleSize" : self.obstacleSize,
                 "maxObstacles" : self.maxObstacles,
-                "obstacleBounds" : self.obstacleBoundaries,
-                "obstacleSpin" : self.spinSpeed,
-                "obstacleSpawn" : self.spawnPattern,
                 "wipeObstacles" : self.wipe,
                 "levelType":self.levelType,
-                "levelAngle":self.angle,
-                "obstacleTarget":self.target,
-                "obstacleHealth":self.obsHealth,
-                "obstacleLaserType":self.obsLaserType
+                "levelAngle":self.angle
                 }
 
         # SET VOLUME
@@ -1161,7 +1145,6 @@ class Game:
 
         if "OBS" in self.levelType: self.spawner(obstacles,player) # Spawn obstacles
 
-
         musicLoop() # Loop music
 
         # UPDATE SCREEN
@@ -1175,18 +1158,10 @@ class Game:
 
     # SET GAME CONSTANTS TO DEFAULT
     def resetGameConstants(self):
-        self.obstacleSpeed = self.savedConstants["obstacleSpeed"]
-        self.obstacleSize = self.savedConstants["obstacleSize"]
         self.maxObstacles = self.savedConstants["maxObstacles"]
-        self.obstacleBoundaries = self.savedConstants["obstacleBounds"]
-        self.spinSpeed = self.savedConstants["obstacleSpin"]
-        self.spawnPattern = self.savedConstants["obstacleSpawn"]
         self.wipe = self.savedConstants["wipeObstacles"]
         self.levelType = self.savedConstants["levelType"]
         self.angle = self.savedConstants["levelAngle"]
-        self.target = self.savedConstants["obstacleTarget"]
-        self.obsHealth = self.savedConstants["obstacleHealth"]
-        self.obsLaserType = self.savedConstants["obstacleLaserType"]
         self.cloudSpeed = settings.cloudSpeed
         self.cloudPos = settings.cloudStart
 
@@ -1229,9 +1204,9 @@ class Game:
     def levelUpdater(self,player,obstacles,events):
 
         # UPDATES STAGE
-        if self.currentStage < len(self.gameConstants): # Make sure there is a next stage
-            if self.gameConstants[self.currentStage][0]["startTime"] == self.gameClock and not self.gameConstants[self.currentStage][0]["START"]: # Next stage's first level's activation time reached
-                self.gameConstants[self.currentStage][0]["START"] = True # Mark as activated
+        if self.currentStage < len(assets.stageList): # Make sure there is a next stage
+            if assets.stageList[self.currentStage][0]["startTime"] == self.gameClock and not assets.stageList[self.currentStage][0]["START"]: # Next stage's first level's activation time reached
+                assets.stageList[self.currentStage][0]["START"] = True # Mark as activated
                 stageUpCloud = assets.stageCloudImg
 
                 stageUpDisplay = assets.stageUpFont.render("STAGE UP", True, settings.primaryFontColor)
@@ -1263,9 +1238,9 @@ class Game:
                     player.angle = self.angle
 
         # UPDATES LEVEL
-        for levelDict in self.gameConstants[self.currentStage-1]:
-            if levelDict["startTime"] == self.gameClock and not levelDict["START"] and ( (self.currentLevel > 1 or self.currentStage > 1) or (len(self.gameConstants[0]) > 1 and self.gameClock >= self.gameConstants[0][1]["startTime"]) ):
-                if self.gameConstants[self.currentStage-1][self.currentLevel-1]["wipeObstacles"]:
+        for levelDict in assets.stageList[self.currentStage-1]:
+            if levelDict["startTime"] == self.gameClock and not levelDict["START"] and ( (self.currentLevel > 1 or self.currentStage > 1) or (len(assets.stageList[0]) > 1 and self.gameClock >= assets.stageList[0][1]["startTime"]) ):
+                if assets.stageList[self.currentStage-1][self.currentLevel-1]["wipeObstacles"]:
                     levelUpCloud = assets.stageCloudImg
                     levelUpRect = levelUpCloud.get_rect()
                     levelUpRect.center = (settings.screenSize[0]/2, settings.stageUpCloudStartPos)
@@ -1289,18 +1264,10 @@ class Game:
                         player.angle = self.angle
 
                 levelDict["START"] = True
-                self.obstacleBoundaries = levelDict["obstacleBounds"]
-                self.obstacleSpeed = levelDict["obstacleSpeed"]
                 self.maxObstacles = levelDict["maxObstacles"]
-                self.obstacleSize = levelDict["obstacleSize"]
-                self.spinSpeed = levelDict["obstacleSpin"]
-                self.spawnPattern = levelDict["obstacleSpawn"]
                 self.wipe = levelDict["wipeObstacles"]
                 self.levelType = levelDict["levelType"]
                 self.angle = levelDict["levelAngle"]
-                self.target = levelDict["obstacleTarget"]
-                self.obsHealth = levelDict["obstacleHealth"]
-                self.obsLaserType = levelDict["obstacleLaserType"]
                 if self.cave is not None: self.cave.leave = True # Set cave for exit
                 self.cloudSpeed += settings.cloudSpeedAdder
                 self.currentLevel += 1
@@ -1309,7 +1276,7 @@ class Game:
 
     # RESET LEVEL PROGRESS
     def resetAllLevels(self):
-        for stage in self.gameConstants:
+        for stage in assets.stageList:
             for levels in stage: levels["START"] = False
 
 
@@ -1376,7 +1343,7 @@ class Game:
     # SPAWN OBSTACLES
     def spawner(self,obstacles,player):
         if len(obstacles) < self.maxObstacles:
-            obstacle = Obstacle(self.spawnPattern,self.target,[player.rect.centerx,player.rect.centery],self.obsLaserType)
+            obstacle = Obstacle([player.rect.centerx,player.rect.centery])
             obstacles.add(obstacle)
 
 
@@ -1395,6 +1362,7 @@ class Game:
         self.currentLevel = 1
         self.currentStage = 1
         self.score = 0
+        self.pauseCount = 0
         self.explosions = []
         self.coinsCollected = 0
         self.attemptNumber += 1
@@ -2364,17 +2332,20 @@ class Player(pygame.sprite.Sprite):
 
 # OBSTACLES
 class Obstacle(pygame.sprite.Sprite):
-    def __init__(self,spawnPattern,targeting,playerPos,hasLasers):
+    def __init__(self,playerPos,**kwargs):
         super().__init__()
+        # Accept for kwargs or default to level settings
         self.attributeIndex = None
-        self.spawnPattern = self.getAttributes(spawnPattern)
-        self.target = self.getAttributes(targeting)
+        self.spawnPattern = kwargs.get('spawn', self.getAttributes(assets.stageList[game.currentStage-1][game.currentLevel-1]["obstacleSpawn"]))
+        self.target = kwargs.get('target', self.getAttributes(assets.stageList[game.currentStage-1][game.currentLevel-1]["obstacleTarget"]))
         self.movement = getMovement(self.spawnPattern)
-        self.speed = self.getAttributes(game.obstacleSpeed)
-        self.size = self.getAttributes(game.obstacleSize)
-        self.spinSpeed = self.getAttributes(game.spinSpeed)
-        self.health = self.getAttributes(game.obsHealth)
-        self.bounds = self.getAttributes(game.obstacleBoundaries)
+        self.speed = int(kwargs.get('speed', self.getAttributes(assets.stageList[game.currentStage-1][game.currentLevel-1]["obstacleSpeed"])))
+        self.size = int(kwargs.get('size', self.getAttributes(assets.stageList[game.currentStage-1][game.currentLevel-1]["obstacleSize"])))
+        self.spinSpeed = int(kwargs.get('spin', self.getAttributes(assets.stageList[game.currentStage-1][game.currentLevel-1]["obstacleSpin"])))
+        self.health = int(kwargs.get('health', self.getAttributes(assets.stageList[game.currentStage-1][game.currentLevel-1]["obstacleHealth"])))
+        self.bounds = kwargs.get('bounds', self.getAttributes(assets.stageList[game.currentStage-1][game.currentLevel-1]["obstacleBounds"]))
+        self.laserType = kwargs.get('lasers', self.getAttributes(assets.stageList[game.currentStage-1][game.currentLevel-1]["obstacleLaserType"]))        
+        
         try: self.image = assets.obstacleImages[game.currentStage - 1][game.currentLevel-1]
         except: self.image = assets.meteorList[random.randint(0,len(assets.meteorList)-1)] # Not enough assets for this level yet
         self.image = pygame.transform.scale(self.image, (self.size, self.size)).convert_alpha()
@@ -2382,14 +2353,10 @@ class Obstacle(pygame.sprite.Sprite):
         self.getDirection(playerPos)
         if self.target == "NONE": self.validate()
         self.angle = 0 # Image rotation
-        spins = [-1,1]
-        self.spinDirection = spins[random.randint(0,len(spins)-1)]
-        self.active = False
-        self.activating = False
-        self.activationDelay = 0
-        self.slowerDiagonal = settings.slowerDiagonalObstacles
-        self.laserType, self.laserDelay = self.getAttributes(game.obsLaserType), 0
-        self.lasersShot, self.maxLasers = 0, settings.maxObsLasers
+        self.spinDirection = random.choice([-1,1])
+        self.active,self.activating,self.activationDelay = False,False,0
+        self.slowerDiagonal = settings.slowerDiagonalObstacles   
+        self.laserDelay, self.lasersShot, self.maxLasers = 0, 0, settings.maxObsLasers
 
 
     # For levels with multiple obstacle types
@@ -2401,11 +2368,13 @@ class Obstacle(pygame.sprite.Sprite):
         else: return attribute
 
 
+    # Get correct type representation of angle 
     def getDirection(self,playerPos):
         if self.target == "NONE": self.direction = self.movement[1] # Get a string representation of the direction
         else: self.direction = math.atan2(playerPos[1] - self.rect.centery, playerPos[0] - self.rect.centerx) # Get angle representation
 
 
+    # Call corresponding movement function
     def move(self,player,enemyLasers):
         if self.target == "NONE": self.basicMove()
         elif self.target == "LOCK": self.targetMove()
@@ -2438,7 +2407,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.rect.centery +=self.speed * math.sin(self.direction)
 
 
-    # HEAT SEEKING -> direction is an angle
+    # HEAT SEEKING -> direction is an angle, updated every frame
     def homingMove(self,player):
         dirX = (player.rect.centerx - self.rect.centerx + settings.screenSize[0]/2) % settings.screenSize[0]-settings.screenSize[0]/2 # Shortest horizontal path
         dirY = (player.rect.centery - self.rect.centery + settings.screenSize[1]/2) % settings.screenSize[1]-settings.screenSize[1]/2 # Shortest vetical path
@@ -2517,6 +2486,7 @@ class Obstacle(pygame.sprite.Sprite):
         elif self.direction == "SW": self.direction = "NE"
 
 
+    # Shoot lasers
     def shoot(self,player,enemyLasers):
         if enemyLasers is not None:
             if self.lasersShot < self.maxLasers and self.laserDelay >= settings.obsLaserDelay:
@@ -2911,8 +2881,6 @@ if settings.startupDebug: print("Game started")
 def gameLoop():
     pygame.mixer.music.play()
     game.resetGameConstants() # Reset level settings
-    game.pauseCount = 0 # Reset pause uses
-    game.gameClock = 0 # Restart game clock
     player = Player(game) # Initialize player
     if game.mainMenu: menu.home(game,player)
     else: player.getSkin(game.savedSkin)
