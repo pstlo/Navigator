@@ -242,7 +242,6 @@ class Settings:
 
 
 
-
 # ASSETS
 class Assets:
     def __init__(self):
@@ -731,7 +730,6 @@ brakeInput = [pygame.K_LALT,pygame.K_RALT]
 muteInput = [pygame.K_m]
 fullScreenInput = [pygame.K_f]
 startInput = [pygame.K_SPACE]
-
 settings.debug("Loaded keybinds") # Debug
 
 
