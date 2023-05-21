@@ -13,6 +13,7 @@
 			"obstacleBounds": "KILL",
 			"obstacleSpawn" : "ALL",
 			"obstacleTarget" : "NONE",
+			"obstacleLaserType":["NONE"],
             "wipeObstacles": false
         },
 
@@ -28,6 +29,7 @@
 			"obstacleBounds": "KILL",
 			"obstacleSpawn" : "ALL",
 			"obstacleTarget" : "NONE",
+			"obstacleLaserType":["NONE"],
             "wipeObstacles": false
         },
 
@@ -43,6 +45,7 @@
 			"obstacleBounds": "KILL",
 			"obstacleSpawn" : "ALL",
 			"obstacleTarget" : "NONE",
+			"obstacleLaserType":["NONE"],			
             "wipeObstacles": false
         },
 
@@ -58,6 +61,7 @@
 			"obstacleBounds": "KILL",
 			"obstacleSpawn" : "ALL",
 			"obstacleTarget" : "NONE",
+			"obstacleLaserType":["NONE"],
             "wipeObstacles": false
         },
 
@@ -73,6 +77,7 @@
 			"obstacleBounds": "KILL",
 			"obstacleSpawn" : "ALL",
 			"obstacleTarget" : "NONE",
+			"obstacleLaserType":["NONE"],
             "wipeObstacles": false
         },
 
@@ -88,6 +93,7 @@
 			"obstacleBounds": "KILL",
 			"obstacleSpawn" : "ALL",
 			"obstacleTarget" : "NONE",
+			"obstacleLaserType":["NONE"],
             "wipeObstacles": false
         },
 
@@ -103,6 +109,7 @@
 			"obstacleBounds": "KILL",
 			"obstacleSpawn" : "ALL",
 			"obstacleTarget" : "NONE",
+			"obstacleLaserType":["NONE"],
             "wipeObstacles": true
         },
 
@@ -118,6 +125,7 @@
 			"obstacleBounds": "KILL",
 			"obstacleSpawn" : "ALL",
 			"obstacleTarget" : "NONE",
+			"obstacleLaserType":["NONE"],
             "wipeObstacles": false
         },
 
@@ -133,6 +141,7 @@
 			"obstacleBounds": "KILL",
 			"obstacleSpawn" : "ALL",
 			"obstacleTarget" : "NONE",
+			"obstacleLaserType":["NONE"],
             "wipeObstacles": false
         },
 
@@ -148,6 +157,7 @@
 			"obstacleBounds": "KILL",
 			"obstacleSpawn" : "ALL",
 			"obstacleTarget" : "NONE",
+			"obstacleLaserType":["NONE"],
             "wipeObstacles": false
         }
 
@@ -169,6 +179,7 @@
 			"obstacleBounds": "KILL",
 			"obstacleSpawn" : "AGGRO",
 			"obstacleTarget" : "NONE",
+			"obstacleLaserType":["NONE"],
             "wipeObstacles": false
         },
 
@@ -184,6 +195,7 @@
 			"obstacleBounds": "KILL",
 			"obstacleSpawn" : "AGGRO",
 			"obstacleTarget" : "NONE",
+			"obstacleLaserType":["NONE"],
             "wipeObstacles": false
         },
 
@@ -199,6 +211,7 @@
 			"obstacleBounds": "KILL",
 			"obstacleSpawn" : "AGGRO",
 			"obstacleTarget" : "NONE",
+			"obstacleLaserType":["NONE"],
             "wipeObstacles": false
         },
 
@@ -214,6 +227,7 @@
 			"obstacleBounds": "KILL",
 			"obstacleSpawn" : "AGGRO",
 			"obstacleTarget" : "NONE",
+			"obstacleLaserType":["NONE"],
             "wipeObstacles": false
         }
     }
