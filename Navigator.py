@@ -139,11 +139,11 @@ class Settings:
         self.useArgs = True # Default = False / accept args
         self.showSpawnArea = False # Default = False / show powerup spawn area
         self.startupDebug = False # Default = False / print status messages on startup
-        
+
         # ARGS
         if self.useArgs: self.arguments = sys.argv[1:]
         else: self.arguments = None
-        
+
         if self.arguments is not None:
             if "debug" in self.arguments: self.startupDebug = True
 
@@ -987,33 +987,27 @@ class Game:
         if settings.showSpawnArea: pygame.draw.polygon(screen, (255, 0, 0), spawnAreaPoints,1)
 
         # DRAW POINT
-        screen.blit(self.thisPoint.image, self.thisPoint.rect)
+        if self.cave is not None and not self.cave.inside(): screen.blit(self.thisPoint.image, self.thisPoint.rect)
 
         # CAVES
-        if "CAVE" in self.levelType:
-            if self.cave is None: # SPAWN A CAVE
-                self.cave = Cave(self.caveIndex)
-                if self.caveIndex + 1 < len(assets.caveList) - 1: self.caveIndex+=1
-            self.cave.update()
-            screen.blit(self.cave.background,self.cave.rect)
-            screen.blit(self.cave.image,self.cave.rect) # DRAW CAVE
-            # COLLISION DETECTION
-            if pygame.sprite.collide_mask(self.cave,player):
-                if player.shields > 0: player.shieldDown(events)
-                else:
-                    player.explode(game,obstacles) # explosion
-                    if not self.musicMuted: assets.explosionNoise.play()
-                    menu.gameOver(self,player,obstacles) # Game over
-
-        # EXITING CAVE
-        elif self.cave is not None and self.cave.leave:
-            if self.cave.rect.top > settings.screenSize[1]:
+        if "CAVE" in self.levelType or self.cave is not None:
+            # LEAVING CAVE
+            if self.cave is not None and self.cave.leave and self.cave.rect.top > settings.screenSize[1]:
                 self.cave.kill()
                 self.cave = None
+
+            # IN CAVE
             else:
+                if self.cave is None: # SPAWN A CAVE
+                    self.cave = Cave(self.caveIndex)
+                    if self.caveIndex + 1 < len(assets.caveList): self.caveIndex+=1
                 self.cave.update()
+
+                # DRAW CAVE
                 screen.blit(self.cave.background,self.cave.rect)
-                screen.blit(self.cave.image,self.cave.rect) # DRAW CAVE
+                if self.cave.inside: screen.blit(self.thisPoint.image, self.thisPoint.rect)
+                screen.blit(self.cave.image,self.cave.rect)
+
                 # COLLISION DETECTION
                 if pygame.sprite.collide_mask(self.cave,player):
                     if player.shields > 0: player.shieldDown(events)
@@ -1128,7 +1122,7 @@ class Game:
 
         self.levelUpdater(player,obstacles,events) # LEVEL UP
 
-        self.spawner(obstacles,player) # Spawn obstacles
+        if "OBS" in self.levelType: self.spawner(obstacles,player) # Spawn obstacles
 
         musicLoop() # Loop music
 
@@ -2486,6 +2480,12 @@ class Cave(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.leave = False # Mark cave for exit
 
+    
+    # True if cave is covering screen
+    def inside(self):
+        if self.rect.top < 0 and self.rect.bottom > settings.screenSize[1]: return True
+        else: return False
+    
 
     def update(self):
         self.rect.centery += self.speed # Move
