@@ -1590,8 +1590,8 @@ class Menu:
             # SHOW SHIP CONTROLS
             if player.hasGuns: screen.blit(shootHelp,shootHelpRect)
             if player.boostSpeed > player.baseSpeed: screen.blit(boostHelp,boostHelpRect)
-            if unlocks.hasSkinUnlock(game.savedShipLevel) and len(assets.spaceShipList[game.savedShipLevel]['skins']) > 1: screen.blit(skinHelpDisplay,skinHelpRect) # Show switch skin controls
-            if unlocks.hasShipUnlock(): screen.blit(shipHelpDisplay,shipHelpRect)
+            if len(assets.spaceShipList[game.savedShipLevel]['skins']) > 1 and (settings.devMode or unlocks.hasSkinUnlock(game.savedShipLevel)): screen.blit(skinHelpDisplay,skinHelpRect) # Show switch skin controls
+            if len(assets.spaceShipList) > 1 and (settings.devMode or unlocks.hasShipUnlock()): screen.blit(shipHelpDisplay,shipHelpRect)
             screen.blit(player.image, (player.rect.x,player.rect.y + startOffset)) # Current spaceship
 
             # LOGO LETTERS
