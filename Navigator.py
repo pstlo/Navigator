@@ -118,6 +118,8 @@ class Settings:
         self.slowerDiagonalObstacles = True # Default = True / use the hypotenuse or whatever
         self.spawnDistance = 0 # Default = 0 / Distance past screen border required before new obstacle spawned
         self.activationDelay = 2 # Default = 2 / frames before activation after entering screen
+        self.obsLaserDelay = 10 # Default = 10 / delay before obstacle fires another laser
+        self.obsLaserDamage = 1 # Default = 1
 
         # CAVES
         self.caveStartPos = self.screenSize[1]*-2 # Default = -1600 / Cave start Y coordinate
@@ -141,11 +143,15 @@ class Settings:
         self.startupDebug = False # Default = False / print status messages on startup
 
         # ARGS
-        if self.useArgs: self.arguments = sys.argv[1:]
+        if self.useArgs:
+            self.arguments = sys.argv[1:]
+            for arg in self.arguments: arg = arg.lower()
+
         else: self.arguments = None
 
         if self.arguments is not None:
             if "debug" in self.arguments: self.startupDebug = True
+            if "devmode" in self.arguments: self.devMode = True
 
         # SET SCREEN UPDATE METHOD
         if self.qualityMode and not self.performanceMode: self.updateNotFlip = False
@@ -282,6 +288,8 @@ class Assets:
                 ufoList.append(pygame.image.load(self.resources(path)).convert_alpha())
 
         self.obstacleImages = [meteorList,ufoList] # Seperated by stage
+        enemyLaserPath = os.path.join(assetDirectory,'enemyLaser.png')
+        self.enemyLaserImage = pygame.image.load(self.resources(enemyLaserPath)).convert_alpha()
         if settings.startupDebug: print("Loaded obstacles")
 
         # CAVE ASSETS
@@ -872,6 +880,18 @@ def getMovement(spawnPattern):
     return move
 
 
+# GET ANGLE FOR CORRESPONDING DIRECTION
+def getAngle(direction):
+    if direction == "N": return 0
+    elif direction == "S": return 180
+    elif direction == "E": return -90
+    elif direction == "W": return 90
+    elif direction == "NW": return 45
+    elif direction == "NE": return -45
+    elif direction == "SE": return -135
+    elif direction == "SW": return 135
+
+
 
 # GAME
 class Game:
@@ -891,6 +911,7 @@ class Game:
         self.angle = self.gameConstants[0][0]["levelAngle"] # Game rotation
         self.target = self.gameConstants[0][0]["obstacleTarget"]
         self.obsHealth = self.gameConstants[0][0]["obstacleHealth"]
+        self.obsLaserType = self.gameConstants[0][0]["obstacleLaserType"]
         self.cloudSpeed = settings.cloudSpeed
 
         self.currentLevel = 1
@@ -928,7 +949,8 @@ class Game:
                 "levelType":self.levelType,
                 "levelAngle":self.angle,
                 "obstacleTarget":self.target,
-                "obstacleHealth":self.obsHealth
+                "obstacleHealth":self.obsHealth,
+                "obstacleLaserType":self.obsLaserType
                 }
 
         # SET VOLUME
@@ -937,7 +959,7 @@ class Game:
 
 
     # MAIN GAME LOOP
-    def update(self,player,obstacles,menu,events,lasers):
+    def update(self,player,obstacles,menu,events,lasers,enemyLasers):
         for event in pygame.event.get():
 
             # EXIT
@@ -951,7 +973,7 @@ class Game:
             # PAUSE GAME
             if game.pauseCount < settings.pauseMax and ( (event.type == pygame.KEYDOWN and event.key in pauseInput) or (gamePad is not None and event.type == pygame.JOYBUTTONDOWN and gamePad.get_button(controllerPause)==1) ):
                 game.pauseCount += 1
-                menu.pause(game,player,obstacles,lasers)
+                menu.pause(game,player,obstacles,lasers,enemyLasers)
 
             # INCREMENT TIMER
             if event.type == events.timerEvent: self.gameClock +=1
@@ -1005,7 +1027,7 @@ class Game:
 
                 # DRAW CAVE
                 screen.blit(self.cave.background,self.cave.rect)
-                if self.cave.inside: screen.blit(self.thisPoint.image, self.thisPoint.rect)
+                if self.cave.inside: screen.blit(self.thisPoint.image, self.thisPoint.rect) # draw point between cave layers
                 screen.blit(self.cave.image,self.cave.rect)
 
                 # COLLISION DETECTION
@@ -1015,6 +1037,12 @@ class Game:
                         player.explode(game,obstacles) # explosion
                         if not self.musicMuted: assets.explosionNoise.play()
                         menu.gameOver(self,player,obstacles) # Game over
+                enemyLasersCollided = pygame.sprite.spritecollide(self.cave,enemyLasers,True,pygame.sprite.collide_mask) # Enemy lasers/cave
+                lasersCollided = pygame.sprite.spritecollide(self.cave,lasers,True,pygame.sprite.collide_mask) # Lasers/cave
+                for laser in lasersCollided: self.explosions.append(Explosion(laser))
+                for laser in enemyLasersCollided: self.explosions.append(Explosion(laser))
+                enemyLasers.remove(enemyLasersCollided)
+                lasers.remove(lasersCollided)
 
         # HUD
         if settings.showHUD: self.showHUD(player)
@@ -1066,8 +1094,16 @@ class Game:
             shieldImg,shieldImgRect = rotateImage(assets.playerShield, player.rect, player.angle)
             screen.blit(shieldImg,shieldImgRect)
 
+        # PLAYER/LASER COLLISION DETECTION
+        if pygame.sprite.spritecollide(player,enemyLasers,True,pygame.sprite.collide_mask):
+            if player.shields > 0:player.shieldDown(events)
+            else:
+                player.explode(game,obstacles) # Animation
+                if not self.musicMuted: assets.explosionNoise.play()
+                menu.gameOver(self,player,obstacles) # Game over
+
         # DRAW LASERS
-        self.laserUpdate(lasers,player,obstacles)
+        self.laserUpdate(lasers,enemyLasers,player,obstacles)
 
         # UPDATE OBSTACLES
         if len(obstacles) > 0:
@@ -1081,7 +1117,7 @@ class Game:
 
             # OBSTACLE MOVEMENT
             for obs in obstacles:
-                obs.move(player)
+                obs.move(player,enemyLasers)
                 obs.activate() # Activate if on screen
                 if obs.active:
                     # OBSTACLE/LASER COLLISION DETECTION
@@ -1124,6 +1160,7 @@ class Game:
 
         if "OBS" in self.levelType: self.spawner(obstacles,player) # Spawn obstacles
 
+
         musicLoop() # Loop music
 
         # UPDATE SCREEN
@@ -1148,6 +1185,7 @@ class Game:
         self.angle = self.savedConstants["levelAngle"]
         self.target = self.savedConstants["obstacleTarget"]
         self.obsHealth = self.savedConstants["obstacleHealth"]
+        self.obsLaserType = self.savedConstants["obstacleLaserType"]
         self.cloudSpeed = settings.cloudSpeed
         self.cloudPos = settings.cloudStart
 
@@ -1176,7 +1214,7 @@ class Game:
             if self.cave.rect.top <= settings.screenSize[1] and self.cave.rect.bottom >= 0: screen.blit(self.cave.image,self.cave.rect) # DRAW CAVE
 
         for obs in obstacles:
-            obs.move(player)
+            obs.move(player,None)
             obs.activate()
             newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
             screen.blit(newBlit[0],newBlit[1])
@@ -1261,6 +1299,7 @@ class Game:
                 self.angle = levelDict["levelAngle"]
                 self.target = levelDict["obstacleTarget"]
                 self.obsHealth = levelDict["obstacleHealth"]
+                self.obsLaserType = levelDict["obstacleLaserType"]
                 if self.cave is not None: self.cave.leave = True # Set cave for exit
                 self.cloudSpeed += settings.cloudSpeedAdder
                 self.currentLevel += 1
@@ -1336,15 +1375,16 @@ class Game:
     # SPAWN OBSTACLES
     def spawner(self,obstacles,player):
         if len(obstacles) < self.maxObstacles:
-            obstacle = Obstacle(self.spawnPattern,self.target,[player.rect.centerx,player.rect.centery]) # Create new obstacle with specified spawn pattern
+            obstacle = Obstacle(self.spawnPattern,self.target,[player.rect.centerx,player.rect.centery],self.obsLaserType)
             obstacles.add(obstacle)
 
 
     # Update all lasers
-    def laserUpdate(self,lasers,player,obstacles):
-        for laser in lasers:
-            laser.update(player,lasers,obstacles)
-            screen.blit(laser.image,laser.rect)
+    def laserUpdate(self,lasers,enemyLasers,player,obstacles):
+        lasers.update(player,lasers,obstacles)
+        enemyLasers.update(player)
+        lasers.draw(screen)
+        enemyLasers.draw(screen)
 
 
     # RESTART GAME
@@ -1353,6 +1393,7 @@ class Game:
         self.currentLevel = 1
         self.currentStage = 1
         self.score = 0
+        self.explosions = []
         self.coinsCollected = 0
         self.attemptNumber += 1
         self.cave = None
@@ -1584,7 +1625,7 @@ class Menu:
 
 
     # PAUSE SCREEN
-    def pause(self,game,player,obstacles,lasers):
+    def pause(self,game,player,obstacles,lasers,enemyLasers):
         pygame.mixer.music.pause()
         playerBlit = rotateImage(player.image,player.rect,player.lastAngle)
         paused = True
@@ -1624,7 +1665,8 @@ class Menu:
                     screen.blit(newBlit[0],newBlit[1])
             else: obstacles.draw(screen)
 
-            for laser in lasers: screen.blit(laser.image,laser.rect)
+            lasers.draw(screen)
+            enemyLasers.draw(screen)
 
             screen.blit(pauseDisplay, pauseRect)
             screen.blit(pausedDisplay,pausedRect)
@@ -2236,10 +2278,11 @@ class Player(pygame.sprite.Sprite):
 
         # SWITCH TO SPECIFIC SHIP TYPE
         def getShip(self,shipNum):
-            if unlocks.hasShipUnlock() and len(assets.spaceShipList) >= shipNum:
-                if unlocks.ships[shipNum][0] or settings.devMode:
-                    game.savedShipLevel = shipNum
-                    self.updatePlayerConstants()
+            if len(assets.spaceShipList) >= shipNum:
+                if unlocks.hasShipUnlock() or settings.devMode:
+                    if unlocks.ships[shipNum][0] or settings.devMode:
+                        game.savedShipLevel = shipNum
+                        self.updatePlayerConstants()
 
 
         # Update player attributes
@@ -2287,7 +2330,7 @@ class Player(pygame.sprite.Sprite):
 
                 # Draw obstacles during explosion
                 for obs in obstacles:
-                    obs.move(self)
+                    obs.move(self,None)
                     obs.activate()
                     newBlit = rotateImage(obs.image,obs.rect,obs.angle)
                     screen.blit(newBlit[0],newBlit[1])
@@ -2319,7 +2362,7 @@ class Player(pygame.sprite.Sprite):
 
 # OBSTACLES
 class Obstacle(pygame.sprite.Sprite):
-    def __init__(self,spawnPattern,targeting,playerPos):
+    def __init__(self,spawnPattern,targeting,playerPos,hasLasers):
         super().__init__()
         self.attributeIndex = None
         self.spawnPattern = self.getAttributes(spawnPattern)
@@ -2343,6 +2386,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.activating = False
         self.activationDelay = 0
         self.slowerDiagonal = settings.slowerDiagonalObstacles
+        self.laserType, self.laserDelay = self.getAttributes(game.obsLaserType), 0
 
 
     # For levels with multiple obstacle types
@@ -2359,10 +2403,11 @@ class Obstacle(pygame.sprite.Sprite):
         else: self.direction = math.atan2(playerPos[1] - self.rect.centery, playerPos[0] - self.rect.centerx) # Get angle representation
 
 
-    def move(self,player):
+    def move(self,player,enemyLasers):
         if self.target == "NONE": self.basicMove()
         elif self.target == "LOCK": self.targetMove()
         elif self.target == "HOME": self.homingMove(player)
+        if self.laserType != "NONE": self.shoot(player,enemyLasers)
 
 
     # BASIC MOVEMENT (8-direction) -> direction is a string
@@ -2468,6 +2513,14 @@ class Obstacle(pygame.sprite.Sprite):
         elif self.direction == "SW": self.direction = "NE"
 
 
+    def shoot(self,player,enemyLasers):
+        if enemyLasers is not None:
+            if self.laserDelay >= settings.obsLaserDelay:
+                enemyLasers.add(EnemyLaser(self,player))
+                self.laserDelay = 0
+            else: self.laserDelay += 1
+
+
 
 # CAVES
 class Cave(pygame.sprite.Sprite):
@@ -2480,12 +2533,12 @@ class Cave(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.leave = False # Mark cave for exit
 
-    
+
     # True if cave is covering screen
     def inside(self):
         if self.rect.top < 0 and self.rect.bottom > settings.screenSize[1]: return True
         else: return False
-    
+
 
     def update(self):
         self.rect.centery += self.speed # Move
@@ -2567,7 +2620,7 @@ class Laser(pygame.sprite.Sprite):
                 dirY = (self.target.rect.centery - self.rect.centery + settings.screenSize[1]/2) % settings.screenSize[1]-settings.screenSize[1]/2 # Shortest vetical path
                 self.angle = math.atan2(dirY,dirX) # Angle to shortest path
                 self.rect.centerx += (player.speed + self.speed) * math.cos(self.angle) # Horizontal movement
-                self.rect.centery +=self.speed * math.sin(self.angle) # Vertical movement
+                self.rect.centery += (player.speed + self.speed) * math.sin(self.angle) # Vertical movement
 
 
     # Get closest target out of a group
@@ -2577,6 +2630,62 @@ class Laser(pygame.sprite.Sprite):
             if closest is None or math.dist(self.rect.center,closest.rect.center) > math.dist(self.rect.center,pt.rect.center):
                 closest,shortest = pt, math.dist(self.rect.center,pt.rect.center)
         return closest
+
+
+
+# ENEMY LASERS
+class EnemyLaser(pygame.sprite.Sprite):
+    def __init__(self,obs,player):
+        super().__init__()
+        self.speed = obs.speed * 1.5
+        self.angle = obs.angle
+        if type(self.angle) == str: self.angle = getAngle(self.angle) # Convert to degrees
+        newBlit = rotateImage(assets.enemyLaserImage,assets.enemyLaserImage.get_rect(center = obs.rect.center),self.angle)
+        self.image = newBlit[0]
+        self.rect = newBlit[1]
+        self.mask = pygame.mask.from_surface(self.image)
+        self.laserType = obs.laserType
+        if self.laserType == "NORMAL": self.direction = [math.cos(math.radians(self.angle)) * self.speed, math.sin(math.radians(self.angle)) * self.speed]
+        else:
+            self.direction = [(player.rect.centerx - self.rect.centerx + settings.screenSize[0]/2) % settings.screenSize[0]-settings.screenSize[0]/2,(player.rect.centery - self.rect.centery + settings.screenSize[1]/2) % settings.screenSize[1]-settings.screenSize[1]/2]
+            self.angle = math.atan2(self.direction[1],self.direction[0]) # Angle to shortest path
+
+        self.target, self.seek, self.seekWaitTime, self.seekDelay = None, False, 0, settings.heatSeekDelay # For heat seeking lasers
+
+
+    def update(self,player):
+        # Remove offscreen lasers
+        if self.rect.centerx > settings.screenSize[0] or self.rect.centery > settings.screenSize[1] or self.rect.centerx < 0 or self.rect.centery < 0: self.kill()
+        if self.laserType == "HOME": self.homingMove(player)
+        else: self.normalMove()
+
+
+    # Linear movement
+    def normalMove(self):
+        self.rect.x += self.direction[0]
+        self.rect.y += self.direction[1]
+
+
+    def homingMove(self,player):
+        if self.seekWaitTime < settings.heatSeekDelay:
+            self.seekWaitTime += 1
+            self.normalMove()
+        elif self.seek == False: self.target, self.seek = player.rect.center, True # Get target
+        else:
+            if self.target is None:
+                if settings.heatSeekNeedsTarget:
+                    game.explosions.append(Explosion(self))
+                    self.kill()
+                else:
+                    self.rect.centerx +=self.speed * math.cos(self.angle) # Horizontal movement
+                    self.rect.centery +=self.speed * math.sin(self.angle) # Vertical movement
+
+            else: # Homing
+                dirX = (self.target.rect.centerx - self.rect.centerx + settings.screenSize[0]/2) % settings.screenSize[0]-settings.screenSize[0]/2 # Shortest horizontal path
+                dirY = (self.target.rect.centery - self.rect.centery + settings.screenSize[1]/2) % settings.screenSize[1]-settings.screenSize[1]/2 # Shortest vetical path
+                self.angle = math.atan2(dirY,dirX) # Angle to shortest path
+                self.rect.centerx += math.cos(self.angle) # Horizontal movement
+                self.rect.centery += math.sin(self.angle) # Vertical movement
 
 
 
@@ -2733,7 +2842,7 @@ class BackgroundShip:
         elif self.speed < settings.minBackgroundShipSpeed: self.speed = settings.minBackgroundShipSpeed
         self.movement = getMovement("AGGRO")
         self.direction = self.movement[1]
-        self.angle = self.getAngle()
+        self.angle = getAngle(self.direction)
         self.text = text
         self.image = pygame.transform.scale(assets.donationShips[random.randint(0, len(assets.donationShips) - 1)], (self.size, self.size) ).convert_alpha()
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
@@ -2778,18 +2887,6 @@ class BackgroundShip:
         if not self.active and not self.offScreen(): self.active = True
 
 
-    # GET ANGLE FOR CORRESPONDING DIRECTION
-    def getAngle(self):
-        if self.direction == "N": return 0
-        elif self.direction == "S": return 180
-        elif self.direction == "E": return -90
-        elif self.direction == "W": return 90
-        elif self.direction == "NW": return 45
-        elif self.direction == "NE": return -45
-        elif self.direction == "SE": return -135
-        elif self.direction == "SW": return 135
-
-
     # GET SCALED VALUE
     def valueScaler(self, amount, minimum, maximum, bottom, top):
         if bottom is None or top is None: return minimum
@@ -2819,11 +2916,12 @@ def gameLoop():
     events = Event() # Initialize events
     events.set(player) # Events manipulate player cooldowns
     lasers = pygame.sprite.Group() # Laser group
+    enemyLasers = pygame.sprite.Group() # Enemy laser group
     obstacles = pygame.sprite.Group() # Obstacle group
     running = True
 
     # GAME LOOP
-    while running: game.update(player,obstacles,menu,events,lasers)
+    while running: game.update(player,obstacles,menu,events,lasers,enemyLasers)
 
 
 if __name__ == '__main__': gameLoop()
