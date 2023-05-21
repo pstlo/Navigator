@@ -147,7 +147,6 @@ class Settings:
         if self.arguments is not None:
             if "debug" in self.arguments: self.startupDebug = True
 
-
         # SET SCREEN UPDATE METHOD
         if self.qualityMode and not self.performanceMode: self.updateNotFlip = False
         else: self.updateNotFlip = True # use update instead of flip for display updates
@@ -935,7 +934,6 @@ class Game:
         # SET VOLUME
         if not self.musicMuted: pygame.mixer.music.set_volume(settings.musicVolume / 100)
         else: pygame.mixer.music.set_volume(0)
-
 
 
     # MAIN GAME LOOP
