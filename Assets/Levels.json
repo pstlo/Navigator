@@ -3,7 +3,7 @@
 
         "levelOne": {
             "startTime": 0,
-			"levelType": "OBS",
+			"levelType": ["OBS"],
             "levelAngle" : 0,
 			"maxObstacles": 12,
             "obstacleSpeed": 4,
@@ -18,7 +18,7 @@
 
 		"levelTwo": {
             "startTime": 15,
-			"levelType": "OBS",
+			"levelType": ["OBS"],
             "levelAngle" : 0,
 			"maxObstacles": 16,
             "obstacleSpeed": 5,
@@ -33,7 +33,7 @@
 
 		"levelThree": {
             "startTime": 30,
-			"levelType": "OBS",
+			"levelType": ["OBS"],
             "levelAngle" : 0,
 			"maxObstacles": 16,
             "obstacleSpeed": 5,
@@ -48,7 +48,7 @@
 
 		"levelFour": {
             "startTime": 45,
-			"levelType": "OBS",
+			"levelType": ["OBS"],
             "levelAngle" : 0,
 			"maxObstacles": 16,
             "obstacleSpeed": 5.5,
@@ -63,7 +63,7 @@
 
 		"levelFive": {
             "startTime": 60,
-			"levelType": "OBS",
+			"levelType": ["OBS"],
             "levelAngle" : 0,
 			"maxObstacles": 16,
             "obstacleSpeed": 6,
@@ -78,7 +78,7 @@
 
 		"levelSix": {
             "startTime": 75,
-			"levelType": "OBS",
+			"levelType": ["OBS"],
             "levelAngle" : 0,
 			"maxObstacles": 18,
             "obstacleSpeed": 6.5,
@@ -93,7 +93,7 @@
 
 		"levelSeven": {
             "startTime": 90,
-			"levelType": "OBS",
+			"levelType": ["OBS"],
             "levelAngle" : 0,
 			"maxObstacles": 65,
             "obstacleSpeed": 2,
@@ -108,7 +108,7 @@
 
 		"levelEight": {
             "startTime": 105,
-			"levelType": "OBS",
+			"levelType": ["OBS"],
             "levelAngle" : 0,
 			"maxObstacles": 20,
             "obstacleSpeed": 6.5,
@@ -123,7 +123,7 @@
 
 		"levelNine": {
             "startTime": 120,
-			"levelType": "OBS",
+			"levelType": ["OBS"],
             "levelAngle" : 0,
 			"maxObstacles": 21,
             "obstacleSpeed": 6.5,
@@ -138,7 +138,7 @@
 
 		"levelTen": {
             "startTime": 135,
-			"levelType": "OBS",
+			"levelType": ["OBS"],
             "levelAngle" : 0,
 			"maxObstacles": 22,
             "obstacleSpeed": 7,
@@ -159,7 +159,7 @@
 
         "levelOne": {
             "startTime": 150,
-			"levelType": "OBS",
+			"levelType": ["OBS"],
             "levelAngle" : 0,
 			"maxObstacles": 23,
             "obstacleSpeed": 7,
@@ -174,7 +174,7 @@
 
 		"levelTwo": {
             "startTime": 165,
-			"levelType": "OBS",
+			"levelType": ["OBS"],
             "levelAngle" : 0,
 			"maxObstacles": 24,
             "obstacleSpeed": 7,
@@ -189,7 +189,7 @@
 
 		"levelThree": {
             "startTime": 180,
-			"levelType": "OBS",
+			"levelType": ["OBS"],
             "levelAngle" : 0,
 			"maxObstacles": 25,
             "obstacleSpeed": 7.5,
@@ -204,7 +204,7 @@
 
 		"levelFour": {
             "startTime": 195,
-			"levelType": "OBS",
+			"levelType": ["OBS"],
             "levelAngle" : 0,
 			"maxObstacles": 20,
             "obstacleSpeed": 7.5,
