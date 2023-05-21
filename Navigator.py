@@ -138,10 +138,10 @@ class Settings:
         self.showPresence = True # Default = True / Discord presence using pypresence
 
         # TESTING
+        self.useArgs = True # Default = False / accept command line args
         self.devMode = False # Default = False
-        self.useArgs = True # Default = False / accept args
         self.showSpawnArea = False # Default = False / show powerup spawn area
-        self.startupDebug = False # Default = False / print status messages on startup
+        self.debugging = False # Default = False / show status messages
 
         # ARGS
         if self.useArgs:
@@ -151,7 +151,7 @@ class Settings:
         else: self.arguments = None
 
         if self.arguments is not None:
-            if "debug" in self.arguments: self.startupDebug = True
+            if "debug" in self.arguments: self.debugging = True
             if "devmode" in self.arguments: self.devMode = True
 
         # SET SCREEN UPDATE METHOD
@@ -233,7 +233,13 @@ class Settings:
                 }
             }
 
-        if self.startupDebug: print("Loaded settings")
+        self.debug("Loaded settings") # Debug
+
+
+    # DEBUGGING MESSAGES
+    def debug(self,text):
+        if self.debugging:print(text)
+
 
 
 
@@ -272,7 +278,7 @@ class Assets:
                     levels.append(level)
                 self.stageList.append(levels)
 
-        if settings.startupDebug: print("Loaded levels")
+        settings.debug("Loaded levels") # Debug
 
         # OBSTACLE ASSETS
         meteorList = []
@@ -291,7 +297,7 @@ class Assets:
         self.obstacleImages = [meteorList,ufoList] # Seperated by stage
         enemyLaserPath = os.path.join(assetDirectory,'enemyLaser.png')
         self.enemyLaserImage = pygame.image.load(self.resources(enemyLaserPath)).convert_alpha()
-        if settings.startupDebug: print("Loaded obstacles")
+        settings.debug("Loaded obstacles") # Debug
 
         # CAVE ASSETS
         self.caveList = []
@@ -302,7 +308,7 @@ class Assets:
             cave.append(pygame.image.load(self.resources(os.path.join(caveAssets,"Cave.png"))).convert_alpha())
             self.caveList.append(cave)
 
-        if settings.startupDebug: print("Loaded caves")
+        settings.debug("Loaded caves") # Debug
 
         # BACKGROUND ASSETS
         self.bgList = []
@@ -315,7 +321,7 @@ class Assets:
                 bg = pygame.image.load(self.resources(stageBgPath)).convert_alpha()
                 cloud = pygame.image.load(self.resources(stageCloudPath)).convert_alpha()
                 self.bgList.append([bg,cloud])
-        if settings.startupDebug: print("Loaded backgrounds")
+        settings.debug("Loaded backgrounds") # Debug
 
         # EXPLOSION ASSETS
         self.explosionList = []
@@ -323,7 +329,7 @@ class Assets:
             if filename.endswith('.png'):
                 path = os.path.join(explosionDirectory, filename)
                 self.explosionList.append(pygame.image.load(self.resources(path)).convert_alpha())
-        if settings.startupDebug: print("Loaded explosions")
+        settings.debug("Loaded explosions") # Debug
 
         # POINTS ASSETS
         self.pointsList = {}
@@ -331,7 +337,7 @@ class Assets:
             if filename.endswith('png'):
                 path = os.path.join(pointsDirectory, filename)
                 self.pointsList[filename[:-4]] = pygame.image.load(self.resources(path)).convert_alpha()
-        if settings.startupDebug: print("Loaded points")
+        settings.debug("Loaded points") # Debug
 
         # SPACESHIP ASSETS
         self.spaceShipList = []
@@ -375,7 +381,7 @@ class Assets:
         self.shipConstants = []
         for i in range(len(self.spaceShipList)): self.shipConstants.append(self.spaceShipList[i]["stats"])
 
-        if settings.startupDebug: print("Loaded ships")
+        settings.debug("Loaded ships") # Debug
 
         # PLAYER SHIELD ASSET
         self.playerShield = pygame.transform.scale(pygame.image.load(self.resources(os.path.join(assetDirectory,"Shield.png"))),(settings.playerShieldSize,settings.playerShieldSize))
@@ -391,7 +397,7 @@ class Assets:
         menuMeteorDir = os.path.join(menuDirectory,'FlyingObjects')
         for objPath in sorted(os.listdir(menuMeteorDir)): self.menuList.append(pygame.image.load(self.resources(os.path.join(menuMeteorDir,objPath))).convert_alpha())
 
-        if settings.startupDebug: print("Loaded menu assets")
+        settings.debug("Loaded menu assets") # Debug
 
         # LOAD SOUNDTRACK
         self.loadSoundtrack()
@@ -420,7 +426,7 @@ class Assets:
         self.impactNoise = pygame.mixer.Sound(self.resources(os.path.join(self.soundDirectory,"Impact.wav")))
         self.impactNoise.set_volume(settings.sfxVolume/100)
 
-        if settings.startupDebug: print("Loaded sounds")
+        settings.debug("Loaded sounds") # Debug
 
         # LOAD DONATION RECORDS
         self.donations = {}
@@ -466,7 +472,7 @@ class Assets:
         self.creatorFont = pygame.font.Font(self.gameFont, 55)
         self.creditsFont = pygame.font.Font(self.gameFont, 30)
 
-        if settings.startupDebug: print("Loaded fonts")
+        settings.debug("Loaded fonts") # Debug
 
 
     # EXE/APP RESOURCES
@@ -553,7 +559,7 @@ class Assets:
 class Unlocks:
     def __init__(self):
         self.ships = assets.loadRecords()['unlocks']
-        if settings.startupDebug: print("Loaded unlocks")
+        settings.debug("Loaded unlocks") # Debug
 
 
     # UPDATE UNLOCKS IN MENU
@@ -704,10 +710,10 @@ def toggleMusic(game):
 
 settings = Settings() # INITIALIZE SETTINGS
 screen = getScreen() # INITIALIZE SCREEN
-if settings.startupDebug: print("Initialized screen")
+settings.debug("Initialized screen") # Debug
 pygame.mixer.set_num_channels(settings.numChannels)
 assets = Assets() # LOAD ASSETS
-if settings.startupDebug: print("Assets loaded")
+settings.debug("Assets loaded") # Debug
 unlocks = Unlocks() # UNLOCKS
 
 # KEY BINDS
@@ -726,7 +732,7 @@ muteInput = [pygame.K_m]
 fullScreenInput = [pygame.K_f]
 startInput = [pygame.K_SPACE]
 
-if settings.startupDebug: print("Loaded keybinds")
+settings.debug("Loaded keybinds") # Debug
 
 
 # UPDATE DISPLAY
@@ -747,14 +753,20 @@ async def getPresence(presence):
     try:
         await asyncio.wait_for(presence.connect(),timeout = 0.5)
         await presence.update(details='Playing Navigator', state='Navigating the depths of space', large_image='background', small_image = 'icon', buttons=[{'label': 'Play Navigator', 'url': 'https://pstlo.github.io/navigator'}],start=int(time.time()))
-    except: return None
+        settings.debug("Discord presence connected") # Debug
+    except:
+        settings.debug("Discord presence timed out") # Debug
+        return None
 
 
 if settings.showPresence:
     try:
         presence = pypresence.AioPresence((Fernet(base64.b64decode(os.getenv('KEY1'))).decrypt(os.getenv('TOKEN'))).decode())
+        settings.debug("Loading Discord presence") # Debug
         asyncio.run(getPresence(presence))
-    except: presence = None
+    except:
+        presence = None
+        settings.debug("Continuing without Discord presence") # Debug
 
 # CURSOR
 curSurf = pygame.Surface((40, 40), pygame.SRCALPHA)
@@ -763,7 +775,7 @@ pygame.draw.line(curSurf, (0, 255, 0), (20, 10), (20, 30), settings.cursorThickn
 cursor = pygame.cursors.Cursor((20, 20), curSurf)
 pygame.mouse.set_cursor(cursor)
 pygame.mouse.set_visible(settings.cursorMode)
-if settings.startupDebug: print("Initialized cursor")
+settings.debug("Initialized cursor") # Debug
 
 
 # KEEP CURSOR ON SCREEN (Cursor mode only)
@@ -781,6 +793,7 @@ gamePad = None
 compatibleController = False
 if settings.useController:
     pygame.joystick.init()
+    settings.debug("Initialized controller module") # Debug
     if pygame.joystick.get_count() > 0:
         gamePad = pygame.joystick.Joystick(0)
         gamePad.init()
@@ -805,18 +818,20 @@ if settings.useController:
                 controllerFullScreen = settings.controllerBinds[controllerType]['settings.fullScreen']
                 controllerCredits = settings.controllerBinds[controllerType]['credits']
                 compatibleController = True
-                if settings.startupDebug: print("Compatible controller found")
+                settings.debug("Compatible controller found") # Debug
                 break
 
         # Incompatible controller
         if not compatibleController:
-            print("Incompatible controller")
+            settings.debug("Incompatible controller")
             pygame.joystick.quit()
+            settings.debug("Uninitialized controller module") # Debug
             if settings.useController: settings.useController = False
 
     else:
-        if settings.startupDebug: print("Controller not found")
+        settings.debug("Controller not found") # Debug
         pygame.joystick.quit() # This may be causing delay on startup ?
+        settings.debug("Uninitialized controller module") # Debug
         if settings.useController: settings.useController = False
 
 # POINT SPAWN AREA
@@ -2344,8 +2359,8 @@ class Obstacle(pygame.sprite.Sprite):
         self.spinSpeed = int(kwargs.get('spin', self.getAttributes(assets.stageList[game.currentStage-1][game.currentLevel-1]["obstacleSpin"])))
         self.health = int(kwargs.get('health', self.getAttributes(assets.stageList[game.currentStage-1][game.currentLevel-1]["obstacleHealth"])))
         self.bounds = kwargs.get('bounds', self.getAttributes(assets.stageList[game.currentStage-1][game.currentLevel-1]["obstacleBounds"]))
-        self.laserType = kwargs.get('lasers', self.getAttributes(assets.stageList[game.currentStage-1][game.currentLevel-1]["obstacleLaserType"]))        
-        
+        self.laserType = kwargs.get('lasers', self.getAttributes(assets.stageList[game.currentStage-1][game.currentLevel-1]["obstacleLaserType"]))
+
         try: self.image = assets.obstacleImages[game.currentStage - 1][game.currentLevel-1]
         except: self.image = assets.meteorList[random.randint(0,len(assets.meteorList)-1)] # Not enough assets for this level yet
         self.image = pygame.transform.scale(self.image, (self.size, self.size)).convert_alpha()
@@ -2355,7 +2370,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.angle = 0 # Image rotation
         self.spinDirection = random.choice([-1,1])
         self.active,self.activating,self.activationDelay = False,False,0
-        self.slowerDiagonal = settings.slowerDiagonalObstacles   
+        self.slowerDiagonal = settings.slowerDiagonalObstacles
         self.laserDelay, self.lasersShot, self.maxLasers = 0, 0, settings.maxObsLasers
 
 
@@ -2368,7 +2383,7 @@ class Obstacle(pygame.sprite.Sprite):
         else: return attribute
 
 
-    # Get correct type representation of angle 
+    # Get correct type representation of angle
     def getDirection(self,playerPos):
         if self.target == "NONE": self.direction = self.movement[1] # Get a string representation of the direction
         else: self.direction = math.atan2(playerPos[1] - self.rect.centery, playerPos[0] - self.rect.centerx) # Get angle representation
@@ -2874,7 +2889,7 @@ class BackgroundShip:
 # INITIALIZE GAME
 game = Game(assets.loadRecords()) # Initialize game with records loaded
 menu = Menu() # Initialize menus
-if settings.startupDebug: print("Game started")
+settings.debug("Game started") # Debug
 
 
 # START GAME LOOP
