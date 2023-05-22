@@ -232,7 +232,9 @@ class Settings:
                 'credits':2
                 }
             }
-
+        self.runningFromExe = hasattr(sys,'_MEIPASS') # Specify if running from EXE/app or Python script
+        if self.runningFromExe: self.debug("Running from executable")
+        else: self.debug("Running from Python script")
         self.debug("Loaded settings") # Debug
 
 
@@ -470,7 +472,6 @@ class Assets:
         self.exitFont = pygame.font.Font(self.gameFont, 30)
         self.creatorFont = pygame.font.Font(self.gameFont, 55)
         self.creditsFont = pygame.font.Font(self.gameFont, 30)
-
         settings.debug("Loaded fonts") # Debug
 
 
@@ -793,6 +794,7 @@ if settings.useController:
     pygame.joystick.init()
     settings.debug("Initialized controller module") # Debug
     if pygame.joystick.get_count() > 0:
+        settings.debug("Joystick detected, checking for compatibility") # Debug
         gamePad = pygame.joystick.Joystick(0)
         gamePad.init()
         for controllerType in settings.controllerBinds:
@@ -816,12 +818,12 @@ if settings.useController:
                 controllerFullScreen = settings.controllerBinds[controllerType]['settings.fullScreen']
                 controllerCredits = settings.controllerBinds[controllerType]['credits']
                 compatibleController = True
-                settings.debug("Compatible controller found") # Debug
+                settings.debug("Compatible controller found, loaded corresponding binds") # Debug
                 break
 
         # Incompatible controller
         if not compatibleController:
-            settings.debug("Incompatible controller")
+            settings.debug("Incompatible controller") # Debug
             pygame.joystick.quit()
             settings.debug("Uninitialized controller module") # Debug
             if settings.useController: settings.useController = False
@@ -910,8 +912,6 @@ def getAngle(direction):
 # GAME
 class Game:
     def __init__(self,records):
-
-        assets.stageList = assets.stageList
 
         # Level constants
         self.maxObstacles = assets.stageList[0][0]["maxObstacles"]
