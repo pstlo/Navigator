@@ -2096,7 +2096,7 @@ class Player(pygame.sprite.Sprite):
             # CURSOR BASED MOVEMENT
             elif game.usingCursor:
                 resetCursor()
-                # RAW CURSOR MODE
+                # RAW CURSOR MODE ( Experimental )
                 if settings.rawCursorMode:
                     cursor = pygame.Vector2(pygame.mouse.get_pos())
                     self.rect.center = cursor
@@ -2104,7 +2104,7 @@ class Player(pygame.sprite.Sprite):
                     self.lastCursor = cursor
 
                 else:
-                    # FOLLOW CURSOR MODE
+                    # CURSOR MODE
                     cursorX, cursorY = pygame.mouse.get_pos()
                     cursorDirection = pygame.Vector2(cursorX, cursorY)
                     if math.dist(self.rect.center,(cursorX,cursorY)) >= settings.cursorRotateDistance:
@@ -2557,34 +2557,11 @@ class Laser(pygame.sprite.Sprite):
 
     # Simple movement
     def normalMove(self,player):
-        # Laser angles correspond to player angles ( second is for vector based movement )
-        if self.angle == 0: self.rect.centery -= self.speed + player.speed
-        elif self.angle == 180 or self.angle == -180: self.rect.centery +=  self.speed + player.speed
-        elif self.angle == 90 or self.angle == -270: self.rect.centerx -=  self.speed + player.speed
-        elif self.angle == -90: self.rect.centerx +=  self.speed + player.speed
-
-        elif self.angle == 45:
-            speed = self.speed / 1.414 # sqrt(2)
-            self.rect.centery -= speed + player.speed
-            self.rect.centerx -= speed + player.speed
-        elif self.angle == -45:
-            speed = self.speed / 1.414 # sqrt(2)
-            self.rect.centery -= speed + player.speed
-            self.rect.centerx += speed + player.speed
-        elif self.angle == 135 or self.angle == -225:
-            speed = self.speed / 1.414 # sqrt(2)
-            self.rect.centery += speed + player.speed
-            self.rect.centerx -= speed + player.speed
-        elif self.angle == -135:
-            speed = self.speed / 1.414 # sqrt(2)
-            self.rect.centery += speed + player.speed
-            self.rect.centerx += speed + player.speed
-        else:
-            angle = math.radians( (self.angle-90))
-            velX = self.speed * math.cos(angle)
-            velY = self.speed * math.sin(angle)
-            self.rect.centerx -= velX
-            self.rect.centery += velY
+        angle = math.radians( (self.angle-90))
+        velX = 1.414 * self.speed * math.cos(angle)
+        velY = 1.414 * self.speed * math.sin(angle)
+        self.rect.centerx -= velX
+        self.rect.centery += velY
 
 
     def homingMove(self,player,lasers,obstacles):
