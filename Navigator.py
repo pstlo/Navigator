@@ -132,7 +132,6 @@ class Settings:
 
         # EXPERIMENTAL
         self.rawCursorMode = False # Default = False / sets player position to cursor position
-        self.playerMovement = "DEFAULT" # Default = "DEFAULT" /  (DEFAULT, ORIGINAL)
         self.performanceMode = False # Default = False
         self.qualityMode = False # Default = False # Overridden by performance mode
         self.showPresence = True # Default = True / Discord presence using pypresence
@@ -960,10 +959,11 @@ class Game:
     def update(self,player,obstacles,menu,events,lasers,enemyLasers):
         for event in pygame.event.get():
 
-            # EXIT
-            if (event.type == pygame.KEYDOWN and event.key in escapeInput) or (gamePad is not None and gamePad.get_button(controllerExit) == 1) or event.type == pygame.QUIT:
-                running = False
-                quitGame()
+            # EXIT GAME
+            if event.type == pygame.QUIT: quitGame()
+
+            # BACK TO MENU
+            if (event.type == pygame.KEYDOWN and event.key in escapeInput) or (gamePad is not None and gamePad.get_button(controllerExit) == 1): menu.gameOver(self,player,obstacles)
 
             # MUTE
             if (event.type == pygame.KEYDOWN and event.key in muteInput) or (gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
@@ -1069,7 +1069,7 @@ class Game:
             self.thisPoint = Point(player,self.lastPointPos) # spawn new point
 
         # UPDATE PLAYER
-        player.movement(self)
+        player.movement()
         player.shoot(self,lasers,events,obstacles)
         player.boost(self,events)
         player.wrapping()
@@ -1190,7 +1190,7 @@ class Game:
     def alternateUpdate(self,player,obstacles,events):
         for event in pygame.event.get(): pass # Pull events
 
-        player.movement(self)
+        player.movement()
         player.wrapping()
         screen.fill(screenColor)
         screen.blit(assets.bgList[self.currentStage - 1][0], (0,0) )
@@ -1538,9 +1538,8 @@ class Menu:
                     player.toggleSpaceShip(False)
 
                 # EXIT
-                if (event.type == pygame.KEYDOWN and event.key in escapeInput) or (gamePad is not None and gamePad.get_button(controllerExit) == 1) or event.type == pygame.QUIT:
-                    running = False
-                    quitGame()
+                if (event.type == pygame.KEYDOWN and event.key in escapeInput) or (gamePad is not None and gamePad.get_button(controllerExit) == 1) or event.type == pygame.QUIT: quitGame()
+
 
                 # MUTE
                 if (event.type == pygame.KEYDOWN) and (event.key in muteInput) or (gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
@@ -1765,7 +1764,7 @@ class Menu:
                 screen.blit(game.cave.background,game.cave.rect)
                 screen.blit(game.cave.image,game.cave.rect) # Draw cave
 
-            screen.blit(player.finalImg,player.finalRect) # Explosion
+            if type(player.finalImg) != str: screen.blit(player.finalImg,player.finalRect) # Explosion / skip if explosion not initialized yet
 
             pygame.draw.rect(screen, screenColor, [gameOverRect.x - 12,gameOverRect.y + 4,gameOverRect.width + 16, gameOverRect.height - 16],0,10)
             screen.blit(gameOverDisplay,gameOverRect)
@@ -1779,9 +1778,7 @@ class Menu:
                 if event.type == pygame.KEYDOWN and event.key in creditsInput or (gamePad is not None and gamePad.get_button(controllerCredits) == 1): menu.creditScreen(False)
 
                 # EXIT
-                if (event.type == pygame.KEYDOWN and event.key in escapeInput) or (gamePad is not None and gamePad.get_button(controllerExit) == 1) or event.type == pygame.QUIT:
-                    running = False
-                    quitGame()
+                if (event.type == pygame.KEYDOWN and event.key in escapeInput) or (gamePad is not None and gamePad.get_button(controllerExit) == 1) or event.type == pygame.QUIT: quitGame()
 
                 # MUTE
                 if (event.type == pygame.KEYDOWN) and (event.key in muteInput) or (gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
@@ -1803,12 +1800,11 @@ class Menu:
                 # RESTART GAME
                 elif (event.type == pygame.KEYDOWN and event.key in startInput) or (gamePad is not None and gamePad.get_button(controllerSelect) == 1) or (event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] == 1):
                     if (event.type == pygame.KEYDOWN and event.key in startInput): game.usingController,game.usingCursor = False,False
-                    elif (gamePad is not None and gamePad.get_button(controllerBack) == 1): game.usingController,game.usingCursor = True,False
+                    elif (gamePad is not None and gamePad.get_button(controllerSelect) == 1): game.usingController,game.usingCursor = True,False
                     elif (event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]==1): game.usingCursor, game.usingController = True, False
                     pygame.mouse.set_visible(game.usingCursor and not settings.rawCursorMode)
                     game.reset(player,obstacles)
                     player.updatePlayerConstants()
-                    running = True
                     gameLoop()
 
 
@@ -1889,24 +1885,19 @@ class Menu:
         while rollCredits:
             if loopMusic: self.menuMusicLoop()
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                    quitGame()
+                if event.type == pygame.QUIT: quitGame()
 
                 # TOGGLE MUTE
                 if ((event.type == pygame.KEYDOWN) and (event.key in muteInput)) or (gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
 
                 # TOGGLE FULLSCREEN
-                if (event.type == pygame.KEYDOWN and event.key in fullScreenInput) or (gamePad is not None and event.type == pygame.JOYBUTTONDOWN and gamePad.get_button(controllerFullScreen) == 1):
-                    toggleScreen()
+                if (event.type == pygame.KEYDOWN and event.key in fullScreenInput) or (gamePad is not None and event.type == pygame.JOYBUTTONDOWN and gamePad.get_button(controllerFullScreen) == 1): toggleScreen()
 
                 # SHIP SPAWN DELAY
-                if event.type == backGroundShipSpawnEvent:
-                    waitToSpawn = False
+                if event.type == backGroundShipSpawnEvent: waitToSpawn = False
 
                 # RETURN TO GAME
-                elif (event.type == pygame.KEYDOWN and (event.key in escapeInput or event.key in creditsInput or event.key in startInput or event.key in backInput) ) or (gamePad is not None and (gamePad.get_button(controllerBack) == 1 or gamePad.get_button(controllerCredits) == 1)):
-                    rollCredits = False
+                elif (event.type == pygame.KEYDOWN and (event.key in escapeInput or event.key in creditsInput or event.key in startInput or event.key in backInput) ) or (gamePad is not None and (gamePad.get_button(controllerBack) == 1 or gamePad.get_button(controllerCredits) == 1)): rollCredits = False
 
             screen.fill(screenColor)
             screen.blit(assets.bgList[game.currentStage - 1][0],(0,0))
@@ -2043,19 +2034,11 @@ class Player(pygame.sprite.Sprite):
             self.damage = assets.spaceShipList[game.savedShipLevel]['stats']["laserDamage"]
             self.laserType = assets.spaceShipList[game.savedShipLevel]['stats']["laserType"]
             self.showShield,self.boosting = False,False
-            self.movementType = settings.playerMovement
             if settings.cursorMode: self.lastCursor = pygame.Vector2(0,0)
 
 
-        # MOVEMENT
-        def movement(self,game):
-            if self.movementType == "DEFAULT": self.vectorMovement(True)
-            elif self.movementType == "ORIGINAL": self.vectorMovement(False)
-            else: self.vectorMovement(True)
-
-
         # VECTOR BASED MOVEMENT
-        def vectorMovement(self,defaultMovement):
+        def movement(self):
             # KEYBOARD
             if not game.usingController and not game.usingCursor:
                 key = pygame.key.get_pressed()
@@ -2064,39 +2047,28 @@ class Player(pygame.sprite.Sprite):
                 if any(key[bind] for bind in downInput): direction += pygame.Vector2(0, 1)
                 if any(key[bind] for bind in leftInput): direction += pygame.Vector2(-1, 0)
                 if any(key[bind] for bind in rightInput): direction += pygame.Vector2(1, 0)
-                if direction.magnitude_squared() > 0:
-                    if defaultMovement:
-                        direction.normalize_ip()
-                        direction *= 1.414  # sqrt(2)
-                    if not any(key[bind] for bind in brakeInput): self.rect.move_ip(direction * self.speed) # MOVE PLAYER
-                    if direction.x != 0 or direction.y != 0: self.angle = direction.angle_to(pygame.Vector2(0, -1)) # GET PLAYER ANGLE
+                if direction.length() > 1: direction.normalize_ip()
+                if not any(key[bind] for bind in brakeInput): self.rect.move_ip((math.sqrt(2)*direction) * self.speed) # MOVE PLAYER
+                if direction.x != 0 or direction.y != 0: self.angle = direction.angle_to(pygame.Vector2(0, -1)) # GET PLAYER ANGLE
 
             # CONTROLLER
             elif gamePad is not None and game.usingController:
                 direction = pygame.Vector2(0, 0) # Get new vector
-                xLeft = gamePad.get_axis(controllerMoveX)
-                yLeft = gamePad.get_axis(controllerMoveY)
-                xRight = gamePad.get_axis(controllerRotateX)
-                yRight = gamePad.get_axis(controllerRotateY)
-
+                xLeft,yLeft,xRight,yRight = gamePad.get_axis(controllerMoveX),gamePad.get_axis(controllerMoveY),gamePad.get_axis(controllerRotateX),gamePad.get_axis(controllerRotateY)
                 if abs(xRight) > 0.3 or abs(yRight) > 0.3: xTilt, yTilt, braking = xRight, yRight, True
                 else: xTilt, yTilt, braking = xLeft, yLeft, False
-
-                if yTilt < -0.5: direction += pygame.Vector2(0, -1)
-                if yTilt > 0.5: direction += pygame.Vector2(0, 1)
-                if xTilt < -0.5: direction += pygame.Vector2(-1, 0)
-                if xTilt > 0.5: direction += pygame.Vector2(1, 0)
-                if direction.magnitude_squared() > 0:
-                    if defaultMovement:
-                        direction.normalize_ip()
-                        direction *= 1.414  # sqrt(2)
-                    if not braking: self.rect.move_ip(direction * self.speed) # MOVE PLAYER
-                    if direction.x != 0 or direction.y != 0:self.angle = direction.angle_to(pygame.Vector2(0, -1)) # GET PLAYER ANGLE
+                if yTilt < -0.3: direction += pygame.Vector2(0, -1)
+                if yTilt > 0.3: direction += pygame.Vector2(0, 1)
+                if xTilt < -0.3: direction += pygame.Vector2(-1, 0)
+                if xTilt > 0.3: direction += pygame.Vector2(1, 0)
+                if direction.length() > 1: direction.normalize_ip()
+                if not braking: self.rect.move_ip((math.sqrt(2)*direction) * self.speed) # MOVE PLAYER
+                if direction.x != 0 or direction.y != 0:self.angle = direction.angle_to(pygame.Vector2(0, -1)) # GET PLAYER ANGLE
 
             # CURSOR BASED MOVEMENT
             elif game.usingCursor:
                 resetCursor()
-                # RAW CURSOR MODE ( Experimental )
+                # RAW CURSOR MODE
                 if settings.rawCursorMode:
                     cursor = pygame.Vector2(pygame.mouse.get_pos())
                     self.rect.center = cursor
@@ -2109,14 +2081,9 @@ class Player(pygame.sprite.Sprite):
                     cursorDirection = pygame.Vector2(cursorX, cursorY)
                     if math.dist(self.rect.center,(cursorX,cursorY)) >= settings.cursorRotateDistance:
                         direction = cursorDirection - pygame.Vector2(self.rect.centerx, self.rect.centery)
-                        if direction.magnitude_squared() > 0:
-                            direction.normalize_ip()
-                            direction *= 1.414
-                        velocity = direction * self.speed
+                        direction.normalize_ip()
                         self.angle = direction.angle_to(pygame.Vector2(0, -1))
-                        if math.dist(self.rect.center,(cursorX,cursorY)) >= settings.cursorFollowDistance:
-                            self.rect.centerx += velocity.x
-                            self.rect.centery += velocity.y
+                        if math.dist(self.rect.center,(cursorX,cursorY)) >= settings.cursorFollowDistance: self.rect.move_ip((direction*1.414) * self.speed) # MOVE PLAYER
 
 
         # SPEED BOOST
@@ -2883,10 +2850,9 @@ def gameLoop():
     lasers = pygame.sprite.Group() # Laser group
     enemyLasers = pygame.sprite.Group() # Enemy laser group
     obstacles = pygame.sprite.Group() # Obstacle group
-    running = True
 
     # GAME LOOP
-    while running: game.update(player,obstacles,menu,events,lasers,enemyLasers)
+    while True: game.update(player,obstacles,menu,events,lasers,enemyLasers)
 
 
 if __name__ == '__main__': gameLoop()
