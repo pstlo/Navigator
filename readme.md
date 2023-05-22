@@ -4,4 +4,6 @@
 ### Simple and addictive arcade game written in Python with PyGame ###
 
 Created by Mike Pistolesi \
-with art by Collin Guetta & music by Dylan Kusenko
+with art by Collin Guetta \
+music by Dylan Kusenko \
+& game over music by Simon Colker
