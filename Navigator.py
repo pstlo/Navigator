@@ -2620,7 +2620,7 @@ class Laser(pygame.sprite.Sprite):
         return closest
 
 
-
+# ENEMY LASERS
 class EnemyLaser(pygame.sprite.Sprite):
     def __init__(self, obs, player):
         super().__init__()
