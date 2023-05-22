@@ -120,7 +120,7 @@ class Settings:
         self.activationDelay = 2 # Default = 2 / frames before activation after entering screen
         self.obsLaserDelay = 10 # Default = 10 / delay before obstacle fires another laser
         self.obsLaserDamage = 1 # Default = 1
-        self.maxObsLasers = 3 # Default = 3 / lasers per obstacle
+        self.maxObsLasers = 3000 # Default = 3 / lasers per obstacle
 
         # CAVES
         self.caveStartPos = self.screenSize[1]*-2 # Default = -1600 / Cave start Y coordinate
@@ -1075,8 +1075,7 @@ class Game:
         player.wrapping()
 
         # ROTATE PLAYER
-        if player.angle != game.angle: newBlit = rotateImage(player.image,player.rect,player.angle)
-        else: newBlit = player.image,player.rect
+        newBlit = rotateImage(player.image,player.rect,player.angle)
 
         # DRAW PLAYER
         screen.blit(newBlit[0],newBlit[1])
@@ -1366,7 +1365,6 @@ class Game:
         enemyLasers.update(player)
         for laser in lasers: screen.blit(laser.image,laser.rect)
         for laser in enemyLasers: screen.blit(laser.image,laser.rect)
-
 
 
     # RESTART GAME
@@ -2425,7 +2423,7 @@ class Obstacle(pygame.sprite.Sprite):
         dirX = (player.rect.centerx - self.rect.centerx + settings.screenSize[0]/2) % settings.screenSize[0]-settings.screenSize[0]/2 # Shortest horizontal path
         dirY = (player.rect.centery - self.rect.centery + settings.screenSize[1]/2) % settings.screenSize[1]-settings.screenSize[1]/2 # Shortest vetical path
         self.direction = math.atan2(dirY,dirX) # Angle to shortest path
-        self.angle = math.degrees(self.direction)
+        self.angle = -math.degrees(self.direction)-90
         self.targetMove()
 
 
@@ -2623,22 +2621,26 @@ class Laser(pygame.sprite.Sprite):
 
 
 
-# ENEMY LASERS
 class EnemyLaser(pygame.sprite.Sprite):
-    def __init__(self,obs,player):
+    def __init__(self, obs, player):
         super().__init__()
         self.speed = obs.speed * 1.5
         self.angle = obs.angle
-        if type(self.angle) == str: self.angle = getAngle(self.angle) # Convert to degrees
-        newBlit = rotateImage(assets.enemyLaserImage,assets.enemyLaserImage.get_rect(center = obs.rect.center),-self.angle-90)
+        if type(self.angle) == str: self.angle = getAngle(self.angle)  # Convert to degrees
+        self.direction = [-math.cos(math.radians(self.angle - 90)), math.sin(math.radians(self.angle - 90))]
+        if self.direction[0] != 0:
+            if self.direction[0] > 0: self.angle -= 45
+            else: self.angle += 45
+        if self.direction[1] != 0: self.angle = math.degrees(math.atan2(-self.direction[1], self.direction[0])) + 90
+        newBlit = rotateImage(assets.enemyLaserImage, assets.enemyLaserImage.get_rect(center=obs.rect.center), self.angle)
         self.image = newBlit[0]
         self.rect = newBlit[1]
         self.mask = pygame.mask.from_surface(self.image)
         self.laserType = obs.laserType
-        self.direction = [math.cos(math.radians(self.angle)) * self.speed, math.sin(math.radians(self.angle)) * self.speed]
-        self.target, self.seek, self.seekWaitTime, self.seekDelay = None, False, 0, settings.heatSeekDelay # For heat seeking lasers
+        self.target, self.seek, self.seekWaitTime, self.seekDelay = None, False, 0, settings.heatSeekDelay  # For heat seeking lasers
 
 
+    # UPDATE
     def update(self,player):
         # Remove offscreen lasers
         if self.rect.centerx > settings.screenSize[0] or self.rect.centery > settings.screenSize[1] or self.rect.centerx < 0 or self.rect.centery < 0: self.kill()
@@ -2648,10 +2650,11 @@ class EnemyLaser(pygame.sprite.Sprite):
 
     # Linear movement
     def normalMove(self):
-        self.rect.x += self.direction[0]
-        self.rect.y += self.direction[1]
+        self.rect.x += self.speed * self.direction[0]
+        self.rect.y += self.speed * self.direction[1]
 
 
+    # Heat seeking movement
     def homingMove(self,player):
         if self.seekWaitTime < settings.heatSeekDelay:
             self.seekWaitTime += 1
