@@ -819,7 +819,7 @@ async def getPresence(presence):
         await presence.update(details='Playing Navigator', state='Navigating the depths of space', large_image='background', small_image = 'icon', buttons=[{'label': 'Play Navigator', 'url': 'https://pstlo.github.io/navigator'}],start=int(time.time()))
         settings.debug("Discord presence connected") # Debug
     except:
-        settings.debug("Discord presence timed out") # Debug
+        settings.debug("Discord presence timed out, likely due to multiple launches in a short duration") # Debug
         return None
 
 
