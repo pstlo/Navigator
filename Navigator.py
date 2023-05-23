@@ -2,10 +2,9 @@
 # Copyright (c) 2023 Mike Pistolesi
 # All rights reserved
 
-import os,sys,random,math,platform,json,base64,time,pypresence,asyncio
+import os,sys,random,math,platform,json,base64,time,asyncio
 from cryptography.fernet import Fernet
 from dotenv import load_dotenv
-from pymongo.mongo_client import MongoClient # dnspython must also be installed for database access
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
 
@@ -569,12 +568,24 @@ class Assets:
     # UPLOAD RECORDS TO LEADERBOARD
     def uploadRecords(self,records):
         if settings.uploadRecordsToLeaderboard:
+            # LOAD MODULES
             try:
-                database = MongoClient((Fernet(base64.b64decode(os.getenv('DBKEY'))).decrypt(os.getenv('DBTOKEN'))).decode())
+                settings.debug("Initializing database modules") # Debug
+                from pymongo.mongo_client import MongoClient
+                import dns,certifi
+            except:
+                settings.debug("Failed to initialize database. Make sure pymongo, dnspython, and certifi are installed") # Debug
+                return
+
+            # CONNECT TO CLIENT
+            try:
+                database = MongoClient((Fernet(base64.b64decode(os.getenv('DBKEY'))).decrypt(os.getenv('DBTOKEN'))).decode(),tlsCAFile=certifi.where())
                 settings.debug("Connected to leaderboard database")
             except:
                 settings.debug("Could not connect to leaderboard database. Scores will not be uploaded") # Debug
                 return
+
+            # UPLOAD RECORDS
             try:
                 collection = database["navigator"]["leaderboard"]
                 uploadData = {'_id':records['id'], 'name':self.userName, 'highScore': records['highScore'], 'longestRun':records['longestRun']} # Data for upload
@@ -599,6 +610,7 @@ class Assets:
                 database.close()
                 settings.debug("Disconnected from leaderboard database") # Debug
             except: settings.debug(" Failed to upload records to database") # Debug
+
 
 
     # GET RECORDS ID
@@ -813,6 +825,7 @@ async def getPresence(presence):
 
 if settings.showPresence:
     try:
+        import pypresence
         presence = pypresence.AioPresence((Fernet(base64.b64decode(os.getenv('DCKEY'))).decrypt(os.getenv('DCTOKEN'))).decode())
         settings.debug("Loading Discord presence") # Debug
         asyncio.run(getPresence(presence))
