@@ -481,6 +481,7 @@ class Assets:
         settings.debug("Loaded fonts") # Debug
 
         self.userName = platform.node() # Leaderboard username
+        self.leaderboard = self.getLeaders()
 
 
     # EXE/APP RESOURCES
@@ -576,11 +577,12 @@ class Assets:
         if settings.connectToLeaderboard:
             # LOAD MODULES
             try:
-                settings.debug("Initializing database modules") # Debug
+                settings.debug("Loading leaderboard drivers") # Debug
                 from pymongo.mongo_client import MongoClient
                 import dns,certifi
             except:
-                settings.debug("Failed to initialize database. Make sure pymongo, dnspython, and certifi are installed") # Debug
+                settings.debug("Failed to initialize leaderboard. Make sure pymongo, dnspython, and certifi are installed") # Debug
+                settings.connectToLeaderboard = False
                 return None
 
             # START CONNECTION
@@ -602,15 +604,16 @@ class Assets:
                 database = self.getLeaderboardClient()
                 collection = database["navigator"]["leaderboard"]
                 leaders = list(collection.find().sort('longestRun', -1).limit(settings.leaderboardSize))
+                settings.debug("Refreshed leaderboard") # Debug
                 database.close()
+                settings.debug("Disconnected from leaderboard client") # Debug
                 leaderBoard = []
                 for leaderIndex in range(len(leaders)-1):
                     leader = leaders[leaderIndex]
                     leaderBoard.append( {'name':leader['name'], 'time':leader['longestRun'], 'score':leader['highScore']} )
-                settings.debug("Refreshed leaderboard")
                 return leaderBoard
             except:
-                settings.debug("Could not get leaderboard")
+                settings.debug("Could not get leaderboard") # Debug
                 settings.connectToLeaderboard = False
                 return None
         else: return None
@@ -1651,7 +1654,7 @@ class Menu:
                 if (event.type == pygame.KEYDOWN) and (event.key in muteInput) or (gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
 
                 # LEADERBOARD
-                if (event.type == pygame.KEYDOWN) and (event.key in leadersInput): settings.debug(assets.getLeaders())
+                if (event.type == pygame.KEYDOWN) and (event.key in leadersInput): settings.debug(assets.leaderboard)
 
                 # CREDITS
                 if (event.type == pygame.KEYDOWN and event.key in creditsInput) or (gamePad is not None and gamePad.get_button(controllerCredits) == 1): menu.creditScreen(True)
