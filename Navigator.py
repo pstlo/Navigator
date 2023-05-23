@@ -17,6 +17,7 @@ version = "v0.4.9"
 
 
 
+
 # GAME SETTINGS
 class Settings:
     def __init__(self):
@@ -128,9 +129,9 @@ class Settings:
         self.caveSpeed = 20 # Default = 20 / Cave flyby speed
 
         # SAVING
-        self.encryptGameRecords = True # Hide game records from user to prevent manual unlocks
+        self.encryptGameRecords = True # Default = True / Hide game records from user to prevent manual unlocks
         self.invalidKeyMessage = "Invalid key, could not save records." # Saved to game records file if settings.encryptGameRecords == True and key is invalid
-        self.uploadRecordsToLeaderboard = True
+        self.uploadRecordsToLeaderboard = True # Default = True / upload records to leaderboard on game exit
 
         # EXPERIMENTAL
         self.rawCursorMode = False # Default = False / sets player position to cursor position
@@ -475,8 +476,8 @@ class Assets:
         self.creditsFont = pygame.font.Font(self.gameFont, 30)
         settings.debug("Loaded fonts") # Debug
         
-        self.userName = "Test"
-
+        self.userName = platform.node() # Leaderboard username
+        
 
     # EXE/APP RESOURCES
     def resources(self,relative):
@@ -566,6 +567,7 @@ class Assets:
         return ships
 
 
+    # UPLOAD RECORDS TO LEADERBOARD
     def uploadRecords(self,records,database):
         if settings.uploadRecordsToLeaderboard:
             try:
