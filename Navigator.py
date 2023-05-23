@@ -7,6 +7,7 @@ from cryptography.fernet import Fernet
 from dotenv import load_dotenv
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
+import pygame
 
 pygame.display.init()
 pygame.font.init()
@@ -129,12 +130,17 @@ class Settings:
         # SAVING
         self.encryptGameRecords = True # Default = True / Hide game records from user to prevent manual unlocks
         self.invalidKeyMessage = "Invalid key, could not save records." # Saved to game records file if settings.encryptGameRecords == True and key is invalid
-        self.uploadRecordsToLeaderboard = platform.system() != "Darwin" # Default = True if not on MacOS Apple Silicon / upload records to leaderboard on game exit
+
+        # LEADERBOARD
+        self.connectToLeaderboard = True # Default = True
+        self.leaderboardSize = 20
 
         # EXPERIMENTAL
         self.rawCursorMode = False # Default = False / sets player position to cursor position
         self.performanceMode = False # Default = False
         self.qualityMode = False # Default = False # Overridden by performance mode
+
+        # DISCORD
         self.showPresence = True # Default = True / Discord presence using pypresence
 
         # TESTING
@@ -565,9 +571,9 @@ class Assets:
         return ships
 
 
-    # UPLOAD RECORDS TO LEADERBOARD
-    def uploadRecords(self,records):
-        if settings.uploadRecordsToLeaderboard:
+    # CONNECT TO LEADERBOARD CLIENT
+    def getLeaderboardClient(self):
+        if settings.connectToLeaderboard:
             # LOAD MODULES
             try:
                 settings.debug("Initializing database modules") # Debug
@@ -575,15 +581,45 @@ class Assets:
                 import dns,certifi
             except:
                 settings.debug("Failed to initialize database. Make sure pymongo, dnspython, and certifi are installed") # Debug
-                return
+                return None
 
-            # CONNECT TO CLIENT
+            # START CONNECTION
             try:
                 database = MongoClient((Fernet(base64.b64decode(os.getenv('DBKEY'))).decrypt(os.getenv('DBTOKEN'))).decode(),tlsCAFile=certifi.where())
                 settings.debug("Connected to leaderboard database")
+                return database
             except:
                 settings.debug("Could not connect to leaderboard database. Scores will not be uploaded") # Debug
-                return
+                settings.connectToLeaderboard = False
+                return None
+        else: return None
+
+
+    # GET LEADERBOARD FROM DATABASE
+    def getLeaders(self):
+        if settings.connectToLeaderboard:
+            try:
+                database = self.getLeaderboardClient()
+                collection = database["navigator"]["leaderboard"]
+                leaders = list(collection.find().sort('longestRun', -1).limit(settings.leaderboardSize))
+                database.close()
+                leaderBoard = []
+                for leaderIndex in range(len(leaders)-1):
+                    leader = leaders[leaderIndex]
+                    leaderBoard.append( {'name':leader['name'], 'time':leader['longestRun'], 'score':leader['highScore']} )
+                settings.debug("Refreshed leaderboard")
+                return leaderBoard
+            except:
+                settings.debug("Could not get leaderboard")
+                settings.connectToLeaderboard = False
+                return None
+        else: return None
+
+
+    # UPLOAD RECORDS TO LEADERBOARD
+    def uploadRecords(self,records):
+        if settings.connectToLeaderboard:
+            database = self.getLeaderboardClient()
 
             # UPLOAD RECORDS
             try:
@@ -609,8 +645,10 @@ class Assets:
                     settings.debug("Successfully inserted high score in database") # Debug
                 database.close()
                 settings.debug("Disconnected from leaderboard database") # Debug
-            except: settings.debug(" Failed to upload records to database") # Debug
-
+            except:
+                settings.debug(" Failed to upload records to database") # Debug
+                settings.connectToLeaderboard = False
+                return
 
 
     # GET RECORDS ID
@@ -791,6 +829,7 @@ pauseInput = [pygame.K_SPACE]
 shootInput = [pygame.K_LCTRL,pygame.K_RCTRL]
 escapeInput = [pygame.K_ESCAPE]
 backInput = [pygame.K_TAB]
+leadersInput = [pygame.K_l]
 creditsInput = [pygame.K_c]
 brakeInput = [pygame.K_LALT,pygame.K_RALT]
 muteInput = [pygame.K_m]
@@ -1590,7 +1629,7 @@ class Menu:
                     toggleScreen()
 
                 # NEXT SPACESHIP SKIN
-                elif (event.type == pygame.KEYDOWN and event.key in rightInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerNextSkin) or (event.type == pygame.JOYBUTTONDOWN and type(controllerNextSkin) == int and gamePad.get_button(controllerNextSkin)==1))):
+                if (event.type == pygame.KEYDOWN and event.key in rightInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerNextSkin) or (event.type == pygame.JOYBUTTONDOWN and type(controllerNextSkin) == int and gamePad.get_button(controllerNextSkin)==1))):
                     player.toggleSkin(True)
 
                 # PREVIOUS SPACESHIP SKIN
@@ -1598,7 +1637,7 @@ class Menu:
                     player.toggleSkin(False)
 
                 # NEXT SHIP TYPE
-                elif (event.type == pygame.KEYDOWN and event.key in upInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerNextShip) or (event.type == pygame.JOYBUTTONDOWN and type(controllerNextShip) == int and gamePad.get_button(controllerNextShip)==1))):
+                if (event.type == pygame.KEYDOWN and event.key in upInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerNextShip) or (event.type == pygame.JOYBUTTONDOWN and type(controllerNextShip) == int and gamePad.get_button(controllerNextShip)==1))):
                     player.toggleSpaceShip(True)
 
                 # PREVIOUS SHIP TYPE
@@ -1608,14 +1647,16 @@ class Menu:
                 # EXIT
                 if (event.type == pygame.KEYDOWN and event.key in escapeInput) or (gamePad is not None and gamePad.get_button(controllerExit) == 1) or event.type == pygame.QUIT: quitGame()
 
-
                 # MUTE
                 if (event.type == pygame.KEYDOWN) and (event.key in muteInput) or (gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
+
+                # LEADERBOARD
+                if (event.type == pygame.KEYDOWN) and (event.key in leadersInput): settings.debug(assets.getLeaders())
 
                 # CREDITS
                 if (event.type == pygame.KEYDOWN and event.key in creditsInput) or (gamePad is not None and gamePad.get_button(controllerCredits) == 1): menu.creditScreen(True)
 
-                 # SWITCH CONTROL TYPE
+                # SWITCH CONTROL TYPE
                 if game.usingController and event.type == pygame.KEYDOWN:
                     game.usingController = False
                     startHelpDisplay = assets.startHelpFont.render("ESCAPE = Quit   SPACE = Start   F = Fullscreen   M = Mute   C = Credits", True, settings.primaryFontColor)
