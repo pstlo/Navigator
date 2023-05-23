@@ -9,4 +9,4 @@ setup(
     version='0.4.9',
     author='Mike Pistolesi',
     ext_modules=cythonize(extensions, language_level=3),
-    install_requires=['pygame','cryptography','python-dotenv','pypresence','dnspython','pymongo==3.11'])
+    install_requires=['pygame','cryptography','python-dotenv','pypresence','dnspython','certifi','pymongo==3.11'])
