@@ -130,7 +130,7 @@ class Settings:
         # SAVING
         self.encryptGameRecords = True # Default = True / Hide game records from user to prevent manual unlocks
         self.invalidKeyMessage = "Invalid key, could not save records." # Saved to game records file if settings.encryptGameRecords == True and key is invalid
-        self.uploadRecordsToLeaderboard = True # Default = True / upload records to leaderboard on game exit
+        self.uploadRecordsToLeaderboard = platform.system() != "Darwin" # Default = True if not on MacOS Apple Silicon / upload records to leaderboard on game exit
 
         # EXPERIMENTAL
         self.rawCursorMode = False # Default = False / sets player position to cursor position
