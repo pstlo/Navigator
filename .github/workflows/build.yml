@@ -60,7 +60,6 @@ jobs:
           path: |
               ${{ github.workspace }}/LICENSE
               ${{ github.workspace }}/NOTICE
-              ${{ github.workspace }}/gameRecords.txt
 
 
   build-windows-c:
@@ -115,7 +114,6 @@ jobs:
           path: |
             ${{ github.workspace }}/LICENSE
             ${{ github.workspace }}/NOTICE
-            ${{ github.workspace }}/gameRecords.txt
 
 
   build-macos-intel:
