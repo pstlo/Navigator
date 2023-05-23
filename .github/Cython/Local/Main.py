@@ -1,5 +1,5 @@
 # Run Navigator from PYD file on local machine ( replace the parent directory's "main.py" file )
-import os,sys,random,math,platform,json,base64,time,pypresence,asyncio,dns
+import os,sys,random,math,platform,json,base64,time,pypresence,asyncio,dns,certifi
 from cryptography.fernet import Fernet
 from dotenv import load_dotenv
 from pymongo.mongo_client import MongoClient
