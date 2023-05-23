@@ -2,9 +2,10 @@
 # Copyright (c) 2023 Mike Pistolesi
 # All rights reserved
 
-import os,sys,random,math,platform,json,base64,time,pypresence,asyncio
+import os,sys,random,math,platform,json,base64,time,pypresence,asyncio,dns
 from cryptography.fernet import Fernet
 from dotenv import load_dotenv
+from pymongo.mongo_client import MongoClient
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
 
@@ -129,6 +130,7 @@ class Settings:
         # SAVING
         self.encryptGameRecords = True # Hide game records from user to prevent manual unlocks
         self.invalidKeyMessage = "Invalid key, could not save records." # Saved to game records file if settings.encryptGameRecords == True and key is invalid
+        self.uploadRecordsToLeaderboard = True
 
         # EXPERIMENTAL
         self.rawCursorMode = False # Default = False / sets player position to cursor position
@@ -472,6 +474,8 @@ class Assets:
         self.creatorFont = pygame.font.Font(self.gameFont, 55)
         self.creditsFont = pygame.font.Font(self.gameFont, 30)
         settings.debug("Loaded fonts") # Debug
+        
+        self.userName = "Test"
 
 
     # EXE/APP RESOURCES
@@ -547,9 +551,11 @@ class Assets:
         pygame.mixer.music.set_volume(settings.musicVolume/100)
 
 
-    def getDefaultRecords(self): return {'highScore':0, 'longestRun':0, 'attempts':0, 'timePlayed':0, 'points':0, 'coins':0, 'unlocks':self.getDefaultUnlocks()}
+    # RETURN NEW RECORDS DICTIONARY
+    def getDefaultRecords(self): return {'highScore':0, 'longestRun':0, 'attempts':0, 'timePlayed':0, 'points':0, 'coins':0, 'unlocks':self.getDefaultUnlocks(), 'id':self.getNewID()}
 
 
+    # RETRUN NEW UNLOCKS LIST
     def getDefaultUnlocks(self):
         ships = []
         for ship in self.spaceShipList:
@@ -558,6 +564,27 @@ class Assets:
             ships.append(skins)
         ships[0][0] = True # default ship starts unlocked
         return ships
+
+
+    def uploadRecords(self,records,database):
+        if settings.uploadRecordsToLeaderboard:
+            try:
+                collection = database["navigator"]["leaderboard"]
+                uploadData = {'_id':records['id'], 'name':self.userName, 'highScore': records['highScore'], 'longestRun':records['longestRun']} # Data for upload
+                # Check if already exists in leaderboard
+                if collection.find_one({'_id':records['id']}) is not None:
+                    collection.update_one({'_id': records['id']}, {'$set': uploadData}, upsert=True)
+                    settings.debug("Successfully updated high score in database")
+                else:
+                    collection.insert_one(uploadData) # Insert new data
+                    settings.debug("Successfully inserted high score in database")
+            except Exception as e: settings.debug(e)# + " Failed to upload score to database")
+
+
+    # GET RECORDS ID
+    def getNewID(self):
+        settings.debug("Generating new ID")
+        return Fernet.generate_key().decode('utf-8')
 
 
 
@@ -766,7 +793,7 @@ async def getPresence(presence):
 
 if settings.showPresence:
     try:
-        presence = pypresence.AioPresence((Fernet(base64.b64decode(os.getenv('KEY1'))).decrypt(os.getenv('TOKEN'))).decode())
+        presence = pypresence.AioPresence((Fernet(base64.b64decode(os.getenv('DCKEY'))).decrypt(os.getenv('DCTOKEN'))).decode())
         settings.debug("Loading Discord presence") # Debug
         asyncio.run(getPresence(presence))
     except:
@@ -863,6 +890,7 @@ rightDir = ["W", "N", "S", "NW", "SW"]
 # QUIT GAME
 def quitGame():
     pygame.quit()
+    assets.uploadRecords(game.records,game.database) # UPLOAD TO LEADERBOARD
     sys.exit()
 
 
@@ -918,6 +946,12 @@ def getAngle(direction):
 # GAME
 class Game:
     def __init__(self,records):
+
+        try:
+            self.database = MongoClient((Fernet(base64.b64decode(os.getenv('DBKEY'))).decrypt(os.getenv('DBTOKEN'))).decode())
+            settings.debug("Connected to leaderboard database")
+        except: settings.debug("Could not connect to leaderboard database. Scores will not be uploaded")
+
 
         # Level constants
         self.maxObstacles = assets.stageList[0][0]["maxObstacles"]
@@ -1703,7 +1737,7 @@ class Menu:
             newHighScore = True
             game.records["highScore"] = game.score
 
-        assets.storeRecords(game.records)
+        assets.storeRecords(game.records) # SAVE UPDATED RECORDS
 
         statsOffsetY = settings.screenSize[1]/10
         statsSpacingY = settings.screenSize[1]/20
