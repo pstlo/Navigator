@@ -40,6 +40,8 @@ jobs:
           pip install cryptography
           pip install pypresence
           pip install python-dotenv
+          pip install dnspython
+          python -m pip install pymongo==3.11
 
       - name: Create Windows executable
         run: |
@@ -88,6 +90,8 @@ jobs:
           pip install cryptography
           pip install pypresence
           pip install python-dotenv
+          pip install dnspython
+          python -m pip install pymongo==3.11
 
       - name: Build Windows Cython executable
         run: |
@@ -140,6 +144,8 @@ jobs:
           pip install cryptography
           pip install pypresence
           pip install python-dotenv
+          pip install dnspython
+          python -m pip install pymongo==3.11
 
       - name: Build MacOS app
         run: |
@@ -184,6 +190,8 @@ jobs:
           pip install cryptography
           pip install pypresence
           pip install python-dotenv
+          pip install dnspython
+          python -m pip install pymongo==3.11
 
       - name: Build MacOS (Intel Based) Cython app
         run: |
@@ -232,6 +240,8 @@ jobs:
           pip install cryptography
           pip install pypresence
           pip install python-dotenv
+          pip install dnspython
+          python -m pip install pymongo==3.11
 
       - name: Create Linux executable
         run: |
