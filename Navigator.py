@@ -493,17 +493,20 @@ class Assets:
         if not settings.encryptGameRecords:
             try:
                 with open(self.recordsPath, 'w') as file: file.write(json.dumps(records))
-            except: return # Continue without saving game records
+                settings.debug("Stored game records")
+            except: settings.debug("Continuing without saving records")
         # With encryption
         else:
             if self.getKey() is None:
                 with open(self.recordsPath,'w') as file: file.write(settings.invalidKeyMessage)
+                settings.debug("Invalid key, continuing without saving")
                 return # No key, continue without saving
             else:
                 try:
                     encrypted = Fernet(self.getKey()).encrypt(json.dumps(records).encode())
                     with open(self.recordsPath,'wb') as file: file.write(encrypted)
-                except: return # Failed to load encrypted records, continue without saving
+                    settings.debug("Stored encrypted game records")
+                except: settings.debug("Failed to save encrypted records")
 
 
     # LOAD GAME RECORDS
@@ -511,9 +514,11 @@ class Assets:
         # No encryption
         if not settings.encryptGameRecords:
             try:
-                with open(self.recordsPath,'r') as file: return json.load(file)
+                with open(self.recordsPath,'r') as file: records = json.load(file)
+                settings.debug("Loaded game records")
+                return records
             except:
-                # Could not load records, try overwrite with default values
+                settings.debug("Could not load records, attempting overwrite")
                 defaultRecords = self.getDefaultRecords()
                 self.storeRecords(defaultRecords)
                 return defaultRecords
@@ -522,9 +527,11 @@ class Assets:
             try:
                 # Return dictionary from encrypted records file
                 with open(self.recordsPath,'rb') as file: encrypted = file.read()
+                settings.debug("Loaded encrypted game records")
                 return json.loads(Fernet(self.getKey()).decrypt(encrypted))
             except:
                 # Failed to load records
+                settings.debug("Could not load encrypted records, attempting overwrite")
                 defaultRecords = self.getDefaultRecords()
                 self.storeRecords(defaultRecords) # Try creating new encrypted records file
                 return defaultRecords
