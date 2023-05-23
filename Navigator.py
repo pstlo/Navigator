@@ -573,28 +573,32 @@ class Assets:
                 database = MongoClient((Fernet(base64.b64decode(os.getenv('DBKEY'))).decrypt(os.getenv('DBTOKEN'))).decode())
                 settings.debug("Connected to leaderboard database")
             except:
-                settings.debug("Could not connect to leaderboard database. Scores will not be uploaded")
+                settings.debug("Could not connect to leaderboard database. Scores will not be uploaded") # Debug
                 return
             try:
                 collection = database["navigator"]["leaderboard"]
                 uploadData = {'_id':records['id'], 'name':self.userName, 'highScore': records['highScore'], 'longestRun':records['longestRun']} # Data for upload
                 # Check if already exists in leaderboard
+                settings.debug("Checking for previous records on leaderboard") # Debug
                 data = collection.find_one({'_id':records['id']})
                 if data is not None:
+                    settings.debug("Records found") # Debug
                     longestRun = data.get('longestRun')
                     highScore = data.get('highScore')
                     if uploadData['highScore'] > highScore or uploadData['longestRun'] > longestRun:
                         uploadData['highScore'] = max(highScore,uploadData['highScore'])
                         uploadData['longestRun'] = max(longestRun,uploadData['longestRun'])
+                        settings.debug("Updating leaderboard records") # Debug
                         collection.update_one({'_id': records['id']}, {'$set': uploadData}, upsert=True)
-                        settings.debug("Successfully updated scores in database")
-                    else: settings.debug("Skipped leaderboard update, scores unchanged")
+                        settings.debug("Successfully updated scores in database") # Debug
+                    else: settings.debug("Skipped leaderboard update, scores unchanged") # Debug
                 else: # Insert new data
+                    settings.debug("Adding record to leaderboard") # Debug
                     collection.insert_one(uploadData)
-                    settings.debug("Successfully inserted high score in database")
+                    settings.debug("Successfully inserted high score in database") # Debug
                 database.close()
-                settings.debug("Disconnected from leaderboard database")
-            except: settings.debug(" Failed to upload score to database")
+                settings.debug("Disconnected from leaderboard database") # Debug
+            except: settings.debug(" Failed to upload records to database") # Debug
 
 
     # GET RECORDS ID
