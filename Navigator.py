@@ -2,10 +2,10 @@
 # Copyright (c) 2023 Mike Pistolesi
 # All rights reserved
 
-import os,sys,random,math,platform,json,base64,time,pypresence,asyncio,dns
+import os,sys,random,math,platform,json,base64,time,pypresence,asyncio
 from cryptography.fernet import Fernet
 from dotenv import load_dotenv
-from pymongo.mongo_client import MongoClient
+from pymongo.mongo_client import MongoClient # dnspython must also be installed for database access
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
 
@@ -14,7 +14,6 @@ pygame.font.init()
 pygame.mixer.init()
 
 version = "v0.4.9"
-
 
 
 
@@ -149,9 +148,9 @@ class Settings:
         if self.useArgs:
             self.arguments = sys.argv[1:]
             for arg in self.arguments: arg = arg.lower()
-
         else: self.arguments = None
 
+        # APPLY ARGS
         if self.arguments is not None:
             if "debug" in self.arguments: self.debugging = True
             if "devmode" in self.arguments: self.devMode = True
@@ -589,9 +588,9 @@ class Assets:
                         uploadData['longestRun'] = max(longestRun,uploadData['longestRun'])
                         collection.update_one({'_id': records['id']}, {'$set': uploadData}, upsert=True)
                         settings.debug("Successfully updated scores in database")
-                    else: settings.debug("Skipped leaderboard update, scores unchanged")    
+                    else: settings.debug("Skipped leaderboard update, scores unchanged")
                 else: # Insert new data
-                    collection.insert_one(uploadData) 
+                    collection.insert_one(uploadData)
                     settings.debug("Successfully inserted high score in database")
                 database.close()
                 settings.debug("Disconnected from leaderboard database")
