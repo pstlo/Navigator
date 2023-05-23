@@ -475,9 +475,9 @@ class Assets:
         self.creatorFont = pygame.font.Font(self.gameFont, 55)
         self.creditsFont = pygame.font.Font(self.gameFont, 30)
         settings.debug("Loaded fonts") # Debug
-        
+
         self.userName = platform.node() # Leaderboard username
-        
+
 
     # EXE/APP RESOURCES
     def resources(self,relative):
@@ -568,19 +568,34 @@ class Assets:
 
 
     # UPLOAD RECORDS TO LEADERBOARD
-    def uploadRecords(self,records,database):
+    def uploadRecords(self,records):
         if settings.uploadRecordsToLeaderboard:
+            try:
+                database = MongoClient((Fernet(base64.b64decode(os.getenv('DBKEY'))).decrypt(os.getenv('DBTOKEN'))).decode())
+                settings.debug("Connected to leaderboard database")
+            except:
+                settings.debug("Could not connect to leaderboard database. Scores will not be uploaded")
+                return
             try:
                 collection = database["navigator"]["leaderboard"]
                 uploadData = {'_id':records['id'], 'name':self.userName, 'highScore': records['highScore'], 'longestRun':records['longestRun']} # Data for upload
                 # Check if already exists in leaderboard
-                if collection.find_one({'_id':records['id']}) is not None:
-                    collection.update_one({'_id': records['id']}, {'$set': uploadData}, upsert=True)
-                    settings.debug("Successfully updated high score in database")
-                else:
-                    collection.insert_one(uploadData) # Insert new data
+                data = collection.find_one({'_id':records['id']})
+                if data is not None:
+                    longestRun = data.get('longestRun')
+                    highScore = data.get('highScore')
+                    if uploadData['highScore'] > highScore or uploadData['longestRun'] > longestRun:
+                        uploadData['highScore'] = max(highScore,uploadData['highScore'])
+                        uploadData['longestRun'] = max(longestRun,uploadData['longestRun'])
+                        collection.update_one({'_id': records['id']}, {'$set': uploadData}, upsert=True)
+                        settings.debug("Successfully updated scores in database")
+                    else: settings.debug("Skipped leaderboard update, scores unchanged")    
+                else: # Insert new data
+                    collection.insert_one(uploadData) 
                     settings.debug("Successfully inserted high score in database")
-            except Exception as e: settings.debug(e)# + " Failed to upload score to database")
+                database.close()
+                settings.debug("Disconnected from leaderboard database")
+            except: settings.debug(" Failed to upload score to database")
 
 
     # GET RECORDS ID
@@ -891,9 +906,9 @@ rightDir = ["W", "N", "S", "NW", "SW"]
 
 # QUIT GAME
 def quitGame():
-    pygame.quit()
-    assets.uploadRecords(game.records,game.database) # UPLOAD TO LEADERBOARD
-    sys.exit()
+    pygame.quit() # UNINITIALIZE PYGAME
+    assets.uploadRecords(game.records) # UPLOAD TO LEADERBOARD
+    sys.exit() # EXIT NAVIGATOR
 
 
 # ROTATE IMAGES
@@ -948,12 +963,6 @@ def getAngle(direction):
 # GAME
 class Game:
     def __init__(self,records):
-
-        try:
-            self.database = MongoClient((Fernet(base64.b64decode(os.getenv('DBKEY'))).decrypt(os.getenv('DBTOKEN'))).decode())
-            settings.debug("Connected to leaderboard database")
-        except: settings.debug("Could not connect to leaderboard database. Scores will not be uploaded")
-
 
         # Level constants
         self.maxObstacles = assets.stageList[0][0]["maxObstacles"]
