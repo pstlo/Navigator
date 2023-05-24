@@ -1557,19 +1557,22 @@ class Menu:
             shipHelpDisplay = assets.shipHelpFont.render("S/DOWN = Last ship     W/UP = Next ship", True, settings.primaryFontColor)
             boostHelp = assets.shipHelpFont.render("SHIFT = Boost", True, settings.primaryFontColor)
             shootHelp = assets.shipHelpFont.render("CTRL = Shoot", True, settings.primaryFontColor)
-
         else:
             startHelpDisplay = assets.startHelpFont.render("START = Quit   A = Start   GUIDE = Fullscreen   LB = Mute   Y = Credits", True, settings.primaryFontColor)
             boostHelp = assets.shipHelpFont.render("LT = Boost", True, settings.primaryFontColor)
             shootHelp = assets.shipHelpFont.render("RT = Shoot", True, settings.primaryFontColor)
             skinHelpDisplay = assets.shipHelpFont.render("D-PAD LEFT = Last skin   D-PAD RIGHT = Next skin", True, settings.primaryFontColor)
             shipHelpDisplay = assets.shipHelpFont.render("D-PAD DOWN = Last ship   D-PAD UP = Next ship", True, settings.primaryFontColor)
+        
+        leaderboardHelpDisplay = assets.startHelpFont.render("L = Leaderboard", True, settings.primaryFontColor)
+       
 
         startHelpRect = startHelpDisplay.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]-settings.screenSize[1]/7))
         skinHelpRect = skinHelpDisplay.get_rect(center = (settings.screenSize[0]/4 + 40, settings.screenSize[1]-settings.screenSize[1]/7 + 70))
         shipHelpRect = shipHelpDisplay.get_rect(center = (settings.screenSize[0]/4 + 40, settings.screenSize[1]-settings.screenSize[1]/7 + 40))
         boostHelpRect = boostHelp.get_rect()
         shootHelpRect = shootHelp.get_rect()
+        leaderboardHelpRect = leaderboardHelpDisplay.get_rect(center= (settings.screenSize[0]*0.8,settings.screenSize[1]-settings.screenSize[1]/10))
         leftRect = assets.menuList[3].get_rect(center = (settings.screenSize[0] * 0.2 , settings.screenSize[1]/3) )
         rightRect = assets.menuList[4].get_rect(center = (settings.screenSize[0] * 0.8 , settings.screenSize[1]/3) )
 
@@ -1679,10 +1682,10 @@ class Menu:
 
             # GET SHIP CONTROLS
             if player.hasGuns and player.boostSpeed > player.baseSpeed: # has guns and boost
-                boostHelpRect.center = settings.screenSize[0]*3/4 - 60, settings.screenSize[1]-settings.screenSize[1]/7 + 40
-                shootHelpRect.center = settings.screenSize[0]*3/4 + 60, settings.screenSize[1]-settings.screenSize[1]/7 + 40
-            elif player.hasGuns: shootHelpRect.center = settings.screenSize[0]*3/4, settings.screenSize[1]-settings.screenSize[1]/7 + 40 # has guns only
-            elif player.boostSpeed > player.baseSpeed: boostHelpRect.center = settings.screenSize[0]*3/4, settings.screenSize[1]-settings.screenSize[1]/7 + 40 # has boost only
+                boostHelpRect.center = settings.screenSize[0]*3/4 - 60, settings.screenSize[1]-settings.screenSize[1]/7 + 72
+                shootHelpRect.center = settings.screenSize[0]*3/4 + 60, settings.screenSize[1]-settings.screenSize[1]/7 + 72
+            elif player.hasGuns: shootHelpRect.center = settings.screenSize[0]*3/4, settings.screenSize[1]-settings.screenSize[1]/7 + 72 # has guns only
+            elif player.boostSpeed > player.baseSpeed: boostHelpRect.center = settings.screenSize[0]*3/4, settings.screenSize[1]-settings.screenSize[1]/7 + 72 # has boost only
 
             screen.fill(screenColor)
             screen.blit(assets.bgList[game.currentStage - 1][0],(0,0))
@@ -1696,6 +1699,9 @@ class Menu:
             screen.blit(startDisplay,startRect) # Menu Logo
             if settings.showVersion: screen.blit(versionDisplay,versionRect) # Version info
             screen.blit(startHelpDisplay, startHelpRect) # Game controls
+
+            # LEADERBOARD HELP
+            if settings.connectToLeaderboard: screen.blit(leaderboardHelpDisplay,leaderboardHelpRect)
 
             # SHOW SHIP CONTROLS
             if player.hasGuns: screen.blit(shootHelp,shootHelpRect)
