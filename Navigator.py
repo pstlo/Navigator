@@ -443,8 +443,8 @@ class Assets:
                     try:
                         key,value = line.strip().split(':')
                         self.donations[key] = int(value)
-                    except:pass
-        except: pass
+                    except:settings.debug("Could not load supporter")
+        except: settings.debug("Could not load supporters list")
 
         if len(self.donations) > 0:
             self.maxDon = max(self.donations.values())
@@ -989,8 +989,8 @@ def getMovement(spawnPattern):
     Y = random.randint(settings.screenSize[1] * 0.1, settings.screenSize[1] * 0.99)
 
     lowerX = random.randint(-1,0)
-    upperX =  random.randint(settings.screenSize[0], settings.screenSize[0] + 1)
-    lowerY  = random.randint(-1,0)
+    upperX = random.randint(settings.screenSize[0], settings.screenSize[0] + 1)
+    lowerY = random.randint(-1,0)
     upperY = random.randint(settings.screenSize[1],settings.screenSize[1] + 1)
 
     possible = []
@@ -2546,7 +2546,7 @@ class Obstacle(pygame.sprite.Sprite):
     # BASIC MOVEMENT (8-direction) -> direction is a string
     def basicMove(self):
         if self.slowerDiagonal: # Use sqrt(2) for correct diagonal movement
-            if self.direction  == "N": self.rect.centery -= self.speed
+            if self.direction == "N": self.rect.centery -= self.speed
             elif self.direction == "S": self.rect.centery += self.speed
             elif self.direction == "E": self.rect.centerx += self.speed
             elif self.direction == "W": self.rect.centerx -= self.speed
