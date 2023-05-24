@@ -132,7 +132,7 @@ class Settings:
 
         # LEADERBOARD
         self.connectToLeaderboard = True # Default = True
-        self.leaderboardSize = 20
+        self.leaderboardSize = 10 # Number of players shown on leaderboard
 
         # EXPERIMENTAL
         self.rawCursorMode = False # Default = False / sets player position to cursor position
@@ -475,6 +475,8 @@ class Assets:
         self.gameOverFont = pygame.font.Font(self.gameFont, 100)
         self.statFont = pygame.font.Font(self.gameFont, 30)
         self.exitFont = pygame.font.Font(self.gameFont, 30)
+        self.leaderboardTitleFont = pygame.font.Font(self.gameFont, 60)
+        self.leaderboardFont = pygame.font.Font(self.gameFont, 30)
         self.creatorFont = pygame.font.Font(self.gameFont, 55)
         self.creditsFont = pygame.font.Font(self.gameFont, 30)
         settings.debug("Loaded fonts") # Debug
@@ -607,7 +609,7 @@ class Assets:
                 database.close()
                 settings.debug("Disconnected from leaderboard client") # Debug
                 leaderBoard = []
-                for leaderIndex in range(len(leaders)-1):
+                for leaderIndex in range(len(leaders)):
                     leader = leaders[leaderIndex]
                     leaderBoard.append( {'name':leader['name'], 'time':leader['longestRun'], 'score':leader['highScore']} )
                 return leaderBoard
@@ -1653,7 +1655,7 @@ class Menu:
                 if (event.type == pygame.KEYDOWN) and (event.key in muteInput) or (gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
 
                 # LEADERBOARD
-                if (event.type == pygame.KEYDOWN) and (event.key in leadersInput): settings.debug(assets.leaderboard)
+                if (event.type == pygame.KEYDOWN) and (event.key in leadersInput): menu.leaderboard()
 
                 # CREDITS
                 if (event.type == pygame.KEYDOWN and event.key in creditsInput) or (gamePad is not None and gamePad.get_button(controllerCredits) == 1): menu.creditScreen(True)
@@ -1954,6 +1956,70 @@ class Menu:
                     textList[x][1].center = settings.screenSize[0]/2, settings.screenSize[1]/3 + statsOffsetY + statsSpacingY * (x+1 - skipped)
                     screen.blit(textList[x][0],textList[x][1])
                 else: skipped+=1
+
+
+    # LEADERBOARD
+    def leaderboard(self):
+        if settings.connectToLeaderboard:
+            showLeaderboard = True
+            titleDisplay = assets.leaderboardTitleFont.render("LEADER BOARD", True, settings.primaryFontColor)
+            titleRect = titleDisplay.get_rect(center=(settings.screenSize[0]/2, 70))
+            cellW = settings.screenSize[0] * 0.6
+            cellH = 40
+            leaderboardX = (settings.screenSize[0] - cellW) / 2  # Center the table horizontally
+            leaderboardY = 100
+            headerText = "#       Name                              Time       Score"
+            headerDisplay = assets.leaderboardFont.render(headerText, True, settings.primaryFontColor)
+            headerRect = headerDisplay.get_rect(topleft=(settings.screenSize[0]*0.2, leaderboardY))
+            leaderSpacing = 40
+            cellBorder = 2
+            maxUsernameLength = 15
+
+            while showLeaderboard:
+                for event in pygame.event.get():
+                    # QUIT GAME
+                    if event.type == pygame.QUIT: quitGame()
+
+                    # RETURN TO GAME
+                    if (event.type == pygame.KEYDOWN and (event.key in escapeInput or event.key in leadersInput or event.key in startInput or event.key in backInput)) or (gamePad is not None and gamePad.get_button(controllerBack) == 1): showLeaderboard = False
+
+                self.menuMusicLoop()
+                screen.fill(screenColor)
+                screen.blit(assets.bgList[game.currentStage - 1][0], (0, 0))
+
+                screen.blit(titleDisplay,titleRect) # 'Leaderboard' text
+                screen.blit(headerDisplay, headerRect) # Leaderboard table header
+
+                # DRAW LEADERBOARD
+                for index, leader in enumerate(assets.leaderboard):
+                    cellX = leaderboardX
+                    cellY = leaderboardY + (index + 1) * leaderSpacing
+                    pygame.draw.rect(screen, settings.primaryFontColor, (cellX, cellY, cellW, cellH))
+                    pygame.draw.rect(screen, (0, 0, 0), (cellX, cellY, cellW, cellH), cellBorder)
+
+                    rankText = f"{index + 1}."
+                    rankDisplay = assets.leaderboardFont.render(rankText, True, (0, 0, 0))
+                    rankRect = rankDisplay.get_rect(midleft=(cellX + 10, cellY + cellH // 2))
+                    screen.blit(rankDisplay, rankRect)
+
+                    nameText = leader['name'][:maxUsernameLength]
+                    nameDisplay = assets.leaderboardFont.render(nameText, True, (0, 0, 0))
+                    nameRect = nameDisplay.get_rect(midleft=(cellX + cellW //12, cellY + cellH // 2))
+                    screen.blit(nameDisplay, nameRect)
+
+                    timeText= str(leader['time']) + "s"
+                    timeDisplay = assets.leaderboardFont.render(timeText, True, (0, 0, 0))
+                    timeRect = timeDisplay.get_rect(center=(cellX + cellW * 0.7, cellY + cellH // 2))
+                    screen.blit(timeDisplay, timeRect)
+
+                    scoreText = str(leader['score'])
+                    scoreDisplay = assets.leaderboardFont.render(scoreText, True, (0, 0, 0))
+                    scoreRect = scoreDisplay.get_rect(center=(cellX + cellW * 0.88, cellY + cellH // 2))
+                    screen.blit(scoreDisplay, scoreRect)
+
+                for index in range(len(assets.leaderboard) + 1):pygame.draw.line(screen, (0, 0, 0), (leaderboardX, leaderboardY + (index + 1) * leaderSpacing),(leaderboardX + cellW, leaderboardY + (index + 1) * leaderSpacing), 1)
+                displayUpdate()
+
 
 
     # CREDITS
