@@ -238,8 +238,8 @@ class Settings:
                 }
             }
         self.runningFromExe = hasattr(sys,'_MEIPASS') # Specify if running from EXE/app or Python script
-        if self.runningFromExe: self.debug("Running from executable")
-        else: self.debug("Running from Python script")
+        if self.runningFromExe: self.debug("Running from executable") # Debug
+        else: self.debug("Running from Python script") # Debug
         self.debug("Loaded settings") # Debug
 
 
