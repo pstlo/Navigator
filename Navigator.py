@@ -43,11 +43,10 @@ class Settings:
         # POWER UPS
         self.spawnRange = [0.15, 0.85]
         self.spawnVertices = 8 # Default = 8 / Vertices in shape of point spawn area (Octagon)
-        self.pointSize = 25  # Default = 20
+        self.pointSize = 25  # Default = 25
         self.shieldChunkSize = self.screenSize[0]/40 # Default = screen width / 40
         self.boostCooldownTime = 2000 # Default = 2000 / Activates when fuel runs out to allow regen
         self.powerUpList = {"Default":55,"Shield":20, "Fuel":20, "Coin":5} # Default = {"Default":55,"Shield":20, "Fuel":20, "Coin":5}
-
         self.playerShieldSize = 48 # Default = 64 / Shield visual size
         self.shieldVisualDuration = 250 # Default = 250 / Shield visual duration
         self.minDistanceToPoint = (self.screenSize[0] + self.screenSize[1]) / 16 # Default = 100
