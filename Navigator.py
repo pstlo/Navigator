@@ -657,7 +657,7 @@ class Assets:
 
     # GET RECORDS ID
     def getNewID(self):
-        settings.debug("Generating new ID")
+        settings.debug("Generating new ID") # Debug
         return Fernet.generate_key().decode('utf-8')
 
 
