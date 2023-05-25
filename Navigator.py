@@ -481,7 +481,7 @@ class Assets:
         self.creditsFont = pygame.font.Font(self.gameFont, 30)
         settings.debug("Loaded fonts") # Debug
 
-        self.userName = platform.node() # Leaderboard username
+        self.userName = os.getlogin() # Leaderboard username
         self.leaderboard = self.getLeaders()
 
 
