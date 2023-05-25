@@ -1,0 +1,14 @@
+pygame
+os
+sys
+random
+math
+platform
+json
+base64
+cryptography
+python-dotenv
+pypresence
+pymongo
+dnspython
+certifi
