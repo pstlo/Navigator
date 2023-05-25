@@ -1565,9 +1565,9 @@ class Menu:
             shootHelp = assets.shipHelpFont.render("RT = Shoot", True, settings.primaryFontColor)
             skinHelpDisplay = assets.shipHelpFont.render("D-PAD LEFT = Last skin   D-PAD RIGHT = Next skin", True, settings.primaryFontColor)
             shipHelpDisplay = assets.shipHelpFont.render("D-PAD DOWN = Last ship   D-PAD UP = Next ship", True, settings.primaryFontColor)
-        
+
         leaderboardHelpDisplay = assets.startHelpFont.render("L = Leaderboard", True, settings.primaryFontColor)
-       
+
 
         startHelpRect = startHelpDisplay.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]-settings.screenSize[1]/7))
         skinHelpRect = skinHelpDisplay.get_rect(center = (settings.screenSize[0]/4 + 40, settings.screenSize[1]-settings.screenSize[1]/7 + 70))
@@ -1852,16 +1852,16 @@ class Menu:
         else: exitDisplay = assets.exitFont.render("SELECT = Menu    A = Restart    START = Quit    Y = Credits", True, settings.primaryFontColor)
 
         # Rects
-        scoreRect = scoreDisplay.get_rect(center = (settings.screenSize[0]/2, settings.screenSize[1]/3 + statsOffsetY +statsSpacingY * 1))
-        highScoreRect = highScoreDisplay.get_rect(center = (settings.screenSize[0]/2, settings.screenSize[1]/3 + statsOffsetY +statsSpacingY * 2))
-        newHighScoreRect = newHighScoreDisplay.get_rect(center = (settings.screenSize[0]/2, settings.screenSize[1]/3 + statsOffsetY +statsSpacingY * 1.5))
-        survivedRect = survivedDisplay.get_rect(center =(settings.screenSize[0]/2, settings.screenSize[1]/3 + statsOffsetY + statsSpacingY * 3))
-        longestRunRect = longestRunDisplay.get_rect(center =(settings.screenSize[0]/2, settings.screenSize[1]/3 + statsOffsetY +statsSpacingY * 4))
-        newLongestRunRect = newLongestRunDisplay.get_rect(center = (settings.screenSize[0]/2, settings.screenSize[1]/3 + statsOffsetY +statsSpacingY * 3.5))
-        levelRect = levelDisplay.get_rect(center = (settings.screenSize[0]/2, settings.screenSize[1]/3 +statsOffsetY +statsSpacingY * 5))
-        attemptRect = attemptDisplay.get_rect(center = (settings.screenSize[0]/2, settings.screenSize[1]/3 + statsOffsetY +statsSpacingY * 6))
-        wastedRect = timeWastedDisplay.get_rect(center = (settings.screenSize[0]/2, settings.screenSize[1]/3 +statsOffsetY +statsSpacingY * 7))
-        exitRect = exitDisplay.get_rect(center =(settings.screenSize[0]/2, settings.screenSize[1]/3 + 2* statsOffsetY +statsSpacingY * 8))
+        survivedRect = survivedDisplay.get_rect()
+        longestRunRect = longestRunDisplay.get_rect()
+        newLongestRunRect = newLongestRunDisplay.get_rect()
+        scoreRect = scoreDisplay.get_rect()
+        highScoreRect = highScoreDisplay.get_rect()
+        newHighScoreRect = newHighScoreDisplay.get_rect()
+        levelRect = levelDisplay.get_rect()
+        attemptRect = attemptDisplay.get_rect()
+        wastedRect = timeWastedDisplay.get_rect()
+        exitRect = exitDisplay.get_rect(center = (settings.screenSize[0]/2, settings.screenSize[1]/3 + 2* statsOffsetY +statsSpacingY * 8))
 
         # [display,rect] lists
         scoreText = scoreDisplay,scoreRect
@@ -1874,7 +1874,7 @@ class Menu:
         attemptText = attemptDisplay, attemptRect
         wastedText = timeWastedDisplay, wastedRect
 
-        displayTextList = [scoreText, highScoreText, newHighScoreText, survivedText, longestRunText, newLongestRunText, levelText, attemptText, wastedText]
+        displayTextList = [survivedText, longestRunText, newLongestRunText, scoreText, highScoreText, newHighScoreText, levelText, attemptText, wastedText]
 
         while gameOver:
             # BACKGROUND
@@ -3017,7 +3017,7 @@ class BackgroundShip:
 
 
 # INITIALIZE GAME
-game = Game() # Initialize game 
+game = Game() # Initialize game
 menu = Menu() # Initialize menus
 settings.debug("Game started") # Debug
 
