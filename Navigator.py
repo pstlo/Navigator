@@ -664,8 +664,8 @@ class Assets:
 
 # UNLOCKS
 class Unlocks:
-    def __init__(self):
-        self.ships = assets.loadRecords()['unlocks']
+    def __init__(self,records):
+        self.ships = records
         settings.debug("Loaded unlocks") # Debug
 
 
@@ -821,7 +821,7 @@ settings.debug("Initialized screen") # Debug
 pygame.mixer.set_num_channels(settings.numChannels)
 assets = Assets() # LOAD ASSETS
 settings.debug("Assets loaded") # Debug
-unlocks = Unlocks() # UNLOCKS
+
 
 # KEY BINDS
 leftInput = [pygame.K_a, pygame.K_LEFT]
@@ -1021,7 +1021,11 @@ def getAngle(direction):
 
 # GAME
 class Game:
-    def __init__(self,records):
+    def __init__(self):
+
+        # GAME RECORDS
+        self.records = assets.loadRecords()
+        self.unlocks = Unlocks(self.records['unlocks']) # UNLOCKS
 
         # Level constants
         self.maxObstacles = assets.stageList[0][0]["maxObstacles"]
@@ -1049,7 +1053,6 @@ class Game:
         self.cave,self.caveIndex = None, 0 # For cave levels
         self.musicMuted = settings.musicMuted
         self.clk = pygame.time.Clock() # Gameclock
-        self.records = records # Game records dictionary
         self.usingController = settings.useController # Using controller for movement
         self.usingCursor = False # Using cursor for movement
 
@@ -1581,12 +1584,12 @@ class Menu:
         bounceDelay = 5
         bounceCount = 0
 
-        unlocks.update(game) # GET NEW UNLOCKS
+        game.unlocks.update(game) # GET NEW UNLOCKS
 
         if settings.defaultToHighShip:
-            if unlocks.hasShipUnlock(): player.getShip(unlocks.highestShip()) # Gets highest unlocked ship by default
+            if game.unlocks.hasShipUnlock(): player.getShip(game.unlocks.highestShip()) # Gets highest unlocked ship by default
 
-        if settings.defaultToHighSkin and not game.skipAutoSkinSelect: player.getSkin(unlocks.highestSkin(game.savedShipLevel)) # Gets highest unlocked skin by default
+        if settings.defaultToHighSkin and not game.skipAutoSkinSelect: player.getSkin(game.unlocks.highestSkin(game.savedShipLevel)) # Gets highest unlocked skin by default
         elif game.skipAutoSkinSelect: player.getSkin(game.savedSkin)
 
         startOffset = 100
@@ -1706,8 +1709,8 @@ class Menu:
             # SHOW SHIP CONTROLS
             if player.hasGuns: screen.blit(shootHelp,shootHelpRect)
             if player.boostSpeed > player.baseSpeed: screen.blit(boostHelp,boostHelpRect)
-            if len(assets.spaceShipList[game.savedShipLevel]['skins']) > 1 and (settings.devMode or unlocks.hasSkinUnlock(game.savedShipLevel)): screen.blit(skinHelpDisplay,skinHelpRect) # Show switch skin controls
-            if len(assets.spaceShipList) > 1 and (settings.devMode or unlocks.hasShipUnlock()): screen.blit(shipHelpDisplay,shipHelpRect)
+            if len(assets.spaceShipList[game.savedShipLevel]['skins']) > 1 and (settings.devMode or game.unlocks.hasSkinUnlock(game.savedShipLevel)): screen.blit(skinHelpDisplay,skinHelpRect) # Show switch skin controls
+            if len(assets.spaceShipList) > 1 and (settings.devMode or game.unlocks.hasShipUnlock()): screen.blit(shipHelpDisplay,shipHelpRect)
             screen.blit(player.image, (player.rect.x,player.rect.y + startOffset)) # Current spaceship
 
             # LOGO LETTERS
@@ -2362,7 +2365,7 @@ class Player(pygame.sprite.Sprite):
         def toggleSkin(self, toggleDirection):
             if toggleDirection: # Next skin
                 if not settings.devMode:
-                    skin = unlocks.nextUnlockedSkin(game.savedShipLevel,self.currentImageNum)
+                    skin = game.unlocks.nextUnlockedSkin(game.savedShipLevel,self.currentImageNum)
                     if skin is not None: self.getSkin(skin)
                     elif skin != self.currentImageNum: self.getSkin(0) # Wrap to first skin
                 else:
@@ -2370,10 +2373,10 @@ class Player(pygame.sprite.Sprite):
                     elif len(assets.spaceShipList[game.savedShipLevel]['skins'])-1 != 0: self.getSkin(0)
             else: # Last skin
                 if self.currentImageNum >= 1:
-                    if not settings.devMode: skin = unlocks.lastUnlockedSkin(game.savedShipLevel,self.currentImageNum) # previous skin
+                    if not settings.devMode: skin = game.unlocks.lastUnlockedSkin(game.savedShipLevel,self.currentImageNum) # previous skin
                     else: skin = self.currentImageNum - 1
                 else: # Wrap to last skin
-                    if not settings.devMode: skin = unlocks.highestSkin(game.savedShipLevel)
+                    if not settings.devMode: skin = game.unlocks.highestSkin(game.savedShipLevel)
                     else: skin = len(assets.spaceShipList[game.savedShipLevel]['skins'])-1
                 if skin is not None: self.getSkin(skin)
 
@@ -2391,7 +2394,7 @@ class Player(pygame.sprite.Sprite):
         def toggleSpaceShip(self,toggleDirection): # toggleDirection == True -> next ship / False -> last ship
             if toggleDirection:
                 if not settings.devMode:
-                    ship = unlocks.nextUnlockedShip(game.savedShipLevel)
+                    ship = game.unlocks.nextUnlockedShip(game.savedShipLevel)
                     if ship is not None: self.getShip(ship)
                     elif game.savedShipLevel != 0: self.getShip(0)
                 else:
@@ -2399,9 +2402,9 @@ class Player(pygame.sprite.Sprite):
                     elif game.savedShipLevel != 0: self.getShip(0) # Wrap to first ship
             else:
                 if not settings.devMode:
-                    ship = unlocks.lastUnlockedShip(game.savedShipLevel)
+                    ship = game.unlocks.lastUnlockedShip(game.savedShipLevel)
                     if ship is not None: self.getShip(ship)
-                    elif ship != game.savedShipLevel: self.getShip(unlocks.highestShip()) # Wrap to first ship
+                    elif ship != game.savedShipLevel: self.getShip(game.unlocks.highestShip()) # Wrap to first ship
                 else:
                     if game.savedShipLevel >= 1: self.getShip(game.savedShipLevel-1)
                     else: self.getShip(len(assets.spaceShipList)-1) # Wrap to last ship
@@ -2410,8 +2413,8 @@ class Player(pygame.sprite.Sprite):
         # SWITCH TO SPECIFIC SHIP TYPE
         def getShip(self,shipNum):
             if len(assets.spaceShipList) >= shipNum:
-                if unlocks.hasShipUnlock() or settings.devMode:
-                    if unlocks.ships[shipNum][0] or settings.devMode:
+                if game.unlocks.hasShipUnlock() or settings.devMode:
+                    if game.unlocks.ships[shipNum][0] or settings.devMode:
                         game.savedShipLevel = shipNum
                         self.updatePlayerConstants()
 
@@ -3015,7 +3018,7 @@ class BackgroundShip:
 
 
 # INITIALIZE GAME
-game = Game(assets.loadRecords()) # Initialize game with records loaded
+game = Game() # Initialize game 
 menu = Menu() # Initialize menus
 settings.debug("Game started") # Debug
 
