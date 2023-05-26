@@ -981,6 +981,9 @@ def getMovement(spawnPattern):
     top,bottom,left,right = [],[],[],[]
     if spawnPattern == "AGGRO": top, bottom, left, right, = ["SE", "SW", "S"], ["N", "NE", "NW"], ["E", "NE", "SE"], ["NW", "SW", "W"]
     elif spawnPattern == "TOP": top = ["SE", "SW", "S"]
+    elif spawnPattern == "BOTTOM": bottom = ["N","NE","NW"]
+    elif spawnPattern == "LEFT":left = ["W","NW","SW"]
+    elif spawnPattern == "RIGHT":right = ["E","NE","SE"]
     elif spawnPattern == "VERT": top, bottom = ["SE", "SW", "S"], ["N", "NE", "NW"]
     else: top, bottom, left, right = topDir, bottomDir, leftDir, rightDir # Default / "All"
 
