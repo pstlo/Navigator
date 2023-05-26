@@ -28,8 +28,8 @@ class Settings:
         # INPUT
         self.useController = True # Default = True / Allow controller input
         self.cursorMode = True # Default = True / Allow cursor input
-        self.cursorFollowDistance = 25 # Default = 30 / Cursor follow deadzone
-        self.cursorRotateDistance = 10 # Default = 15 / Cursor rotate deadzone
+        self.cursorFollowDistance = 25 # Default = 25 / Cursor follow deadzone
+        self.cursorRotateDistance = 10 # Default = 10 / Cursor rotate deadzone
         self.cursorThickness = 2 # Default = 2
 
         # HUD
@@ -80,10 +80,10 @@ class Settings:
         self.mainCreditsDelay = 10 # Default = 10
         self.extraCreditsSize = 30  # Default = 30 / background ships text size
         self.maxExtras = 3 # Default = 3 / # max background ships
-        self.minBackgroundShipSpeed = 2 # Default = 1
+        self.minBackgroundShipSpeed = 2 # Default = 2
         self.maxBackgroundShipSpeed = 3 # Default = 3
         self.minBackgroundShipSize = 50 # Default = 50
-        self.maxBackgroundShipSize = 100 # Default = 150
+        self.maxBackgroundShipSize = 100 # Default = 100
         self.backgroundShipDelay = 15 # Default = 15 / Higher is slower
         self.minBackgroundShipSpawnDelay = 500 # / Min delay (ms) before a ship spawns
         self.maxBackgroundShipSpawnDelay = 3000 # / Max delay (ms) before a ship spawns
@@ -119,7 +119,7 @@ class Settings:
         self.activationDelay = 2 # Default = 2 / frames before activation after entering screen
         self.obsLaserDelay = 10 # Default = 10 / delay before obstacle fires another laser
         self.obsLaserDamage = 1 # Default = 1
-        self.maxObsLasers = 3000 # Default = 3 / lasers per obstacle
+        self.maxObsLasers = 3 # Default = 3 / lasers per obstacle
 
         # CAVES
         self.caveStartPos = self.screenSize[1]*-2 # Default = -1600 / Cave start Y coordinate
