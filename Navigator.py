@@ -982,8 +982,8 @@ def getMovement(spawnPattern):
     if spawnPattern == "AGGRO": top, bottom, left, right, = ["SE", "SW", "S"], ["N", "NE", "NW"], ["E", "NE", "SE"], ["NW", "SW", "W"]
     elif spawnPattern == "TOP": top = ["SE", "SW", "S"]
     elif spawnPattern == "BOTTOM": bottom = ["N","NE","NW"]
-    elif spawnPattern == "LEFT":left = ["W","NW","SW"]
-    elif spawnPattern == "RIGHT":right = ["E","NE","SE"]
+    elif spawnPattern == "LEFT":left = ["E","NE","SE"]
+    elif spawnPattern == "RIGHT":right = ["W","NW","SW"]
     elif spawnPattern == "VERT": top, bottom = ["SE", "SW", "S"], ["N", "NE", "NW"]
     else: top, bottom, left, right = topDir, bottomDir, leftDir, rightDir # Default / "All"
 
@@ -1570,7 +1570,6 @@ class Menu:
             shipHelpDisplay = assets.shipHelpFont.render("D-PAD DOWN = Last ship   D-PAD UP = Next ship", True, settings.primaryFontColor)
 
         leaderboardHelpDisplay = assets.startHelpFont.render("L = Leaderboard", True, settings.primaryFontColor)
-
 
         startHelpRect = startHelpDisplay.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]-settings.screenSize[1]/7))
         skinHelpRect = skinHelpDisplay.get_rect(center = (settings.screenSize[0]/4 + 40, settings.screenSize[1]-settings.screenSize[1]/7 + 70))
