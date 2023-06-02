@@ -64,8 +64,10 @@ class Settings:
 
         # START MENU
         self.maxIcons = 5 # Default = 5
-        self.maxIconSpeed = 5 # Default = 5
-        self.maxIconRotationSpeed = 3 # Default = 3
+        self.minIconSpeed = 8 # Default = 8
+        self.maxIconSpeed = 12 # Default = 12
+        self.minIconRotationSpeed = 2 # Default = 2
+        self.maxIconRotationSpeed = 4 # Default = 4
         self.minIconSize = 30 # Default = 30
         self.maxIconSize = 100  # Default = 100
         self.showVersion = True # show version info
@@ -108,6 +110,7 @@ class Settings:
         self.defaultToHighShip = False # Default = False / Default to highest ship unlocked on game launch
         self.heatSeekDelay = 15 # Default = 15 / time before projectile starts homing
         self.heatSeekNeedsTarget = False # Default = False / projectile will explode if target not found
+        self.skinAnimationDelay = 10 # Default = 10 / Delay between animation frame updates
 
         # LEVELS
         self.levelUpCloudSpeed = 25 # Default = 25 / Only affects levels preceded by wipe
@@ -357,6 +360,17 @@ class Assets:
                     if imageAsset.endswith('.png'):
                         imageAssetPath = os.path.join(skinsPath,imageAsset)
                         shipLevelDict['skins'].append(pygame.image.load(self.resources((imageAssetPath))).convert_alpha())
+
+                    # ANIMATED SKINS
+                    else:
+                        skinAssetPath = os.path.join(skinsPath,imageAsset)
+                        if os.path.isdir(skinAssetPath):
+                            animatedSkin = []
+                            for skinPath in os.listdir(skinAssetPath):
+                                if skinPath.endswith('.png'):
+                                    imageAssetPath = os.path.join(skinAssetPath,skinPath)
+                                    animatedSkin.append(pygame.image.load(self.resources((imageAssetPath))).convert_alpha())
+                            if len(animatedSkin) > 0: shipLevelDict['skins'].append(animatedSkin)
 
                 # Load exhaust frames
                 exhaustPath = os.path.join(levelFolderPath,'Exhaust')
@@ -842,9 +856,10 @@ settings.debug("Loaded keybinds") # Debug
 
 
 # UPDATE DISPLAY
-def displayUpdate():
+def displayUpdate(gameClock):
     if not settings.updateNotFlip: pygame.display.flip()
     else: pygame.display.update()
+    if gameClock is not None: gameClock.tick(settings.fps)
 
 
 # WINDOW
@@ -1189,6 +1204,7 @@ class Game:
         player.shoot(self,lasers,events,obstacles)
         player.boost(self,events)
         player.wrapping()
+        player.updateAnimation()
 
         # ROTATE PLAYER
         newBlit = rotateImage(player.image,player.rect,player.angle)
@@ -1280,8 +1296,7 @@ class Game:
         if settings.resetPlayerOrientation: player.angle = self.angle # Reset player orientation
         player.boosting = False
         if settings.showFPS: pygame.display.set_caption("Navigator {} FPS".format(int(self.clk.get_fps())))
-        displayUpdate()
-        self.clk.tick(settings.fps)
+        displayUpdate(self.clk)
 
 
     # SET GAME CONSTANTS TO DEFAULT
@@ -1306,6 +1321,7 @@ class Game:
     def alternateUpdate(self,player,obstacles,events):
         for event in pygame.event.get(): pass # Pull events
 
+        player.updateAnimation()
         player.movement()
         player.wrapping()
         screen.fill(screenColor)
@@ -1325,7 +1341,6 @@ class Game:
             obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle
 
         if settings.showFPS: pygame.display.set_caption("Navigator {} FPS".format(int(self.clk.get_fps())))
-        self.clk.tick(settings.fps)
 
 
     # UPDATE GAME CONSTANTS
@@ -1362,7 +1377,7 @@ class Game:
                         stageWipe = False
 
                     elif stageUpRect.centery >= settings.screenSize[1] * 2: stageUp = False
-                    displayUpdate()
+                    displayUpdate(self.clk)
                     player.angle = self.angle
 
         # UPDATES LEVEL
@@ -1376,7 +1391,6 @@ class Game:
 
                     # LEVEL UP ANIMATION / Removes old obstacles
                     while levelUp:
-
                         self.alternateUpdate(player,obstacles,events)
                         for obs in obstacles:
                             if obs.rect.centery <= levelUpRect.centery: obs.kill()
@@ -1385,11 +1399,10 @@ class Game:
                         game.showHUD(player)
                         img, imgRect = rotateImage(player.image, player.rect, player.angle)
                         screen.blit(img,imgRect) # Draw player
-
                         levelUpRect.centery += settings.levelUpCloudSpeed
                         if levelUpRect.top >= settings.screenSize[1]: levelUp = False
-                        displayUpdate()
                         player.angle = self.angle
+                        displayUpdate(self.clk)
 
                 levelDict["START"] = True
                 self.maxObstacles = levelDict["maxObstacles"]
@@ -1582,8 +1595,6 @@ class Menu:
 
         versionDisplay = assets.versionFont.render(version,True,settings.primaryFontColor)
         versionRect = versionDisplay.get_rect(topright = (startRect.right-25,startRect.bottom-25))
-        bounceDelay = 5
-        bounceCount = 0
 
         game.unlocks.update(game) # GET NEW UNLOCKS
 
@@ -1593,15 +1604,11 @@ class Menu:
         if settings.defaultToHighSkin and not game.skipAutoSkinSelect: player.getSkin(game.unlocks.highestSkin(game.savedShipLevel)) # Gets highest unlocked skin by default
         elif game.skipAutoSkinSelect: player.getSkin(game.savedSkin)
 
-        startOffset = 100
-        startDelay = 1
-        iconPosition, startDelayCounter = startOffset, 0
+        iconPosition = 100
 
         while game.mainMenu:
 
             self.menuMusicLoop() # Keep music looping
-            if bounceCount >= bounceDelay: bounceCount = 0
-            else: bounceCount +=1
 
             for event in pygame.event.get():
                 # START
@@ -1622,16 +1629,13 @@ class Menu:
 
                     while iconPosition > 0:
 
-                        if startDelayCounter >= startDelay: startDelayCounter = 0
-                        else: startDelayCounter +=1
-
                         # Start animation
                         screen.fill(screenColor)
                         screen.blit(assets.bgList[game.currentStage - 1][0],(0,0))
                         screen.blit(player.image, (player.rect.x,player.rect.y + iconPosition)) # Current spaceship
-                        displayUpdate()
+                        displayUpdate(game.clk)
+                        iconPosition -= (player.speed+1)
 
-                        if startDelayCounter >= startDelay: iconPosition-=1
                     game.mainMenu = False
                     return
 
@@ -1697,8 +1701,11 @@ class Menu:
             # ANIMATION
             if settings.showMenuIcons:
                 for icon in icons:
-                    if bounceCount == bounceDelay: icon.move()
+                    icon.move()
                     icon.draw()
+
+            # PLAYER SKIN ANIMATION
+            player.updateAnimation()
 
             screen.blit(startDisplay,startRect) # Menu Logo
             if settings.showVersion: screen.blit(versionDisplay,versionRect) # Version info
@@ -1712,7 +1719,7 @@ class Menu:
             if player.boostSpeed > player.baseSpeed: screen.blit(boostHelp,boostHelpRect)
             if len(assets.spaceShipList[game.savedShipLevel]['skins']) > 1 and (settings.devMode or game.unlocks.hasSkinUnlock(game.savedShipLevel)): screen.blit(skinHelpDisplay,skinHelpRect) # Show switch skin controls
             if len(assets.spaceShipList) > 1 and (settings.devMode or game.unlocks.hasShipUnlock()): screen.blit(shipHelpDisplay,shipHelpRect)
-            screen.blit(player.image, (player.rect.x,player.rect.y + startOffset)) # Current spaceship
+            screen.blit(player.image, (player.rect.x,player.rect.y + iconPosition)) # Draw current spaceship
 
             # LOGO LETTERS
             screen.blit(assets.menuList[0],(-14 + startRect.left + assets.menuList[0].get_width() - assets.menuList[0].get_width()/10,settings.screenSize[1]/2 - 42)) # "A" symbol
@@ -1724,7 +1731,7 @@ class Menu:
                 screen.blit(assets.menuList[3],leftRect) # Left UFO
                 screen.blit(assets.menuList[4],rightRect) # Right UFO
 
-            displayUpdate()
+            displayUpdate(game.clk)
 
 
     # PAUSE SCREEN
@@ -1773,7 +1780,7 @@ class Menu:
 
             screen.blit(pauseDisplay, pauseRect)
             screen.blit(pausedDisplay,pausedRect)
-            displayUpdate()
+            displayUpdate(game.clk)
 
             for event in pygame.event.get():
                 # EXIT
@@ -1893,7 +1900,7 @@ class Menu:
             screen.blit(gameOverDisplay,gameOverRect)
             self.drawGameOverLabels(displayTextList,newHighScore,newLongRun)
             screen.blit(exitDisplay,exitRect)
-            displayUpdate()
+            displayUpdate(game.clk)
 
             for event in pygame.event.get():
 
@@ -2028,7 +2035,7 @@ class Menu:
                     screen.blit(scoreDisplay, scoreRect)
 
                 for index in range(len(assets.leaderboard) + 1):pygame.draw.line(screen, (0, 0, 0), (leaderboardX, leaderboardY + (index + 1) * leaderSpacing),(leaderboardX + cellW, leaderboardY + (index + 1) * leaderSpacing), 1)
-                displayUpdate()
+                displayUpdate(game.clk)
 
 
 
@@ -2054,7 +2061,6 @@ class Menu:
         musicCreditsRect = musicCreditsDisplay.get_rect(center = (posX,posY+75))
         moreMusicCreditsRect = moreMusicCreditsDisplay.get_rect(center = (posX,posY+105))
 
-        bounceCount = 0
         direction = self.randomEightDirection()
 
         extras = []
@@ -2133,45 +2139,41 @@ class Menu:
                         waitToSpawn = True
                         pygame.time.set_timer(backGroundShipSpawnEvent, random.randint(settings.minBackgroundShipSpawnDelay,settings.maxBackgroundShipSpawnDelay))
 
-            screen.blit(createdByDisplay,createdByRect)
-            screen.blit(creditsDisplay,creditsRect)
-            screen.blit(musicCreditsDisplay,musicCreditsRect)
-            screen.blit(moreMusicCreditsDisplay,moreMusicCreditsRect)
-            displayUpdate()
-
             # BOUNCE OFF EDGES
             if createdByRect.right > settings.screenSize[0]: direction = rightDir[random.randint(0, len(rightDir) - 1)]
             if createdByRect.left < 0: direction = leftDir[random.randint(0, len(leftDir) - 1)]
             if moreMusicCreditsRect.bottom > settings.screenSize[1]: direction = bottomDir[random.randint(0, len(bottomDir) - 1)]
             if createdByRect.top < 0 : direction = topDir[random.randint(0, len(topDir) - 1)]
 
-            if bounceCount == 0:
-                if "N" in direction:
-                    createdByRect.centery-= settings.mainCreditsSpeed
-                    creditsRect.centery-= settings.mainCreditsSpeed
-                    musicCreditsRect.centery-= settings.mainCreditsSpeed
-                    moreMusicCreditsRect.centery-= settings.mainCreditsSpeed
+            if "N" in direction:
+                createdByRect.centery-= settings.mainCreditsSpeed
+                creditsRect.centery-= settings.mainCreditsSpeed
+                musicCreditsRect.centery-= settings.mainCreditsSpeed
+                moreMusicCreditsRect.centery-= settings.mainCreditsSpeed
 
-                if "S" in direction:
-                    createdByRect.centery+= settings.mainCreditsSpeed
-                    creditsRect.centery+= settings.mainCreditsSpeed
-                    musicCreditsRect.centery+= settings.mainCreditsSpeed
-                    moreMusicCreditsRect.centery+= settings.mainCreditsSpeed
+            if "S" in direction:
+                createdByRect.centery+= settings.mainCreditsSpeed
+                creditsRect.centery+= settings.mainCreditsSpeed
+                musicCreditsRect.centery+= settings.mainCreditsSpeed
+                moreMusicCreditsRect.centery+= settings.mainCreditsSpeed
 
-                if "E" in direction:
-                    createdByRect.centerx+= settings.mainCreditsSpeed
-                    creditsRect.centerx+= settings.mainCreditsSpeed
-                    musicCreditsRect.centerx+= settings.mainCreditsSpeed
-                    moreMusicCreditsRect.centerx+= settings.mainCreditsSpeed
+            if "E" in direction:
+                createdByRect.centerx+= settings.mainCreditsSpeed
+                creditsRect.centerx+= settings.mainCreditsSpeed
+                musicCreditsRect.centerx+= settings.mainCreditsSpeed
+                moreMusicCreditsRect.centerx+= settings.mainCreditsSpeed
 
-                if "W" in direction:
-                    createdByRect.centerx-= settings.mainCreditsSpeed
-                    creditsRect.centerx-= settings.mainCreditsSpeed
-                    musicCreditsRect.centerx-= settings.mainCreditsSpeed
-                    moreMusicCreditsRect.centerx-= settings.mainCreditsSpeed
+            if "W" in direction:
+                createdByRect.centerx-= settings.mainCreditsSpeed
+                creditsRect.centerx-= settings.mainCreditsSpeed
+                musicCreditsRect.centerx-= settings.mainCreditsSpeed
+                moreMusicCreditsRect.centerx-= settings.mainCreditsSpeed
 
-            bounceCount +=1
-            if bounceCount >= settings.mainCreditsDelay: bounceCount = 0
+            screen.blit(createdByDisplay,createdByRect)
+            screen.blit(creditsDisplay,creditsRect)
+            screen.blit(musicCreditsDisplay,musicCreditsRect)
+            screen.blit(moreMusicCreditsDisplay,moreMusicCreditsRect)
+            displayUpdate(game.clk)
 
 
     # GET RANDOM DIRECTION - include diagonal
@@ -2222,6 +2224,7 @@ class Player(pygame.sprite.Sprite):
             self.laserType = assets.spaceShipList[game.savedShipLevel]['stats']["laserType"]
             self.showShield,self.boosting = False,False
             if settings.cursorMode: self.lastCursor = pygame.Vector2(0,0)
+            self.animated,self.skinAnimationCount,self.skinAnimationFrame,self.skinAnimationFrames = False, 0, 0, 0
 
 
         # VECTOR BASED MOVEMENT
@@ -2386,7 +2389,17 @@ class Player(pygame.sprite.Sprite):
         def getSkin(self, skinNum):
             if assets.spaceShipList[game.savedShipLevel]['skins'][skinNum] or settings.devMode:
                 self.currentImageNum = skinNum
-                self.image = assets.spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum]
+                skinImage = assets.spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum]
+
+                # Animated skin
+                if type(skinImage) == list:
+                    self.image = skinImage[0]
+                    self.skinAnimationFrame, self.skinAnimationFrames = 0, len(assets.spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum]) - 1
+                    if not self.animated: self.animated = True # Set flag
+                # Static skin
+                else:
+                    self.image = skinImage
+                    if self.animated: self.animated = False
                 self.rect = self.image.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/2))
                 self.mask = pygame.mask.from_surface(self.image)
 
@@ -2418,6 +2431,7 @@ class Player(pygame.sprite.Sprite):
                     if game.unlocks.ships[shipNum][0] or settings.devMode:
                         game.savedShipLevel = shipNum
                         self.updatePlayerConstants()
+                        self.getSkin(0)
 
 
         # Update player attributes
@@ -2447,11 +2461,24 @@ class Player(pygame.sprite.Sprite):
             self.laserType = assets.spaceShipList[game.savedShipLevel]['stats']["laserType"]
 
 
+        # ROCKET EXHAUST ANIMATION
         def updateExhaust(self,game):
             if self.exhaustState+1 > len(assets.spaceShipList[game.savedShipLevel]['exhaust']): self.exhaustState = 0
             else: self.exhaustState += 1
 
 
+        # SKIN ANIMATION
+        def updateAnimation(self):
+            if self.animated:
+                if self.skinAnimationCount >= settings.skinAnimationDelay:
+                    self.skinAnimationCount = 0
+                    if self.skinAnimationFrame + 1 > self.skinAnimationFrames: self.skinAnimationFrame = 0
+                    else: self.skinAnimationFrame += 1
+                    self.image = assets.spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum][self.skinAnimationFrame]
+                self.skinAnimationCount += 1
+
+
+        # PLAYER EXPLOSION ANIMATION
         def explode(self,game,obstacles):
             while self.explosionState < len(assets.explosionList):
                 height = assets.explosionList[self.explosionState].get_height()
@@ -2472,15 +2499,14 @@ class Player(pygame.sprite.Sprite):
 
                 img = pygame.transform.scale(assets.explosionList[self.explosionState], (height * self.explosionState, width * self.explosionState)) # Blow up explosion
                 img, imgRect = rotateImage(img, self.rect, self.lastAngle) # Rotate
-
                 screen.blit(img,imgRect) # Draw explosion
                 screen.blit(assets.explosionList[self.explosionState],self.rect)
-                displayUpdate()
-                game.clk.tick(settings.fps)
                 self.explosionState += 1
                 self.finalImg,self.finalRect = img,imgRect # Explosion effect on game over screen
+                displayUpdate(game.clk)
 
 
+        # GAIN SHIELD
         def shieldUp(self):
             self.shieldPieces += 1
             if self.shieldPieces >= self.shieldPiecesNeeded:
@@ -2488,6 +2514,7 @@ class Player(pygame.sprite.Sprite):
                 self.shields += 1
 
 
+        # LOSE SHIELD
         def shieldDown(self,events):
             self.shields -= 1
             self.showShield = True
@@ -2894,7 +2921,7 @@ class Point(pygame.sprite.Sprite):
 class Icon:
     def __init__(self):
         spins = [-1,1]
-        self.speed = random.randint(1,settings.maxIconSpeed)
+        self.speed = random.randint(settings.minIconSpeed,settings.maxIconSpeed)
         self.movement = getMovement("AGGRO")
         self.direction = self.movement[1]
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
@@ -2916,7 +2943,7 @@ class Icon:
 
         if self.angle >= 360 or self.angle <= -360: self.angle = 0
 
-        self.angle += self.spinDirection * random.uniform(0, settings.maxIconRotationSpeed)
+        self.angle += self.spinDirection * random.uniform(settings.minIconRotationSpeed, settings.maxIconRotationSpeed)
 
         randomTimerUX = random.randint(settings.screenSize[0] * 2,settings.screenSize[0] * 4)
         randomTimerUY = random.randint(settings.screenSize[1] * 2,settings.screenSize[1] * 4)
@@ -2967,7 +2994,6 @@ class BackgroundShip:
         self.text = text
         self.image = pygame.transform.scale(assets.donationShips[random.randint(0, len(assets.donationShips) - 1)], (self.size, self.size) ).convert_alpha()
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
-        self.count = 0
         self.font = pygame.font.Font(assets.gameFont, int(self.size * 2/3))
         self.display = self.font.render(self.text, True, [0,0,0])
         self.displayRect = self.display.get_rect(center = self.rect.center)
@@ -2975,14 +3001,11 @@ class BackgroundShip:
 
 
     def move(self):
-        if self.count >= settings.backgroundShipDelay:
-            if "N" in self.direction: self.rect.centery -= self.speed
-            if "S" in self.direction: self.rect.centery += self.speed
-            if "E" in self.direction: self.rect.centerx += self.speed
-            if "W" in self.direction: self.rect.centerx -= self.speed
-            self.displayRect.center = self.rect.center
-            self.count = 0
-        self.count +=1
+        if "N" in self.direction: self.rect.centery -= self.speed
+        if "S" in self.direction: self.rect.centery += self.speed
+        if "E" in self.direction: self.rect.centerx += self.speed
+        if "W" in self.direction: self.rect.centerx -= self.speed
+        self.displayRect.center = self.rect.center
         self.activate()
 
 
