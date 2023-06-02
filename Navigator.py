@@ -64,10 +64,10 @@ class Settings:
 
         # START MENU
         self.maxIcons = 5 # Default = 5
-        self.minIconSpeed = 8 # Default = 8
+        self.minIconSpeed = 6 # Default = 6
         self.maxIconSpeed = 12 # Default = 12
-        self.minIconRotationSpeed = 2 # Default = 2
-        self.maxIconRotationSpeed = 4 # Default = 4
+        self.minIconRotationSpeed = 3 # Default = 3
+        self.maxIconRotationSpeed = 6 # Default = 6
         self.minIconSize = 30 # Default = 30
         self.maxIconSize = 100  # Default = 100
         self.showVersion = True # show version info
@@ -2955,7 +2955,7 @@ class Icon:
             self.direction = self.movement[1]
             if random.randint(0,10) < 7: self.image = assets.menuList[1]
             else: self.image = assets.menuList[random.randint(5,len(assets.menuList)-1)]
-            self.speed = random.randint(1,settings.maxIconSpeed)
+            self.speed = random.randint(settings.minIconSpeed,settings.maxIconSpeed)
             self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
             size = random.randint(settings.minIconSize,settings.maxIconSize)
             self.image = pygame.transform.scale(self.image, (size, size))
