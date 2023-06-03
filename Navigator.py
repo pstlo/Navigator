@@ -78,7 +78,7 @@ class Settings:
         self.stageUpCloudSpeed = 8  # Default = 8
 
         # CREDITS
-        self.mainCreditsSpeed = 3 # Default = 3
+        self.mainCreditsSpeed = 2 # Default = 2
         self.extraCreditsSize = 30  # Default = 30 / background ships text size
         self.maxExtras = 3 # Default = 3 / # max background ships
         self.minBackgroundShipSpeed = 2 # Default = 2
@@ -1181,6 +1181,7 @@ class Game:
 
             elif self.thisPoint.powerUp == "Coin": # Coin collected
                 self.coinsCollected += 1
+                self.score += 1 # Used as bonus point for now
                 if not self.musicMuted: assets.coinNoise.play()
 
             else:
@@ -2517,7 +2518,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.laserType = kwargs.get('lasers', self.getAttributes(assets.stageList[game.currentStage-1][game.currentLevel-1]["obstacleLaserType"]))
 
         try: self.image = assets.obstacleImages[game.currentStage - 1][game.currentLevel-1]
-        except: self.image = assets.meteorList[random.randint(0,len(assets.meteorList)-1)] # Not enough assets for this level yet
+        except: self.image = assets.obstacleImages[0][random.randint(0,len(assets.meteorList)-1)] # Not enough assets for this level yet
         self.image = pygame.transform.scale(self.image, (self.size, self.size)).convert_alpha()
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
         self.getDirection(playerPos)
