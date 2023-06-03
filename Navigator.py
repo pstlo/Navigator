@@ -2518,7 +2518,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.laserType = kwargs.get('lasers', self.getAttributes(assets.stageList[game.currentStage-1][game.currentLevel-1]["obstacleLaserType"]))
 
         try: self.image = assets.obstacleImages[game.currentStage - 1][game.currentLevel-1]
-        except: self.image = assets.obstacleImages[0][random.randint(0,len(assets.meteorList)-1)] # Not enough assets for this level yet
+        except: self.image = assets.obstacleImages[0][random.randint(0,len(assets.obstacleImages[0])-1)] # Not enough assets for this level yet
         self.image = pygame.transform.scale(self.image, (self.size, self.size)).convert_alpha()
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
         self.getDirection(playerPos)
