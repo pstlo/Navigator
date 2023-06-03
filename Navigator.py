@@ -920,9 +920,9 @@ if settings.useController:
                 controllerRotateY = settings.controllerBinds[controllerType]['rotY']
                 controllerBoost = settings.controllerBinds[controllerType]['boost']
                 controllerShoot = settings.controllerBinds[controllerType]['shoot']
-                controllerNextShip =settings.controllerBinds[controllerType]['nextShip']
-                controllerLastShip =settings.controllerBinds[controllerType]['lastShip']
-                controllerNextSkin =settings.controllerBinds[controllerType]['nextSkin']
+                controllerNextShip = settings.controllerBinds[controllerType]['nextShip']
+                controllerLastShip = settings.controllerBinds[controllerType]['lastShip']
+                controllerNextSkin = settings.controllerBinds[controllerType]['nextSkin']
                 controllerLastSkin = settings.controllerBinds[controllerType]['lastSkin']
                 controllerSelect = settings.controllerBinds[controllerType]['select']
                 controllerBack = settings.controllerBinds[controllerType]['back']
@@ -987,11 +987,11 @@ def rotateImage(image, rect, angle):
 def getMovement(spawnPattern):
     top,bottom,left,right = [],[],[],[]
     if spawnPattern == "AGGRO": top, bottom, left, right, = ["SE", "SW", "S"], ["N", "NE", "NW"], ["E", "NE", "SE"], ["NW", "SW", "W"]
-    elif spawnPattern == "TOP": top = ["SE", "SW", "S"]
-    elif spawnPattern == "BOTTOM": bottom = ["N","NE","NW"]
-    elif spawnPattern == "LEFT":left = ["E","NE","SE"]
-    elif spawnPattern == "RIGHT":right = ["W","NW","SW"]
-    elif spawnPattern == "VERT": top, bottom = ["SE", "SW", "S"], ["N", "NE", "NW"]
+    elif spawnPattern == "TOP": top = ["SE", "SW", "S"] # Top to bottom
+    elif spawnPattern == "BOTTOM": bottom = ["N","NE","NW"] # Bottom to top
+    elif spawnPattern == "LEFT":left = ["E","NE","SE"] # Left to right
+    elif spawnPattern == "RIGHT":right = ["W","NW","SW"] # Right to left
+    elif spawnPattern == "VERT": top, bottom = ["SE", "SW", "S"], ["N", "NE", "NW"] 
     else: top, bottom, left, right = topDir, bottomDir, leftDir, rightDir # Default / "All"
 
     X = random.randint(settings.screenSize[0] * 0.1, settings.screenSize[0] * 0.99)
