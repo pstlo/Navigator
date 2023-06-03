@@ -2037,7 +2037,6 @@ class Menu:
                 displayUpdate(game.clk)
 
 
-
     # CREDITS
     def creditScreen(self):
         global screen
