@@ -95,8 +95,6 @@ class Settings:
         self.sfxVolume = 5 # Default = 5 / SFX volume / 100
         self.numChannels = 16 # Default = 16
         self.musicMuted = False # Default = False
-        self.musicLoopStart = 25000 # Default = 25000
-        self.musicLoopEnd = 76000 # Default = 76000
 
         # PLAYER
         self.resetPlayerOrientation = True # Default = True / reset orientation if player is not moving
@@ -569,6 +567,7 @@ class Assets:
 
     def loadSoundtrack(self):
         pygame.mixer.music.load(self.resources(os.path.join(self.soundDirectory,"Soundtrack.mp3")))
+        pygame.mixer.music.queue(self.resources(os.path.join(self.soundDirectory,"GameLoop.mp3")),'mp3',-1)
         pygame.mixer.music.set_volume(settings.musicVolume/100 *1.5)
 
 
@@ -812,14 +811,6 @@ def toggleScreen():
         pygame.display.set_icon(assets.windowIcon)
         screen = getScreen()
     else: pygame.display.toggle_fullscreen()
-
-
-# GAMEPLAY MUSIC LOOP
-def musicLoop():
-    if pygame.mixer.music.get_pos() >= settings.musicLoopEnd:
-        pygame.mixer.music.rewind()
-        pygame.mixer.music.set_pos(settings.musicLoopStart)
-        pygame.mixer.music.play()
 
 
 # TOGGLE MUSIC MUTE
@@ -1289,8 +1280,6 @@ class Game:
         self.levelUpdater(player,obstacles,events) # LEVEL UP
 
         if "OBS" in self.levelType: self.spawner(obstacles,player) # Spawn obstacles
-
-        musicLoop() # Loop music
 
         # UPDATE SCREEN
         player.lastAngle = player.angle # Save recent player orientation
