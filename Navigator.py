@@ -78,15 +78,13 @@ class Settings:
         self.stageUpCloudSpeed = 8  # Default = 8
 
         # CREDITS
-        self.mainCreditsSpeed = 1 # Default = 1
-        self.mainCreditsDelay = 10 # Default = 10
+        self.mainCreditsSpeed = 3 # Default = 3
         self.extraCreditsSize = 30  # Default = 30 / background ships text size
         self.maxExtras = 3 # Default = 3 / # max background ships
         self.minBackgroundShipSpeed = 2 # Default = 2
         self.maxBackgroundShipSpeed = 3 # Default = 3
         self.minBackgroundShipSize = 50 # Default = 50
         self.maxBackgroundShipSize = 100 # Default = 100
-        self.backgroundShipDelay = 15 # Default = 15 / Higher is slower
         self.minBackgroundShipSpawnDelay = 500 # / Min delay (ms) before a ship spawns
         self.maxBackgroundShipSpawnDelay = 3000 # / Max delay (ms) before a ship spawns
         self.showBackgroundShips = True # Default = True
@@ -97,8 +95,6 @@ class Settings:
         self.sfxVolume = 5 # Default = 5 / SFX volume / 100
         self.numChannels = 16 # Default = 16
         self.musicMuted = False # Default = False
-        self.menuLoopStart = 1100 # Default = 1100
-        self.menuLoopEnd = 12800 # Default = 12800
         self.musicLoopStart = 25000 # Default = 25000
         self.musicLoopEnd = 76000 # Default = 76000
 
@@ -419,7 +415,7 @@ class Assets:
         settings.debug("Loaded menu assets") # Debug
 
         # LOAD SOUNDTRACK
-        self.loadSoundtrack()
+        self.loadMenuMusic()
 
         # EXPLOSION NOISE ASSET
         self.explosionNoise = pygame.mixer.Sound(self.resources(os.path.join(self.soundDirectory,"Explosion.wav")))
@@ -566,9 +562,14 @@ class Assets:
         pygame.mixer.music.set_volume(settings.musicVolume/100 *1.5)
 
 
+    def loadMenuMusic(self):
+        pygame.mixer.music.load(self.resources(os.path.join(self.soundDirectory,"Menu.mp3")))
+        pygame.mixer.music.set_volume(settings.musicVolume/100)
+
+
     def loadSoundtrack(self):
         pygame.mixer.music.load(self.resources(os.path.join(self.soundDirectory,"Soundtrack.mp3")))
-        pygame.mixer.music.set_volume(settings.musicVolume/100)
+        pygame.mixer.music.set_volume(settings.musicVolume/100 *1.5)
 
 
     # RETURN NEW RECORDS DICTIONARY
@@ -1604,12 +1605,9 @@ class Menu:
         if settings.defaultToHighSkin and not game.skipAutoSkinSelect: player.getSkin(game.unlocks.highestSkin(game.savedShipLevel)) # Gets highest unlocked skin by default
         elif game.skipAutoSkinSelect: player.getSkin(game.savedSkin)
 
-        iconPosition = 100
+        iconPosition = 100 # Icon position at game start (offset from original)
 
         while game.mainMenu:
-
-            self.menuMusicLoop() # Keep music looping
-
             for event in pygame.event.get():
                 # START
                 if (event.type == pygame.KEYDOWN and event.key in startInput) or (gamePad is not None and gamePad.get_button(controllerSelect) == 1) or (event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]==1):
@@ -1637,6 +1635,8 @@ class Menu:
                         iconPosition -= (player.speed+1)
 
                     game.mainMenu = False
+                    assets.loadSoundtrack()
+                    pygame.mixer.music.play()
                     return
 
                 # TOGGLE FULLSCREEN
@@ -1669,7 +1669,7 @@ class Menu:
                 if (event.type == pygame.KEYDOWN) and (event.key in leadersInput): menu.leaderboard()
 
                 # CREDITS
-                if (event.type == pygame.KEYDOWN and event.key in creditsInput) or (gamePad is not None and gamePad.get_button(controllerCredits) == 1): menu.creditScreen(True)
+                if (event.type == pygame.KEYDOWN and event.key in creditsInput) or (gamePad is not None and gamePad.get_button(controllerCredits) == 1): menu.creditScreen()
 
                 # SWITCH CONTROL TYPE
                 if game.usingController and event.type == pygame.KEYDOWN:
@@ -1905,7 +1905,7 @@ class Menu:
             for event in pygame.event.get():
 
                 # CREDITS
-                if event.type == pygame.KEYDOWN and event.key in creditsInput or (gamePad is not None and gamePad.get_button(controllerCredits) == 1): menu.creditScreen(False)
+                if event.type == pygame.KEYDOWN and event.key in creditsInput or (gamePad is not None and gamePad.get_button(controllerCredits) == 1): menu.creditScreen()
 
                 # EXIT
                 if (event.type == pygame.KEYDOWN and event.key in escapeInput) or (gamePad is not None and gamePad.get_button(controllerExit) == 1) or event.type == pygame.QUIT: quitGame()
@@ -2000,7 +2000,6 @@ class Menu:
                     # RETURN TO GAME
                     if (event.type == pygame.KEYDOWN and (event.key in escapeInput or event.key in leadersInput or event.key in startInput or event.key in backInput)) or (gamePad is not None and gamePad.get_button(controllerBack) == 1): showLeaderboard = False
 
-                self.menuMusicLoop()
                 screen.fill(screenColor)
                 screen.blit(assets.bgList[game.currentStage - 1][0], (0, 0))
 
@@ -2040,7 +2039,7 @@ class Menu:
 
 
     # CREDITS
-    def creditScreen(self,loopMusic):
+    def creditScreen(self):
         global screen
         rollCredits = True
         posX = settings.screenSize[0]/2
@@ -2076,7 +2075,6 @@ class Menu:
             else: extrasCap = settings.maxExtras
 
         while rollCredits:
-            if loopMusic: self.menuMusicLoop()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: quitGame()
 
@@ -2181,14 +2179,6 @@ class Menu:
         directions = ["N","S","E","W","NW","SW","NE","SE"]
         direction = directions[random.randint(0, len(directions)-1)]
         return direction
-
-
-    # MENU MUSIC LOOP
-    def menuMusicLoop(self):
-        if pygame.mixer.music.get_pos() >= settings.menuLoopEnd:
-            pygame.mixer.music.rewind()
-            pygame.mixer.music.set_pos(settings.menuLoopStart)
-            pygame.mixer.music.play()
 
 
 
@@ -3049,11 +3039,18 @@ settings.debug("Game started") # Debug
 
 # START GAME LOOP
 def gameLoop():
-    pygame.mixer.music.play()
+
     game.resetGameConstants() # Reset level settings
     player = Player(game) # Initialize player
-    if game.mainMenu: menu.home(game,player)
-    else: player.getSkin(game.savedSkin)
+    if game.mainMenu:
+        assets.loadMenuMusic()
+        pygame.mixer.music.play(-1)
+        menu.home(game,player)
+
+    else:
+        assets.loadSoundtrack()
+        player.getSkin(game.savedSkin)
+        pygame.mixer.music.play()
 
     events = Event() # Initialize events
     events.set(player) # Events manipulate player cooldowns
