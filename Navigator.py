@@ -991,7 +991,7 @@ def getMovement(spawnPattern):
     elif spawnPattern == "BOTTOM": bottom = ["N","NE","NW"] # Bottom to top
     elif spawnPattern == "LEFT":left = ["E","NE","SE"] # Left to right
     elif spawnPattern == "RIGHT":right = ["W","NW","SW"] # Right to left
-    elif spawnPattern == "VERT": top, bottom = ["SE", "SW", "S"], ["N", "NE", "NW"] 
+    elif spawnPattern == "VERT": top, bottom = ["SE", "SW", "S"], ["N", "NE", "NW"]
     else: top, bottom, left, right = topDir, bottomDir, leftDir, rightDir # Default / "All"
 
     X = random.randint(settings.screenSize[0] * 0.1, settings.screenSize[0] * 0.99)
@@ -3037,12 +3037,15 @@ def gameLoop():
     if game.mainMenu:
         assets.loadMenuMusic()
         pygame.mixer.music.play(-1)
+        if game.musicMuted: pygame.mixer.music.set_volume(0)
         menu.home(game,player)
 
     else:
         assets.loadSoundtrack()
         player.getSkin(game.savedSkin)
         pygame.mixer.music.play()
+
+    if game.musicMuted: pygame.mixer.music.set_volume(0)
 
     events = Event() # Initialize events
     events.set(player) # Events manipulate player cooldowns
