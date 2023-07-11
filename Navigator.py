@@ -1875,6 +1875,9 @@ class Menu:
 
         displayTextList = [survivedText, longestRunText, newLongestRunText, scoreText, highScoreText, newHighScoreText, levelText, attemptText, wastedText]
 
+        settings.debug("New high score: "+ str(newHighScore))
+        settings.debug("New longest run: "+ str(newLongRun))
+
         while gameOver:
             # BACKGROUND
             screen.fill(screenColor)
@@ -1942,7 +1945,7 @@ class Menu:
                 else: skipped+=1
 
         # newHighScore
-        elif conditionOne and not conditionTwo:
+        elif conditionTwo and not conditionOne:
             for x in range(len(textList)):
                 if x != 0 and x!= 1 and x!= 5: # Skip 1st, 2nd, and 6th items
                     textList[x][1].center = settings.screenSize[0]/2, settings.screenSize[1]/3+ statsOffsetY + statsSpacingY * (x+1 - skipped)
@@ -1950,7 +1953,7 @@ class Menu:
                 else: skipped+=1
 
         # newLongestRun
-        elif conditionTwo and not conditionOne:
+        elif conditionOne and not conditionTwo:
             for x in range(len(textList)):
                 if x != 2 and x!= 3 and x!= 4: # Skip 3rd, 4th, and 5th items
                     textList[x][1].center = settings.screenSize[0]/2, settings.screenSize[1]/3 + statsOffsetY + statsSpacingY * (x+1 - skipped)
