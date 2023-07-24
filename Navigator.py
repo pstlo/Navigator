@@ -2255,7 +2255,7 @@ class Player(pygame.sprite.Sprite):
                         direction = cursorDirection - pygame.Vector2(self.rect.centerx, self.rect.centery)
                         direction.normalize_ip()
                         self.angle = direction.angle_to(pygame.Vector2(0, -1))
-                        if math.dist(self.rect.center,(cursorX,cursorY)) >= settings.cursorFollowDistance: self.rect.move_ip((direction*1.414) * self.speed) # MOVE PLAYER
+                        if math.dist(self.rect.center,(cursorX,cursorY)) >= settings.cursorFollowDistance: self.rect.move_ip((direction*math.sqrt(2)) * self.speed) # MOVE PLAYER
 
 
         # SPEED BOOST
