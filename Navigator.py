@@ -14,11 +14,17 @@ pygame.mixer.init()
 
 version = "v0.4.9"
 
+# STARTUP SCREEN
+loadingDisplay = pygame.font.SysFont("None", 30).render("Loading..", True, (0, 255, 0))
+pygame.display.set_mode((800, 800)).blit(loadingDisplay, loadingDisplay.get_rect(midleft=(370, 400)))
+pygame.display.update()
+pygame.display.set_caption('Navigator')
 
 
 # GAME SETTINGS
 class Settings:
     def __init__(self):
+        
         # SCREEN
         self.screenSize = [800,800] # Default = [800,800]
         self.fps = 60 # Default = 60
@@ -269,6 +275,8 @@ class Assets:
         self.stageCloudImg = pygame.image.load(self.resources(os.path.join(assetDirectory,'StageCloud.png') ) ).convert_alpha() # STAGE WIPE CLOUD
         self.soundDirectory = os.path.join(assetDirectory, 'Sounds') # Sound assets directory / will be referenced again for music loading
 
+        pygame.display.set_icon(self.windowIcon)
+        
         # LOAD LEVELS
         self.stageList = []
         with open(self.resources(os.path.join(assetDirectory, 'Levels.json')), 'r') as file:
@@ -822,6 +830,9 @@ def toggleMusic(game):
 
 settings = Settings() # INITIALIZE SETTINGS
 screen = getScreen() # INITIALIZE SCREEN
+loadingDisplay = pygame.font.SysFont("None", 30).render("Loading...", True, (0, 255, 0))
+screen.blit(loadingDisplay, loadingDisplay.get_rect(midleft=(370, 400)))
+pygame.display.update()
 settings.debug("Initialized screen") # Debug
 pygame.mixer.set_num_channels(settings.numChannels)
 assets = Assets() # LOAD ASSETS
@@ -855,8 +866,6 @@ def displayUpdate(gameClock):
 
 
 # WINDOW
-pygame.display.set_caption('Navigator')
-pygame.display.set_icon(assets.windowIcon)
 screenColor = [0,0,0] # Screen fill color
 presence = None # DISCORD PRESENCE
 
@@ -1817,11 +1826,13 @@ class Menu:
             game.records["highScore"] = game.score
 
         assets.storeRecords(game.records) # SAVE UPDATED RECORDS
-        
-        if newHighScore or newLongRun: 
+        if settings.connectToLeaderboard and (newHighScore or newLongRun): 
+            newRecordDisplay = assets.statFont.render("NEW RECORD!",True,(0,0,0))
+            newRecordRect = newRecordDisplay.get_rect(center = player.rect.center)
+            screen.blit(newRecordDisplay,newRecordRect)
+            pygame.display.update()
             assets.uploadRecords(game.records) # upload to database
-            assets.getLeaders() # refresh leaderboard
-        
+
         statsOffsetY = settings.screenSize[1]/10
         statsSpacingY = settings.screenSize[1]/20
 
@@ -1975,6 +1986,8 @@ class Menu:
     # LEADERBOARD
     def leaderboard(self):
         if settings.connectToLeaderboard:
+            self.loadingScreen()
+            assets.getLeaders()
             showLeaderboard = True
             titleDisplay = assets.leaderboardTitleFont.render("LEADER BOARD", True, settings.primaryFontColor)
             titleRect = titleDisplay.get_rect(center=(settings.screenSize[0]/2, 70))
@@ -2168,6 +2181,19 @@ class Menu:
             screen.blit(musicCreditsDisplay,musicCreditsRect)
             screen.blit(moreMusicCreditsDisplay,moreMusicCreditsRect)
             displayUpdate(game.clk)
+
+
+    # LOADING SCREEN
+    def loadingScreen(self):
+        loadingLine = "Loading..."
+        loadingDisplay = assets.leaderboardTitleFont.render(loadingLine, True, settings.primaryFontColor)
+        loadingRect = loadingDisplay.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/2))
+        screen.fill(screenColor)
+        screen.blit(assets.bgList[game.currentStage - 1][0], (0,0) )
+        if game.cave is not None: screen.blit(game.cave.background,game.cave.rect)
+        game.showBackgroundCloud()
+        screen.blit(loadingDisplay,loadingRect)
+        displayUpdate(game.clk)
 
 
     # GET RANDOM DIRECTION - include diagonal
