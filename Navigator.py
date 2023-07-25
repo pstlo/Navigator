@@ -1817,7 +1817,11 @@ class Menu:
             game.records["highScore"] = game.score
 
         assets.storeRecords(game.records) # SAVE UPDATED RECORDS
-
+        
+        if newHighScore or newLongRun: 
+            assets.uploadRecords()
+            assets.getLeaders()
+        
         statsOffsetY = settings.screenSize[1]/10
         statsSpacingY = settings.screenSize[1]/20
 
