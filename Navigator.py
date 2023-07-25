@@ -1819,8 +1819,8 @@ class Menu:
         assets.storeRecords(game.records) # SAVE UPDATED RECORDS
         
         if newHighScore or newLongRun: 
-            assets.uploadRecords()
-            assets.getLeaders()
+            assets.uploadRecords(game.records) # upload to database
+            assets.getLeaders() # refresh leaderboard
         
         statsOffsetY = settings.screenSize[1]/10
         statsSpacingY = settings.screenSize[1]/20
