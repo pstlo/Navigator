@@ -601,7 +601,7 @@ class Assets:
 
             # START CONNECTION
             try:
-                database = MongoClient((Fernet(base64.b64decode(os.getenv('DBKEY'))).decrypt(os.getenv('DBTOKEN'))).decode(),tlsCAFile=certifi.where())
+                database = MongoClient((Fernet(base64.b64decode(os.getenv('DBKEY'))).decrypt(os.getenv('DBTOKEN'))).decode(), connectTimeoutMS=1000, socketTimeoutMS=3000, tlsCAFile=certifi.where())
                 settings.debug("Connected to leaderboard database")
                 return database
             except:
