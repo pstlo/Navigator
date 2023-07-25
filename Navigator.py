@@ -15,9 +15,6 @@ pygame.mixer.init()
 version = "v0.4.9"
 
 # STARTUP SCREEN
-loadingDisplay = pygame.font.SysFont("None", 30).render("Loading..", True, (0, 255, 0))
-pygame.display.set_mode((800, 800)).blit(loadingDisplay, loadingDisplay.get_rect(midleft=(370, 400)))
-pygame.display.update()
 pygame.display.set_caption('Navigator')
 
 
