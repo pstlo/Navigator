@@ -21,7 +21,7 @@ pygame.display.set_caption('Navigator')
 # GAME SETTINGS
 class Settings:
     def __init__(self):
-        
+
         # SCREEN
         self.screenSize = [800,800] # Default = [800,800]
         self.fps = 60 # Default = 60
@@ -107,7 +107,7 @@ class Settings:
         self.defaultToHighShip = False # Default = False / Default to highest ship unlocked on game launch
         self.heatSeekDelay = 15 # Default = 15 / time before projectile starts homing
         self.heatSeekNeedsTarget = False # Default = False / projectile will explode if target not found
-        self.skinAnimationDelay = 10 # Default = 10 / Delay between animation frame updates
+        self.skinAnimationDelay = 5 # Default = 5 / Delay between skin animation frame updates
 
         # LEVELS
         self.levelUpCloudSpeed = 25 # Default = 25 / Only affects levels preceded by wipe
@@ -273,7 +273,7 @@ class Assets:
         self.soundDirectory = os.path.join(assetDirectory, 'Sounds') # Sound assets directory / will be referenced again for music loading
 
         pygame.display.set_icon(self.windowIcon)
-        
+
         # LOAD LEVELS
         self.stageList = []
         with open(self.resources(os.path.join(assetDirectory, 'Levels.json')), 'r') as file:
@@ -629,7 +629,7 @@ class Assets:
                 leaderBoard = []
                 for leaderIndex in range(len(leaders)):
                     leader = leaders[leaderIndex]
-                    leaderBoard.append( {'name':leader['name'], 'time':leader['longestRun'], 'score':leader['highScore']} )
+                    leaderBoard.append( {'id': leader['_id'], 'name':leader['name'], 'time':leader['longestRun'], 'score':leader['highScore']} )
                 return leaderBoard
             except:
                 settings.debug("Could not get leaderboard") # Debug
@@ -704,6 +704,14 @@ class Unlocks:
         if not self.ships[0][10] and game.records["longestRun"] >= 150:self.ships[0][10] = True
         if not self.ships[0][11] and game.records["longestRun"] >= 165:self.ships[0][11] = True
 
+        # Record holder unlocks
+        if assets.leaderboard[0]['id'] == game.records['id']:
+            settings.debug("User is record holder") # Debug
+            if not self.ships[0][12]: self.ships[0][12] = True
+        else:
+        # Re locks
+            if self.ships[0][12]: self.ships[0][12] = False
+
         # Rocket buggy - L2
         if not self.ships[1][0] and game.records["highScore"] >= 25: self.ships[1][0] = True
 
@@ -746,7 +754,7 @@ class Unlocks:
     # Index of highest ship unlock
     def highestShip(self):
         highest = 0
-        for shipIndex in range(len(self.ships)-1):
+        for shipIndex in range(len(self.ships)):
             if self.ships[shipIndex][0]: highest = shipIndex
         return highest
 
@@ -754,7 +762,7 @@ class Unlocks:
     # Index of highest skin unlock
     def highestSkin(self,shipNum):
         highest = 0
-        for skinIndex in range(len(self.ships[shipNum])-1):
+        for skinIndex in range(len(self.ships[shipNum])):
             if self.ships[shipNum][skinIndex]: highest = skinIndex
         return highest
 
@@ -1593,7 +1601,14 @@ class Menu:
         versionDisplay = assets.versionFont.render(version,True,settings.primaryFontColor)
         versionRect = versionDisplay.get_rect(topright = (startRect.right-25,startRect.bottom-25))
 
-        game.unlocks.update(game) # GET NEW UNLOCKS
+        try:
+            game.unlocks.update(game) # GET NEW UNLOCKS
+        except:
+            settings.debug("Version incompatibility detected")
+            game.records['unlocks'] = assets.getDefaultUnlocks()
+            assets.storeRecords(game.records)
+            game.unlocks.update(game)
+            settings.debug("Updated successfully")
 
         if settings.defaultToHighShip:
             if game.unlocks.hasShipUnlock(): player.getShip(game.unlocks.highestShip()) # Gets highest unlocked ship by default
@@ -1823,7 +1838,7 @@ class Menu:
             game.records["highScore"] = game.score
 
         assets.storeRecords(game.records) # SAVE UPDATED RECORDS
-        if settings.connectToLeaderboard and (newHighScore or newLongRun): 
+        if settings.connectToLeaderboard and (newHighScore or newLongRun):
             newRecordDisplay = assets.statFont.render("NEW RECORD!",True,(0,0,0))
             newRecordRect = newRecordDisplay.get_rect(center = player.rect.center)
             screen.blit(newRecordDisplay,newRecordRect)
@@ -1984,8 +1999,9 @@ class Menu:
     def leaderboard(self):
         if settings.connectToLeaderboard:
             self.loadingScreen()
-            assets.getLeaders()
-            showLeaderboard = True
+            assets.leaderboard = assets.getLeaders()
+            if assets.leaderboard is None: showLeaderboard = False
+            else: showLeaderboard = True
             titleDisplay = assets.leaderboardTitleFont.render("LEADER BOARD", True, settings.primaryFontColor)
             titleRect = titleDisplay.get_rect(center=(settings.screenSize[0]/2, 70))
             cellW = settings.screenSize[0] * 0.6
@@ -2015,28 +2031,35 @@ class Menu:
 
                 # DRAW LEADERBOARD
                 for index, leader in enumerate(assets.leaderboard):
+
+                    # Name coloring
+                    if leader['id'] == game.records['id']:
+                        if index == 0: thisColor = (255,0,0)
+                        else: thisColor = (255,255,255)
+                    else: thisColor = (0,0,0)
+
                     cellX = leaderboardX
                     cellY = leaderboardY + (index + 1) * leaderSpacing
                     pygame.draw.rect(screen, settings.primaryFontColor, (cellX, cellY, cellW, cellH))
                     pygame.draw.rect(screen, (0, 0, 0), (cellX, cellY, cellW, cellH), cellBorder)
 
                     rankText = f"{index + 1}."
-                    rankDisplay = assets.leaderboardFont.render(rankText, True, (0, 0, 0))
+                    rankDisplay = assets.leaderboardFont.render(rankText, True, thisColor)
                     rankRect = rankDisplay.get_rect(midleft=(cellX + 10, cellY + cellH // 2))
                     screen.blit(rankDisplay, rankRect)
 
                     nameText = leader['name'][:maxUsernameLength]
-                    nameDisplay = assets.leaderboardFont.render(nameText, True, (0, 0, 0))
+                    nameDisplay = assets.leaderboardFont.render(nameText, True, thisColor)
                     nameRect = nameDisplay.get_rect(midleft=(cellX + cellW //12, cellY + cellH // 2))
                     screen.blit(nameDisplay, nameRect)
 
                     timeText= str(leader['time']) + "s"
-                    timeDisplay = assets.leaderboardFont.render(timeText, True, (0, 0, 0))
+                    timeDisplay = assets.leaderboardFont.render(timeText, True, thisColor)
                     timeRect = timeDisplay.get_rect(center=(cellX + cellW * 0.7, cellY + cellH // 2))
                     screen.blit(timeDisplay, timeRect)
 
                     scoreText = str(leader['score'])
-                    scoreDisplay = assets.leaderboardFont.render(scoreText, True, (0, 0, 0))
+                    scoreDisplay = assets.leaderboardFont.render(scoreText, True, thisColor)
                     scoreRect = scoreDisplay.get_rect(center=(cellX + cellW * 0.88, cellY + cellH // 2))
                     screen.blit(scoreDisplay, scoreRect)
 
@@ -2480,10 +2503,10 @@ class Player(pygame.sprite.Sprite):
         def updateAnimation(self):
             if self.animated:
                 if self.skinAnimationCount >= settings.skinAnimationDelay:
-                    self.skinAnimationCount = 0
                     if self.skinAnimationFrame + 1 > self.skinAnimationFrames: self.skinAnimationFrame = 0
                     else: self.skinAnimationFrame += 1
                     self.image = assets.spaceShipList[game.savedShipLevel]['skins'][self.currentImageNum][self.skinAnimationFrame]
+                    self.skinAnimationCount = 0
                 self.skinAnimationCount += 1
 
 
