@@ -705,7 +705,7 @@ class Unlocks:
         if not self.ships[0][11] and game.records["longestRun"] >= 165:self.ships[0][11] = True
 
         # Record holder unlocks
-        if assets.leaderboard[0]['id'] == game.records['id']:
+        if assets.leaderboard is not None and assets.leaderboard[0]['id'] == game.records['id']:
             settings.debug("User is record holder") # Debug
             if not self.ships[0][12]: self.ships[0][12] = True
         else:
