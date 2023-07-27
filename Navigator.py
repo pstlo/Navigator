@@ -806,7 +806,7 @@ def getScreen():
         if settings.fullScreen: return pygame.display.set_mode(settings.screenSize, pygame.FULLSCREEN | pygame.DOUBLEBUF | pygame.SCALED , depth = 16)
         else: return pygame.display.set_mode(settings.screenSize,pygame.DOUBLEBUF,depth=16)
     elif settings.qualityMode:
-        if settings.fullScreen: return pygame.display.set_mode(settings.screenSize, pygame.FULLSCREEN| pygame.NOFRAME | pygame.SRCALPHA,depth = 32)
+        if settings.fullScreen: return pygame.display.set_mode(settings.screenSize, pygame.FULLSCREEN | pygame.SRCALPHA,depth = 32)
         else: return pygame.display.set_mode(settings.screenSize, pygame.NOFRAME | pygame.SRCALPHA,depth = 32)
     # Default
     else:
@@ -819,11 +819,15 @@ def toggleScreen():
     if settings.qualityMode and not settings.performanceMode:
         global screen
         pygame.display.quit()
-        settings.settings.fullScreen = not settings.settings.fullScreen
+        settings.fullScreen = not settings.fullScreen
         pygame.display.set_caption('Navigator')
         pygame.display.set_icon(assets.windowIcon)
         screen = getScreen()
-    else: pygame.display.toggle_fullscreen()
+    else:
+        pygame.display.toggle_fullscreen()
+        settings.fullScreen = not settings.fullScreen
+        if settings.fullScreen: settings.debug("Fullscreen toggled on")
+        else: settings.debug("Fullscreen toggled off")
 
 
 # TOGGLE MUSIC MUTE
@@ -1902,8 +1906,8 @@ class Menu:
 
         displayTextList = [survivedText, longestRunText, newLongestRunText, scoreText, highScoreText, newHighScoreText, levelText, attemptText, wastedText]
 
-        settings.debug("New high score: "+ str(newHighScore))
-        settings.debug("New longest run: "+ str(newLongRun))
+        if newHighScore: settings.debug("New high score")
+        if newLongRun: settings.debug("New longest run")
 
         while gameOver:
             # BACKGROUND
