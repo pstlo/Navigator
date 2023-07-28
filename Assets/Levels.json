@@ -11,7 +11,7 @@
             "obstacleHealth": 0,
             "obstacleSpin" : 1,
 			"obstacleBounds": "KILL",
-			"obstacleSpawn" : "ALL",
+			"obstacleSpawn" : "NONE",
 			"obstacleTarget" : "NONE",
 			"obstacleLaserType":"NONE",
             "wipeObstacles": false
@@ -27,7 +27,7 @@
             "obstacleHealth": 0,
             "obstacleSpin" : 1,
 			"obstacleBounds": "KILL",
-			"obstacleSpawn" : "ALL",
+			"obstacleSpawn" : "NONE",
 			"obstacleTarget" : "NONE",
 			"obstacleLaserType":"NONE",
             "wipeObstacles": false
@@ -43,7 +43,7 @@
             "obstacleHealth": 0,
             "obstacleSpin" : 2,
 			"obstacleBounds": "KILL",
-			"obstacleSpawn" : "ALL",
+			"obstacleSpawn" : "NONE",
 			"obstacleTarget" : "NONE",
 			"obstacleLaserType":"NONE",			
             "wipeObstacles": false
@@ -59,7 +59,7 @@
             "obstacleHealth": 0,
             "obstacleSpin" : 3,
 			"obstacleBounds": "KILL",
-			"obstacleSpawn" : "ALL",
+			"obstacleSpawn" : "NONE",
 			"obstacleTarget" : "NONE",
 			"obstacleLaserType":"NONE",
             "wipeObstacles": false
@@ -75,7 +75,7 @@
             "obstacleHealth": 0,
             "obstacleSpin" : 4,
 			"obstacleBounds": "KILL",
-			"obstacleSpawn" : "ALL",
+			"obstacleSpawn" : "NONE",
 			"obstacleTarget" : "NONE",
 			"obstacleLaserType":"NONE",
             "wipeObstacles": false
@@ -91,7 +91,7 @@
             "obstacleHealth": 0,
             "obstacleSpin" : 4,
 			"obstacleBounds": "KILL",
-			"obstacleSpawn" : "ALL",
+			"obstacleSpawn" : "NONE",
 			"obstacleTarget" : "NONE",
 			"obstacleLaserType":"NONE",
             "wipeObstacles": false
@@ -107,7 +107,7 @@
             "obstacleHealth": 0,
             "obstacleSpin" : 1,
 			"obstacleBounds": "KILL",
-			"obstacleSpawn" : "ALL",
+			"obstacleSpawn" : "NONE",
 			"obstacleTarget" : "NONE",
 			"obstacleLaserType":"NONE",
             "wipeObstacles": true
@@ -123,7 +123,7 @@
             "obstacleHealth": 0,
             "obstacleSpin" : 4,
 			"obstacleBounds": "KILL",
-			"obstacleSpawn" : "ALL",
+			"obstacleSpawn" : "NONE",
 			"obstacleTarget" : "NONE",
 			"obstacleLaserType":"NONE",
             "wipeObstacles": false
@@ -139,7 +139,7 @@
             "obstacleHealth": 0,
             "obstacleSpin" : 5,
 			"obstacleBounds": "KILL",
-			"obstacleSpawn" : "ALL",
+			"obstacleSpawn" : "NONE",
 			"obstacleTarget" : "NONE",
 			"obstacleLaserType":"NONE",
             "wipeObstacles": false
@@ -155,7 +155,7 @@
             "obstacleHealth": 0,
             "obstacleSpin" : 5,
 			"obstacleBounds": "KILL",
-			"obstacleSpawn" : "ALL",
+			"obstacleSpawn" : "NONE",
 			"obstacleTarget" : "NONE",
 			"obstacleLaserType":"NONE",
             "wipeObstacles": false
@@ -177,7 +177,7 @@
             "obstacleHealth": 0,
             "obstacleSpin" : 0,
 			"obstacleBounds": "KILL",
-			"obstacleSpawn" : "AGGRO",
+			"obstacleSpawn" : "NONE",
 			"obstacleTarget" : "NONE",
 			"obstacleLaserType":"NONE",
             "wipeObstacles": false
@@ -193,7 +193,7 @@
             "obstacleHealth": 0,
             "obstacleSpin" : 0,
 			"obstacleBounds": "KILL",
-			"obstacleSpawn" : "AGGRO",
+			"obstacleSpawn" : "NONE",
 			"obstacleTarget" : "NONE",
 			"obstacleLaserType":"NONE",
             "wipeObstacles": false
@@ -209,7 +209,7 @@
             "obstacleHealth": 0,
             "obstacleSpin" : 3,
 			"obstacleBounds": "KILL",
-			"obstacleSpawn" : "AGGRO",
+			"obstacleSpawn" : "NONE",
 			"obstacleTarget" : "NONE",
 			"obstacleLaserType":"NONE",
             "wipeObstacles": false
@@ -225,7 +225,7 @@
             "obstacleHealth": 0,
             "obstacleSpin" : 0,
 			"obstacleBounds": "KILL",
-			"obstacleSpawn" : "AGGRO",
+			"obstacleSpawn" : "NONE",
 			"obstacleTarget" : "NONE",
 			"obstacleLaserType":"NONE",
             "wipeObstacles": false
