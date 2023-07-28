@@ -49,7 +49,7 @@ class Settings:
         self.pointSize = 25  # Default = 25
         self.shieldChunkSize = self.screenSize[0]/40 # Default = screen width / 40
         self.boostCooldownTime = 2000 # Default = 2000 / Activates when fuel runs out to allow regen
-        self.powerUpList = {"Default":55,"Shield":20, "Fuel":20, "Coin":5} # Default = {"Default":55,"Shield":20, "Fuel":20, "Coin":5}
+        self.powerUpList = {"Default":55,"Shield":20, "Fuel":20, "Coin":5} # Default = {"Default":55,"Shield":20, "Fuel":20, "Coin":5} / power up odds
         self.playerShieldSize = 48 # Default = 64 / Shield visual size
         self.shieldVisualDuration = 250 # Default = 250 / Shield visual duration
         self.minDistanceToPoint = (self.screenSize[0] + self.screenSize[1]) / 16 # Default = 100
@@ -981,10 +981,7 @@ for i in range(settings.spawnVertices):
     spawnAreaPoints.append((x, y)) # Vertices of spawn area
 
 # "ALL" Spawn pattern / also used for random bounces in credits screen
-topDir = ["S", "E", "W", "SE", "SW"]
-leftDir = ["E", "S", "N", "NE", "SE"]
-bottomDir = ["N", "W", "E", "NE", "NW"]
-rightDir = ["W", "N", "S", "NW", "SW"]
+
 
 
 # QUIT GAME
@@ -1004,16 +1001,17 @@ def rotateImage(image, rect, angle):
 # MOVEMENT AND POSITION GENERATION
 def getMovement(spawnPattern):
     top,bottom,left,right = [],[],[],[]
-    if spawnPattern == "AGGRO": top, bottom, left, right, = ["SE", "SW", "S"], ["N", "NE", "NW"], ["E", "NE", "SE"], ["NW", "SW", "W"]
-    elif spawnPattern == "TOP": top = ["SE", "SW", "S"] # Top to bottom
+    if spawnPattern == "TOP": top = ["SE", "SW", "S"] # Top to bottom
     elif spawnPattern == "BOTTOM": bottom = ["N","NE","NW"] # Bottom to top
     elif spawnPattern == "LEFT":left = ["E","NE","SE"] # Left to right
     elif spawnPattern == "RIGHT":right = ["W","NW","SW"] # Right to left
     elif spawnPattern == "VERT": top, bottom = ["SE", "SW", "S"], ["N", "NE", "NW"]
-    else: top, bottom, left, right = topDir, bottomDir, leftDir, rightDir # Default / "All"
+    elif spawnPattern == "HORI": left, right = ["E","NE","SE"], ["W","NW","SW"]
+    elif spawnPattern == "DIAG": top, bottom, left, right = ["SE", "SW"], ["NE", "NW"], ["NE", "SE"], ["NW", "SW"]
+    else: top, bottom, left, right = ["SE", "SW", "S"], ["N", "NE", "NW"], ["E", "NE", "SE"], ["NW", "SW", "W"]
 
-    X = random.randint(settings.screenSize[0] * 0.1, settings.screenSize[0] * 0.99)
-    Y = random.randint(settings.screenSize[1] * 0.1, settings.screenSize[1] * 0.99)
+    X = random.randint(settings.screenSize[0] * 0.02, settings.screenSize[0] * 0.98)
+    Y = random.randint(settings.screenSize[1] * 0.02, settings.screenSize[1] * 0.98)
 
     lowerX = random.randint(-1,0)
     upperX = random.randint(settings.screenSize[0], settings.screenSize[0] + 1)
@@ -1030,6 +1028,7 @@ def getMovement(spawnPattern):
     position = [movement[0], movement[1]]
     direction = movement[2]
     move = [position,direction]
+
     return move
 
 
@@ -2078,6 +2077,11 @@ class Menu:
         posX = settings.screenSize[0]/2
         posY = settings.screenSize[1]/2
 
+        topDir = ["S", "E", "W", "SE", "SW"]
+        leftDir = ["E", "S", "N", "NE", "SE"]
+        bottomDir = ["N", "W", "E", "NE", "NW"]
+        rightDir = ["W", "N", "S", "NW", "SW"]
+
         createdByLine = "Created by Mike Pistolesi"
         creditsLine = "with art by Collin Guetta"
         musicCreditsLine = "music by Dylan Kusenko"
@@ -2579,7 +2583,6 @@ class Obstacle(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (self.size, self.size)).convert_alpha()
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
         self.getDirection(playerPos)
-        if self.target == "NONE": self.validate()
         self.angle = 0 # Image rotation
         self.spinDirection = random.choice([-1,1])
         self.active,self.activating,self.activationDelay = False,False,0
@@ -2689,17 +2692,6 @@ class Obstacle(pygame.sprite.Sprite):
         if self.activating:
             if self.activationDelay >= settings.activationDelay: self.active = True
             else: self.activationDelay +=1
-
-
-    # VALIDATE OBSTACLE POSTITION
-    def validate(self):
-        if type(self.direction) == str:
-            if self.rect.right > settings.screenSize[0] or self.rect.left < 0:
-                if self.direction == "N": self.rect.center = (random.randint(settings.screenSize[0]*0.02, settings.screenSize[0]*0.98) , settings.screenSize[1])
-                elif self.direction == "S": self.rect.center= (random.randint(settings.screenSize[0]*0.02, settings.screenSize[0]*0.98) , 0)
-            if self.rect.top < 0 or self.rect.bottom > settings.screenSize[1]:
-                if self.direction == "W":self.rect.center = (settings.screenSize[0], random.randint(settings.screenSize[1]*0.02, settings.screenSize[1]*0.98))
-                elif self.direction == "E":self.rect.center = (0, random.randint(settings.screenSize[1]*0.02, settings.screenSize[1]*0.98))
 
 
     # GET INVERSE MOVEMENT DIRECTION
@@ -2958,7 +2950,7 @@ class Icon:
     def __init__(self):
         spins = [-1,1]
         self.speed = random.randint(settings.minIconSpeed,settings.maxIconSpeed)
-        self.movement = getMovement("AGGRO")
+        self.movement = getMovement(None)
         self.direction = self.movement[1]
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
         if random.randint(0,10) < 7: self.image = assets.menuList[1]
@@ -2987,7 +2979,7 @@ class Icon:
         randomTimerLY = -1 * random.randint(settings.screenSize[0], settings.screenSize[1] * 3)
 
         if self.active and ( (self.rect.centery > randomTimerUY) or (self.rect.centery < randomTimerLY) or (self.rect.centerx> randomTimerUX) or (self.rect.centerx < randomTimerLX) ):
-            self.movement = getMovement("ALL")
+            self.movement = getMovement(None)
             self.direction = self.movement[1]
             if random.randint(0,10) < 7: self.image = assets.menuList[1]
             else: self.image = assets.menuList[random.randint(5,len(assets.menuList)-1)]
@@ -3024,7 +3016,7 @@ class BackgroundShip:
         self.speed = settings.maxBackgroundShipSpeed/self.size
         if self.speed > settings.maxBackgroundShipSpeed: self.speed = settings.maxBackgroundShipSpeed
         elif self.speed < settings.minBackgroundShipSpeed: self.speed = settings.minBackgroundShipSpeed
-        self.movement = getMovement("AGGRO")
+        self.movement = getMovement(None)
         self.direction = self.movement[1]
         self.angle = getAngle(self.direction)
         self.text = text
