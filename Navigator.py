@@ -31,8 +31,8 @@ class Settings:
         # INPUT
         self.useController = True # Default = True / Allow controller input
         self.cursorMode = True # Default = True / Allow cursor input
-        self.cursorFollowDistance = 25 # Default = 25 / Cursor follow deadzone
-        self.cursorRotateDistance = 10 # Default = 10 / Cursor rotate deadzone
+        self.cursorFollowDistance = 10 # Default = 10 / Cursor follow deadzone
+        self.cursorRotateDistance = 1 # Default = 5 / Cursor rotate deadzone
         self.cursorThickness = 2 # Default = 2
 
         # HUD
@@ -137,6 +137,7 @@ class Settings:
         self.rawCursorMode = False # Default = False / sets player position to cursor position
         self.performanceMode = False # Default = False
         self.qualityMode = False # Default = False # Overridden by performance mode
+        self.eightDirectionCursorMovement = False # Default = False / Limit cursor movement to 8 directions
 
         # DISCORD
         self.showPresence = True # Default = True / Discord presence using pypresence
@@ -145,6 +146,7 @@ class Settings:
         self.useArgs = True # Default = False / accept command line args
         self.devMode = False # Default = False
         self.showSpawnArea = False # Default = False / show powerup spawn area
+        self.showCursorPath = False # Default = False / Draw line from cursor to ship
         self.debugging = False # Default = False / show status messages
 
         # ARGS
@@ -2289,7 +2291,7 @@ class Player(pygame.sprite.Sprite):
                 if any(key[bind] for bind in downInput): direction += pygame.Vector2(0, 1)
                 if any(key[bind] for bind in leftInput): direction += pygame.Vector2(-1, 0)
                 if any(key[bind] for bind in rightInput): direction += pygame.Vector2(1, 0)
-                if direction.length() > 1: direction.normalize_ip()
+                if direction.length() > 0: direction.normalize_ip()
                 if not any(key[bind] for bind in brakeInput): self.rect.move_ip((math.sqrt(2)*direction) * self.speed) # MOVE PLAYER
                 if direction.x != 0 or direction.y != 0: self.angle = direction.angle_to(pygame.Vector2(0, -1)) # GET PLAYER ANGLE
 
@@ -2320,12 +2322,14 @@ class Player(pygame.sprite.Sprite):
                 else:
                     # CURSOR MODE
                     cursorX, cursorY = pygame.mouse.get_pos()
+                    if settings.showCursorPath: pygame.draw.aaline(screen,(0,255,0),(cursorX,cursorY),self.rect.center)
                     cursorDirection = pygame.Vector2(cursorX, cursorY)
-                    if math.dist(self.rect.center,(cursorX,cursorY)) >= settings.cursorRotateDistance:
+                    if math.dist(self.rect.midtop,(cursorX,cursorY)) > settings.cursorRotateDistance:
                         direction = cursorDirection - pygame.Vector2(self.rect.centerx, self.rect.centery)
-                        direction.normalize_ip()
+                        if direction.length() > 0: direction.normalize_ip()
+                        if settings.eightDirectionCursorMovement: direction = pygame.Vector2(round(direction.x),round(direction.y))
                         self.angle = direction.angle_to(pygame.Vector2(0, -1))
-                        if math.dist(self.rect.center,(cursorX,cursorY)) >= settings.cursorFollowDistance: self.rect.move_ip((direction*math.sqrt(2)) * self.speed) # MOVE PLAYER
+                        if math.dist(self.rect.center,(cursorX,cursorY)) >= settings.cursorFollowDistance: self.rect.move_ip((math.sqrt(2)*direction) * self.speed) # MOVE PLAYER
 
 
         # SPEED BOOST
