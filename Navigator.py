@@ -1,7 +1,7 @@
 # Navigator
 # Copyright (c) 2023 Mike Pistolesi
 # All rights reserved
- 
+
 import os,sys,random,math,platform,json,base64,time,asyncio
 from cryptography.fernet import Fernet
 from dotenv import load_dotenv
@@ -1865,7 +1865,7 @@ class Menu:
         newLongestRunLine = "New longest run! " + str(game.sessionLongRun) + " seconds"
         levelLine = "Died at stage " + str(game.currentStage) + "  -  level " + str(game.currentLevel)
         attemptLine = str(game.attemptNumber) + " attempts this session, " + str(game.records["attempts"]) + " overall"
-        timeWasted = "Time played = " + str(game.records["timePlayed"]) + " seconds"
+        timeWasted = self.simplifyTime(game.records["timePlayed"])
 
         # Display
         scoreDisplay = assets.statFont.render(scoreLine, True, settings.primaryFontColor)
@@ -2229,7 +2229,19 @@ class Menu:
         directions = ["N","S","E","W","NW","SW","NE","SE"]
         direction = directions[random.randint(0, len(directions)-1)]
         return direction
-
+        
+    
+    # GET TIME PLAYED
+    def simplifyTime(self,time):
+        timePlayedLine = "Time played = "
+        mins = int(time / 60) 
+        hours = int(mins / 60)
+        secs = int(time % 60) 
+        remMins = int(mins - (hours * 60))
+        if hours >= 1: timePlayed = timePlayedLine + str(hours) + " hours " + str(remMins) + " minutes " + str(secs) + " seconds"
+        elif mins >= 1: timePlayed = timePlayedLine + str(mins) + " minutes + " + str(secs) + " seconds"
+        else: timePlayed = timePlayedLine + str(secs) + " seconds"
+        return timePlayed
 
 
 # PLAYER
