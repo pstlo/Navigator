@@ -32,7 +32,7 @@ class Settings:
         self.useController = True # Default = True / Allow controller input
         self.cursorMode = True # Default = True / Allow cursor input
         self.cursorFollowDistance = 10 # Default = 10 / Cursor follow deadzone
-        self.cursorRotateDistance = 1 # Default = 5 / Cursor rotate deadzone
+        self.cursorRotateDistance = 1 # Default = 1 / Cursor rotate deadzone
         self.cursorThickness = 2 # Default = 2
 
         # HUD
