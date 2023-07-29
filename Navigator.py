@@ -50,7 +50,7 @@ class Settings:
         self.shieldChunkSize = self.screenSize[0]/40 # Default = screen width / 40
         self.boostCooldownTime = 2000 # Default = 2000 / Activates when fuel runs out to allow regen
         self.powerUpList = {"Default":55,"Shield":20, "Fuel":20, "Coin":5} # Default = {"Default":55,"Shield":20, "Fuel":20, "Coin":5} / power up odds
-        self.playerShieldSize = 48 # Default = 64 / Shield visual size
+        self.playerShieldSize = 48 # Default = 48 / Shield visual size
         self.shieldVisualDuration = 250 # Default = 250 / Shield visual duration
         self.minDistanceToPoint = (self.screenSize[0] + self.screenSize[1]) / 16 # Default = 100
         self.maxRandomAttempts = 100 # Default = 100 / For random generator distances / max random attempts at finding a valid point
@@ -116,7 +116,7 @@ class Settings:
         self.explosionDelay = 1 # Default = 1
         self.slowerDiagonalObstacles = True # Default = True / use the hypotenuse or whatever
         self.spawnDistance = 0 # Default = 0 / Distance past screen border required before new obstacle spawned
-        self.activationDelay = 2 # Default = 2 / frames before activation after entering screen
+        self.activationDelay = 0 # Default = 2 / frames before activation after entering screen
         self.obsLaserDelay = 10 # Default = 10 / delay before obstacle fires another laser
         self.obsLaserDamage = 1 # Default = 1
         self.maxObsLasers = 3 # Default = 3 / lasers per obstacle
@@ -2231,14 +2231,14 @@ class Menu:
         directions = ["N","S","E","W","NW","SW","NE","SE"]
         direction = directions[random.randint(0, len(directions)-1)]
         return direction
-        
-    
+
+
     # GET TIME PLAYED
     def simplifyTime(self,time):
         timePlayedLine = "Time played = "
-        mins = int(time / 60) 
+        mins = int(time / 60)
         hours = int(mins / 60)
-        secs = int(time % 60) 
+        secs = int(time % 60)
         remMins = int(mins - (hours * 60))
         if hours >= 1: timePlayed = timePlayedLine + str(hours) + " hours " + str(remMins) + " minutes " + str(secs) + " seconds"
         elif mins >= 1: timePlayed = timePlayedLine + str(mins) + " minutes + " + str(secs) + " seconds"
@@ -2582,7 +2582,7 @@ class Player(pygame.sprite.Sprite):
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self,playerPos,**kwargs):
         super().__init__()
-        # Accept for kwargs or default to level settings
+        # Accept kwargs or default to level settings
         self.attributeIndex = None
         self.spawnPattern = kwargs.get('spawn', self.getAttributes(assets.stageList[game.currentStage-1][game.currentLevel-1]["obstacleSpawn"]))
         self.target = kwargs.get('target', self.getAttributes(assets.stageList[game.currentStage-1][game.currentLevel-1]["obstacleTarget"]))
@@ -2601,7 +2601,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.getDirection(playerPos)
         self.angle = 0 # Image rotation
         self.spinDirection = random.choice([-1,1])
-        self.active,self.activating,self.activationDelay = False,False,0
+        self.active = False
         self.slowerDiagonal = settings.slowerDiagonalObstacles
         self.laserDelay, self.lasersShot, self.maxLasers = 0, 0, settings.maxObsLasers
 
@@ -2669,28 +2669,28 @@ class Obstacle(pygame.sprite.Sprite):
             if self.rect.left > settings.screenSize[0] + settings.spawnDistance or self.rect.right < -settings.spawnDistance:
                 obstacles.remove(self)
                 self.kill()
-            elif  self.rect.top > settings.screenSize[1] + settings.spawnDistance or self.rect.bottom < 0 - settings.spawnDistance:
+            elif self.rect.top > settings.screenSize[1] + settings.spawnDistance or self.rect.bottom < 0 - settings.spawnDistance:
                 obstacles.remove(self)
                 self.kill()
 
         elif self.bounds == "BOUNCE": # Bounce off walls
             if self.rect.left < 0:
-                if self.target == "NONE": self.direction = self.movementReverse(self.direction)
+                if self.target == "NONE": self.movementReverse()
                 else: self.direction = math.atan2(math.sin(self.direction + math.pi), math.cos(self.direction + math.pi))
                 self.rect.left = 1
 
             elif self.rect.right > settings.screenSize[0]:
-                if self.target == "NONE": self.direction = self.movementReverse(self.direction)
+                if self.target == "NONE": self.movementReverse()
                 else: self.direction = math.atan2(math.sin(self.direction + math.pi), math.cos(self.direction + math.pi))
                 self.rect.right = settings.screenSize[0] - 1
 
             elif self.rect.top < 0:
-                if self.target == "NONE": self.direction = self.movementReverse(self.direction)
+                if self.target == "NONE": self.movementReverse()
                 else: self.direction = math.atan2(math.sin(self.direction + math.pi), math.cos(self.direction + math.pi))
                 self.rect.top = 1
 
             elif self.rect.bottom > settings.screenSize[1]:
-                if self.target == "NONE": self.direction = self.movementReverse(self.direction)
+                if self.target == "NONE": self.movementReverse()
                 else: self.direction = math.atan2(math.sin(self.direction + math.pi), math.cos(self.direction + math.pi))
                 self.rect.bottom = settings.screenSize[1]-1
 
@@ -2704,10 +2704,7 @@ class Obstacle(pygame.sprite.Sprite):
     # ACTIVATE OBSTACLE
     def activate(self):
         if not self.active:
-            if self.rect.right > 0 and self.rect.left < settings.screenSize[0] and self.rect.bottom > 0 and self.rect.top < settings.screenSize[1]: self.activating = True
-        if self.activating:
-            if self.activationDelay >= settings.activationDelay: self.active = True
-            else: self.activationDelay +=1
+            if self.rect.right > 0 and self.rect.left < settings.screenSize[0] and self.rect.bottom > 0 and self.rect.top < settings.screenSize[1]: self.active = True
 
 
     # GET INVERSE MOVEMENT DIRECTION
