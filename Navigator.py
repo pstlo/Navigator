@@ -1360,7 +1360,7 @@ class Game:
 
         # UPDATES STAGE
         if self.currentStage < len(assets.stageList): # Make sure there is a next stage
-            if self.gameClock >= assets.stageList[self.currentStage][0]["startTime"]  and not assets.stageList[self.currentStage][0]["START"]: # Next stage's first level's activation time reached
+            if self.gameClock == assets.stageList[self.currentStage][0]["startTime"]  and not assets.stageList[self.currentStage][0]["START"]: # Next stage's first level's activation time reached
                 assets.stageList[self.currentStage][0]["START"] = True # Mark as activated
                 
                 if self.currentStage == len(assets.stageList)-1: self.endlessModeStarted = True # START OVERTIME/ENDLESS MODE
@@ -1400,7 +1400,7 @@ class Game:
 
         # UPDATES LEVEL
         for levelDict in assets.stageList[self.currentStage-1]:
-            if self.gameClock >= levelDict["startTime"] and not levelDict["START"] and ( (self.currentLevel > 1 or self.currentStage > 1) or (len(assets.stageList[0]) > 1 and self.gameClock >= assets.stageList[0][1]["startTime"]) ):
+            if self.gameClock == levelDict["startTime"] and not levelDict["START"] and ( (self.currentLevel > 1 or self.currentStage > 1) or (len(assets.stageList[0]) > 1 and self.gameClock >= assets.stageList[0][1]["startTime"]) ):
                 if assets.stageList[self.currentStage-1][self.currentLevel-1]["wipeObstacles"]:
                     levelUpCloud = assets.stageCloudImg
                     levelUpRect = levelUpCloud.get_rect()
