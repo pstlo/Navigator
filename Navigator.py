@@ -295,6 +295,15 @@ class Assets:
             if filename.endswith('.png'):
                 path = os.path.join(meteorDirectory, filename)
                 meteorList.append(pygame.image.load(self.resources(path)).convert_alpha())
+            else:
+                meteorFolder = os.path.join(meteorDirectory,filename)
+                if os.path.isdir(meteorFolder):
+                    meteorsList = []
+                    for meteorFilename in sorted(os.listdir(meteorFolder)):
+                        if meteorFilename.endswith('.png'):
+                            path = os.path.join(meteorFolder,meteorFilename)
+                            meteorsList.append(pygame.image.load(self.resources(path)).convert_alpha())
+                    if len(meteorsList) > 0: meteorList.append(meteorsList)
 
         # UFO ASSETS
         ufoList = []
@@ -1362,7 +1371,7 @@ class Game:
         if self.currentStage < len(assets.stageList): # Make sure there is a next stage
             if self.gameClock == assets.stageList[self.currentStage][0]["startTime"]  and not assets.stageList[self.currentStage][0]["START"]: # Next stage's first level's activation time reached
                 assets.stageList[self.currentStage][0]["START"] = True # Mark as activated
-                
+
                 if self.currentStage == len(assets.stageList)-1: self.endlessModeStarted = True # START OVERTIME/ENDLESS MODE
 
                 stageUpCloud = assets.stageCloudImg
@@ -2613,8 +2622,9 @@ class Obstacle(pygame.sprite.Sprite):
         self.bounds = kwargs.get('bounds', self.getAttributes(assets.stageList[game.currentStage-1][game.currentLevel-1]["obstacleBounds"]))
         self.laserType = kwargs.get('lasers', self.getAttributes(assets.stageList[game.currentStage-1][game.currentLevel-1]["obstacleLaserType"]))
 
-        try: self.image = kwargs.get('image', assets.obstacleImages[game.currentStage - 1][game.currentLevel-1])
+        try: self.image = kwargs.get('image', self.getAttributes(assets.obstacleImages[game.currentStage - 1][game.currentLevel-1]))
         except: self.image = assets.obstacleImages[0][random.randint(0,len(assets.obstacleImages[0])-1)] # Not enough assets for this level yet
+
         self.image = pygame.transform.scale(self.image, (self.size, self.size)).convert_alpha()
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
         self.getDirection(playerPos)
@@ -2746,7 +2756,7 @@ class Obstacle(pygame.sprite.Sprite):
                 self.lasersShot += 1
                 self.laserDelay = 0
             else: self.laserDelay += 1
-                
+
 
 
 # CAVES
