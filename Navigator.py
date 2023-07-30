@@ -1084,6 +1084,8 @@ class Game:
         self.usingController = settings.useController # Using controller for movement
         self.usingCursor = False # Using cursor for movement
 
+        self.endlessModeStarted = False # Marks end of game reached
+
         # STORE LEVEL 1 VALUES
         self.savedConstants = {
                 "maxObstacles" : self.maxObstacles,
@@ -1297,9 +1299,9 @@ class Game:
         # UPDATE HIGH SCORE
         if self.gameClock > self.sessionLongRun: self.sessionLongRun = self.gameClock
 
-        self.levelUpdater(player,obstacles,events) # LEVEL UP
+        if not self.endlessModeStarted: self.levelUpdater(player,obstacles,events) # LEVEL UP
 
-        if "OBS" in self.levelType: self.spawner(obstacles,player) # Spawn obstacles
+        if "OBS" in self.levelType or self.endlessModeStarted: self.spawner(obstacles,player) # Spawn obstacles
 
         # UPDATE SCREEN
         player.lastAngle = player.angle # Save recent player orientation
@@ -1358,11 +1360,17 @@ class Game:
 
         # UPDATES STAGE
         if self.currentStage < len(assets.stageList): # Make sure there is a next stage
-            if assets.stageList[self.currentStage][0]["startTime"] == self.gameClock and not assets.stageList[self.currentStage][0]["START"]: # Next stage's first level's activation time reached
+            if self.gameClock >= assets.stageList[self.currentStage][0]["startTime"]  and not assets.stageList[self.currentStage][0]["START"]: # Next stage's first level's activation time reached
                 assets.stageList[self.currentStage][0]["START"] = True # Mark as activated
+                
+                if self.currentStage == len(assets.stageList)-1: self.endlessModeStarted = True # START OVERTIME/ENDLESS MODE
+
                 stageUpCloud = assets.stageCloudImg
 
-                stageUpDisplay = assets.stageUpFont.render("STAGE UP", True, settings.primaryFontColor)
+                if not self.endlessModeStarted: stageUpText = "STAGE UP"
+                else: stageUpText = "OVERTIME"
+
+                stageUpDisplay = assets.stageUpFont.render(stageUpText, True, settings.primaryFontColor)
                 stageUpRect = stageUpCloud.get_rect()
                 stageUpRect.center = (settings.screenSize[0]/2, settings.stageUpCloudStartPos)
                 stageUp , stageWipe = True , True
@@ -1388,11 +1396,11 @@ class Game:
 
                     elif stageUpRect.centery >= settings.screenSize[1] * 2: stageUp = False
                     displayUpdate(self.clk)
-                    player.angle = self.angle
+                    player.angle = self.angle # Update game orientation
 
         # UPDATES LEVEL
         for levelDict in assets.stageList[self.currentStage-1]:
-            if levelDict["startTime"] == self.gameClock and not levelDict["START"] and ( (self.currentLevel > 1 or self.currentStage > 1) or (len(assets.stageList[0]) > 1 and self.gameClock >= assets.stageList[0][1]["startTime"]) ):
+            if self.gameClock >= levelDict["startTime"] and not levelDict["START"] and ( (self.currentLevel > 1 or self.currentStage > 1) or (len(assets.stageList[0]) > 1 and self.gameClock >= assets.stageList[0][1]["startTime"]) ):
                 if assets.stageList[self.currentStage-1][self.currentLevel-1]["wipeObstacles"]:
                     levelUpCloud = assets.stageCloudImg
                     levelUpRect = levelUpCloud.get_rect()
@@ -1469,12 +1477,14 @@ class Game:
         timerRect = timerDisplay.get_rect(topright = screen.get_rect().topright)
 
         # STAGE DISPLAY
-        stageNum = "Stage " + str(self.currentStage)
+        if not self.endlessModeStarted: stageNum = "Stage " + str(self.currentStage)
+        else: stageNum = "Overtime"
         stageDisplay = assets.stageFont.render( str(stageNum), True, settings.secondaryFontColor )
         stageRect = stageDisplay.get_rect(topleft = screen.get_rect().topleft)
 
         # LEVEL DISPLAY
-        levelNum = "-  Level " + str(self.currentLevel)
+        if not self.endlessModeStarted: levelNum = "-  Level " + str(self.currentLevel)
+        else: levelNum = ""
         levelDisplay = assets.levelFont.render( str(levelNum), True, settings.secondaryFontColor )
         levelRect = levelDisplay.get_rect()
         levelRect.center = (stageRect.right + levelRect.width*0.65, stageRect.centery)
@@ -1487,14 +1497,20 @@ class Game:
 
         screen.blit(timerDisplay, timerRect)
         screen.blit(stageDisplay, stageRect)
-        screen.blit(levelDisplay, levelRect)
+        if not self.endlessModeStarted: screen.blit(levelDisplay, levelRect)
         screen.blit(scoreDisplay, scoreRect)
 
 
     # SPAWN OBSTACLES
     def spawner(self,obstacles,player):
         if len(obstacles) < self.maxObstacles:
-            obstacle = Obstacle([player.rect.centerx,player.rect.centery])
+            if not self.endlessModeStarted: obstacle = Obstacle([player.rect.centerx,player.rect.centery])
+            else:
+                attributes = {
+                    "size" : random.randint(20,60),
+                    "speed" : random.randint(5,10)
+                }
+                obstacle = Obstacle([player.rect.centerx,player.rect.centery], size = attributes['size'], speed = attributes["speed"])
             obstacles.add(obstacle)
 
 
@@ -1511,6 +1527,7 @@ class Game:
         self.gameClock = 0
         self.currentLevel = 1
         self.currentStage = 1
+        self.endlessModeStarted = False
         self.score = 0
         self.pauseCount = 0
         self.explosions = []
@@ -1865,7 +1882,8 @@ class Menu:
         survivedLine = "Survived for " + str(game.gameClock) + " seconds"
         overallLongestRunLine = "Longest run  =  " + str(game.records["longestRun"]) + " seconds"
         newLongestRunLine = "New longest run! " + str(game.sessionLongRun) + " seconds"
-        levelLine = "Died at stage " + str(game.currentStage) + "  -  level " + str(game.currentLevel)
+        if not game.endlessModeStarted: levelLine = "Died at stage " + str(game.currentStage) + "  -  level " + str(game.currentLevel)
+        else: levelLine = "Died in overtime"
         attemptLine = str(game.attemptNumber) + " attempts this session, " + str(game.records["attempts"]) + " overall"
         timeWasted = self.simplifyTime(game.records["timePlayed"])
 
@@ -2595,7 +2613,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.bounds = kwargs.get('bounds', self.getAttributes(assets.stageList[game.currentStage-1][game.currentLevel-1]["obstacleBounds"]))
         self.laserType = kwargs.get('lasers', self.getAttributes(assets.stageList[game.currentStage-1][game.currentLevel-1]["obstacleLaserType"]))
 
-        try: self.image = assets.obstacleImages[game.currentStage - 1][game.currentLevel-1]
+        try: self.image = kwargs.get('image', assets.obstacleImages[game.currentStage - 1][game.currentLevel-1])
         except: self.image = assets.obstacleImages[0][random.randint(0,len(assets.obstacleImages[0])-1)] # Not enough assets for this level yet
         self.image = pygame.transform.scale(self.image, (self.size, self.size)).convert_alpha()
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
@@ -2728,7 +2746,7 @@ class Obstacle(pygame.sprite.Sprite):
                 self.lasersShot += 1
                 self.laserDelay = 0
             else: self.laserDelay += 1
-
+                
 
 
 # CAVES
