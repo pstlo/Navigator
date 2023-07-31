@@ -821,7 +821,7 @@ def getScreen():
     # Default
     else:
         if settings.fullScreen: return pygame.display.set_mode(settings.screenSize,pygame.FULLSCREEN | pygame.SCALED, depth = 0)
-        else: return pygame.display.set_mode(settings.screenSize,pygame.SCALED,depth = 0)
+        else: return pygame.display.set_mode(settings.screenSize, depth = 0)
 
 
 # TOGGLE FULLSCREEN
@@ -989,9 +989,6 @@ for i in range(settings.spawnVertices):
     x = settings.screenSize[0]/2 + (spawnWidth / 2) * math.cos(angle)
     y = settings.screenSize[1]/2 + (spawnHeight / 2) * math.sin(angle)
     spawnAreaPoints.append((x, y)) # Vertices of spawn area
-
-# "ALL" Spawn pattern / also used for random bounces in credits screen
-
 
 
 # QUIT GAME
