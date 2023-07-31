@@ -657,28 +657,42 @@ class Assets:
             try:
                 collection = database["navigator"]["leaderboard"]
                 uploadData = {'_id':records['id'], 'name':self.userName, 'highScore': records['highScore'], 'longestRun':records['longestRun']} # Data for upload
+
                 # Check if already exists in leaderboard
                 settings.debug("Checking for previous records on leaderboard") # Debug
-                data = collection.find_one({'_id':records['id']})
-                if data is not None:
+                data = collection.find_one({'_id':records['id']}) # Previous record
+                repeat = collection.find_one({'name':self.userName}) # Repeat usernames
+
+                repeatFound = False
+                if repeat is not None:
+                    if (data is None) or ( (data is not None) and (repeat != data or repeat['_id'] != data['_id']) ) :
+                        if records['longestRun'] < repeat['longestRun']: repeatFound = True
+
+                if not repeatFound and data is not None:
                     settings.debug("Records found") # Debug
                     longestRun = data.get('longestRun')
                     highScore = data.get('highScore')
-                    if uploadData['highScore'] > highScore or uploadData['longestRun'] > longestRun:
+
+                    if (uploadData['highScore'] > highScore or uploadData['longestRun'] > longestRun) and (uploadData['longestRun'] > 0):
                         uploadData['highScore'] = max(highScore,uploadData['highScore'])
                         uploadData['longestRun'] = max(longestRun,uploadData['longestRun'])
                         settings.debug("Updating leaderboard records") # Debug
                         collection.update_one({'_id': records['id']}, {'$set': uploadData}, upsert=True)
                         settings.debug("Successfully updated scores in database") # Debug
                     else: settings.debug("Skipped leaderboard update, scores unchanged") # Debug
+
                 else: # Insert new data
-                    settings.debug("Adding record to leaderboard") # Debug
-                    collection.insert_one(uploadData)
-                    settings.debug("Successfully inserted high score in database") # Debug
+                    if repeatFound: settings.debug("Repeat username found on leaderboard")
+                    else:
+                        settings.debug("Adding record to leaderboard") # Debug
+                        collection.insert_one(uploadData)
+                        settings.debug("Successfully inserted high score in database") # Debug
+
                 database.close()
                 settings.debug("Disconnected from leaderboard database") # Debug
+
             except:
-                settings.debug(" Failed to upload records to database") # Debug
+                settings.debug("Failed to upload records to database") # Debug
                 settings.connectToLeaderboard = False
                 return
 
@@ -2352,18 +2366,18 @@ class Player(pygame.sprite.Sprite):
                     if math.dist(self.rect.midtop,(cursorX,cursorY)) > settings.cursorRotateDistance:
                         direction = cursorDirection - pygame.Vector2(self.rect.centerx, self.rect.centery)
                         if direction.length() > 0: direction.normalize_ip()
-                        
+
                         self.angle = direction.angle_to(pygame.Vector2(0, -1))
-                        if math.dist(self.rect.center,(cursorX,cursorY)) >= settings.cursorFollowDistance: 
+                        if math.dist(self.rect.center,(cursorX,cursorY)) >= settings.cursorFollowDistance:
                             # Auto align
-                            if direction.x >= cursorDeadzone[1] and direction.x <= 1: direction.x  = 1 
+                            if direction.x >= cursorDeadzone[1] and direction.x <= 1: direction.x  = 1
                             elif direction.x <= -cursorDeadzone[1] and direction.x >= -1: direction.x = -1
                             elif (direction.x <= cursorDeadzone[0] and direction.x >= 0) or (direction.x >= -cursorDeadzone[0] and direction.x <= 0): direction.x = 0
-                            
-                            if direction.y >= cursorDeadzone[1] and direction.y <= 1: direction.y  = 1 
+
+                            if direction.y >= cursorDeadzone[1] and direction.y <= 1: direction.y  = 1
                             elif direction.y <= -cursorDeadzone[1] and direction.y >= -1: direction.y = -1
                             elif (direction.y <= cursorDeadzone[0] and direction.y >= 0) or (direction.y >= -cursorDeadzone[0] and direction.y <= 0): direction.y = 0
-                            
+
                             self.rect.move_ip((1.414*direction) * self.speed) # MOVE PLAYER
 
 
