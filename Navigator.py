@@ -31,8 +31,8 @@ class Settings:
         # INPUT
         self.useController = True # Default = True / Allow controller input
         self.cursorMode = True # Default = True / Allow cursor input
-        self.cursorFollowDistance = 10 # Default = 10 / Cursor follow deadzone
-        self.cursorRotateDistance = 1 # Default = 1 / Cursor rotate deadzone
+        self.cursorFollowDistance = 15 # Default = 15 / Cursor follow deadzone
+        self.cursorRotateDistance = 5 # Default = 5 / Cursor rotate deadzone
         self.cursorThickness = 2 # Default = 2
 
         # HUD
@@ -137,7 +137,6 @@ class Settings:
         self.rawCursorMode = False # Default = False / sets player position to cursor position
         self.performanceMode = False # Default = False
         self.qualityMode = False # Default = False # Overridden by performance mode
-        self.eightDirectionCursorMovement = False # Default = False / Limit cursor movement to 8 directions
 
         # DISCORD
         self.showPresence = True # Default = True / Discord presence using pypresence
@@ -2053,7 +2052,7 @@ class Menu:
                     if event.type == pygame.QUIT: quitGame()
 
                     # RETURN TO GAME
-                    if (event.type == pygame.KEYDOWN and (event.key in escapeInput or event.key in leadersInput or event.key in startInput or event.key in backInput)) or (gamePad is not None and gamePad.get_button(controllerBack) == 1): showLeaderboard = False
+                    if ((event.type == pygame.KEYDOWN and (event.key in escapeInput or event.key in leadersInput or event.key in startInput or event.key in backInput)) or (gamePad is not None and gamePad.get_button(controllerBack) == 1)) or (event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[2]==1): showLeaderboard = False
 
                 screen.fill(screenColor)
                 screen.blit(assets.bgList[game.currentStage - 1][0], (0, 0))
@@ -2349,15 +2348,26 @@ class Player(pygame.sprite.Sprite):
 
                 else:
                     # CURSOR MODE
+                    cursorDeadzone = [0.2,0.8]
                     cursorX, cursorY = pygame.mouse.get_pos()
                     if settings.showCursorPath: pygame.draw.aaline(screen,(0,255,0),(cursorX,cursorY),self.rect.center)
                     cursorDirection = pygame.Vector2(cursorX, cursorY)
                     if math.dist(self.rect.midtop,(cursorX,cursorY)) > settings.cursorRotateDistance:
                         direction = cursorDirection - pygame.Vector2(self.rect.centerx, self.rect.centery)
                         if direction.length() > 0: direction.normalize_ip()
-                        if settings.eightDirectionCursorMovement: direction = pygame.Vector2(round(direction.x),round(direction.y))
+                        
                         self.angle = direction.angle_to(pygame.Vector2(0, -1))
-                        if math.dist(self.rect.center,(cursorX,cursorY)) >= settings.cursorFollowDistance: self.rect.move_ip((math.sqrt(2)*direction) * self.speed) # MOVE PLAYER
+                        if math.dist(self.rect.center,(cursorX,cursorY)) >= settings.cursorFollowDistance: 
+                            # Auto align
+                            if direction.x >= cursorDeadzone[1] and direction.x <= 1: direction.x  = 1 
+                            elif direction.x <= -cursorDeadzone[1] and direction.x >= -1: direction.x = -1
+                            elif (direction.x <= cursorDeadzone[0] and direction.x >= 0) or (direction.x >= -cursorDeadzone[0] and direction.x <= 0): direction.x = 0
+                            
+                            if direction.y >= cursorDeadzone[1] and direction.y <= 1: direction.y  = 1 
+                            elif direction.y <= -cursorDeadzone[1] and direction.y >= -1: direction.y = -1
+                            elif (direction.y <= cursorDeadzone[0] and direction.y >= 0) or (direction.y >= -cursorDeadzone[0] and direction.y <= 0): direction.y = 0
+                            
+                            self.rect.move_ip((1.414*direction) * self.speed) # MOVE PLAYER
 
 
         # SPEED BOOST
