@@ -835,7 +835,7 @@ def getScreen():
     # Default
     else:
         if settings.fullScreen: return pygame.display.set_mode(settings.screenSize,pygame.FULLSCREEN | pygame.SCALED, depth = 0)
-        else: return pygame.display.set_mode(settings.screenSize, depth = 0)
+        else: return pygame.display.set_mode(settings.screenSize, pygame.SCALED, depth = 0)
 
 
 # TOGGLE FULLSCREEN
