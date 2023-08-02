@@ -418,13 +418,9 @@ class Assets:
         self.playerShield = pygame.transform.scale(pygame.image.load(self.resources(os.path.join(assetDirectory,"Shield.png"))),(settings.playerShieldSize,settings.playerShieldSize))
 
         # MAIN MENU ASSETS
+        self.titleText = pygame.image.load(self.resources(os.path.join(menuDirectory,'Title.png'))).convert_alpha()
+        self.planetIcon = pygame.transform.scale(pygame.image.load(self.resources(os.path.join(menuDirectory,'Planet.png'))).convert_alpha(), (400,400))
         self.menuList = []
-        self.menuList.append(pygame.image.load(self.resources(os.path.join(menuDirectory,'A.png'))).convert_alpha()) # 'A' icon
-        self.menuList.append(pygame.image.load(self.resources(os.path.join(menuDirectory,'O.png'))).convert_alpha()) # 'O' icon
-        self.menuList.append(pygame.image.load(self.resources(os.path.join(menuDirectory,'center.png'))).convert_alpha()) # Center icon
-        self.menuList.append(pygame.image.load(self.resources(os.path.join(menuDirectory,'left.png'))).convert_alpha()) # Left icon
-        self.menuList.append(pygame.image.load(self.resources(os.path.join(menuDirectory,'right.png'))).convert_alpha()) # Right icon
-
         menuMeteorDir = os.path.join(menuDirectory,'FlyingObjects')
         for objPath in sorted(os.listdir(menuMeteorDir)): self.menuList.append(pygame.image.load(self.resources(os.path.join(menuMeteorDir,objPath))).convert_alpha())
 
@@ -1618,8 +1614,8 @@ class Menu:
         icons = []
         for icon in range(settings.maxIcons): icons.append(Icon())
 
-        startDisplay = assets.startFont.render("N  VIGAT  R", True, settings.primaryFontColor)
-        startRect = startDisplay.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/2))
+        startRect = assets.titleText.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/3))
+        planetRect = assets.planetIcon.get_rect(center = (startRect.centerx,startRect.centery+50))
 
         if not game.usingController or gamePad is None:
             startHelpDisplay = assets.startHelpFont.render("ESCAPE = Quit   SPACE = Start   F = Fullscreen   M = Mute   C = Credits", True, settings.primaryFontColor)
@@ -1642,11 +1638,8 @@ class Menu:
         boostHelpRect = boostHelp.get_rect()
         shootHelpRect = shootHelp.get_rect()
         leaderboardHelpRect = leaderboardHelpDisplay.get_rect(center= (settings.screenSize[0]*0.8,settings.screenSize[1]-settings.screenSize[1]/10))
-        leftRect = assets.menuList[3].get_rect(center = (settings.screenSize[0] * 0.2 , settings.screenSize[1]/3) )
-        rightRect = assets.menuList[4].get_rect(center = (settings.screenSize[0] * 0.8 , settings.screenSize[1]/3) )
-
         versionDisplay = assets.versionFont.render(version,True,settings.primaryFontColor)
-        versionRect = versionDisplay.get_rect(topright = (startRect.right-25,startRect.bottom-25))
+        versionRect = versionDisplay.get_rect(center = (startRect.right-120,startRect.bottom-25))
 
         # Coin Display
         coinDisplay = assets.statFont.render(str(game.records['coins']), True, settings.secondaryFontColor)
@@ -1667,6 +1660,8 @@ class Menu:
 
         if settings.defaultToHighSkin and not game.skipAutoSkinSelect: player.getSkin(game.unlocks.highestSkin(game.savedShipLevel)) # Gets highest unlocked skin by default
         elif game.skipAutoSkinSelect: player.getSkin(game.savedSkin)
+
+        shipAttributes = self.shipStatsDisplay() # Ship stats display
 
         iconPosition = 100 # Icon position at game start (offset from original)
 
@@ -1717,10 +1712,12 @@ class Menu:
                 # NEXT SHIP TYPE
                 if (event.type == pygame.KEYDOWN and event.key in upInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerNextShip) or (event.type == pygame.JOYBUTTONDOWN and type(controllerNextShip) == int and gamePad.get_button(controllerNextShip)==1))):
                     player.toggleSpaceShip(True)
+                    shipAttributes = self.shipStatsDisplay()
 
                 # PREVIOUS SHIP TYPE
                 elif (event.type == pygame.KEYDOWN and event.key in downInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerLastShip) or (event.type == pygame.JOYBUTTONDOWN and type(controllerLastShip) == int and gamePad.get_button(controllerLastShip)==1))):
                     player.toggleSpaceShip(False)
+                    shipAttributes = self.shipStatsDisplay()
 
                 # EXIT
                 if (event.type == pygame.KEYDOWN and event.key in escapeInput) or (gamePad is not None and gamePad.get_button(controllerExit) == 1) or event.type == pygame.QUIT: quitGame()
@@ -1759,7 +1756,8 @@ class Menu:
             elif player.boostSpeed > player.baseSpeed: boostHelpRect.center = settings.screenSize[0]*3/4, settings.screenSize[1]-settings.screenSize[1]/7 + 72 # has boost only
 
             screen.fill(screenColor)
-            screen.blit(assets.bgList[game.currentStage - 1][0],(0,0))
+            screen.blit(assets.bgList[game.currentStage - 1][0],(0,0)) # Background
+            screen.blit(assets.planetIcon,planetRect) # Planet
 
             # ANIMATION
             if settings.showMenuIcons:
@@ -1770,8 +1768,9 @@ class Menu:
             # PLAYER SKIN ANIMATION
             player.updateAnimation()
 
-            screen.blit(startDisplay,startRect) # Menu Logo
+            screen.blit(assets.titleText,startRect) # Title Text
             if settings.showVersion: screen.blit(versionDisplay,versionRect) # Version info
+
             screen.blit(startHelpDisplay, startHelpRect) # Game controls
 
             # LEADERBOARD HELP
@@ -1784,21 +1783,12 @@ class Menu:
             if len(assets.spaceShipList) > 1 and (settings.devMode or game.unlocks.hasShipUnlock()): screen.blit(shipHelpDisplay,shipHelpRect)
             screen.blit(player.image, (player.rect.x,player.rect.y + iconPosition)) # Draw current spaceship
 
-            # LOGO LETTERS
-            screen.blit(assets.menuList[0],(-14 + startRect.left + assets.menuList[0].get_width() - assets.menuList[0].get_width()/10,settings.screenSize[1]/2 - 42)) # "A" symbol
-            screen.blit(assets.menuList[1],(-16 + settings.screenSize[0] - startRect.centerx + assets.menuList[1].get_width() * 2,settings.screenSize[1]/2 - 35)) # "O" symbol
-
-            # UFO ICONS
-            if settings.showMenuIcons:
-                screen.blit(assets.menuList[2],(settings.screenSize[0]/2 - assets.menuList[2].get_width()/2,settings.screenSize[1]/8)) # Big icon
-                screen.blit(assets.menuList[3],leftRect) # Left UFO
-                screen.blit(assets.menuList[4],rightRect) # Right UFO
-
             # Coin display
             screen.blit(coinDisplay,coinDisplayRect)
             screen.blit(assets.coinIcon,coinIconRect)
 
-            self.shipStatsDisplay()
+            # Ship stats display
+            self.drawStats(shipAttributes)
 
             displayUpdate(game.clk)
 
@@ -2299,7 +2289,7 @@ class Menu:
         return timePlayed
 
 
-    # Ship attributes display
+    # Get ship attributes display
     def shipStatsDisplay(self):
         height = 5
         statsMultiplier = 10
@@ -2342,15 +2332,31 @@ class Menu:
         shieldBar = pygame.Rect(statsX,statsY + (3*statsSpacingY), shields, height)
         shieldDisplay =  assets.shipStatsFont.render("Shield", True, settings.secondaryFontColor)
 
-        screen.blit(speedDisplay,speedDisplay.get_rect(center = (speedBar.left + leftSpacing,speedBar.y+topSpacing)))
-        screen.blit(boostSpeedDisplay,boostSpeedDisplay.get_rect(center = (boostSpeedBar.left + leftSpacing,boostSpeedBar.y+topSpacing)))
-        screen.blit(laserDisplay,laserDisplay.get_rect(center = (laserBar.left + leftSpacing,laserBar.y+topSpacing)))
-        screen.blit(shieldDisplay,shieldDisplay.get_rect(center = (shieldBar.left + leftSpacing,shieldBar.y+topSpacing)))
+        blitList = [
+                    [speedDisplay,speedDisplay.get_rect(center = (speedBar.left + leftSpacing,speedBar.y+topSpacing))],
+                    [boostSpeedDisplay,boostSpeedDisplay.get_rect(center = (boostSpeedBar.left + leftSpacing,boostSpeedBar.y+topSpacing))],
+                    [laserDisplay,laserDisplay.get_rect(center = (laserBar.left + leftSpacing,laserBar.y+topSpacing))],
+                    [shieldDisplay,shieldDisplay.get_rect(center = (shieldBar.left + leftSpacing,shieldBar.y+topSpacing))]
+                ]
 
-        pygame.draw.rect(screen,settings.fuelColor,speedBar)
-        if boostSpeed != speed: pygame.draw.rect(screen,settings.fuelColor,boostSpeedBar)
-        if lasers != 0: pygame.draw.rect(screen,settings.fuelColor,laserBar)
-        if shields != 0: pygame.draw.rect(screen,settings.shieldColor,shieldBar)
+        barList = [
+                    [True,settings.fuelColor,speedBar],
+                    [boostSpeed!=speed, settings.fuelColor, boostSpeedBar],
+                    [lasers!=0,settings.fuelColor,laserBar],
+                    [shields!=0,settings.shieldColor,shieldBar]
+                ]
+
+        return [blitList,barList]
+
+
+    # Draw ship attributes display
+    def drawStats(self,statsList):
+        for i in statsList[0]:
+            screen.blit(i[0],i[1])
+
+        for i in statsList[1]:
+            if i[0]: pygame.draw.rect(screen,i[1],i[2])
+
 
 
 
@@ -3091,17 +3097,7 @@ class Point(pygame.sprite.Sprite):
 # MENU METEOR ICONS
 class Icon:
     def __init__(self):
-        spins = [-1,1]
-        self.speed = random.randint(settings.minIconSpeed,settings.maxIconSpeed)
-        self.movement = getMovement(None)
-        self.direction = self.movement[1]
-        self.spinDirection = spins[random.randint(0,len(spins)-1)]
-        if random.randint(0,10) < 7: self.image = assets.menuList[1]
-        else: self.image = assets.menuList[random.randint(5,len(assets.menuList)-1)]
-        size = random.randint(settings.minIconSize,settings.maxIconSize)
-        self.image = pygame.transform.scale(self.image, (size, size)).convert_alpha()
-        self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
-        self.angle = 0
+        self.getNew()
         self.active = False
 
 
@@ -3122,14 +3118,7 @@ class Icon:
         randomTimerLY = -1 * random.randint(settings.screenSize[0], settings.screenSize[1] * 3)
 
         if self.active and ( (self.rect.centery > randomTimerUY) or (self.rect.centery < randomTimerLY) or (self.rect.centerx> randomTimerUX) or (self.rect.centerx < randomTimerLX) ):
-            self.movement = getMovement(None)
-            self.direction = self.movement[1]
-            if random.randint(0,10) < 7: self.image = assets.menuList[1]
-            else: self.image = assets.menuList[random.randint(5,len(assets.menuList)-1)]
-            self.speed = random.randint(settings.minIconSpeed,settings.maxIconSpeed)
-            self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
-            size = random.randint(settings.minIconSize,settings.maxIconSize)
-            self.image = pygame.transform.scale(self.image, (size, size))
+            self.getNew()
             self.active = False
 
 
@@ -3142,6 +3131,21 @@ class Icon:
         if self.active:
             drawing, drawee = rotateImage(self.image,self.rect,self.angle)
             screen.blit(drawing,drawee)
+
+
+    # Get new icon
+    def getNew(self):
+        spins = [-1,1]
+        self.speed = random.randint(settings.minIconSpeed,settings.maxIconSpeed)
+        self.movement = getMovement(None)
+        self.direction = self.movement[1]
+        self.spinDirection = spins[random.randint(0,len(spins)-1)]
+        if random.randint(0,10) < 7: self.image = assets.menuList[0]
+        else: self.image = assets.menuList[random.randint(1,len(assets.menuList)-1)]
+        size = random.randint(settings.minIconSize,settings.maxIconSize)
+        self.image = pygame.transform.scale(self.image, (size, size)).convert_alpha()
+        self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
+        self.angle = random.randint(0,360)
 
 
 
