@@ -501,7 +501,6 @@ class Assets:
         self.stageUpFont = pygame.font.Font(self.gameFont, 90)
         self.pausedFont = pygame.font.Font(self.gameFont, 100)
         self.gameOverFont = pygame.font.Font(self.gameFont, 100)
-        self.startFont = pygame.font.Font(self.gameFont, 120)
 
         settings.debug("Loaded fonts") # Debug
 
