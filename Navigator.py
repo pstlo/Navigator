@@ -356,6 +356,9 @@ class Assets:
                 self.pointsList[filename[:-4]] = pygame.image.load(self.resources(path)).convert_alpha()
         settings.debug("Loaded points") # Debug
 
+        # For coin counter
+        self.coinIcon = pygame.transform.scale(self.pointsList["Coin"],(25,25))
+
         # SPACESHIP ASSETS
         self.spaceShipList = []
         for levelFolder in sorted(os.listdir(shipDirectory)):
@@ -481,26 +484,29 @@ class Assets:
                 path = os.path.join(donationShipsDir, filename)
                 self.donationShips.append(pygame.image.load(self.resources(path)).convert_alpha())
 
-        # FONTS
+        # FONTS - will be cleaned up
         self.gameFont = os.path.join(assetDirectory, 'Font.ttf')
+
+        self.shipStatsFont = pygame.font.Font(self.gameFont,10)
+        self.shipHelpFont = pygame.font.Font(self.gameFont, 20)
+        self.versionFont = pygame.font.Font(self.gameFont,25)
         self.stageFont = pygame.font.Font(self.gameFont, 30)
+        self.creditsFont = pygame.font.Font(self.gameFont, 30)
         self.levelFont = pygame.font.Font(self.gameFont, 30)
         self.scoreFont = pygame.font.Font(self.gameFont, 30)
         self.timerFont = pygame.font.Font(self.gameFont, 30)
-        self.stageUpFont = pygame.font.Font(self.gameFont, 90)
-        self.startFont = pygame.font.Font(self.gameFont, 120)
-        self.shipHelpFont = pygame.font.Font(self.gameFont, 20)
-        self.startHelpFont = pygame.font.Font(self.gameFont, 30)
-        self.pausedFont = pygame.font.Font(self.gameFont, 100)
-        self.pauseCountFont = pygame.font.Font(self.gameFont,40)
-        self.versionFont = pygame.font.Font(self.gameFont,25)
-        self.gameOverFont = pygame.font.Font(self.gameFont, 100)
         self.statFont = pygame.font.Font(self.gameFont, 30)
         self.exitFont = pygame.font.Font(self.gameFont, 30)
-        self.leaderboardTitleFont = pygame.font.Font(self.gameFont, 60)
         self.leaderboardFont = pygame.font.Font(self.gameFont, 30)
+        self.startHelpFont = pygame.font.Font(self.gameFont, 30)
+        self.pauseCountFont = pygame.font.Font(self.gameFont,40)
         self.creatorFont = pygame.font.Font(self.gameFont, 55)
-        self.creditsFont = pygame.font.Font(self.gameFont, 30)
+        self.leaderboardTitleFont = pygame.font.Font(self.gameFont, 60)
+        self.stageUpFont = pygame.font.Font(self.gameFont, 90)
+        self.pausedFont = pygame.font.Font(self.gameFont, 100)
+        self.gameOverFont = pygame.font.Font(self.gameFont, 100)
+        self.startFont = pygame.font.Font(self.gameFont, 120)
+
         settings.debug("Loaded fonts") # Debug
 
         self.userName = os.getlogin() # Leaderboard username
@@ -1642,6 +1648,11 @@ class Menu:
         versionDisplay = assets.versionFont.render(version,True,settings.primaryFontColor)
         versionRect = versionDisplay.get_rect(topright = (startRect.right-25,startRect.bottom-25))
 
+        # Coin Display
+        coinDisplay = assets.statFont.render(str(game.records['coins']), True, settings.secondaryFontColor)
+        coinDisplayRect = coinDisplay.get_rect(center = (settings.screenSize[0] -25, 25))
+        coinIconRect = assets.coinIcon.get_rect(center = (settings.screenSize[0] -60, 25))
+
         try:
             game.unlocks.update(game) # GET NEW UNLOCKS
         except:
@@ -1783,6 +1794,12 @@ class Menu:
                 screen.blit(assets.menuList[3],leftRect) # Left UFO
                 screen.blit(assets.menuList[4],rightRect) # Right UFO
 
+            # Coin display
+            screen.blit(coinDisplay,coinDisplayRect)
+            screen.blit(assets.coinIcon,coinIconRect)
+
+            self.shipStatsDisplay()
+
             displayUpdate(game.clk)
 
 
@@ -1829,7 +1846,6 @@ class Menu:
 
             lasers.draw(screen)
             enemyLasers.draw(screen)
-
             screen.blit(pauseDisplay, pauseRect)
             screen.blit(pausedDisplay,pausedRect)
             displayUpdate(game.clk)
@@ -2281,6 +2297,60 @@ class Menu:
         elif mins >= 1: timePlayed = timePlayedLine + str(mins) + " minutes + " + str(secs) + " seconds"
         else: timePlayed = timePlayedLine + str(secs) + " seconds"
         return timePlayed
+
+
+    # Ship attributes display
+    def shipStatsDisplay(self):
+        height = 5
+        statsMultiplier = 10
+        statsX = settings.screenSize[0]/2 -20
+        statsY = settings.screenSize[1]/2 +125
+        statsSpacingY = 10
+        leftSpacing = -15
+        topSpacing = 2
+
+        shipStats = assets.spaceShipList[game.savedShipLevel]['stats']
+        speed = shipStats['speed'] * statsMultiplier
+        boostSpeed = shipStats['boostSpeed'] * statsMultiplier
+
+        lasers = 0
+        if shipStats["hasGuns"]:
+            if shipStats["collats"]: lasers+=5
+            if shipStats["laserType"] == "HOME": lasers+=25
+            lasers+=shipStats["laserDamage"] * 2
+            lasers+=shipStats["laserSpeed"]
+            lasers-=shipStats["laserCost"] * 10
+            if shipStats["fireRate"] > 0: lasers += (7000/shipStats["fireRate"])
+            lasers = int(lasers)
+
+        shields = 0
+        if shipStats["hasShields"]:
+            if shipStats["shieldPiecesNeeded"] > 0: shields += 100/shipStats["shieldPiecesNeeded"]
+            shields += shipStats["startingShields"] * 5
+            shields += shipStats["startingShieldPieces"] * 2
+            shields = int(shields)
+
+        speedBar = pygame.Rect(statsX,statsY, speed, height)
+        speedDisplay = assets.shipStatsFont.render("Speed", True, settings.secondaryFontColor)
+
+        boostSpeedBar = pygame.Rect(statsX, statsY + statsSpacingY, boostSpeed, height)
+        boostSpeedDisplay = assets.shipStatsFont.render("Boost", True, settings.secondaryFontColor)
+
+        laserBar = pygame.Rect(statsX, statsY + (2*statsSpacingY), lasers, height)
+        laserDisplay = assets.shipStatsFont.render("Laser", True, settings.secondaryFontColor)
+
+        shieldBar = pygame.Rect(statsX,statsY + (3*statsSpacingY), shields, height)
+        shieldDisplay =  assets.shipStatsFont.render("Shield", True, settings.secondaryFontColor)
+
+        screen.blit(speedDisplay,speedDisplay.get_rect(center = (speedBar.left + leftSpacing,speedBar.y+topSpacing)))
+        screen.blit(boostSpeedDisplay,boostSpeedDisplay.get_rect(center = (boostSpeedBar.left + leftSpacing,boostSpeedBar.y+topSpacing)))
+        screen.blit(laserDisplay,laserDisplay.get_rect(center = (laserBar.left + leftSpacing,laserBar.y+topSpacing)))
+        screen.blit(shieldDisplay,shieldDisplay.get_rect(center = (shieldBar.left + leftSpacing,shieldBar.y+topSpacing)))
+
+        pygame.draw.rect(screen,settings.fuelColor,speedBar)
+        if boostSpeed != speed: pygame.draw.rect(screen,settings.fuelColor,boostSpeedBar)
+        if lasers != 0: pygame.draw.rect(screen,settings.fuelColor,laserBar)
+        if shields != 0: pygame.draw.rect(screen,settings.shieldColor,shieldBar)
 
 
 
