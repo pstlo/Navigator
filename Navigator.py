@@ -114,6 +114,10 @@ class Settings:
         # LEVELS
         self.levelUpCloudSpeed = 25 # Default = 25 / Only affects levels preceded by wipe
 
+        # PLANETS
+        self.planetMoveDelay = 2 # Default = 2
+        self.unlimitedPlanets = True # Temporary until more planets added 
+
         # OBSTACLES
         self.explosionDelay = 1 # Default = 1
         self.slowerDiagonalObstacles = True # Default = True / use the hypotenuse or whatever
@@ -149,6 +153,7 @@ class Settings:
         self.showSpawnArea = False # Default = False / show powerup spawn area
         self.showCursorPath = False # Default = False / Draw line from cursor to ship
         self.debugging = False # Default = False / show status messages
+
 
         # ARGS
         if self.useArgs:
@@ -1105,7 +1110,8 @@ class Game:
         self.clk = pygame.time.Clock() # Gameclock
         self.usingController = settings.useController # Using controller for movement
         self.usingCursor = False # Using cursor for movement
-
+        self.planetImage,self.planetRect,self.planetStartPos,self.planetStartSize = None,None,None,None
+        self.planetDelay = 0
         self.endlessModeStarted = False # Marks end of game reached
 
         # STORE LEVEL 1 VALUES
@@ -1160,6 +1166,13 @@ class Game:
         # BACKGROUND
         screen.fill(screenColor)
         screen.blit(assets.bgList[self.currentStage - 1][0], (0,0) )
+        self.showPlanet() # Draw planet
+
+        # MOVE PLANET
+        if self.planetDelay < settings.planetMoveDelay: self.planetDelay += 1
+        else:
+            self.planetRect.centery += 1
+            self.planetDelay = 0
 
         # CLOUD ANIMATION
         if settings.showBackgroundCloud:
@@ -1351,6 +1364,27 @@ class Game:
             if cloudRect.bottom >= 0 and cloudRect.top <= settings.screenSize[1]: screen.blit(cloudImg, cloudRect) # Draw cloud
 
 
+    # DRAW PLANET
+    def showPlanet(self):
+        if self.planetImage is not None:
+            if self.planetRect.top < settings.screenSize[1]:
+                screen.blit(self.planetImage,self.planetRect)
+            else: self.getNewPlanet()
+
+
+    # GET NEW PLANET ( In progress )
+    def getNewPlanet(self):
+        if settings.unlimitedPlanets:
+            self.planetRect.center = (random.randint(100,settings.screenSize[0]-100),-10)
+
+
+    # RESET PLANETS
+    def resetPlanets(self):
+        self.planetImage = pygame.transform.scale(assets.planetIcon,(self.planetStartSize,self.planetStartSize))
+        self.planetRect = self.planetImage.get_rect()
+        self.planetRect.center = self.planetStartPos
+
+
     # Draw frame outside of main loop
     def alternateUpdate(self,player,obstacles,events):
         for event in pygame.event.get(): pass # Pull events
@@ -1360,6 +1394,7 @@ class Game:
         player.wrapping()
         screen.fill(screenColor)
         screen.blit(assets.bgList[self.currentStage - 1][0], (0,0) )
+        self.showPlanet()
         if self.cave is not None: screen.blit(self.cave.background,self.cave.rect)
         self.showBackgroundCloud()
         self.cloudPos += self.cloudSpeed
@@ -1555,6 +1590,7 @@ class Game:
         self.explosions = []
         self.coinsCollected = 0
         self.attemptNumber += 1
+        self.resetPlanets()
         self.cave = None
         self.killAllObstacles(obstacles)
         self.resetAllLevels()
@@ -1625,9 +1661,11 @@ class Menu:
 
         # PLANET
         planet = pygame.sprite.Sprite()
+        planet.image = assets.planetIcon
         planet.rect = assets.planetIcon.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/3 +50))
         planet.mask = pygame.mask.from_surface(assets.planetIcon)
-        planet.angle = 0
+        planetSize = planet.rect.size[0]
+        planetEndSize = 50
 
         # Colliding icons
         cgIcons = []
@@ -1701,14 +1739,26 @@ class Menu:
                     game.savedSkin = player.currentImageNum
 
                     while iconPosition > 0:
+                        if planetSize-25 > 0:
+                            planetSize -= 25
+                            planet.rect.centery -= 10
+                        planet.image = pygame.transform.scale(assets.planetIcon,(planetSize,planetSize))
+                        planet.rect = planet.image.get_rect(center = planet.rect.center)
 
                         # Start animation
                         screen.fill(screenColor)
                         screen.blit(assets.bgList[game.currentStage - 1][0],(0,0))
+                        screen.blit(planet.image,planet.rect)
                         screen.blit(player.image, (player.rect.x,player.rect.y + iconPosition)) # Current spaceship
                         displayUpdate(game.clk)
                         iconPosition -= (player.speed+1)
 
+                    game.planetImage = planet.image
+                    game.planetRect = planet.rect
+                    game.planetStartPos = planet.rect.center
+                    game.planetStartSize = planet.rect.size[0]
+
+                    game.explosions.clear()
                     game.mainMenu = False
                     assets.loadSoundtrack()
                     pygame.mixer.music.play()
@@ -1853,6 +1903,7 @@ class Menu:
         while paused:
             screen.fill(screenColor)
             screen.blit(assets.bgList[game.currentStage - 1][0], (0,0) )
+            game.showPlanet()
             game.showBackgroundCloud()
             if game.cave is not None:
                 screen.blit(game.cave.background,game.cave.rect)
@@ -1995,6 +2046,7 @@ class Menu:
             # BACKGROUND
             screen.fill(screenColor)
             screen.blit(assets.bgList[game.currentStage - 1][0], (0,0) )
+            game.showPlanet()
             game.showBackgroundCloud()
             if game.cave is not None:
                 screen.blit(game.cave.background,game.cave.rect)
@@ -2704,6 +2756,7 @@ class Player(pygame.sprite.Sprite):
                 width = assets.explosionList[self.explosionState].get_width()
                 screen.fill(screenColor)
                 screen.blit(assets.bgList[game.currentStage - 1][0], (0,0) )
+                game.showPlanet()
                 game.showBackgroundCloud()
                 if game.cave is not None:
                     screen.blit(game.cave.background,game.cave.rect)
