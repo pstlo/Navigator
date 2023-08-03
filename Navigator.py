@@ -1110,8 +1110,7 @@ class Game:
         self.clk = pygame.time.Clock() # Gameclock
         self.usingController = settings.useController # Using controller for movement
         self.usingCursor = False # Using cursor for movement
-        self.planetImage,self.planetRect,self.planetStartPos,self.planetStartSize = None,None,None,None
-        self.planetDelay = 0
+        self.planetImage,self.planetRect,self.planetStartPos,self.planetStartSize,self.planetDelay = None,None,None,None,0
         self.endlessModeStarted = False # Marks end of game reached
 
         # STORE LEVEL 1 VALUES
