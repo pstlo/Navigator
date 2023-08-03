@@ -66,8 +66,9 @@ class Settings:
         self.secondaryFontColor = [255,255,255] # Default = [255,255,255] / White
 
         # START MENU
-        self.maxFgIcons = 5 # Default = 5
-        self.maxBgIcons = 15 # Default = 15
+        self.maxFgIcons = 5 # Default = 5 / foreground icons
+        self.maxBgIcons = 15 # Default = 15 / background icons
+        self.maxCgIcons = 3 # Default = 3 / colliding icons
         self.minIconSpeed = 6 # Default = 6
         self.maxIconSpeed = 12 # Default = 12
         self.minIconRotationSpeed = 3 # Default = 3
@@ -1611,17 +1612,28 @@ class Menu:
     # START MENU
     def home(self,game,player):
 
+        # Foreground icons
         fgIcons = []
         for icon in range(settings.maxFgIcons): fgIcons.append(Icon("FG"))
 
+        # Background icons
         bgIcons = []
         for bgIcon in range(settings.maxBgIcons): bgIcons.append(Icon("BG"))
 
+        # TITLE TEXT
         startRect = assets.titleText.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/3))
-        planetRect = assets.planetIcon.get_rect(center = (startRect.centerx,startRect.centery+50))
 
-        planet = CollidingIcon("planet")
+        # PLANET
+        planet = pygame.sprite.Sprite()
+        planet.rect = assets.planetIcon.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/3 +50))
+        planet.mask = pygame.mask.from_surface(assets.planetIcon)
+        planet.angle = 0
 
+        # Colliding icons
+        cgIcons = []
+        for cgIcon in range(settings.maxCgIcons): cgIcons.append(Icon("CG"))
+
+        # Help context
         if not game.usingController or gamePad is None:
             startHelpDisplay = assets.startHelpFont.render("ESCAPE = Quit   SPACE = Start   F = Fullscreen   M = Mute   C = Credits", True, settings.primaryFontColor)
             skinHelpDisplay = assets.shipHelpFont.render("A/LEFT = Last skin     D/RIGHT = Next skin", True, settings.primaryFontColor)
@@ -1644,7 +1656,7 @@ class Menu:
         shootHelpRect = shootHelp.get_rect()
         leaderboardHelpRect = leaderboardHelpDisplay.get_rect(center= (settings.screenSize[0]*0.8,settings.screenSize[1]-settings.screenSize[1]/10))
         versionDisplay = assets.versionFont.render(version,True,settings.primaryFontColor)
-        versionRect = versionDisplay.get_rect(center = (startRect.right-120,startRect.bottom-25))
+        versionRect = versionDisplay.get_rect(center = (startRect.right-120,startRect.bottom-20))
 
         # Coin Display
         coinDisplay = assets.statFont.render(str(game.records['coins']), True, settings.secondaryFontColor)
@@ -1769,13 +1781,27 @@ class Menu:
                     icon.move()
                     icon.draw()
 
-            planet.draw() # Planet
+            screen.blit(assets.planetIcon,planet.rect)
 
             # Foreground icons
             if settings.showMenuIcons:
                 for icon in fgIcons:
                     icon.move()
                     icon.draw()
+
+            # Colliding icons
+            if settings.showMenuIcons:
+                for icon in cgIcons:
+                    icon.draw()
+                    icon.move()
+                    if pygame.sprite.collide_mask(icon,planet):
+                        game.explosions.append(Explosion(icon))
+                        icon = icon.getNew()
+
+            # DRAW EXPLOSIONS
+            for debris in game.explosions:
+                if debris.finished: game.explosions.remove(debris)
+                else: debris.update()
 
             # PLAYER SKIN ANIMATION
             player.updateAnimation()
@@ -3106,9 +3132,10 @@ class Point(pygame.sprite.Sprite):
 
 
 
-# MENU METEOR ICONS
-class Icon:
+# MENU ICONS
+class Icon(pygame.sprite.Sprite):
     def __init__(self, iconType):
+        super().__init__()
         self.iconType = iconType
         self.getNew()
         self.active = False
@@ -3149,6 +3176,7 @@ class Icon:
     def getNew(self):
         if self.iconType is None or self.iconType == "FG": self.getNewFg()
         elif self.iconType == "BG": self.getNewBg()
+        elif self.iconType == "CG" or self.iconType == "COLLIDE": self.getNewCg()
         else: self.getNewFg() # Default
 
 
@@ -3169,9 +3197,6 @@ class Icon:
 
     # Get new background icon
     def getNewBg(self):
-        collide = random.randint(0,100)
-        if collide <= 1: self.collide = True
-        else: self.collide = False
         self.speed = random.randint(5,15)
         self.movement = getMovement("LEFT")
         self.direction = self.movement[1]
@@ -3184,29 +3209,18 @@ class Icon:
         self.angle = 0
 
 
-
-class CollidingIcon(pygame.sprite.Sprite):
-    def __init__(self,iconType):
-        super().__init__()
-        if iconType is None:
-            spins = [-1,1]
-            self.speed = random.randint(settings.minIconSpeed,settings.maxIconSpeed)
-            self.movement = getMovement(None)
-            self.direction = self.movement[1]
-            size = random.randint(settings.minIconSize,settings.maxIconSize)
-            self.image = pygame.transform.scale(assets.menuList[random.randint(0,len(assets.menuList)-1)], (size, size)).convert_alpha()
-            self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
-            self.mask = pygame.mask.from_surface(self.image)
-            self.angle = random.randint(0,360)
-        else:
-            self.image = assets.planetIcon
-            self.rect = self.image.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/3 +50))
-            self.mask = pygame.mask.from_surface(self.image)
-            self.angle = 0
-
-
-    def draw(self): screen.blit(self.image,self.rect)
-
+    # Get new colliding icon
+    def getNewCg(self):
+        spins = [-1,1]
+        self.speed = random.randint(settings.minIconSpeed,settings.maxIconSpeed)
+        self.movement = getMovement(None)
+        self.direction = self.movement[1]
+        self.spinDirection = spins[random.randint(0,len(spins)-1)]
+        size = random.randint(10,20)
+        self.image = pygame.transform.scale(assets.menuList[random.randint(0,len(assets.menuList)-1)], (size, size)).convert_alpha()
+        self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
+        self.mask = pygame.mask.from_surface(self.image)
+        self.angle = random.randint(0,360)
 
 
 
