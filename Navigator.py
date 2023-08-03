@@ -66,7 +66,8 @@ class Settings:
         self.secondaryFontColor = [255,255,255] # Default = [255,255,255] / White
 
         # START MENU
-        self.maxIcons = 5 # Default = 5
+        self.maxFgIcons = 5 # Default = 5
+        self.maxBgIcons = 15 # Default = 15
         self.minIconSpeed = 6 # Default = 6
         self.maxIconSpeed = 12 # Default = 12
         self.minIconRotationSpeed = 3 # Default = 3
@@ -1610,11 +1611,16 @@ class Menu:
     # START MENU
     def home(self,game,player):
 
-        icons = []
-        for icon in range(settings.maxIcons): icons.append(Icon())
+        fgIcons = []
+        for icon in range(settings.maxFgIcons): fgIcons.append(Icon("FG"))
+
+        bgIcons = []
+        for bgIcon in range(settings.maxBgIcons): bgIcons.append(Icon("BG"))
 
         startRect = assets.titleText.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/3))
         planetRect = assets.planetIcon.get_rect(center = (startRect.centerx,startRect.centery+50))
+
+        planet = CollidingIcon("planet")
 
         if not game.usingController or gamePad is None:
             startHelpDisplay = assets.startHelpFont.render("ESCAPE = Quit   SPACE = Start   F = Fullscreen   M = Mute   C = Credits", True, settings.primaryFontColor)
@@ -1756,11 +1762,18 @@ class Menu:
 
             screen.fill(screenColor)
             screen.blit(assets.bgList[game.currentStage - 1][0],(0,0)) # Background
-            screen.blit(assets.planetIcon,planetRect) # Planet
 
-            # ANIMATION
+            # Background icons
             if settings.showMenuIcons:
-                for icon in icons:
+                for icon in bgIcons:
+                    icon.move()
+                    icon.draw()
+
+            planet.draw() # Planet
+
+            # Foreground icons
+            if settings.showMenuIcons:
+                for icon in fgIcons:
                     icon.move()
                     icon.draw()
 
@@ -3095,7 +3108,8 @@ class Point(pygame.sprite.Sprite):
 
 # MENU METEOR ICONS
 class Icon:
-    def __init__(self):
+    def __init__(self, iconType):
+        self.iconType = iconType
         self.getNew()
         self.active = False
 
@@ -3132,8 +3146,14 @@ class Icon:
             screen.blit(drawing,drawee)
 
 
-    # Get new icon
     def getNew(self):
+        if self.iconType is None or self.iconType == "FG": self.getNewFg()
+        elif self.iconType == "BG": self.getNewBg()
+        else: self.getNewFg() # Default
+
+
+    # Get new foreground icon
+    def getNewFg(self):
         spins = [-1,1]
         self.speed = random.randint(settings.minIconSpeed,settings.maxIconSpeed)
         self.movement = getMovement(None)
@@ -3145,6 +3165,48 @@ class Icon:
         self.image = pygame.transform.scale(self.image, (size, size)).convert_alpha()
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
         self.angle = random.randint(0,360)
+
+
+    # Get new background icon
+    def getNewBg(self):
+        collide = random.randint(0,100)
+        if collide <= 1: self.collide = True
+        else: self.collide = False
+        self.speed = random.randint(5,15)
+        self.movement = getMovement("LEFT")
+        self.direction = self.movement[1]
+        self.spinDirection = 1
+        if random.randint(0,10) < 7: self.image = assets.menuList[0]
+        else: self.image = assets.menuList[random.randint(1,len(assets.menuList)-1)]
+        size = random.randint(5,15)
+        self.image = pygame.transform.scale(self.image, (size, size)).convert_alpha()
+        self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
+        self.angle = 0
+
+
+
+class CollidingIcon(pygame.sprite.Sprite):
+    def __init__(self,iconType):
+        super().__init__()
+        if iconType is None:
+            spins = [-1,1]
+            self.speed = random.randint(settings.minIconSpeed,settings.maxIconSpeed)
+            self.movement = getMovement(None)
+            self.direction = self.movement[1]
+            size = random.randint(settings.minIconSize,settings.maxIconSize)
+            self.image = pygame.transform.scale(assets.menuList[random.randint(0,len(assets.menuList)-1)], (size, size)).convert_alpha()
+            self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
+            self.mask = pygame.mask.from_surface(self.image)
+            self.angle = random.randint(0,360)
+        else:
+            self.image = assets.planetIcon
+            self.rect = self.image.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/3 +50))
+            self.mask = pygame.mask.from_surface(self.image)
+            self.angle = 0
+
+
+    def draw(self): screen.blit(self.image,self.rect)
+
 
 
 
