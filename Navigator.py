@@ -331,7 +331,6 @@ class Assets:
             cave.append(pygame.image.load(self.resources(os.path.join(caveAssets,"Background.png"))).convert_alpha())
             cave.append(pygame.image.load(self.resources(os.path.join(caveAssets,"Cave.png"))).convert_alpha())
             self.caveList.append(cave)
-
         settings.debug("Loaded caves") # Debug
         
         # PLANET ASSETS
