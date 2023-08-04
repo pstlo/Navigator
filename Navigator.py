@@ -42,6 +42,7 @@ class Settings:
         self.fuelColor = [255,0,0] # Default = [255,0,0] / Color of fuel gauge /  Red
         self.timerDelay = 1000 # Default = 1000
         self.pauseMax = 5 # Default = 5 / max pauses per game
+        self.nearMissIndicatorDuration = 1000 # Default = ? / visual duration of near miss indicator
 
         # POWER UPS
         self.spawnRange = [0.15, 0.85]
@@ -116,7 +117,7 @@ class Settings:
 
         # PLANETS
         self.planetMoveDelay = 2 # Default = 2
-        self.unlimitedPlanets = True # Temporary until more planets added 
+        self.unlimitedPlanets = True # Temporary until more planets added
 
         # OBSTACLES
         self.explosionDelay = 1 # Default = 1
@@ -125,6 +126,8 @@ class Settings:
         self.obsLaserDelay = 10 # Default = 10 / delay before obstacle fires another laser
         self.obsLaserDamage = 1 # Default = 1
         self.maxObsLasers = 3 # Default = 3 / lasers per obstacle
+        self.nearMissDist = 40 # Default = ? / distance for near miss
+        self.nearMissValue = 0 # Default = ? / point value for near misses
 
         # CAVES
         self.caveStartPos = self.screenSize[1]*-2 # Default = -1600 / Cave start Y coordinate
@@ -332,7 +335,7 @@ class Assets:
             cave.append(pygame.image.load(self.resources(os.path.join(caveAssets,"Cave.png"))).convert_alpha())
             self.caveList.append(cave)
         settings.debug("Loaded caves") # Debug
-        
+
         # PLANET ASSETS
         self.planets = []
         self.planetSizes = [400] # Planet sizes for corresponding index
@@ -1121,6 +1124,7 @@ class Game:
         self.usingCursor = False # Using cursor for movement
         self.planetImage,self.planetRect,self.planetStartPos,self.planetStartSize,self.planetDelay,self.planetIndex = None,None,None,None,0,0
         self.endlessModeStarted = False # Marks end of game reached
+        self.nearObsList, self.nearMissCount = [],0
 
         # STORE LEVEL 1 VALUES
         self.savedConstants = {
@@ -1170,6 +1174,9 @@ class Game:
 
             # SHIELD VISUAL
             if event.type == events.shieldVisualDuration: player.showShield = False
+
+            # NEAR MISS VISUAL
+            if event.type == events.nearMissIndicator and self.nearMissCount > 0: self.nearMissCount = 0
 
         # BACKGROUND
         screen.fill(screenColor)
@@ -1306,6 +1313,12 @@ class Game:
                 obs.move(player,enemyLasers)
                 obs.activate() # Activate if on screen
                 if obs.active:
+
+                    # NEAR MISSES
+                    if obs not in self.nearObsList:
+                        nearDist = math.dist(player.rect,obs.rect)
+                        if nearDist <= settings.nearMissDist: self.nearObsList.append(obs)
+
                     # OBSTACLE/LASER COLLISION DETECTION
                     if pygame.sprite.spritecollide(obs,lasers,not player.laserCollat,pygame.sprite.collide_mask):
                         if obs.health - player.damage > 0: obs.health -= player.damage
@@ -1339,12 +1352,11 @@ class Game:
                 if debris.finished: self.explosions.remove(debris)
                 else: debris.update()
 
-        # UPDATE HIGH SCORE
-        if self.gameClock > self.sessionLongRun: self.sessionLongRun = self.gameClock
+        self.nearMisses(player,events) # NEAR MISS CALCULATION
 
+        if self.gameClock > self.sessionLongRun: self.sessionLongRun = self.gameClock # UPDATE HIGH SCORE
         if not self.endlessModeStarted: self.levelUpdater(player,obstacles,events) # LEVEL UP
-
-        if "OBS" in self.levelType or self.endlessModeStarted: self.spawner(obstacles,player) # Spawn obstacles
+        if "OBS" in self.levelType or self.endlessModeStarted: self.spawner(obstacles,player) # SPAWN OBSTACLES
 
         # UPDATE SCREEN
         player.lastAngle = player.angle # Save recent player orientation
@@ -1561,10 +1573,20 @@ class Game:
         scoreRect = scoreDisplay.get_rect()
         scoreRect.topleft = (settings.screenSize[0] - (2*scoreRect.width), levelRect.y)
 
+        # NEAR MISSES DISPLAY
+        if self.nearMissCount > 0:
+            if self.nearMissCount >1: nearMissText = "Near Miss! x" + str(self.nearMissCount)
+            else: nearMissText = "Near Miss!"
+            nearMissDisplay = assets.shipHelpFont.render(nearMissText, True, settings.secondaryFontColor)
+            nearMissRect = nearMissDisplay.get_rect(center = (scoreRect.midbottom[0],scoreRect.bottom + 5))
+            screen.blit(nearMissDisplay,nearMissRect)
+
+
         screen.blit(timerDisplay, timerRect)
         screen.blit(stageDisplay, stageRect)
         if not self.endlessModeStarted: screen.blit(levelDisplay, levelRect)
         screen.blit(scoreDisplay, scoreRect)
+
 
 
     # SPAWN OBSTACLES
@@ -1588,6 +1610,16 @@ class Game:
         for laser in enemyLasers: screen.blit(laser.image,laser.rect)
 
 
+    # CALCULATE NEAR MISSES
+    def nearMisses(self,player,events):
+        for near in self.nearObsList:
+            if math.dist(player.rect.center,near.rect.center) > settings.nearMissDist:
+                self.nearObsList.remove(near)
+                self.nearMissCount += 1
+                self.score += settings.nearMissValue
+                events.nearMiss()
+
+
     # RESTART GAME
     def reset(self,player,obstacles):
         self.gameClock = 0
@@ -1599,6 +1631,7 @@ class Game:
         self.explosions = []
         self.coinsCollected = 0
         self.attemptNumber += 1
+        self.nearObsList,self.nearMissCount = [],0
         self.resetPlanets()
         self.cave = None
         self.killAllObstacles(obstacles)
@@ -1632,6 +1665,9 @@ class Event:
         # PLAYER SHIELD VISUAL DURATION
         self.shieldVisualDuration = pygame.USEREVENT + 5
 
+        # NEAR MISS INDICATOR
+        self.nearMissIndicator = pygame.USEREVENT + 6
+
 
     # SETS EVENTS
     def set(self,player):
@@ -1648,6 +1684,8 @@ class Event:
         player.boostReady = False
 
     def showShield(self): pygame.time.set_timer(self.shieldVisualDuration,settings.shieldVisualDuration)
+
+    def nearMiss(self): pygame.time.set_timer(self.nearMissIndicator,settings.nearMissIndicatorDuration)
 
 
 
