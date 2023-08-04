@@ -42,7 +42,7 @@ class Settings:
         self.fuelColor = [255,0,0] # Default = [255,0,0] / Color of fuel gauge /  Red
         self.timerDelay = 1000 # Default = 1000
         self.pauseMax = 5 # Default = 5 / max pauses per game
-        self.nearMissIndicatorDuration = 1000 # Default = ? / visual duration of near miss indicator
+        self.nearMissIndicatorDuration = 1500 # Default = 1500 / visual duration of near miss indicator
 
         # POWER UPS
         self.spawnRange = [0.15, 0.85]
@@ -126,7 +126,8 @@ class Settings:
         self.obsLaserDelay = 10 # Default = 10 / delay before obstacle fires another laser
         self.obsLaserDamage = 1 # Default = 1
         self.maxObsLasers = 3 # Default = 3 / lasers per obstacle
-        self.nearMissDist = 40 # Default = ? / distance for near miss
+        self.nearMissDist = 40 # Default = 40 / distance for near miss start
+        self.nearMissSafeDist = 60 # Default = 60 distance for near miss end
         self.nearMissValue = 0 # Default = ? / point value for near misses
 
         # CAVES
@@ -1613,7 +1614,7 @@ class Game:
     # CALCULATE NEAR MISSES
     def nearMisses(self,player,events):
         for near in self.nearObsList:
-            if math.dist(player.rect.center,near.rect.center) > settings.nearMissDist:
+            if math.dist(player.rect.center,near.rect.center) > settings.nearMissSafeDist:
                 self.nearObsList.remove(near)
                 self.nearMissCount += 1
                 self.score += settings.nearMissValue
