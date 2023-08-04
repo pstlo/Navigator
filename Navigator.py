@@ -1582,12 +1582,10 @@ class Game:
             nearMissRect = nearMissDisplay.get_rect(center = (scoreRect.midbottom[0],scoreRect.bottom + 5))
             screen.blit(nearMissDisplay,nearMissRect)
 
-
         screen.blit(timerDisplay, timerRect)
         screen.blit(stageDisplay, stageRect)
         if not self.endlessModeStarted: screen.blit(levelDisplay, levelRect)
         screen.blit(scoreDisplay, scoreRect)
-
 
 
     # SPAWN OBSTACLES
@@ -1676,15 +1674,19 @@ class Event:
         pygame.time.set_timer(self.fuelReplenish, player.fuelRegenDelay)
         pygame.time.set_timer(self.exhaustUpdate, settings.exhaustUpdateDelay)
 
+
     def laserCharge(self,player):
         pygame.time.set_timer(self.laserCooldown, player.laserFireRate)
         player.laserReady = False
+
 
     def boostCharge(self,player):
         pygame.time.set_timer(self.boostCooldown, settings.boostCooldownTime)
         player.boostReady = False
 
+
     def showShield(self): pygame.time.set_timer(self.shieldVisualDuration,settings.shieldVisualDuration)
+
 
     def nearMiss(self): pygame.time.set_timer(self.nearMissIndicator,settings.nearMissIndicatorDuration)
 
