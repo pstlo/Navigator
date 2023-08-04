@@ -66,9 +66,9 @@ class Settings:
         self.secondaryFontColor = [255,255,255] # Default = [255,255,255] / White
 
         # START MENU
-        self.maxFgIcons = 5 # Default = 5 / foreground icons
-        self.maxBgIcons = 15 # Default = 15 / background icons
-        self.maxCgIcons = 3 # Default = 3 / colliding icons
+        self.maxFgIcons = 1 # Default = 1 / foreground icons
+        self.maxBgIcons = 5 # Default = 5 / background icons
+        self.maxCgIcons = 1 # Default = 1 / colliding icons
         self.minIconSpeed = 6 # Default = 6
         self.maxIconSpeed = 12 # Default = 12
         self.minIconRotationSpeed = 3 # Default = 3
@@ -122,7 +122,6 @@ class Settings:
         self.explosionDelay = 1 # Default = 1
         self.slowerDiagonalObstacles = True # Default = True / use the hypotenuse or whatever
         self.spawnDistance = 0 # Default = 0 / Distance past screen border required before new obstacle spawned
-        self.activationDelay = 0 # Default = 2 / frames before activation after entering screen
         self.obsLaserDelay = 10 # Default = 10 / delay before obstacle fires another laser
         self.obsLaserDamage = 1 # Default = 1
         self.maxObsLasers = 3 # Default = 3 / lasers per obstacle
@@ -271,6 +270,7 @@ class Assets:
         ufoDirectory = os.path.join(obstacleDirectory, 'UFOs') # UFO asset directory
         shipDirectory = os.path.join(assetDirectory, 'Spaceships') # Spaceship asset directory
         caveDirectory = os.path.join(assetDirectory,'Caves') # Cave asset directory
+        planetDirectory = os.path.join(assetDirectory,'Planets') # Planet asset directory
         backgroundDirectory = os.path.join(assetDirectory, 'Backgrounds') # Background asset directory
         menuDirectory = os.path.join(assetDirectory, 'MainMenu') # Start menu asset directory
         explosionDirectory = os.path.join(assetDirectory, 'Explosion') # Explosion animation directory
@@ -333,6 +333,17 @@ class Assets:
             self.caveList.append(cave)
 
         settings.debug("Loaded caves") # Debug
+        
+        # PLANET ASSETS
+        self.planets = []
+        self.planetSizes = [400] # Planet sizes for corresponding index
+        planetIndex = 0
+        for filename in sorted(os.listdir(planetDirectory)):
+            if filename.endswith('.png'):
+                path = os.path.join(planetDirectory, filename)
+                self.planets.append(pygame.transform.scale(pygame.image.load(self.resources(path)).convert_alpha(), (self.planetSizes[planetIndex],self.planetSizes[planetIndex])))
+                planetIndex += 1
+        settings.debug("Loaded planets") # Debug
 
         # BACKGROUND ASSETS
         self.bgList = []
@@ -426,7 +437,6 @@ class Assets:
 
         # MAIN MENU ASSETS
         self.titleText = pygame.image.load(self.resources(os.path.join(menuDirectory,'Title.png'))).convert_alpha()
-        self.planetIcon = pygame.transform.scale(pygame.image.load(self.resources(os.path.join(menuDirectory,'Planet.png'))).convert_alpha(), (400,400))
         self.menuList = []
         menuMeteorDir = os.path.join(menuDirectory,'FlyingObjects')
         for objPath in sorted(os.listdir(menuMeteorDir)): self.menuList.append(pygame.image.load(self.resources(os.path.join(menuMeteorDir,objPath))).convert_alpha())
@@ -1110,7 +1120,7 @@ class Game:
         self.clk = pygame.time.Clock() # Gameclock
         self.usingController = settings.useController # Using controller for movement
         self.usingCursor = False # Using cursor for movement
-        self.planetImage,self.planetRect,self.planetStartPos,self.planetStartSize,self.planetDelay = None,None,None,None,0
+        self.planetImage,self.planetRect,self.planetStartPos,self.planetStartSize,self.planetDelay,self.planetIndex = None,None,None,None,0,0
         self.endlessModeStarted = False # Marks end of game reached
 
         # STORE LEVEL 1 VALUES
@@ -1379,9 +1389,10 @@ class Game:
 
     # RESET PLANETS
     def resetPlanets(self):
-        self.planetImage = pygame.transform.scale(assets.planetIcon,(self.planetStartSize,self.planetStartSize))
+        self.planetImage = pygame.transform.scale(assets.planets[0],(self.planetStartSize,self.planetStartSize))
         self.planetRect = self.planetImage.get_rect()
         self.planetRect.center = self.planetStartPos
+        self.planetIndex = 0
 
 
     # Draw frame outside of main loop
@@ -1660,11 +1671,10 @@ class Menu:
 
         # PLANET
         planet = pygame.sprite.Sprite()
-        planet.image = assets.planetIcon
-        planet.rect = assets.planetIcon.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/3 +50))
-        planet.mask = pygame.mask.from_surface(assets.planetIcon)
+        planet.image = assets.planets[0]
+        planet.rect = planet.image.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/3 +50))
+        planet.mask = pygame.mask.from_surface(planet.image)
         planetSize = planet.rect.size[0]
-        planetEndSize = 50
 
         # Colliding icons
         cgIcons = []
@@ -1741,7 +1751,7 @@ class Menu:
                         if planetSize-25 > 0:
                             planetSize -= 25
                             planet.rect.centery -= 10
-                        planet.image = pygame.transform.scale(assets.planetIcon,(planetSize,planetSize))
+                        planet.image = pygame.transform.scale(assets.planets[game.planetIndex],(planetSize,planetSize))
                         planet.rect = planet.image.get_rect(center = planet.rect.center)
 
                         # Start animation
@@ -1830,7 +1840,7 @@ class Menu:
                     icon.move()
                     icon.draw()
 
-            screen.blit(assets.planetIcon,planet.rect)
+            screen.blit(assets.planets[game.planetIndex],planet.rect)
 
             # Foreground icons
             if settings.showMenuIcons:
@@ -3236,7 +3246,7 @@ class Icon(pygame.sprite.Sprite):
     def getNewFg(self):
         spins = [-1,1]
         self.speed = random.randint(settings.minIconSpeed,settings.maxIconSpeed)
-        self.movement = getMovement(None)
+        self.movement = getMovement("LEFT")
         self.direction = self.movement[1]
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
         if random.randint(0,10) < 7: self.image = assets.menuList[0]
@@ -3265,7 +3275,7 @@ class Icon(pygame.sprite.Sprite):
     def getNewCg(self):
         spins = [-1,1]
         self.speed = random.randint(settings.minIconSpeed,settings.maxIconSpeed)
-        self.movement = getMovement(None)
+        self.movement = getMovement("LEFT")
         self.direction = self.movement[1]
         self.spinDirection = spins[random.randint(0,len(spins)-1)]
         size = random.randint(10,20)
