@@ -49,8 +49,9 @@ class Settings:
         self.spawnVertices = 8 # Default = 8 / Vertices in shape of point spawn area (Octagon)
         self.pointSize = 25  # Default = 25
         self.shieldChunkSize = self.screenSize[0]/40 # Default = screen width / 40
+        self.nukeSize = 100
         self.boostCooldownTime = 2000 # Default = 2000 / Activates when fuel runs out to allow regen
-        self.powerUpList = {"Default":55,"Shield":20, "Fuel":20, "Coin":5} # Default = {"Default":55,"Shield":20, "Fuel":20, "Coin":5} / power up odds
+        self.powerUpList = {"Default":55,"Shield":20, "Fuel":15, "Coin":5, "Nuke":5} # Default = {"Default":55,"Shield":20, "Fuel":20, "Coin":5} / power up odds
         self.playerShieldSize = 48 # Default = 48 / Shield visual size
         self.shieldVisualDuration = 250 # Default = 250 / Shield visual duration
         self.minDistanceToPoint = (self.screenSize[0] + self.screenSize[1]) / 16 # Default = 100
@@ -1124,6 +1125,7 @@ class Game:
         self.savedShipLevel = 0 # Saved ship type
         self.cloudPos = settings.cloudStart # Background cloud position
         self.explosions = [] # Obstacle explosions
+        self.collidingExplosions = [] # Explosions with hitboxes
         self.cave,self.caveIndex = None, 0 # For cave levels
         self.musicMuted = settings.musicMuted
         self.clk = pygame.time.Clock() # Gameclock
@@ -1238,8 +1240,8 @@ class Game:
                         menu.gameOver(self,player,obstacles) # Game over
                 enemyLasersCollided = pygame.sprite.spritecollide(self.cave,enemyLasers,True,pygame.sprite.collide_mask) # Enemy lasers/cave
                 lasersCollided = pygame.sprite.spritecollide(self.cave,lasers,True,pygame.sprite.collide_mask) # Lasers/cave
-                for laser in lasersCollided: self.explosions.append(Explosion(laser))
-                for laser in enemyLasersCollided: self.explosions.append(Explosion(laser))
+                for laser in lasersCollided: self.explosions.append(Explosion(laser,None))
+                for laser in enemyLasersCollided: self.explosions.append(Explosion(laser,None))
                 enemyLasers.remove(enemyLasersCollided)
                 lasers.remove(lasersCollided)
 
@@ -1262,6 +1264,10 @@ class Game:
                 self.score += 1 # Used as bonus point for now
                 if not self.musicMuted: assets.coinNoise.play()
 
+            elif self.thisPoint.powerUp == "Nuke":
+                self.collidingExplosions.append(Explosion(self.thisPoint,settings.nukeSize))
+                if not self.musicMuted: assets.explosionNoise.play()
+
             else:
                 if not self.musicMuted: assets.pointNoise.play()
 
@@ -1269,6 +1275,11 @@ class Game:
             self.thisPoint.kill()
             self.lastPointPos = self.thisPoint.rect.center # Save last points position
             self.thisPoint = Point(player,self.lastPointPos) # spawn new point
+
+        # DRAW COLLIDING EXPLOSIONS
+        for debris in self.collidingExplosions:
+            if debris.finished: self.collidingExplosions.remove(debris)
+            else: debris.update()
 
         # UPDATE PLAYER
         player.movement()
@@ -1333,13 +1344,21 @@ class Game:
                             obs.kill()
                             obstacles.remove(obs)
                             if not self.musicMuted: assets.impactNoise.play()
-                            self.explosions.append(Explosion(obs))
+                            self.explosions.append(Explosion(obs,None))
 
                     # OBSTACLE/CAVE COLLISION DETECTION
                     elif self.cave is not None and pygame.sprite.collide_mask(obs,self.cave):
                         if not self.musicMuted: assets.impactNoise.play()
-                        self.explosions.append(Explosion(obs))
+                        self.explosions.append(Explosion(obs,None))
                         obs.kill()
+
+                    # OBSTACLE/EXPLOSION COLLISION DETECTION
+                    elif len(self.collidingExplosions) > 0:
+                        for explosion in self.collidingExplosions:
+                            if pygame.sprite.collide_mask(obs,explosion):
+                                if not self.musicMuted: assets.impactNoise.play()
+                                self.explosions.append(Explosion(obs,None))
+                                obs.kill()
 
                     # ROTATE AND DRAW OBSTACLE
                     if not settings.performanceMode:
@@ -1879,7 +1898,7 @@ class Menu:
                     icon.draw()
                     icon.move()
                     if pygame.sprite.collide_mask(icon,planet):
-                        game.explosions.append(Explosion(icon))
+                        game.explosions.append(Explosion(icon,None))
                         icon = icon.getNew()
 
             # DRAW EXPLOSIONS
@@ -3120,7 +3139,7 @@ class Laser(pygame.sprite.Sprite):
         else:
             if self.target is None or not obstacles.has(self.target):
                 if settings.heatSeekNeedsTarget:
-                    game.explosions.append(Explosion(self))
+                    game.explosions.append(Explosion(self,None))
                     self.kill()
                 else:
                     self.rect.centerx +=self.speed * math.cos(self.angle) # Horizontal movement
@@ -3193,7 +3212,7 @@ class EnemyLaser(pygame.sprite.Sprite):
         else:
             if self.target is None:
                 if settings.heatSeekNeedsTarget:
-                    game.explosions.append(Explosion(self))
+                    game.explosions.append(Explosion(self,None))
                     self.kill()
                 else:
                     self.rect.centerx +=self.speed * math.cos(self.angle) # Horizontal movement
@@ -3216,7 +3235,7 @@ class EnemyLaser(pygame.sprite.Sprite):
 
 # EXPLOSIONS
 class Explosion(pygame.sprite.Sprite):
-    def __init__(self,point):
+    def __init__(self,point,increment):
         super().__init__()
         self.state,self.finalState,self.finished = 0,len(assets.explosionList)-1,False
         self.image = assets.explosionList[self.state]
@@ -3225,6 +3244,8 @@ class Explosion(pygame.sprite.Sprite):
         self.updateFrame = 0
         self.delay = settings.explosionDelay
         self.size = self.rect.size[0]
+        if increment is None: self.increment = settings.explosionIncrement
+        else: self.increment = increment
 
 
     def update(self):
@@ -3243,8 +3264,8 @@ class Explosion(pygame.sprite.Sprite):
 
     # ENLARGE EXPLOSION
     def enlarge(self):
-        if settings.explosionIncrement > 0:
-            self.size += settings.explosionIncrement
+        if self.increment > 0:
+            self.size += self.increment
             self.image = pygame.transform.scale(assets.explosionList[self.state], (self.size,self.size))
             self.rect = self.image.get_rect(center = self.rect.center)
 
