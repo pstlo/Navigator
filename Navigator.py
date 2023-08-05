@@ -508,27 +508,17 @@ class Assets:
                 path = os.path.join(donationShipsDir, filename)
                 self.donationShips.append(pygame.image.load(self.resources(path)).convert_alpha())
 
-        # FONTS - will be cleaned up
+        # FONTS
         self.gameFont = os.path.join(assetDirectory, 'Font.ttf')
-
         self.shipStatsFont = pygame.font.Font(self.gameFont,10)
         self.labelFont = pygame.font.Font(self.gameFont, 20)
         self.versionFont = pygame.font.Font(self.gameFont,25)
-        self.stageFont = pygame.font.Font(self.gameFont, 30)
-        self.creditsFont = pygame.font.Font(self.gameFont, 30)
-        self.levelFont = pygame.font.Font(self.gameFont, 30)
-        self.scoreFont = pygame.font.Font(self.gameFont, 30)
-        self.timerFont = pygame.font.Font(self.gameFont, 30)
-        self.statFont = pygame.font.Font(self.gameFont, 30)
-        self.exitFont = pygame.font.Font(self.gameFont, 30)
-        self.leaderboardFont = pygame.font.Font(self.gameFont, 30)
+        self.mediumFont = pygame.font.Font(self.gameFont, 30) # Medium font
         self.pauseCountFont = pygame.font.Font(self.gameFont,40)
         self.creatorFont = pygame.font.Font(self.gameFont, 55)
         self.leaderboardTitleFont = pygame.font.Font(self.gameFont, 60)
         self.stageUpFont = pygame.font.Font(self.gameFont, 90)
-        self.pausedFont = pygame.font.Font(self.gameFont, 100)
-        self.gameOverFont = pygame.font.Font(self.gameFont, 100)
-
+        self.largeFont = pygame.font.Font(self.gameFont, 100) # Large font
         settings.debug("Loaded fonts") # Debug
 
         self.userName = os.getlogin() # Leaderboard username
@@ -1577,25 +1567,25 @@ class Game:
             pygame.draw.rect(screen, settings.fuelColor,fuelRect)
 
         # TIMER DISPLAY
-        timerDisplay = assets.timerFont.render(str(self.gameClock), True, settings.secondaryFontColor)
+        timerDisplay = assets.mediumFont.render(str(self.gameClock), True, settings.secondaryFontColor)
         timerRect = timerDisplay.get_rect(topright = screen.get_rect().topright)
 
         # STAGE DISPLAY
         if not self.endlessModeStarted: stageNum = "Stage " + str(self.currentStage)
         else: stageNum = "Overtime"
-        stageDisplay = assets.stageFont.render( str(stageNum), True, settings.secondaryFontColor )
+        stageDisplay = assets.mediumFont.render( str(stageNum), True, settings.secondaryFontColor )
         stageRect = stageDisplay.get_rect(topleft = screen.get_rect().topleft)
 
         # LEVEL DISPLAY
         if not self.endlessModeStarted: levelNum = "-  Level " + str(self.currentLevel)
         else: levelNum = ""
-        levelDisplay = assets.levelFont.render( str(levelNum), True, settings.secondaryFontColor )
+        levelDisplay = assets.mediumFont.render( str(levelNum), True, settings.secondaryFontColor )
         levelRect = levelDisplay.get_rect()
         levelRect.center = (stageRect.right + levelRect.width*0.65, stageRect.centery)
 
         # SCORE DISPLAY
         scoreNum = "Score " + str(self.score)
-        scoreDisplay = assets.scoreFont.render(scoreNum, True, settings.secondaryFontColor)
+        scoreDisplay = assets.mediumFont.render(scoreNum, True, settings.secondaryFontColor)
         scoreRect = scoreDisplay.get_rect()
         scoreRect.topleft = (settings.screenSize[0] - (2*scoreRect.width), levelRect.y)
 
@@ -1758,7 +1748,7 @@ class Menu:
         versionRect = versionDisplay.get_rect(center = (startRect.right-120,startRect.bottom-20))
 
         # Coin Display
-        coinDisplay = assets.statFont.render(str(game.records['coins']), True, settings.secondaryFontColor)
+        coinDisplay = assets.mediumFont.render(str(game.records['coins']), True, settings.secondaryFontColor)
         coinDisplayRect = coinDisplay.get_rect(center = (settings.screenSize[0] -25, 25))
         coinIconRect = assets.coinIcon.get_rect(center = (settings.screenSize[0] -60, 25))
 
@@ -1934,7 +1924,7 @@ class Menu:
         playerBlit = rotateImage(player.image,player.rect,player.lastAngle)
         paused = True
 
-        pausedDisplay = assets.pausedFont.render("Paused", True, settings.secondaryFontColor)
+        pausedDisplay = assets.largeFont.render("Paused", True, settings.secondaryFontColor)
         pausedRect = pausedDisplay.get_rect()
         pausedRect.center = (settings.screenSize[0]/2, settings.screenSize[1]/2)
 
@@ -2022,7 +2012,7 @@ class Menu:
 
         assets.storeRecords(game.records) # SAVE UPDATED RECORDS
         if settings.connectToLeaderboard and (newHighScore or newLongRun):
-            newRecordDisplay = assets.statFont.render("NEW RECORD!",True,(0,0,0))
+            newRecordDisplay = assets.mediumFont.render("NEW RECORD!",True,(0,0,0))
             newRecordRect = newRecordDisplay.get_rect(center = player.rect.center)
             screen.blit(newRecordDisplay,newRecordRect)
             pygame.display.update()
@@ -2032,7 +2022,7 @@ class Menu:
         statsSpacingY = settings.screenSize[1]/20
 
         # "GAME OVER" text
-        gameOverDisplay = assets.gameOverFont.render("GAME OVER", True, [255,0,0])
+        gameOverDisplay = assets.largeFont.render("GAME OVER", True, [255,0,0])
         gameOverRect = gameOverDisplay.get_rect()
         gameOverRect.center = (settings.screenSize[0]/2, settings.screenSize[1]/3)
 
@@ -2049,17 +2039,17 @@ class Menu:
         timeWasted = self.simplifyTime(game.records["timePlayed"])
 
         # Display
-        scoreDisplay = assets.statFont.render(scoreLine, True, settings.primaryFontColor)
-        highScoreDisplay = assets.statFont.render(highScoreLine, True, settings.primaryFontColor)
-        newHighScoreDisplay = assets.statFont.render(newHighScoreLine, True, settings.primaryFontColor)
-        longestRunDisplay = assets.statFont.render(overallLongestRunLine, True, settings.primaryFontColor)
-        survivedDisplay = assets.statFont.render(survivedLine, True, settings.primaryFontColor)
-        levelDisplay = assets.statFont.render(levelLine, True, settings.primaryFontColor)
-        newLongestRunDisplay = assets.statFont.render(newLongestRunLine, True, settings.primaryFontColor)
-        attemptDisplay = assets.statFont.render(attemptLine, True, settings.primaryFontColor)
-        timeWastedDisplay = assets.statFont.render(timeWasted,True,settings.primaryFontColor)
-        if not game.usingController or gamePad is None: exitDisplay = assets.exitFont.render("TAB = Menu     SPACE = Restart    ESCAPE = Quit    C = Credits", True, settings.primaryFontColor)
-        else: exitDisplay = assets.exitFont.render("SELECT = Menu    A = Restart    START = Quit    Y = Credits", True, settings.primaryFontColor)
+        scoreDisplay = assets.mediumFont.render(scoreLine, True, settings.primaryFontColor)
+        highScoreDisplay = assets.mediumFont.render(highScoreLine, True, settings.primaryFontColor)
+        newHighScoreDisplay = assets.mediumFont.render(newHighScoreLine, True, settings.primaryFontColor)
+        longestRunDisplay = assets.mediumFont.render(overallLongestRunLine, True, settings.primaryFontColor)
+        survivedDisplay = assets.mediumFont.render(survivedLine, True, settings.primaryFontColor)
+        levelDisplay = assets.mediumFont.render(levelLine, True, settings.primaryFontColor)
+        newLongestRunDisplay = assets.mediumFont.render(newLongestRunLine, True, settings.primaryFontColor)
+        attemptDisplay = assets.mediumFont.render(attemptLine, True, settings.primaryFontColor)
+        timeWastedDisplay = assets.mediumFont.render(timeWasted,True,settings.primaryFontColor)
+        if not game.usingController or gamePad is None: exitDisplay = assets.mediumFont.render("TAB = Menu     SPACE = Restart    ESCAPE = Quit    C = Credits", True, settings.primaryFontColor)
+        else: exitDisplay = assets.mediumFont.render("SELECT = Menu    A = Restart    START = Quit    Y = Credits", True, settings.primaryFontColor)
 
         # Rects
         survivedRect = survivedDisplay.get_rect()
@@ -2207,7 +2197,7 @@ class Menu:
             leaderboardX = (settings.screenSize[0] - cellW) / 2  # Center the table horizontally
             leaderboardY = 100
             headerText = "#       Name                              Time       Score"
-            headerDisplay = assets.leaderboardFont.render(headerText, True, settings.primaryFontColor)
+            headerDisplay = assets.mediumFont.render(headerText, True, settings.primaryFontColor)
             headerRect = headerDisplay.get_rect(topleft=(settings.screenSize[0]*0.2, leaderboardY))
             leaderSpacing = 40
             cellBorder = 2
@@ -2242,22 +2232,22 @@ class Menu:
                     pygame.draw.rect(screen, (0, 0, 0), (cellX, cellY, cellW, cellH), cellBorder)
 
                     rankText = f"{index + 1}."
-                    rankDisplay = assets.leaderboardFont.render(rankText, True, thisColor)
+                    rankDisplay = assets.mediumFont.render(rankText, True, thisColor)
                     rankRect = rankDisplay.get_rect(midleft=(cellX + 10, cellY + cellH // 2))
                     screen.blit(rankDisplay, rankRect)
 
                     nameText = leader['name'][:maxUsernameLength]
-                    nameDisplay = assets.leaderboardFont.render(nameText, True, thisColor)
+                    nameDisplay = assets.mediumFont.render(nameText, True, thisColor)
                     nameRect = nameDisplay.get_rect(midleft=(cellX + cellW //12, cellY + cellH // 2))
                     screen.blit(nameDisplay, nameRect)
 
                     timeText= str(leader['time']) + "s"
-                    timeDisplay = assets.leaderboardFont.render(timeText, True, thisColor)
+                    timeDisplay = assets.mediumFont.render(timeText, True, thisColor)
                     timeRect = timeDisplay.get_rect(center=(cellX + cellW * 0.7, cellY + cellH // 2))
                     screen.blit(timeDisplay, timeRect)
 
                     scoreText = str(leader['score'])
-                    scoreDisplay = assets.leaderboardFont.render(scoreText, True, thisColor)
+                    scoreDisplay = assets.mediumFont.render(scoreText, True, thisColor)
                     scoreRect = scoreDisplay.get_rect(center=(cellX + cellW * 0.88, cellY + cellH // 2))
                     screen.blit(scoreDisplay, scoreRect)
 
@@ -2283,9 +2273,9 @@ class Menu:
         moreMusicCreditsLine = "& game over music by Simon Colker"
 
         createdByDisplay = assets.creatorFont.render(createdByLine, True, settings.secondaryFontColor)
-        creditsDisplay = assets.creditsFont.render(creditsLine, True, settings.secondaryFontColor)
-        musicCreditsDisplay = assets.creditsFont.render(musicCreditsLine, True, settings.secondaryFontColor)
-        moreMusicCreditsDisplay = assets.creditsFont.render(moreMusicCreditsLine, True, settings.secondaryFontColor)
+        creditsDisplay = assets.mediumFont.render(creditsLine, True, settings.secondaryFontColor)
+        musicCreditsDisplay = assets.mediumFont.render(musicCreditsLine, True, settings.secondaryFontColor)
+        moreMusicCreditsDisplay = assets.mediumFont.render(moreMusicCreditsLine, True, settings.secondaryFontColor)
 
         createdByRect = createdByDisplay.get_rect(center = (posX,posY))
         creditsRect = creditsDisplay.get_rect(center = (posX, posY +45))
@@ -2532,7 +2522,7 @@ class Menu:
         for label in startLabels:
             if first:
                 first = False
-                startDisplays.append(self.getLabel(label[0],label[1],assets.statFont))
+                startDisplays.append(self.getLabel(label[0],label[1],assets.mediumFont))
 
             else:
                 startDisplays.append(self.getLabel(label[0],label[1],None))
