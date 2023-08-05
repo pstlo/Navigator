@@ -49,7 +49,7 @@ class Settings:
         self.spawnVertices = 8 # Default = 8 / Vertices in shape of point spawn area (Octagon)
         self.pointSize = 25  # Default = 25
         self.shieldChunkSize = self.screenSize[0]/40 # Default = screen width / 40
-        self.nukeSize = 100
+        self.nukeSize = 100 # Default = 100 / Nuke expansion rate
         self.boostCooldownTime = 2000 # Default = 2000 / Activates when fuel runs out to allow regen
         self.powerUpList = {"Default":55,"Shield":20, "Fuel":15, "Coin":5, "Nuke":5} # Default = {"Default":55,"Shield":20, "Fuel":20, "Coin":5} / power up odds
         self.playerShieldSize = 48 # Default = 48 / Shield visual size
@@ -129,14 +129,14 @@ class Settings:
         self.maxObsLasers = 3 # Default = 3 / lasers per obstacle
 
         # EXPLOSIONS
-        self.explosionIncrement = 0 # Default = ? / explosion size change
+        self.explosionIncrement = 0 # Default = 0 / explosion expansion rate
         self.explosionDelay = 2 # Default = 2 / delay between explosion frame updates
 
         # NEAR MISSES
         self.nearMisses = True # Default = True / register near misses
         self.nearMissDist = 40 # Default = 40 / distance for near miss start
         self.nearMissSafeDist = 60 # Default = 60 distance for near miss end
-        self.nearMissValue = 0 # Default = ? / point value for near misses
+        self.nearMissValue = 0 # Default = 0 / point value for near misses
 
         # CAVES
         self.caveStartPos = self.screenSize[1]*-2 # Default = -1600 / Cave start Y coordinate
@@ -1015,7 +1015,7 @@ if settings.useController:
 
     else:
         settings.debug("Controller not found") # Debug
-        pygame.joystick.quit() # This may be causing delay on startup ?
+        pygame.joystick.quit()
         settings.debug("Uninitialized controller module") # Debug
         if settings.useController: settings.useController = False
 
