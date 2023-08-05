@@ -2287,7 +2287,7 @@ class Menu:
         extras = []
         bgShips = []
         waitToSpawn = True
-        backGroundShipSpawnEvent = pygame.USEREVENT + 6
+        backGroundShipSpawnEvent = pygame.USEREVENT + 7
         pygame.time.set_timer(backGroundShipSpawnEvent, random.randint(settings.minBackgroundShipSpawnDelay,settings.maxBackgroundShipSpawnDelay))
 
         if len(assets.donations) == 0: extrasCap = settings.maxExtras
