@@ -120,12 +120,19 @@ class Settings:
         self.unlimitedPlanets = True # Temporary until more planets added
 
         # OBSTACLES
-        self.explosionDelay = 1 # Default = 1
+
         self.slowerDiagonalObstacles = True # Default = True / use the hypotenuse or whatever
         self.spawnDistance = 0 # Default = 0 / Distance past screen border required before new obstacle spawned
         self.obsLaserDelay = 10 # Default = 10 / delay before obstacle fires another laser
         self.obsLaserDamage = 1 # Default = 1
         self.maxObsLasers = 3 # Default = 3 / lasers per obstacle
+
+        # EXPLOSIONS
+        self.explosionIncrement = 0 # Default = ? / explosion size change
+        self.explosionDelay = 2 # Default = 2 / delay between explosion frame updates
+
+        # NEAR MISSES
+        self.nearMisses = True # Default = True / register near misses
         self.nearMissDist = 40 # Default = 40 / distance for near miss start
         self.nearMissSafeDist = 60 # Default = 60 distance for near miss end
         self.nearMissValue = 0 # Default = ? / point value for near misses
@@ -504,7 +511,7 @@ class Assets:
         self.gameFont = os.path.join(assetDirectory, 'Font.ttf')
 
         self.shipStatsFont = pygame.font.Font(self.gameFont,10)
-        self.shipHelpFont = pygame.font.Font(self.gameFont, 20)
+        self.labelFont = pygame.font.Font(self.gameFont, 20)
         self.versionFont = pygame.font.Font(self.gameFont,25)
         self.stageFont = pygame.font.Font(self.gameFont, 30)
         self.creditsFont = pygame.font.Font(self.gameFont, 30)
@@ -514,7 +521,6 @@ class Assets:
         self.statFont = pygame.font.Font(self.gameFont, 30)
         self.exitFont = pygame.font.Font(self.gameFont, 30)
         self.leaderboardFont = pygame.font.Font(self.gameFont, 30)
-        self.startHelpFont = pygame.font.Font(self.gameFont, 30)
         self.pauseCountFont = pygame.font.Font(self.gameFont,40)
         self.creatorFont = pygame.font.Font(self.gameFont, 55)
         self.leaderboardTitleFont = pygame.font.Font(self.gameFont, 60)
@@ -1316,7 +1322,7 @@ class Game:
                 if obs.active:
 
                     # NEAR MISSES
-                    if obs not in self.nearObsList:
+                    if settings.nearMisses and obs not in self.nearObsList:
                         nearDist = math.dist(player.rect,obs.rect)
                         if nearDist <= settings.nearMissDist: self.nearObsList.append(obs)
 
@@ -1353,7 +1359,7 @@ class Game:
                 if debris.finished: self.explosions.remove(debris)
                 else: debris.update()
 
-        self.nearMisses(player,events) # NEAR MISS CALCULATION
+        if settings.nearMisses: self.nearMisses(player,events) # NEAR MISS CALCULATION
 
         if self.gameClock > self.sessionLongRun: self.sessionLongRun = self.gameClock # UPDATE HIGH SCORE
         if not self.endlessModeStarted: self.levelUpdater(player,obstacles,events) # LEVEL UP
@@ -1463,7 +1469,7 @@ class Game:
 
                     screen.blit(stageUpCloud,stageUpRect) # Draw cloud
                     screen.blit(stageUpDisplay,(stageUpRect.centerx - settings.screenSize[0]/5, stageUpRect.centery)) # Draw "STAGE UP" text
-                    game.showHUD(player)
+                    if settings.showHUD: game.showHUD(player)
                     img, imgRect = rotateImage(player.image, player.rect, player.angle)
                     screen.blit(img,imgRect) # Draw player
                     stageUpRect.centery += settings.stageUpCloudSpeed
@@ -1493,7 +1499,7 @@ class Game:
                             if obs.rect.centery <= levelUpRect.centery: obs.kill()
 
                         screen.blit(levelUpCloud,levelUpRect) # Draw cloud
-                        game.showHUD(player)
+                        if settings.showHUD: game.showHUD(player)
                         img, imgRect = rotateImage(player.image, player.rect, player.angle)
                         screen.blit(img,imgRect) # Draw player
                         levelUpRect.centery += settings.levelUpCloudSpeed
@@ -1575,10 +1581,10 @@ class Game:
         scoreRect.topleft = (settings.screenSize[0] - (2*scoreRect.width), levelRect.y)
 
         # NEAR MISSES DISPLAY
-        if self.nearMissCount > 0:
+        if settings.nearMisses and self.nearMissCount > 0:
             if self.nearMissCount >1: nearMissText = "Near Miss! x" + str(self.nearMissCount)
             else: nearMissText = "Near Miss!"
-            nearMissDisplay = assets.shipHelpFont.render(nearMissText, True, settings.secondaryFontColor)
+            nearMissDisplay = assets.labelFont.render(nearMissText, True, settings.secondaryFontColor)
             nearMissRect = nearMissDisplay.get_rect(center = (scoreRect.midbottom[0],scoreRect.bottom + 5))
             screen.blit(nearMissDisplay,nearMissRect)
 
@@ -1698,6 +1704,9 @@ class Menu:
     # START MENU
     def home(self,game,player):
 
+        # TITLE TEXT
+        startRect = assets.titleText.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/3))
+
         # Foreground icons
         fgIcons = []
         for icon in range(settings.maxFgIcons): fgIcons.append(Icon("FG"))
@@ -1706,8 +1715,9 @@ class Menu:
         bgIcons = []
         for bgIcon in range(settings.maxBgIcons): bgIcons.append(Icon("BG"))
 
-        # TITLE TEXT
-        startRect = assets.titleText.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/3))
+        # Colliding icons
+        cgIcons = []
+        for cgIcon in range(settings.maxCgIcons): cgIcons.append(Icon("CG"))
 
         # PLANET
         planet = pygame.sprite.Sprite()
@@ -1716,32 +1726,15 @@ class Menu:
         planet.mask = pygame.mask.from_surface(planet.image)
         planetSize = planet.rect.size[0]
 
-        # Colliding icons
-        cgIcons = []
-        for cgIcon in range(settings.maxCgIcons): cgIcons.append(Icon("CG"))
-
-        # Help context
+        # HELP CONTEXT
         if not game.usingController or gamePad is None:
-            startHelpDisplay = assets.startHelpFont.render("ESCAPE = Quit   SPACE = Start   F = Fullscreen   M = Mute   C = Credits", True, settings.primaryFontColor)
-            skinHelpDisplay = assets.shipHelpFont.render("A/LEFT = Last skin     D/RIGHT = Next skin", True, settings.primaryFontColor)
-            shipHelpDisplay = assets.shipHelpFont.render("S/DOWN = Last ship     W/UP = Next ship", True, settings.primaryFontColor)
-            boostHelp = assets.shipHelpFont.render("SHIFT = Boost", True, settings.primaryFontColor)
-            shootHelp = assets.shipHelpFont.render("CTRL = Shoot", True, settings.primaryFontColor)
+            startDisplays = self.getHelpLabels(False)
+            controlDisplays = self.getControlLabels(player,False)
+
         else:
-            startHelpDisplay = assets.startHelpFont.render("START = Quit   A = Start   GUIDE = Fullscreen   LB = Mute   Y = Credits", True, settings.primaryFontColor)
-            boostHelp = assets.shipHelpFont.render("LT = Boost", True, settings.primaryFontColor)
-            shootHelp = assets.shipHelpFont.render("RT = Shoot", True, settings.primaryFontColor)
-            skinHelpDisplay = assets.shipHelpFont.render("D-PAD LEFT = Last skin   D-PAD RIGHT = Next skin", True, settings.primaryFontColor)
-            shipHelpDisplay = assets.shipHelpFont.render("D-PAD DOWN = Last ship   D-PAD UP = Next ship", True, settings.primaryFontColor)
+            startDisplays = self.getHelpLabels(True)
+            controlDisplays = self.getControlLabels(player,True)
 
-        leaderboardHelpDisplay = assets.startHelpFont.render("L = Leaderboard", True, settings.primaryFontColor)
-
-        startHelpRect = startHelpDisplay.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]-settings.screenSize[1]/7))
-        skinHelpRect = skinHelpDisplay.get_rect(center = (settings.screenSize[0]/4 + 40, settings.screenSize[1]-settings.screenSize[1]/7 + 70))
-        shipHelpRect = shipHelpDisplay.get_rect(center = (settings.screenSize[0]/4 + 40, settings.screenSize[1]-settings.screenSize[1]/7 + 40))
-        boostHelpRect = boostHelp.get_rect()
-        shootHelpRect = shootHelp.get_rect()
-        leaderboardHelpRect = leaderboardHelpDisplay.get_rect(center= (settings.screenSize[0]*0.8,settings.screenSize[1]-settings.screenSize[1]/10))
         versionDisplay = assets.versionFont.render(version,True,settings.primaryFontColor)
         versionRect = versionDisplay.get_rect(center = (startRect.right-120,startRect.bottom-20))
 
@@ -1752,12 +1745,13 @@ class Menu:
 
         try:
             game.unlocks.update(game) # GET NEW UNLOCKS
+            settings.debug("Refreshed unlocks") # Debug
         except:
-            settings.debug("Version incompatibility detected")
+            settings.debug("Version incompatibility detected") # Debug
             game.records['unlocks'] = assets.getDefaultUnlocks()
             assets.storeRecords(game.records)
             game.unlocks.update(game)
-            settings.debug("Updated successfully")
+            settings.debug("Updated successfully") # Debug
 
         if settings.defaultToHighShip:
             if game.unlocks.hasShipUnlock(): player.getShip(game.unlocks.highestShip()) # Gets highest unlocked ship by default
@@ -1829,11 +1823,13 @@ class Menu:
                 if (event.type == pygame.KEYDOWN and event.key in upInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerNextShip) or (event.type == pygame.JOYBUTTONDOWN and type(controllerNextShip) == int and gamePad.get_button(controllerNextShip)==1))):
                     player.toggleSpaceShip(True)
                     shipAttributes = self.shipStatsDisplay()
+                    controlDisplays = self.getControlLabels(player,game.usingController)
 
                 # PREVIOUS SHIP TYPE
                 elif (event.type == pygame.KEYDOWN and event.key in downInput) or (gamePad is not None and (gamePad.get_numhats() > 0 and (gamePad.get_hat(0) == controllerLastShip) or (event.type == pygame.JOYBUTTONDOWN and type(controllerLastShip) == int and gamePad.get_button(controllerLastShip)==1))):
                     player.toggleSpaceShip(False)
                     shipAttributes = self.shipStatsDisplay()
+                    controlDisplays = self.getControlLabels(player,game.usingController)
 
                 # EXIT
                 if (event.type == pygame.KEYDOWN and event.key in escapeInput) or (gamePad is not None and gamePad.get_button(controllerExit) == 1) or event.type == pygame.QUIT: quitGame()
@@ -1842,34 +1838,23 @@ class Menu:
                 if (event.type == pygame.KEYDOWN) and (event.key in muteInput) or (gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
 
                 # LEADERBOARD
-                if (event.type == pygame.KEYDOWN) and (event.key in leadersInput): menu.leaderboard()
+                if (event.type == pygame.KEYDOWN) and (event.key in leadersInput):
+                    menu.leaderboard()
+                    if not settings.connectToLeaderboard: startDisplays = self.getHelpLabels(game.usingController) # Disable leaderboard keybind display if unable to connect
 
                 # CREDITS
                 if (event.type == pygame.KEYDOWN and event.key in creditsInput) or (gamePad is not None and gamePad.get_button(controllerCredits) == 1): menu.creditScreen()
 
                 # SWITCH CONTROL TYPE
                 if game.usingController and event.type == pygame.KEYDOWN:
+                    startDisplays = self.getHelpLabels(False)
+                    controlDisplays = self.getControlLabels(player,False)
                     game.usingController = False
-                    startHelpDisplay = assets.startHelpFont.render("ESCAPE = Quit   SPACE = Start   F = Fullscreen   M = Mute   C = Credits", True, settings.primaryFontColor)
-                    boostHelp = assets.shipHelpFont.render("SHIFT = Boost", True, settings.primaryFontColor)
-                    shootHelp = assets.shipHelpFont.render("CTRL = Shoot", True, settings.primaryFontColor)
-                    skinHelpDisplay = assets.shipHelpFont.render("A/LEFT = Last skin     D/RIGHT = Next skin", True, settings.primaryFontColor)
-                    shipHelpDisplay = assets.shipHelpFont.render("S/DOWN = Last ship     W/UP = Next ship", True, settings.primaryFontColor)
 
                 elif gamePad is not None and not game.usingController and (event.type == pygame.JOYHATMOTION or event.type == pygame.JOYAXISMOTION or event.type == pygame.JOYBUTTONUP):
+                    startDisplays = self.getHelpLabels(True)
+                    controlDisplays = self.getControlLabels(player,True)
                     game.usingController = True
-                    startHelpDisplay = assets.startHelpFont.render("START = Quit   A = Start   GUIDE = Fullscreen   LB = Mute   Y = Credits", True, settings.primaryFontColor)
-                    boostHelp = assets.shipHelpFont.render("LT = Boost", True, settings.primaryFontColor)
-                    shootHelp = assets.shipHelpFont.render("RT = Shoot", True, settings.primaryFontColor)
-                    skinHelpDisplay = assets.shipHelpFont.render("D-PAD LEFT = Last skin   D-PAD RIGHT = Next skin", True, settings.primaryFontColor)
-                    shipHelpDisplay = assets.shipHelpFont.render("D-PAD DOWN = Last ship   D-PAD UP = Next ship", True, settings.primaryFontColor)
-
-            # GET SHIP CONTROLS
-            if player.hasGuns and player.boostSpeed > player.baseSpeed: # has guns and boost
-                boostHelpRect.center = settings.screenSize[0]*3/4 - 60, settings.screenSize[1]-settings.screenSize[1]/7 + 72
-                shootHelpRect.center = settings.screenSize[0]*3/4 + 60, settings.screenSize[1]-settings.screenSize[1]/7 + 72
-            elif player.hasGuns: shootHelpRect.center = settings.screenSize[0]*3/4, settings.screenSize[1]-settings.screenSize[1]/7 + 72 # has guns only
-            elif player.boostSpeed > player.baseSpeed: boostHelpRect.center = settings.screenSize[0]*3/4, settings.screenSize[1]-settings.screenSize[1]/7 + 72 # has boost only
 
             screen.fill(screenColor)
             screen.blit(assets.bgList[game.currentStage - 1][0],(0,0)) # Background
@@ -1908,16 +1893,10 @@ class Menu:
             screen.blit(assets.titleText,startRect) # Title Text
             if settings.showVersion: screen.blit(versionDisplay,versionRect) # Version info
 
-            screen.blit(startHelpDisplay, startHelpRect) # Game controls
+            # Game controls
+            self.drawLabels(startDisplays)
+            self.drawLabels(controlDisplays)
 
-            # LEADERBOARD HELP
-            if settings.connectToLeaderboard: screen.blit(leaderboardHelpDisplay,leaderboardHelpRect)
-
-            # SHOW SHIP CONTROLS
-            if player.hasGuns: screen.blit(shootHelp,shootHelpRect)
-            if player.boostSpeed > player.baseSpeed: screen.blit(boostHelp,boostHelpRect)
-            if len(assets.spaceShipList[game.savedShipLevel]['skins']) > 1 and (settings.devMode or game.unlocks.hasSkinUnlock(game.savedShipLevel)): screen.blit(skinHelpDisplay,skinHelpRect) # Show switch skin controls
-            if len(assets.spaceShipList) > 1 and (settings.devMode or game.unlocks.hasShipUnlock()): screen.blit(shipHelpDisplay,shipHelpRect)
             screen.blit(player.image, (player.rect.x,player.rect.y + iconPosition)) # Draw current spaceship
 
             # Coin display
@@ -1958,7 +1937,7 @@ class Menu:
                 screen.blit(game.cave.background,game.cave.rect)
                 screen.blit(game.cave.image,game.cave.rect) # Draw cave
 
-            game.showHUD(player)
+            if settings.showHUD: game.showHUD(player)
             screen.blit(game.thisPoint.image, game.thisPoint.rect)
             screen.blit(playerBlit[0],playerBlit[1])
 
@@ -2145,7 +2124,20 @@ class Menu:
                     gameLoop()
 
 
-    # Draw labels from formatted list of rects and displays, first 4 lines arranged based on truth value of two booleans
+    # GET LABEL
+    def getLabel(self,text,pos,font):
+        if type(font) == pygame.font.Font: labelDisplay = font.render(text,True,settings.primaryFontColor)
+        else: labelDisplay = assets.labelFont.render(text,True,settings.primaryFontColor)
+        labelRect = labelDisplay.get_rect(center = pos)
+        return [labelDisplay,labelRect]
+
+
+    # DRAW LABELS
+    def drawLabels(self,textList):
+        for text in textList: screen.blit(text[0],text[1])
+
+
+    # Draw labels from formatted list of rects and displays, first 4 lines arranged based on truth value of two booleans / will be revisited
     def drawGameOverLabels(self,textList, conditionOne, conditionTwo):
         statsSpacingY = 50
         statsOffsetY = 10
@@ -2484,17 +2476,85 @@ class Menu:
                     [lasers!=0,settings.fuelColor,laserBar],
                     [shields!=0,settings.shieldColor,shieldBar]
                 ]
-
         return [blitList,barList]
 
 
     # Draw ship attributes display
     def drawStats(self,statsList):
-        for i in statsList[0]:
-            screen.blit(i[0],i[1])
+        for i in statsList[0]: screen.blit(i[0],i[1])
 
         for i in statsList[1]:
             if i[0]: pygame.draw.rect(screen,i[1],i[2])
+
+
+    # GET HELP LABELS
+    def getHelpLabels(self,usingController):
+        labelsX, labelsY, labelSpacing = 100,650,25
+        startLabelPos = [settings.screenSize[0]/2,settings.screenSize[1]*0.75]
+        if not usingController:
+            startLabels = [
+                            ["Press SPACE to start", startLabelPos],
+                            ["ESCAPE = Quit", [labelsX,labelsY]],
+                            ["F = Fullscreen", [labelsX,labelsY + (labelSpacing)]],
+                            ["M = Mute", [labelsX,labelsY + (labelSpacing *2)]],
+                            ["C = Credits", [labelsX,labelsY + (labelSpacing *3)]]
+                          ]
+        else:
+            startLabels = [
+                            ["Press A to start", startLabelPos],
+                            ["START = Quit", [labelsX,labelsY]],
+                            ["GUIDE = Fullscreen", [labelsX,labelsY + (labelSpacing)]],
+                            ["LB = Mute", [labelsX,labelsY + (labelSpacing *2)]],
+                            ["Y = Credits", [labelsX,labelsY + (labelSpacing *3)]]
+                          ]
+        if settings.connectToLeaderboard: startLabels.append(["L = Leaderboard", [labelsX,labelsY + (labelSpacing *4)]])
+        startDisplays = []
+        first = True
+        for label in startLabels:
+            if first:
+                first = False
+                startDisplays.append(self.getLabel(label[0],label[1],assets.statFont))
+
+            else:
+                startDisplays.append(self.getLabel(label[0],label[1],None))
+        return startDisplays
+
+
+    def getControlLabels(self,player,usingController):
+        controlsPos = [settings.screenSize[0]*5/7, settings.screenSize[1]*0.85]
+        labels = []
+        spacer = 25
+        spacing = 0
+        if not usingController:
+            if len(assets.spaceShipList[game.savedShipLevel]['skins']) > 1 and (settings.devMode or game.unlocks.hasSkinUnlock(game.savedShipLevel)):
+                labels.append(["A/LEFT = Last skin     D/RIGHT = Next skin",[controlsPos[0],controlsPos[1]]])
+                spacing += spacer
+            if len(assets.spaceShipList) > 1 and (settings.devMode or game.unlocks.hasShipUnlock()):
+                labels.append(["S/DOWN = Last ship     W/UP = Next ship",[controlsPos[0],controlsPos[1]+spacing]])
+                spacing += spacer
+            if player.hasGuns and player.boostSpeed > player.baseSpeed:
+                labels.append(["SHIFT = Boost", [controlsPos[0],controlsPos[1]+spacing]])
+                spacing += spacer
+                labels.append(["CTRL = Shoot", [controlsPos[0],controlsPos[1]+spacing]])
+            elif player.hasGuns: labels.append(["CTRL = Shoot", [controlsPos[0],controlsPos[1]+spacing]])
+            elif player.boostSpeed > player.baseSpeed: labels.append(["SHIFT = Boost", [controlsPos[0],controlsPos[1]+spacing]])
+        else:
+            if len(assets.spaceShipList[game.savedShipLevel]['skins']) > 1 and (settings.devMode or game.unlocks.hasSkinUnlock(game.savedShipLevel)):
+                labels.append(["D-PAD LEFT = Last skin   D-PAD RIGHT = Next skin",[controlsPos[0],controlsPos[1]]])
+                spacing += spacer
+            if len(assets.spaceShipList) > 1 and (settings.devMode or game.unlocks.hasShipUnlock()):
+                labels.append(["D-PAD DOWN = Last ship   D-PAD UP = Next ship",[controlsPos[0],controlsPos[1]+spacing]])
+                spacing += spacer
+            if player.hasGuns and player.boostSpeed > player.baseSpeed:
+                labels.append(["LT = Boost", [controlsPos[0],controlsPos[1]+spacing]])
+                spacing += spacer
+                labels.append(["RT = Shoot", [controlsPos[0],controlsPos[1]+spacing]])
+            elif player.hasGuns: labels.append(["RT = Shoot", [controlsPos[0],controlsPos[1]+spacing]])
+            elif player.boostSpeed > player.baseSpeed: labels.append(["LT = Boost", [controlsPos[0],controlsPos[1]+spacing]])
+
+        controlLabels = []
+        for label in labels: controlLabels.append(self.getLabel(label[0],label[1],None))
+        return controlLabels
 
 
 
@@ -3155,13 +3215,16 @@ class EnemyLaser(pygame.sprite.Sprite):
 
 
 # EXPLOSIONS
-class Explosion:
-    def __init__(self,laser):
+class Explosion(pygame.sprite.Sprite):
+    def __init__(self,point):
+        super().__init__()
         self.state,self.finalState,self.finished = 0,len(assets.explosionList)-1,False
-        self.rect = laser.rect.copy()
         self.image = assets.explosionList[self.state]
+        self.rect = self.image.get_rect(center = point.rect.center)
+        self.mask = pygame.mask.from_surface(self.image)
         self.updateFrame = 0
         self.delay = settings.explosionDelay
+        self.size = self.rect.size[0]
 
 
     def update(self):
@@ -3172,12 +3235,22 @@ class Explosion:
             else:
                 self.state +=1
                 self.image = assets.explosionList[self.state]
+                self.enlarge()
+                self.mask = pygame.mask.from_surface(self.image)
 
         screen.blit(self.image,self.rect)
 
 
+    # ENLARGE EXPLOSION
+    def enlarge(self):
+        if settings.explosionIncrement > 0:
+            self.size += settings.explosionIncrement
+            self.image = pygame.transform.scale(assets.explosionList[self.state], (self.size,self.size))
+            self.rect = self.image.get_rect(center = self.rect.center)
 
-# POWER UPS
+
+
+# POWER UP SPAWNS
 class Point(pygame.sprite.Sprite):
     def __init__(self,player,lastPos):
         super().__init__()
@@ -3190,8 +3263,7 @@ class Point(pygame.sprite.Sprite):
             if not player.hasGuns and player.baseSpeed == player.boostSpeed and "Fuel" in powerUps: del pointChoices["Fuel"]
             self.powerUp = random.choices(list(pointChoices.keys()),weights = list(pointChoices.values()) )[0]
 
-        self.image = assets.pointsList[self.powerUp] # GET IMAGE
-        self.image = pygame.transform.scale(self.image, (settings.pointSize, settings.pointSize)) # SCALE IMAGE / not ideal
+        self.image = pygame.transform.scale(assets.pointsList[self.powerUp], (settings.pointSize, settings.pointSize)) # GET SCALED IMAGE / not ideal
 
         if lastPos == None: self.rect = self.image.get_rect(center = self.positionGenerator())
         else:self.rect = self.image.get_rect(center = self.spacedPositionGenerator(lastPos))
