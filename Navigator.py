@@ -49,9 +49,9 @@ class Settings:
         self.spawnVertices = 8 # Default = 8 / Vertices in shape of point spawn area (Octagon)
         self.pointSize = 25  # Default = 25
         self.shieldChunkSize = self.screenSize[0]/40 # Default = screen width / 40
-        self.nukeSize = 100 # Default = 100 / Nuke expansion rate
+        self.nukeSize = 75 # Default = 75 / Nuke expansion rate
         self.boostCooldownTime = 2000 # Default = 2000 / Activates when fuel runs out to allow regen
-        self.powerUpList = {"Default":55,"Shield":20, "Fuel":15, "Coin":5, "Nuke":5} # Default = {"Default":55,"Shield":20, "Fuel":20, "Coin":5} / power up odds
+        self.powerUpList = {"Default":55,"Shield":20, "Fuel":15, "Coin":5, "Nuke":5} # Default = {"Default":55,"Shield":20, "Fuel":15, "Coin":5, "Nuke":5} / power up odds
         self.playerShieldSize = 48 # Default = 48 / Shield visual size
         self.shieldVisualDuration = 250 # Default = 250 / Shield visual duration
         self.minDistanceToPoint = (self.screenSize[0] + self.screenSize[1]) / 16 # Default = 100
