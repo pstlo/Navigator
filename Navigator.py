@@ -2521,7 +2521,7 @@ class Menu:
 
 
     def getControlLabels(self,player,usingController):
-        controlsPos = [settings.screenSize[0]*5/7, settings.screenSize[1]*0.85]
+        controlsPos = [settings.screenSize[0]*0.75, settings.screenSize[1]*0.85]
         labels = []
         spacer = 25
         spacing = 0
