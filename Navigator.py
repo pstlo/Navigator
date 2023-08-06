@@ -12,7 +12,7 @@ pygame.display.init()
 pygame.font.init()
 pygame.mixer.init()
 
-version = "v0.4.9"
+version = "v0.5.0"
 
 # STARTUP SCREEN
 pygame.display.set_caption('Navigator')
@@ -904,6 +904,7 @@ leadersInput = [pygame.K_l]
 creditsInput = [pygame.K_c]
 brakeInput = [pygame.K_LALT,pygame.K_RALT]
 muteInput = [pygame.K_m]
+hangerInput = [pygame.K_h]
 fullScreenInput = [pygame.K_f]
 startInput = [pygame.K_SPACE]
 settings.debug("Loaded keybinds") # Debug
@@ -1852,7 +1853,10 @@ class Menu:
                     if not settings.connectToLeaderboard: startDisplays = self.getHelpLabels(game.usingController) # Disable leaderboard keybind display if unable to connect
 
                 # CREDITS
-                if (event.type == pygame.KEYDOWN and event.key in creditsInput) or (gamePad is not None and gamePad.get_button(controllerCredits) == 1): menu.creditScreen()
+                if (event.type == pygame.KEYDOWN and event.key in creditsInput) or (gamePad is not None and gamePad.get_button(controllerCredits) == 1): self.creditScreen()
+
+                # HANGER
+                if event.type == pygame.KEYDOWN and event.key in hangerInput: self.hanger()
 
                 # SWITCH CONTROL TYPE
                 if game.usingController and event.type == pygame.KEYDOWN:
@@ -2203,6 +2207,9 @@ class Menu:
             cellBorder = 2
             maxUsernameLength = 15
 
+            helpText = "ESCAPE or TAB = Back"
+            label = self.getLabel(helpText,[settings.screenSize[0]/2,settings.screenSize[1]*0.9],None)
+
             while showLeaderboard:
                 for event in pygame.event.get():
                     # QUIT GAME
@@ -2252,7 +2259,95 @@ class Menu:
                     screen.blit(scoreDisplay, scoreRect)
 
                 for index in range(len(assets.leaderboard) + 1):pygame.draw.line(screen, (0, 0, 0), (leaderboardX, leaderboardY + (index + 1) * leaderSpacing),(leaderboardX + cellW, leaderboardY + (index + 1) * leaderSpacing), 1)
+                screen.blit(label[0],label[1])
                 displayUpdate(game.clk)
+
+
+    # HANGER
+    def hanger(self):
+        ships = []
+        unlocked = game.records['unlocks']
+        startPos = [100,100]
+        pos = [100,100]
+        spacingY = 80
+        spacingX = 90
+        scale = 2
+        helpText = "ESCAPE or TAB = Back"
+        label = self.getLabel(helpText,[settings.screenSize[0]/2,settings.screenSize[1]*0.9],None)
+
+        for shipIndex in range(len(assets.spaceShipList)):
+            images = assets.spaceShipList[shipIndex]['skins']
+            for skinIndex in range(len(images)):
+                if unlocked[shipIndex][skinIndex]:
+                    if type(images[skinIndex]) == list: # ANIMATED SKIN
+                        shipFrames = []
+                        for frame in images[skinIndex]:
+                            oldScale = frame.get_rect().size
+                            newScale = [oldScale[0]*scale,oldScale[1]*scale]
+                            newImg = pygame.transform.scale(frame,newScale)
+                            shipFrames.append(newImg)
+                        ships.append([shipFrames,shipFrames[0].get_rect(center = (pos[0],pos[1])),0])
+                        
+                    else: # STATIC SKIN
+                        oldScale = images[skinIndex].get_rect().size
+                        newScale = [oldScale[0]*scale,oldScale[1]*scale]
+                        newImg = pygame.transform.scale(images[skinIndex],newScale)
+                        ships.append([newImg,newImg.get_rect(center = (pos[0],pos[1]))])
+                else:
+                    if (skinIndex == 0 and not unlocked[shipIndex][0]) or unlocked[shipIndex][0]:  # Not unlocked ship yet
+                        oldScale = assets.spaceShipList[shipIndex]['skins'][0].get_rect().size
+                        newScale = [oldScale[0]*scale,oldScale[1]*scale]
+                        newImg = pygame.transform.scale(assets.spaceShipList[shipIndex]['skins'][0],newScale)
+                        newImg.fill([0,0,0], special_flags=pygame.BLEND_RGBA_MIN)
+                        ships.append([newImg,newImg.get_rect(center = (pos[0],pos[1]))])
+                pos[1]+= spacingY
+            pos[1] = startPos[1]
+            pos[0] += spacingX
+
+        animationCount = 0
+        surfSize = [settings.screenSize[0]*1.5,settings.screenSize[1]*1.5]
+        iconSurf = pygame.surface.Surface(surfSize, pygame.SRCALPHA)
+        iconsPos = [0,0]
+        surfMovementSpeed = 4
+
+        showHanger = True
+        while showHanger:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT: quitGame()
+
+                # TOGGLE MUTE
+                if ((event.type == pygame.KEYDOWN) and (event.key in muteInput)) or (gamePad is not None and gamePad.get_button(controllerMute) == 1): toggleMusic(game)
+
+                # TOGGLE FULLSCREEN
+                if (event.type == pygame.KEYDOWN and event.key in fullScreenInput) or (gamePad is not None and event.type == pygame.JOYBUTTONDOWN and gamePad.get_button(controllerFullScreen) == 1): toggleScreen()
+
+                # RETURN TO GAME
+                elif (event.type == pygame.KEYDOWN and (event.key in escapeInput or event.key in startInput or event.key in backInput or event.key in hangerInput) ) or (gamePad is not None and (gamePad.get_button(controllerBack) == 1)): showHanger = False
+
+            # SCROLL
+            key = pygame.key.get_pressed()
+            if iconsPos[1] <= settings.screenSize[1] - 200 and any(key[bind] for bind in downInput): iconsPos[1] += surfMovementSpeed
+            if iconsPos[1]+settings.screenSize[1] >= 0 and any(key[bind] for bind in upInput): iconsPos[1] -= surfMovementSpeed
+            if iconsPos[0] + settings.screenSize[0]/2 >= 0 and any(key[bind] for bind in leftInput): iconsPos[0] -= surfMovementSpeed
+            if iconsPos[0] <= settings.screenSize[0]/2 and any(key[bind] for bind in rightInput): iconsPos[0] += surfMovementSpeed
+
+            iconSurf.fill((255,255,255,0))
+            screen.blit(assets.bgList[game.currentStage - 1][0], (0, 0))
+
+            for icon in ships:
+                if len(icon) == 3 and type(icon[0]) == list: # Animated skin
+                    iconSurf.blit(icon[0][icon[2]],icon[1])
+                    if icon[2]+1 < len(icon[0]):
+                        if animationCount >= settings.skinAnimationDelay:
+                            icon[2] += 1
+                            animationCount = 0
+                        else: animationCount += 1
+                    else: icon[2] = 0
+                else: iconSurf.blit(icon[0],icon[1])
+
+            screen.blit(iconSurf,iconsPos)
+            screen.blit(label[0],label[1])
+            displayUpdate(game.clk)
 
 
     # CREDITS
@@ -2504,19 +2599,21 @@ class Menu:
             startLabels = [
                             ["Press SPACE to start", startLabelPos],
                             ["ESCAPE = Quit", [labelsX,labelsY]],
-                            ["F = Fullscreen", [labelsX,labelsY + (labelSpacing)]],
-                            ["M = Mute", [labelsX,labelsY + (labelSpacing *2)]],
-                            ["C = Credits", [labelsX,labelsY + (labelSpacing *3)]]
+                            ["H = Hanger", [labelsX,labelsY + (labelSpacing * 1)]],
+                            ["F = Fullscreen", [labelsX,labelsY + (labelSpacing * 2)]],
+                            ["M = Mute", [labelsX,labelsY + (labelSpacing *3)]],
+                            ["C = Credits", [labelsX,labelsY + (labelSpacing *4)]]
                           ]
         else:
             startLabels = [
                             ["Press A to start", startLabelPos],
                             ["START = Quit", [labelsX,labelsY]],
-                            ["GUIDE = Fullscreen", [labelsX,labelsY + (labelSpacing)]],
-                            ["LB = Mute", [labelsX,labelsY + (labelSpacing *2)]],
-                            ["Y = Credits", [labelsX,labelsY + (labelSpacing *3)]]
+                            ["??? = Hanger", [labelsX,labelsY + (labelSpacing * 1)]],
+                            ["GUIDE = Fullscreen", [labelsX,labelsY + (labelSpacing * 2)]],
+                            ["LB = Mute", [labelsX,labelsY + (labelSpacing *3)]],
+                            ["Y = Credits", [labelsX,labelsY + (labelSpacing *4)]]
                           ]
-        if settings.connectToLeaderboard: startLabels.append(["L = Leaderboard", [labelsX,labelsY + (labelSpacing *4)]])
+        if settings.connectToLeaderboard: startLabels.append(["L = Leaderboard", [labelsX,labelsY + (labelSpacing *5)]])
         startDisplays = []
         first = True
         for label in startLabels:
@@ -2564,7 +2661,6 @@ class Menu:
         controlLabels = []
         for label in labels: controlLabels.append(self.getLabel(label[0],label[1],None))
         return controlLabels
-
 
 
 
