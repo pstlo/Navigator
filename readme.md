@@ -1,5 +1,5 @@
 
-[![title](https://user-images.githubusercontent.com/119834037/236710425-3d063eef-b94b-45d5-b263-e459e165422d.png)](https://pstlo.github.io/navigator)
+[![title](https://user-images.githubusercontent.com/119834037/258635347-b575b149-5bf0-419a-a109-3c6b1bec4092.png)](https://pstlo.github.io/navigator)
 
 ### Simple and addictive arcade game written in Python with PyGame ###
 
