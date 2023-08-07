@@ -1,8 +1,8 @@
-# Setup for Cython conversion on local machine ( replace the parent directory's "SetupCython.py" file )
+# Setup for Cython conversion from github action
 from setuptools import setup, Extension
 from Cython.Build import cythonize
 
-extensions = [Extension("Navigator", ["../../Navigator.py"],)]
+extensions = [Extension("Navigator", ["Navigator.py"],)]
 
 setup(
     name='Navigator',
