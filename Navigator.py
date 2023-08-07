@@ -356,6 +356,9 @@ class Assets:
                 planetIndex += 1
         settings.debug("Loaded planets") # Debug
 
+        # SELECT CURSOR
+        self.selectIcon = pygame.transform.scale(pygame.image.load(self.resources(os.path.join(assetDirectory,"Select.png"))), (100,100)).convert_alpha()
+
         # BACKGROUND ASSETS
         self.bgList = []
         for filename in sorted(os.listdir(backgroundDirectory)):
@@ -1856,7 +1859,7 @@ class Menu:
                 if (event.type == pygame.KEYDOWN and event.key in creditsInput) or (gamePad is not None and gamePad.get_button(controllerCredits) == 1): self.creditScreen()
 
                 # HANGER
-                if event.type == pygame.KEYDOWN and event.key in hangerInput: self.hanger()
+                if event.type == pygame.KEYDOWN and event.key in hangerInput: self.hanger(player)
 
                 # SWITCH CONTROL TYPE
                 if game.usingController and event.type == pygame.KEYDOWN:
@@ -2264,7 +2267,8 @@ class Menu:
 
 
     # HANGER
-    def hanger(self):
+    def hanger(self,player):
+        game.savedSkin = player.currentImageNum
         ships = []
         unlocked = game.records['unlocks']
         startPos = [100,100]
@@ -2272,13 +2276,19 @@ class Menu:
         spacingY = 80
         spacingX = 90
         scale = 2
-        helpText = "ESCAPE or TAB = Back"
+        helpText = "SPACE = Enable scrolling   ESCAPE/TAB = Back"
         label = self.getLabel(helpText,[settings.screenSize[0]/2,settings.screenSize[1]*0.9],None)
 
+        # Coin Display
+        coinDisplay = assets.mediumFont.render(str(game.records['coins']), True, settings.secondaryFontColor)
+        coinDisplayRect = coinDisplay.get_rect(center = (settings.screenSize[0] -25, 25))
+        coinIconRect = assets.coinIcon.get_rect(center = (settings.screenSize[0] -60, 25))
+
         for shipIndex in range(len(assets.spaceShipList)):
+            skins = []
             images = assets.spaceShipList[shipIndex]['skins']
             for skinIndex in range(len(images)):
-                if unlocked[shipIndex][skinIndex]:
+                if unlocked[shipIndex][skinIndex] or settings.devMode:
                     if type(images[skinIndex]) == list: # ANIMATED SKIN
                         shipFrames = []
                         for frame in images[skinIndex]:
@@ -2286,23 +2296,30 @@ class Menu:
                             newScale = [oldScale[0]*scale,oldScale[1]*scale]
                             newImg = pygame.transform.scale(frame,newScale)
                             shipFrames.append(newImg)
-                        ships.append([shipFrames,shipFrames[0].get_rect(center = (pos[0],pos[1])),0])
-                        
+                        skins.append([shipFrames,shipFrames[0].get_rect(center = (pos[0],pos[1])),0])
+
                     else: # STATIC SKIN
                         oldScale = images[skinIndex].get_rect().size
                         newScale = [oldScale[0]*scale,oldScale[1]*scale]
                         newImg = pygame.transform.scale(images[skinIndex],newScale)
-                        ships.append([newImg,newImg.get_rect(center = (pos[0],pos[1]))])
+                        skins.append([newImg,newImg.get_rect(center = (pos[0],pos[1]))])
                 else:
                     if (skinIndex == 0 and not unlocked[shipIndex][0]) or unlocked[shipIndex][0]:  # Not unlocked ship yet
                         oldScale = assets.spaceShipList[shipIndex]['skins'][0].get_rect().size
                         newScale = [oldScale[0]*scale,oldScale[1]*scale]
                         newImg = pygame.transform.scale(assets.spaceShipList[shipIndex]['skins'][0],newScale)
                         newImg.fill([0,0,0], special_flags=pygame.BLEND_RGBA_MIN)
-                        ships.append([newImg,newImg.get_rect(center = (pos[0],pos[1]))])
+                        skins.append([newImg,newImg.get_rect(center = (pos[0],pos[1]))])
+
                 pos[1]+= spacingY
             pos[1] = startPos[1]
             pos[0] += spacingX
+            ships.append(skins)
+
+        # Selected
+        selectedShip = game.savedShipLevel
+        selectedSkin = game.savedSkin
+        selectRect = assets.selectIcon.get_rect()
 
         animationCount = 0
         surfSize = [settings.screenSize[0]*1.5,settings.screenSize[1]*1.5]
@@ -2310,6 +2327,8 @@ class Menu:
         iconsPos = [0,0]
         surfMovementSpeed = 4
 
+
+        scrolling = False
         showHanger = True
         while showHanger:
             for event in pygame.event.get():
@@ -2322,32 +2341,69 @@ class Menu:
                 if (event.type == pygame.KEYDOWN and event.key in fullScreenInput) or (gamePad is not None and event.type == pygame.JOYBUTTONDOWN and gamePad.get_button(controllerFullScreen) == 1): toggleScreen()
 
                 # RETURN TO GAME
-                elif (event.type == pygame.KEYDOWN and (event.key in escapeInput or event.key in startInput or event.key in backInput or event.key in hangerInput) ) or (gamePad is not None and (gamePad.get_button(controllerBack) == 1)): showHanger = False
+                elif (event.type == pygame.KEYDOWN and (event.key in escapeInput or event.key in backInput or event.key in hangerInput) ) or (gamePad is not None and (gamePad.get_button(controllerBack) == 1)): showHanger = False
+
+                # SWITCH MODE
+                elif (event.type == pygame.KEYDOWN and (event.key in startInput)): scrolling = not scrolling
+
+
+                if not scrolling:
+                    # SWITCH SHIPS
+                    if (event.type == pygame.KEYDOWN and (event.key in leftInput)):
+                        if selectedShip == 0: selectedShip = len(ships) - 1
+                        else: selectedShip -= 1
+                        selectedSkin = 0
+                    elif (event.type == pygame.KEYDOWN and (event.key in rightInput)):
+                        if selectedShip + 1 >= len(ships): selectedShip = 0
+                        else: selectedShip += 1
+                        selectedSkin = 0
+
+                    # SWITCH SKINS
+                    elif (event.type == pygame.KEYDOWN and (event.key in upInput)):
+                        if selectedSkin == 0: selectedSkin = len(ships[selectedShip]) - 1
+                        else: selectedSkin -= 1
+                    elif (event.type == pygame.KEYDOWN and (event.key in downInput)):
+                        if selectedSkin + 1 >= len(ships[selectedShip]): selectedSkin = 0
+                        else: selectedSkin += 1
 
             # SCROLL
-            key = pygame.key.get_pressed()
-            if iconsPos[1] <= settings.screenSize[1] - 200 and any(key[bind] for bind in downInput): iconsPos[1] += surfMovementSpeed
-            if iconsPos[1]+settings.screenSize[1] >= 0 and any(key[bind] for bind in upInput): iconsPos[1] -= surfMovementSpeed
-            if iconsPos[0] + settings.screenSize[0]/2 >= 0 and any(key[bind] for bind in leftInput): iconsPos[0] -= surfMovementSpeed
-            if iconsPos[0] <= settings.screenSize[0]/2 and any(key[bind] for bind in rightInput): iconsPos[0] += surfMovementSpeed
+            if scrolling:
+                key = pygame.key.get_pressed()
+                if iconsPos[1] <= settings.screenSize[1] - 200 and any(key[bind] for bind in downInput): iconsPos[1] += surfMovementSpeed
+                if iconsPos[1] + settings.screenSize[1] >= 0 and any(key[bind] for bind in upInput): iconsPos[1] -= surfMovementSpeed
+                if iconsPos[0] + settings.screenSize[0]/2 >= 0 and any(key[bind] for bind in leftInput): iconsPos[0] -= surfMovementSpeed
+                if iconsPos[0] <= settings.screenSize[0]/2 and any(key[bind] for bind in rightInput): iconsPos[0] += surfMovementSpeed
 
             iconSurf.fill((255,255,255,0))
             screen.blit(assets.bgList[game.currentStage - 1][0], (0, 0))
 
-            for icon in ships:
-                if len(icon) == 3 and type(icon[0]) == list: # Animated skin
-                    iconSurf.blit(icon[0][icon[2]],icon[1])
-                    if icon[2]+1 < len(icon[0]):
-                        if animationCount >= settings.skinAnimationDelay:
-                            icon[2] += 1
-                            animationCount = 0
-                        else: animationCount += 1
-                    else: icon[2] = 0
-                else: iconSurf.blit(icon[0],icon[1])
+            for shipIndex in range(len(ships)):
+                for skinIndex in range(len(ships[shipIndex])):
+                    if len(ships[shipIndex][skinIndex]) == 3 and type(ships[shipIndex][skinIndex][0]) == list: # Animated skin
+                        iconSurf.blit(ships[shipIndex][skinIndex][0][ships[shipIndex][skinIndex][2]],ships[shipIndex][skinIndex][1])
+                        if ships[shipIndex][skinIndex][2]+1 < len(ships[shipIndex][skinIndex][0]):
+                            if animationCount >= settings.skinAnimationDelay:
+                                ships[shipIndex][skinIndex][2] += 1
+                                animationCount = 0
+                            else: animationCount += 1
+                        else: ships[shipIndex][skinIndex][2] = 0
+                    else: iconSurf.blit(ships[shipIndex][skinIndex][0],ships[shipIndex][skinIndex][1])
 
-            screen.blit(iconSurf,iconsPos)
+            selectRect.center = ships[selectedShip][selectedSkin][1].center
+            if not scrolling: iconSurf.blit(assets.selectIcon,selectRect)
+            
+            screen.blit(iconSurf,iconsPos) # ICONS SURFACE
             screen.blit(label[0],label[1])
+            
+            # Coin coint
+            screen.blit(coinDisplay,coinDisplayRect)
+            screen.blit(assets.coinIcon,coinIconRect)
             displayUpdate(game.clk)
+
+        # UPDATE SHIP
+        if unlocked[selectedShip][selectedSkin] or settings.devMode:
+            player.getShip(selectedShip)
+            player.getSkin(selectedSkin)
 
 
     # CREDITS
