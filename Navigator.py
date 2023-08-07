@@ -729,6 +729,7 @@ class Assets:
 class Unlocks:
     def __init__(self,records):
         self.ships = records
+        self.hints = [] # Unlock messages / IN PROGRESS
         settings.debug("Loaded unlocks") # Debug
 
 
@@ -2327,7 +2328,6 @@ class Menu:
         iconsPos = [0,0]
         surfMovementSpeed = 4
 
-
         scrolling = False
         showHanger = True
         while showHanger:
@@ -2346,7 +2346,7 @@ class Menu:
                 # SWITCH MODE
                 elif (event.type == pygame.KEYDOWN and (event.key in startInput)): scrolling = not scrolling
 
-
+                # SELECTING
                 if not scrolling:
                     # SWITCH SHIPS
                     if (event.type == pygame.KEYDOWN and (event.key in leftInput)):
@@ -2379,7 +2379,8 @@ class Menu:
 
             for shipIndex in range(len(ships)):
                 for skinIndex in range(len(ships[shipIndex])):
-                    if len(ships[shipIndex][skinIndex]) == 3 and type(ships[shipIndex][skinIndex][0]) == list: # Animated skin
+                    # Animated skin
+                    if len(ships[shipIndex][skinIndex]) == 3 and type(ships[shipIndex][skinIndex][0]) == list:
                         iconSurf.blit(ships[shipIndex][skinIndex][0][ships[shipIndex][skinIndex][2]],ships[shipIndex][skinIndex][1])
                         if ships[shipIndex][skinIndex][2]+1 < len(ships[shipIndex][skinIndex][0]):
                             if animationCount >= settings.skinAnimationDelay:
@@ -2387,14 +2388,15 @@ class Menu:
                                 animationCount = 0
                             else: animationCount += 1
                         else: ships[shipIndex][skinIndex][2] = 0
+                    # Static skin
                     else: iconSurf.blit(ships[shipIndex][skinIndex][0],ships[shipIndex][skinIndex][1])
 
             selectRect.center = ships[selectedShip][selectedSkin][1].center
             if not scrolling: iconSurf.blit(assets.selectIcon,selectRect)
-            
+
             screen.blit(iconSurf,iconsPos) # ICONS SURFACE
-            screen.blit(label[0],label[1])
-            
+            screen.blit(label[0],label[1]) # Control labels
+
             # Coin coint
             screen.blit(coinDisplay,coinDisplayRect)
             screen.blit(assets.coinIcon,coinIconRect)
