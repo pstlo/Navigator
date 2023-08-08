@@ -57,7 +57,7 @@ class Settings:
         self.minDistanceToPoint = (self.screenSize[0] + self.screenSize[1]) / 16 # Default = 100
         self.maxRandomAttempts = 100 # Default = 100 / For random generator distances / max random attempts at finding a valid point
 
-        # BACKGROUND CLOUD
+        # BACKGROUND CLOUDS
         self.showBackgroundCloud = True # Default = True
         self.cloudSpeed = 1 # Default = 1
         self.cloudStart = -1000 # Default = -1000
