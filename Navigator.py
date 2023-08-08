@@ -2309,9 +2309,9 @@ class Menu:
         spacingY = 80
         spacingX = 90
         scale = 2
-        backLabel = self.getLabel("ESCAPE/TAB = Back",[100,settings.screenSize[1]*0.9 + 20],None)
-        viewLabel = self.getLabel("V = View",[100,settings.screenSize[1]*0.9],None)
-        selectLabel = self.getLabel("SPACE = Select",[100,settings.screenSize[1]*0.9 - 20],None)
+        backLabel = self.getLabel("ESCAPE/TAB = Back",[110,settings.screenSize[1]*0.9 + 20],None)
+        viewLabel = self.getLabel("V = View",[110,settings.screenSize[1]*0.9],None)
+        selectLabel = self.getLabel("SPACE = Select",[110,settings.screenSize[1]*0.9 - 20],None)
 
         # Coin Display
         coinDisplay = assets.mediumFont.render(str(game.records['coins']), True, settings.secondaryFontColor)
@@ -2463,7 +2463,6 @@ class Menu:
     def viewShip(self,image):
         scale = 2
         angle = 0
-
         zoomSpeed = 0.5
         maxZoom = 15
         minZoom = 0.5
@@ -2478,8 +2477,9 @@ class Menu:
         newScale = [oldScale[0]*scale,oldScale[1]*scale]
         newImg = pygame.transform.scale(img,newScale)
         imgRect = newImg.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/2))
-        backLabel = self.getLabel("ESCAPE/TAB = Back",[100,settings.screenSize[1]*0.9 + 20],None)
-        zoomLabel = self.getLabel("W/UP and S/DOWN = Zoom",[100,settings.screenSize[1]*0.9],None)
+        backLabel = self.getLabel("ESCAPE/TAB = Back",[110,settings.screenSize[1]*0.9 + 20],None)
+        zoomLabel = self.getLabel("W/UP and S/DOWN = Zoom",[110,settings.screenSize[1]*0.9],None)
+        rotateLabel = self.getLabel("A/LEFT and D/Right = Rotate",[110,settings.screenSize[1]*0.9 - 20],None)
 
         viewing = True
         while viewing:
@@ -2528,6 +2528,7 @@ class Menu:
             screen.blit(newImg,imgRect)
             screen.blit(backLabel[0],backLabel[1])
             screen.blit(zoomLabel[0],zoomLabel[1])
+            screen.blit(rotateLabel[0],rotateLabel[1])
             displayUpdate(game.clk)
 
 
