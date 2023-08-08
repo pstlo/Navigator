@@ -1134,6 +1134,7 @@ class Game:
         self.currentStage = 1
         self.score = 0 # Points collected
         self.coinsCollected = 0 # Coins collected
+
         self.thisPoint = Point(None,None) # Currently active point (starts with default)
         self.lastPointPos = self.thisPoint.rect.center # Last point's position for spacing
         self.gameClock = 0
@@ -1141,9 +1142,11 @@ class Game:
         self.attemptNumber = 1
         self.mainMenu = True # Assures start menu only runs when called
         self.sessionLongRun = 0 # Longest run this session
+
         self.skipAutoSkinSelect = False # For re-entering home menu from game over screen
         self.savedSkin = 0 # Saved ship skin
         self.savedShipLevel = 0 # Saved ship type
+
         self.cloudPos = settings.cloudStart # Background cloud position
         self.explosions = [] # Obstacle explosions
         self.collidingExplosions = [] # Explosions with hitboxes
@@ -1152,9 +1155,11 @@ class Game:
         self.clk = pygame.time.Clock() # Gameclock
         self.usingController = settings.useController # Using controller for movement
         self.usingCursor = False # Using cursor for movement
+
         self.planetImage,self.planetRect = None,None
         self.planetStartPos,self.planetStartSize = None,None
         self.planetDelay,self.planetIndex = 0,0
+
         self.endlessModeStarted = False # Marks end of game reached
         self.nearObsList, self.nearMissCount = [],0
 
