@@ -2309,9 +2309,9 @@ class Menu:
         spacingY = 80
         spacingX = 90
         scale = 2
-        backLabel = self.getLabel("ESCAPE/TAB = Back",[100,settings.screenSize[1]*0.9],None)
-        viewLabel = self.getLabel("V = View",[100,settings.screenSize[1]*0.9 - 20],None)
-        selectLabel = self.getLabel("SPACE = Select",[100,settings.screenSize[1]*0.9 - 40],None)
+        backLabel = self.getLabel("ESCAPE/TAB = Back",[100,settings.screenSize[1]*0.9 + 20],None)
+        viewLabel = self.getLabel("V = View",[100,settings.screenSize[1]*0.9],None)
+        selectLabel = self.getLabel("SPACE = Select",[100,settings.screenSize[1]*0.9 - 20],None)
 
         # Coin Display
         coinDisplay = assets.mediumFont.render(str(game.records['coins']), True, settings.secondaryFontColor)
