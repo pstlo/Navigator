@@ -1152,7 +1152,9 @@ class Game:
         self.clk = pygame.time.Clock() # Gameclock
         self.usingController = settings.useController # Using controller for movement
         self.usingCursor = False # Using cursor for movement
-        self.planetImage,self.planetRect,self.planetStartPos,self.planetStartSize,self.planetDelay,self.planetIndex = None,None,None,None,0,0
+        self.planetImage,self.planetRect = None,None
+        self.planetStartPos,self.planetStartSize = None,None
+        self.planetDelay,self.planetIndex = 0,0
         self.endlessModeStarted = False # Marks end of game reached
         self.nearObsList, self.nearMissCount = [],0
 
@@ -2308,7 +2310,7 @@ class Menu:
         spacingY = 80
         spacingX = 90
         scale = 2
-        
+
         backLabel = self.getLabel("ESCAPE/TAB = Back",[120,settings.screenSize[1]*0.9 + 20],None)
         selectLabel = self.getLabel("SPACE = Select",[120,settings.screenSize[1]*0.9],None)
         viewLabel = self.getLabel("V = View",[120,settings.screenSize[1]*0.9 - 20],None)
