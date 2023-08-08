@@ -57,7 +57,7 @@ class Settings:
         self.minDistanceToPoint = (self.screenSize[0] + self.screenSize[1]) / 16 # Default = 100
         self.maxRandomAttempts = 100 # Default = 100 / For random generator distances / max random attempts at finding a valid point
 
-        # BACKGROUND CLOUDS
+        # BACKGROUND CLOUD
         self.showBackgroundCloud = True # Default = True
         self.cloudSpeed = 1 # Default = 1
         self.cloudStart = -1000 # Default = -1000
@@ -727,7 +727,7 @@ class Assets:
 class Unlocks:
     def __init__(self,records):
         self.ships = records
-        self.messages = []
+        self.messages = [] # [[Unlock Message,Variant Name], Ship Name  ]
         settings.debug("Loaded unlocks") # Debug
 
 
@@ -748,18 +748,18 @@ class Unlocks:
         if not self.ships[0][10] and game.records["longestRun"] >= 150:self.ships[0][10] = True
         if not self.ships[0][11] and game.records["longestRun"] >= 165:self.ships[0][11] = True
         levelMessages = [
-                            None,
-                            "Survive for 15 seconds",
-                            "Survive for 30 seconds",
-                            "Survive for 45 seconds",
-                            "Survive for 60 seconds",
-                            "Survive for 75 seconds",
-                            "Survive for 90 seconds",
-                            "Survive for 105 seconds",
-                            "Survive for 120 seconds",
-                            "Survive for 135 seconds",
-                            "Survive for 150 seconds",
-                            "Survive for 165 seconds"]
+                            [None,None],
+                            ["Survive for 15 seconds",None],
+                            ["Survive for 30 seconds",None],
+                            ["Survive for 45 seconds",None],
+                            ["Survive for 60 seconds",None],
+                            ["Survive for 75 seconds",None],
+                            ["Survive for 90 seconds",None],
+                            ["Survive for 105 seconds","Taxigator"],
+                            ["Survive for 120 seconds","WhatColorsYourSpaceship"],
+                            ["Survive for 135 seconds",None],
+                            ["Survive for 150 seconds",None],
+                            ["Survive for 165 seconds",None] ]
 
         # Record holder unlocks
         if assets.leaderboard is not None and assets.leaderboard[0]['id'] == game.records['id']:
@@ -769,24 +769,24 @@ class Unlocks:
         # Re locks
             if self.ships[0][12]: self.ships[0][12] = False
 
-        levelMessages.append("Be #1 on Leaderboard")
+        levelMessages.append(["Be #1 on Leaderboard","Champion"])
         self.messages.append([levelMessages, "Classic Ship"])
 
         # Rocket buggy - L2
         if not self.ships[1][0] and game.records["highScore"] >= 25: self.ships[1][0] = True
-        self.messages.append([["Score 25 in a run"], "Rocket Buggy"])
+        self.messages.append([[["Score 25 in a run", None]], "Rocket Buggy"])
 
         # Laser ship - L3
         if not self.ships[2][0] and game.records["highScore"] >= 50: self.ships[2][0] = True
-        self.messages.append([["Score 50 in a run"], "Lasership"])
+        self.messages.append([[["Score 50 in a run", None]], "Lasership"])
 
         # Hyper yacht - L4
         if not self.ships[3][0] and game.records["points"] >= 200: self.ships[3][0] = True
-        self.messages.append([["Score 200 points total"], "Hyper Yacht"])
+        self.messages.append([[["Score 200 points total", None]], "Hyper Yacht"])
 
         # Ol reliable - L5
         if not self.ships[4][0] and game.records["timePlayed"] >= 1200: self.ships[4][0] = True
-        self.messages.append([["Play for 1200 seconds"], "Ol' Reliable"])
+        self.messages.append([[["Play for 1200 seconds", None]], "Ol' Reliable"])
 
         # Icon ship - L6
         if not self.ships[5][0] and game.records["points"] >= 500: self.ships[5][0] = True
@@ -795,12 +795,11 @@ class Unlocks:
         if not self.ships[5][3] and game.records["points"] >= 800: self.ships[5][3] = True
         if not self.ships[5][4] and game.records["points"] >= 900:  self.ships[5][4] = True
         levelMessages = [
-            "Score 500 points total",
-            "Score 600 points total",
-            "Score 700 points total",
-            "Score 800 points total",
-            "Score 900 points total"
-        ]
+            ["Score 500 points total",None],
+            ["Score 600 points total",None],
+            ["Score 700 points total",None],
+            ["Score 800 points total",None],
+            ["Score 900 points total",None] ]
         self.messages.append([levelMessages, "Classic 2.0"])
 
         if preUpdate != self.ships: # Save unlocks if list was updated
@@ -2439,18 +2438,30 @@ class Menu:
 
             # Ship Name
             if unlocked[selectedShip][0]: shipName = unlocks.messages[selectedShip][1]
-            else: shipName = "?"
-            nameDisplay = assets.mediumFont.render(shipName,True,settings.primaryFontColor)
+            else: shipName = " ? "
+            nameDisplay = assets.mediumFont.render(" " + str(shipName) + " ",True,settings.primaryFontColor)
             nameRect = nameDisplay.get_rect(center = [textPos[0],textPos[1]])
 
-            # Messages
-            unlockMessage = unlocks.messages[selectedShip][0][selectedSkin]
-            unlockMessageDisplay = assets.labelFont.render(unlockMessage,True,settings.secondaryFontColor)
+            # Unlock Messages
+            unlockMessage = unlocks.messages[selectedShip][0][selectedSkin][0]
+            unlockMessageDisplay = assets.labelFont.render(" " + str(unlockMessage) + " ",True,settings.secondaryFontColor)
             unlockMessageRect = unlockMessageDisplay.get_rect(center = [textPos[0],textPos[1] + 25])
 
-            # ship name display
+            # Variant name
+            if unlocked[selectedShip][selectedSkin]: variantName = unlocks.messages[selectedShip][0][selectedSkin][1]
+            else: variantName = " ? "
+            variantNameDisplay = assets.mediumFont.render(" " + str(variantName) + " ", True, settings.secondaryFontColor)
+            variantNameRect = variantNameDisplay.get_rect()
+            variantNameRect.center = [nameRect.right + variantNameRect.width/2, textPos[1]]
+
+            # Ship name display
             pygame.draw.rect(screen,screenColor,nameRect,0,5)
             screen.blit(nameDisplay,nameRect)
+
+            # Variant name display
+            if variantName is not None:
+                pygame.draw.rect(screen,screenColor,variantNameRect,0,5)
+                screen.blit(variantNameDisplay,variantNameRect)
 
             if not unlocked[selectedShip][selectedSkin] and not settings.devMode:
                 pygame.draw.rect(screen,screenColor,unlockMessageRect,0,5)
