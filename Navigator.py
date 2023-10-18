@@ -151,8 +151,6 @@ class Settings:
 
         # EXPERIMENTAL
         self.rawCursorMode = False # Default = False / sets player position to cursor position
-        self.performanceMode = False # Default = False
-        self.qualityMode = False # Default = False # Overridden by performance mode
 
         # DISCORD
         self.showPresence = True # Default = True / Discord presence using pypresence
@@ -174,13 +172,6 @@ class Settings:
         if self.arguments is not None:
             if "debug" in self.arguments: self.debugging = True
             if "devmode" in self.arguments: self.devMode = True
-
-        # SET SCREEN UPDATE METHOD
-        if self.qualityMode and not self.performanceMode: self.updateNotFlip = False
-        else: self.updateNotFlip = True # use update instead of flip for display updates
-
-        # SET PERFORMANCE SETTINGS
-        if self.performanceMode:self.showBackgroundCloud,self.drawExhaust = False,False
 
         # CONTROLLER BINDS
         self.controllerBinds = {
@@ -874,32 +865,16 @@ class Unlocks:
 
 # GET SCREEN
 def getScreen():
-    if settings.performanceMode:
-        if settings.fullScreen: return pygame.display.set_mode(settings.screenSize, pygame.FULLSCREEN | pygame.DOUBLEBUF | pygame.SCALED , depth = 16)
-        else: return pygame.display.set_mode(settings.screenSize,pygame.DOUBLEBUF,depth=16)
-    elif settings.qualityMode:
-        if settings.fullScreen: return pygame.display.set_mode(settings.screenSize, pygame.FULLSCREEN | pygame.SRCALPHA,depth = 32)
-        else: return pygame.display.set_mode(settings.screenSize, pygame.NOFRAME | pygame.SRCALPHA,depth = 32)
-    # Default
-    else:
-        if settings.fullScreen: return pygame.display.set_mode(settings.screenSize,pygame.FULLSCREEN | pygame.SCALED, depth = 0)
-        else: return pygame.display.set_mode(settings.screenSize, pygame.SCALED, depth = 0)
+    if settings.fullScreen: return pygame.display.set_mode(settings.screenSize,pygame.FULLSCREEN | pygame.SCALED, depth = 0)
+    else: return pygame.display.set_mode(settings.screenSize, pygame.SCALED, depth = 0)
 
 
 # TOGGLE FULLSCREEN
 def toggleScreen():
-    if settings.qualityMode and not settings.performanceMode:
-        global screen
-        pygame.display.quit()
-        settings.fullScreen = not settings.fullScreen
-        pygame.display.set_caption('Navigator')
-        pygame.display.set_icon(assets.windowIcon)
-        screen = getScreen()
-    else:
-        pygame.display.toggle_fullscreen()
-        settings.fullScreen = not settings.fullScreen
-        if settings.fullScreen: settings.debug("Fullscreen toggled on")
-        else: settings.debug("Fullscreen toggled off")
+    pygame.display.toggle_fullscreen()
+    settings.fullScreen = not settings.fullScreen
+    if settings.fullScreen: settings.debug("Fullscreen toggled on")
+    else: settings.debug("Fullscreen toggled off")
 
 
 # TOGGLE MUSIC MUTE
@@ -942,8 +917,7 @@ settings.debug("Loaded keybinds") # Debug
 
 # UPDATE DISPLAY
 def displayUpdate(gameClock):
-    if not settings.updateNotFlip: pygame.display.flip()
-    else: pygame.display.update()
+    pygame.display.update()
     if gameClock is not None: gameClock.tick(settings.fps)
 
 
@@ -1389,17 +1363,15 @@ class Game:
                                 obs.kill()
 
                     # ROTATE AND DRAW OBSTACLE
-                    if not settings.performanceMode:
-                        obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle
-                        if obs.angle >= 360: obs.angle = -360
-                        if obs.angle < 0: obs.angle +=360
-                        newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
-                        screen.blit(newBlit[0],newBlit[1]) # Blit obstacles
+                    obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle
+                    if obs.angle >= 360: obs.angle = -360
+                    if obs.angle < 0: obs.angle +=360
+                    newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
+                    screen.blit(newBlit[0],newBlit[1]) # Blit obstacles
 
                     # OBSTACLE BOUNDARY HANDLING
                     obs.bound(obstacles)
 
-            if settings.performanceMode:obstacles.draw(screen) # Potential performance improvement
 
             # DRAW EXPLOSIONS
             for debris in self.explosions:
@@ -2001,11 +1973,10 @@ class Menu:
                 shieldImg,shieldImgRect = rotateImage(assets.playerShield, player.rect, player.angle)
                 screen.blit(shieldImg,shieldImgRect)
 
-            if not settings.performanceMode:
-                for obs in obstacles: # Draw obstacles
-                    newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
-                    screen.blit(newBlit[0],newBlit[1])
-            else: obstacles.draw(screen)
+            
+            for obs in obstacles: # Draw obstacles
+                newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
+                screen.blit(newBlit[0],newBlit[1])
 
             lasers.draw(screen)
             enemyLasers.draw(screen)
