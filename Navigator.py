@@ -1054,8 +1054,8 @@ def getMovement(spawnPattern):
     elif spawnPattern == "DIAG": top, bottom, left, right = ["SE", "SW"], ["NE", "NW"], ["NE", "SE"], ["NW", "SW"]
     else: top, bottom, left, right = ["SE", "SW", "S"], ["N", "NE", "NW"], ["E", "NE", "SE"], ["NW", "SW", "W"]
 
-    X = random.randint(settings.screenSize[0] * 0.02, settings.screenSize[0] * 0.98)
-    Y = random.randint(settings.screenSize[1] * 0.02, settings.screenSize[1] * 0.98)
+    X = random.randint(int(settings.screenSize[0] * 0.02), int(settings.screenSize[0] * 0.98))
+    Y = random.randint(int(settings.screenSize[1] * 0.02), int(settings.screenSize[1] * 0.98))
 
     lowerX = random.randint(-1,0)
     upperX = random.randint(settings.screenSize[0], settings.screenSize[0] + 1)
@@ -3550,8 +3550,8 @@ class Point(pygame.sprite.Sprite):
     def getPosition(self):
         xRange = [settings.screenSize[0] * settings.spawnRange[0] , settings.screenSize[0] * settings.spawnRange[1] ]
         yRange = [settings.screenSize[1] * settings.spawnRange[0] , settings.screenSize[1] * settings.spawnRange[1] ]
-        xNum = random.randint(xRange[0],xRange[1])
-        yNum = random.randint(yRange[0],yRange[1])
+        xNum = random.randint(int(xRange[0]),int(xRange[1]))
+        yNum = random.randint(int(yRange[0]),int(yRange[1]))
         return [xNum,yNum]
 
 
