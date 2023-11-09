@@ -336,7 +336,7 @@ class Assets:
 
         # PLANET ASSETS
         self.planets = []
-        self.planetSizes = [400] # Planet sizes for corresponding index
+        self.planetSizes = [400,500] # Planet sizes for corresponding index
         planetIndex = 0
         for filename in sorted(os.listdir(planetDirectory)):
             if filename.endswith('.png'):
@@ -1418,9 +1418,17 @@ class Game:
             else: self.getNewPlanet()
 
 
-    # GET NEW PLANET ( In progress )
+    # GET NEW PLANET
     def getNewPlanet(self):
-        if settings.unlimitedPlanets:
+        if self.planetIndex + 1 < len(assets.planets):
+            self.planetIndex +=1
+            self.planetImage = pygame.transform.scale(assets.planets[self.planetIndex],(self.planetStartSize,self.planetStartSize))
+            self.planetRect = self.planetImage.get_rect()
+            self.planetRect.center = (random.randint(100,settings.screenSize[0]-100),-10)
+
+        elif settings.unlimitedPlanets: 
+            self.planetImage = pygame.transform.scale(assets.planets[random.randint(0,len(assets.planets)-1)],(self.planetStartSize,self.planetStartSize))
+            self.planetRect = self.planetImage.get_rect()
             self.planetRect.center = (random.randint(100,settings.screenSize[0]-100),-10)
 
 
@@ -1973,7 +1981,7 @@ class Menu:
                 shieldImg,shieldImgRect = rotateImage(assets.playerShield, player.rect, player.angle)
                 screen.blit(shieldImg,shieldImgRect)
 
-            
+
             for obs in obstacles: # Draw obstacles
                 newBlit = rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
                 screen.blit(newBlit[0],newBlit[1])
