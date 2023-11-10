@@ -279,9 +279,10 @@ class Assets:
 
             # MOVE ENV TO APPDATA
             newEnvPath = os.path.join(navPath,'.env')
-            if os.path.exists(envPath):
+            if os.path.exists(envPath) and not os.path.exists(newEnvPath):
                 os.rename(envPath,newEnvPath)
                 settings.debug("Moved ENV to APPDATA") # DEBUG
+
             envPath = newEnvPath
             self.recordsPath, self.preferencesPath = os.path.join(navPath,'Records'), os.path.join(navPath,'Preferences')
 
@@ -1002,9 +1003,9 @@ if settings.useController:
     pygame.joystick.init()
     settings.debug("Initialized controller module") # Debug
     if pygame.joystick.get_count() > 0:
-        settings.debug("Joystick detected, checking for compatibility") # Debug
         gamePad = pygame.joystick.Joystick(0)
-        gamePad.init()
+        gamePad.init()        
+        settings.debug(str(gamePad.get_name()) + " detected, checking for compatibility") # Debug
         for controllerType in settings.controllerBinds:
             if gamePad.get_name() in settings.controllerBinds[controllerType]['name']:
                 controllerMoveX = settings.controllerBinds[controllerType]['moveX']
