@@ -30,7 +30,7 @@ jobs:
       - name: Set up Python on Windows
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.12'
 
       - name: Install prerequisites on Windows
         run: |
@@ -81,7 +81,7 @@ jobs:
       - name: Set up Python on Windows
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.12'
 
       - name: Install prerequisites on Windows
         run: |
@@ -136,7 +136,7 @@ jobs:
       - name: Set up Python on MacOS (Intel Based)
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.12'
 
       - name: Install prerequisites on MacOS (Intel Based)
         run: |
@@ -183,7 +183,7 @@ jobs:
       - name: Set up Python on MacOS (Intel Based)
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.12'
 
       - name: Install prerequisites on MacOS (Intel Based)
         run: |
@@ -234,7 +234,7 @@ jobs:
       - name: Set up Python on Linux
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.12'
 
       - name: Install prerequisites on Linux
         run: |
