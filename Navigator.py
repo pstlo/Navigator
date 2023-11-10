@@ -259,13 +259,41 @@ class Settings:
 # ASSETS
 class Assets:
     def __init__(self):
+
+        assetDirectory = self.resources('Assets') # ASSET DIRECTORY
+        envPath = os.path.join(assetDirectory,'.env')
+
         # RECORD AND PREFERENCE PATHS
-        if platform.system().lower() == 'windows' or platform.system().lower() == 'linux': self.recordsPath,self.preferencesPath = './gameRecords.txt','./gamePreferences.txt'  # For windows and linux
-        else: self.recordsPath,self.preferencesPath = self.resources('gameRecords.txt'), self.resources('gamePreferences.txt') # For MacOS
+        if platform.system().lower() == 'windows':
+            settings.debug("OS: Windows") # DEBUG
+
+            # SAVE TO APPDATA
+            navPath = os.path.join(os.getenv('LOCALAPPDATA'),'Navigator')
+
+            if not os.path.exists(navPath):
+                settings.debug("Directory not found. Attempting to create " + navPath)
+                os.mkdir(navPath)
+
+                if os.path.exists(envPath): os.rename(envPath,os.path.join(navPath,'.env'))
+                settings.debug("Successfully created directory") # DEBUG
+
+            # MOVE ENV TO APPDATA
+            newEnvPath = os.path.join(navPath,'.env')
+            if os.path.exists(envPath):
+                os.rename(envPath,newEnvPath)
+                settings.debug("Moved ENV to APPDATA") # DEBUG
+            envPath = newEnvPath
+            self.recordsPath, self.preferencesPath = os.path.join(navPath,'Records'), os.path.join(navPath,'Preferences')
+
+        elif platform.system().lower() == 'linux':
+            settings.debug("OS: Linux") # DEBUG
+            self.recordsPath,self.preferencesPath = './gameRecords.txt','./gamePreferences.txt'  # For windows and linux
+        else:
+            settings.debug("OS: Mac") # DEBUG
+            self.recordsPath,self.preferencesPath = self.resources('gameRecords.txt'), self.resources('gamePreferences.txt') # For MacOS
 
         # ASSET PATHS
-        assetDirectory = self.resources('Assets') # ASSET DIRECTORY
-        load_dotenv(os.path.join(assetDirectory,'.env')) # LOAD ENV VARS
+        load_dotenv(envPath) # LOAD ENV VARS
         obstacleDirectory = os.path.join(assetDirectory, 'Obstacles') # Obstacle asset directory
         meteorDirectory = os.path.join(obstacleDirectory, 'Meteors') # Meteor asset directory
         ufoDirectory = os.path.join(obstacleDirectory, 'UFOs') # UFO asset directory
@@ -1426,7 +1454,7 @@ class Game:
             self.planetRect = self.planetImage.get_rect()
             self.planetRect.center = (random.randint(100,settings.screenSize[0]-100),-10)
 
-        elif settings.unlimitedPlanets: 
+        elif settings.unlimitedPlanets:
             self.planetImage = pygame.transform.scale(assets.planets[random.randint(0,len(assets.planets)-1)],(self.planetStartSize,self.planetStartSize))
             self.planetRect = self.planetImage.get_rect()
             self.planetRect.center = (random.randint(100,settings.screenSize[0]-100),-10)
