@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'Navigator.py'
+      - 'Navigator/**'
       - '.github/**'
       - 'assets/**'
       - 'LICENSE'
@@ -46,7 +46,7 @@ jobs:
 
       - name: Create Windows executable
         run: |
-            pyinstaller --name Navigator --onefile --noconsole --add-data "${{ github.workspace }}/Assets;Assets" -i "${{ github.workspace }}\.github\Icon.ico" --version-file "${{ github.workspace }}\.github\version.txt" "${{ github.workspace }}\Navigator.py"
+            pyinstaller --name Navigator --onefile --noconsole --add-data "${{ github.workspace }}/Assets;Assets" -i "${{ github.workspace }}\.github\Icon.ico" --version-file "${{ github.workspace }}\.github\version.txt" "${{ github.workspace }}\Navigator\Navigator.py"
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v3
@@ -152,7 +152,7 @@ jobs:
 
       - name: Build MacOS app
         run: |
-          pyinstaller -y --noconsole --add-data Assets:Assets -i ".github/Icon.icns" Navigator.py
+          pyinstaller -y --noconsole --add-data Assets:Assets -i ".github/Icon.icns" Navigator/Navigator.py
           mv dist/Navigator.app ${{ github.workspace }}
 
       - name: Upload MacOS (Intel Based) artifact
@@ -250,7 +250,7 @@ jobs:
 
       - name: Create Linux executable
         run: |
-          pyinstaller --name Navigator --onefile --noconsole --add-data Assets:Assets Navigator.py
+          pyinstaller --name Navigator --onefile --noconsole --add-data Assets:Assets Navigator/Navigator.py
 
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v3
