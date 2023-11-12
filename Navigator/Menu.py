@@ -429,7 +429,7 @@ class Menu:
                     elif (event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]==1): game.usingCursor, game.usingController = True, False
                     pygame.mouse.set_visible(game.usingCursor and not settings.rawCursorMode)
                     game.reset(player,obstacles)
-                    player.updatePlayerConstants()
+                    player.updatePlayerConstants(game)
                     game.gameLoop()
 
 
