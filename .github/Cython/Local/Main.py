@@ -7,5 +7,5 @@ os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
 sys.path.append('.')
 import Navigator
-if __name__ == "__main__": Navigator.gameLoop()
+if __name__ == "__main__": Navigator.game.gameLoop()
 
