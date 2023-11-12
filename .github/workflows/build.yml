@@ -7,7 +7,6 @@ on:
     paths:
       - 'Navigator/**'
       - '.github/**'
-      - 'assets/**'
       - 'LICENSE'
       - 'NOTICE'
 
@@ -25,7 +24,7 @@ jobs:
 
       - name: Store data in Assets folder
         run: |
-          echo "${{ secrets.ENV }}" > "${{ github.workspace }}/Assets/.env"
+          echo "${{ secrets.ENV }}" > "${{ github.workspace }}/Navigator/Assets/.env"
 
       - name: Set up Python on Windows
         uses: actions/setup-python@v4
@@ -46,7 +45,7 @@ jobs:
 
       - name: Create Windows executable
         run: |
-            pyinstaller --name Navigator --onefile --noconsole --add-data "${{ github.workspace }}/Assets;Assets" -i "${{ github.workspace }}\.github\Icon.ico" --version-file "${{ github.workspace }}\.github\version.txt" "${{ github.workspace }}\Navigator\Navigator.py"
+            pyinstaller --name Navigator --onefile --noconsole --add-data "${{ github.workspace }}/Navigator/Assets;Assets" -i "${{ github.workspace }}\.github\Icon.ico" --version-file "${{ github.workspace }}\.github\version.txt" "${{ github.workspace }}\Navigator\Navigator.py"
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v3
@@ -101,7 +100,7 @@ jobs:
             pip install setuptools
             move ${{ github.workspace }}/.github/Cython/* ${{ github.workspace }}
             python ${{ github.workspace }}/SetupCython.py build_ext --inplace ${{ github.workspace }}
-            pyinstaller --name Navigator --onefile --noconsole --add-data "${{ github.workspace }}/Assets;Assets" -i "${{ github.workspace }}/.github/Icon.ico" --version-file "${{ github.workspace }}/.github/version.txt" "${{ github.workspace }}/Main.py"
+            pyinstaller --name Navigator --onefile --noconsole --add-data "${{ github.workspace }}/Navigator/Assets;Assets" -i "${{ github.workspace }}/.github/Icon.ico" --version-file "${{ github.workspace }}/.github/version.txt" "${{ github.workspace }}/Main.py"
 
       - name: Upload Windows C artifact
         uses: actions/upload-artifact@v3
@@ -131,7 +130,7 @@ jobs:
 
       - name: Store data in Assets folder
         run: |
-          echo "${{ secrets.ENV }}" > "${{ github.workspace }}/Assets/.env"
+          echo "${{ secrets.ENV }}" > "${{ github.workspace }}/Navigator/Assets/.env"
 
       - name: Set up Python on MacOS (Intel Based)
         uses: actions/setup-python@v4
@@ -152,7 +151,7 @@ jobs:
 
       - name: Build MacOS app
         run: |
-          pyinstaller -y --noconsole --add-data Assets:Assets -i ".github/Icon.icns" Navigator/Navigator.py
+          pyinstaller -y --noconsole --add-data Navigator/Assets:Assets -i ".github/Icon.icns" Navigator/Navigator.py
           mv dist/Navigator.app ${{ github.workspace }}
 
       - name: Upload MacOS (Intel Based) artifact
@@ -178,7 +177,7 @@ jobs:
 
       - name: Store data in Assets folder
         run: |
-          echo "${{ secrets.ENV }}" > "${{ github.workspace }}/Assets/.env"
+          echo "${{ secrets.ENV }}" > "${{ github.workspace }}/Navigator/Assets/.env"
 
       - name: Set up Python on MacOS (Intel Based)
         uses: actions/setup-python@v4
@@ -203,7 +202,7 @@ jobs:
           pip install setuptools
           mv ${{github.workspace}}/.github/Cython/* ${{github.workspace}}
           python SetupCython.py build_ext --inplace
-          pyinstaller -y --name Navigator --noconsole --add-data Assets:Assets -i ".github/Icon.icns" Main.py
+          pyinstaller -y --name Navigator --noconsole --add-data Navigator/Assets:Assets -i ".github/Icon.icns" Main.py
           mv dist/Navigator.app ${{ github.workspace }}
           
       - name: Upload MacOS (Intel Based) C artifact
@@ -229,7 +228,7 @@ jobs:
 
       - name: Store data in Assets folder
         run: |
-          echo "${{ secrets.ENV }}" > "${{ github.workspace }}/Assets/.env"
+          echo "${{ secrets.ENV }}" > "${{ github.workspace }}/Navigator/Assets/.env"
 
       - name: Set up Python on Linux
         uses: actions/setup-python@v4
@@ -250,7 +249,7 @@ jobs:
 
       - name: Create Linux executable
         run: |
-          pyinstaller --name Navigator --onefile --noconsole --add-data Assets:Assets Navigator/Navigator.py
+          pyinstaller --name Navigator --onefile --noconsole --add-data Navigator/Assets:Assets Navigator/Navigator.py
 
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v3
