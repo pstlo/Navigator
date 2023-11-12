@@ -75,7 +75,7 @@ jobs:
 
       - name: Store data in Assets folder
         run: |
-          echo "${{ secrets.ENV }}" > "${{ github.workspace }}Navigator/Assets/.env"
+          echo "${{ secrets.ENV }}" > "${{ github.workspace }}/Navigator/Assets/.env"
 
       - name: Set up Python on Windows
         uses: actions/setup-python@v4
