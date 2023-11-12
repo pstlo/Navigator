@@ -6,5 +6,5 @@ from pymongo.mongo_client import MongoClient
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
 import Navigator
-if __name__ == "__main__": Navigator.gameLoop()
+if __name__ == "__main__": Navigator.game.gameLoop()
 

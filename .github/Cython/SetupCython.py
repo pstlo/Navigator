@@ -2,7 +2,7 @@
 from setuptools import setup, Extension
 from Cython.Build import cythonize
 
-extensions = [Extension("Navigator", ["Navigator.py"],)]
+extensions = [Extension("Navigator", ["Navigator/Navigator.py"],)]
 
 setup(
     name='Navigator',
