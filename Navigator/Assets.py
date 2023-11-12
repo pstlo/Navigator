@@ -9,7 +9,7 @@ import Presence
 class Assets:
     def __init__(self):
         self.version = "v0.5.0"
-        assetDirectory = self.resources('../Assets') # ASSET DIRECTORY
+        assetDirectory = self.resources('Assets') # ASSET DIRECTORY
         envPath = os.path.join(assetDirectory,'.env')
 
         # RECORD AND PREFERENCE PATHS
