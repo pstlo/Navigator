@@ -55,9 +55,10 @@ class Assets:
         explosionDirectory = os.path.join(assetDirectory, 'Explosion') # Explosion animation directory
         pointsDirectory = os.path.join(assetDirectory, 'Points') # Point image directory
         supportersDirectory = os.path.join(assetDirectory,'Supporters') # Supporters directory
+        self.soundDirectory = os.path.join(assetDirectory, 'Sounds') # Sound assets directory / will be referenced again for music loading
+
         self.windowIcon = pygame.image.load(self.resources(os.path.join(assetDirectory,'Icon.png'))).convert_alpha()
         self.stageCloudImg = pygame.image.load(self.resources(os.path.join(assetDirectory,'StageCloud.png') ) ).convert_alpha() # STAGE WIPE CLOUD
-        self.soundDirectory = os.path.join(assetDirectory, 'Sounds') # Sound assets directory / will be referenced again for music loading
 
         pygame.display.set_icon(self.windowIcon)
 
@@ -300,6 +301,7 @@ class Assets:
     def resources(self,relative):
         try: base = sys._MEIPASS # Running from EXE/APP
         except: base = os.path.abspath(".") # Running fron script
+        settings.debug("Joining " + base + " with " + relative)
         return os.path.join(base, relative)
 
 

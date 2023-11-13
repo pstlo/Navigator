@@ -400,7 +400,7 @@ class Game:
     def alternateUpdate(self,player,obstacles,events):
         for event in pygame.event.get(): pass # Pull events
 
-        player.updateAnimation()
+        player.updateAnimation(self)
         player.movement()
         player.wrapping()
         self.screen.fill(settings.screenColor)

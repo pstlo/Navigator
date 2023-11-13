@@ -260,8 +260,8 @@ class Menu:
                 newBlit = game.rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
                 game.screen.blit(newBlit[0],newBlit[1])
 
-            lasers.draw(screen)
-            enemyLasers.draw(screen)
+            lasers.draw(game.screen)
+            enemyLasers.draw(game.screen)
             game.screen.blit(pauseDisplay, pauseRect)
             game.screen.blit(pausedDisplay,pausedRect)
             game.displayUpdate()

@@ -153,6 +153,7 @@ leaderboardSize = 10 # Number of players shown on leaderboard
 
 # EXPERIMENTAL
 rawCursorMode = False # Default = False / sets player position to cursor position
+cythonMode = False # Default = False / -> use ../../Navigator instead of . for path
 
 # DISCORD
 showPresence = True # Default = True / Discord presence using pypresence
