@@ -257,7 +257,6 @@ for i in range(spawnVertices):
     y = screenSize[1]/2 + (spawnHeight / 2) * math.sin(angle)
     spawnAreaPoints.append((x, y)) # Vertices of spawn area
 
-
 runningFromExe = hasattr(sys,'_MEIPASS') # Specify if running from EXE/app or Python script
 if runningFromExe: debug("Running from executable") # Debug
 else: debug("Running from Python script") # Debug

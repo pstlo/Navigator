@@ -8,7 +8,7 @@ import Presence
 # ASSETS
 class Assets:
     def __init__(self):
-        self.version = "v0.5.0"
+        self.version = "v0.5.1"
         assetDirectory = self.resources('Assets') # ASSET DIRECTORY
         envPath = os.path.join(assetDirectory,'.env')
 
@@ -313,6 +313,9 @@ class Assets:
     # STORE GAME RECORDS
     def storeRecords(self,records):
         # No encryption
+        if settings.devMode: 
+            settings.debug("Devmode does not store records") # Debug
+            return
         if not settings.encryptGameRecords:
             try:
                 with open(self.recordsPath, 'w') as file: file.write(json.dumps(records))
@@ -440,7 +443,7 @@ class Assets:
 
     # UPLOAD RECORDS TO LEADERBOARD
     def uploadRecords(self,records):
-        if settings.connectToLeaderboard:
+        if settings.connectToLeaderboard and not settings.devMode:
             database = self.getLeaderboardClient()
 
             # UPLOAD RECORDS
