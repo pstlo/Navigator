@@ -401,7 +401,7 @@ class Game:
         for event in pygame.event.get(): pass # Pull events
 
         player.updateAnimation(self)
-        player.movement()
+        player.movement(self)
         player.wrapping()
         self.screen.fill(settings.screenColor)
         self.screen.blit(self.assets.bgList[self.currentStage - 1][0], (0,0) )
