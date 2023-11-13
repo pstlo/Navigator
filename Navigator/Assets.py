@@ -301,7 +301,6 @@ class Assets:
     def resources(self,relative):
         try: base = sys._MEIPASS # Running from EXE/APP
         except: base = os.path.abspath(".") # Running fron script
-        settings.debug("Joining " + base + " with " + relative)
         return os.path.join(base, relative)
 
 

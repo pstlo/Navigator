@@ -92,10 +92,10 @@ class EnemyLaser(pygame.sprite.Sprite):
 
 
     # UPDATE
-    def update(self,player):
+    def update(self,game,player):
         # Remove offscreen lasers
         if self.rect.centerx > settings.screenSize[0] or self.rect.centery > settings.screenSize[1] or self.rect.centerx < 0 or self.rect.centery < 0: self.kill()
-        if self.laserType == "HOME": self.homingMove(player)
+        if self.laserType == "HOME": self.homingMove(game,player)
         elif self.laserType == "TARGET": self.targetMove()
         else: self.normalMove()
 

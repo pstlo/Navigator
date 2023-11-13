@@ -151,10 +151,6 @@ invalidKeyMessage = "Invalid key, could not save records." # Saved to game recor
 connectToLeaderboard = True # Default = True
 leaderboardSize = 10 # Number of players shown on leaderboard
 
-# EXPERIMENTAL
-rawCursorMode = False # Default = False / sets player position to cursor position
-cythonMode = False # Default = False / -> use ../../Navigator instead of . for path
-
 # DISCORD
 showPresence = True # Default = True / Discord presence using pypresence
 
@@ -163,7 +159,7 @@ useArgs = True # Default = False / accept command line args
 devMode = False # Default = False
 showSpawnArea = False # Default = False / show powerup spawn area
 showCursorPath = False # Default = False / Draw line from cursor to ship
-
+rawCursorMode = False # Default = False / sets player position to cursor position
 
 # ARGS
 if useArgs:

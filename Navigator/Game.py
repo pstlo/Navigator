@@ -593,7 +593,7 @@ class Game:
     # Update all lasers
     def laserUpdate(self,lasers,enemyLasers,player,obstacles):
         lasers.update(self,player,lasers,obstacles)
-        enemyLasers.update(player)
+        enemyLasers.update(self,player)
         for laser in lasers: self.screen.blit(laser.image,laser.rect)
         for laser in enemyLasers: self.screen.blit(laser.image,laser.rect)
 
