@@ -3,6 +3,7 @@ import sys,random,math,pygame
 import Settings as settings
 from Menu import Menu
 from Player import Player
+from AIPlayer import AIPlayer
 from Obstacles import Obstacle, Cave
 from Unlocks import Unlocks
 from Point import Point
@@ -83,10 +84,8 @@ class Game:
 
         self.resetGameConstants() # Reset level settings
         
-        #if settings.aiTest: player = AI(self) # Initialize player as AI
-        #else: 
-        
-        player = Player(self) # Initialize player as user
+        if settings.aiPlayer: player = AIPlayer(self) # Initialize player as AI
+        else: player = Player(self) # Initialize player as user
         
         if self.mainMenu:
             self.assets.loadMenuMusic()
@@ -101,25 +100,25 @@ class Game:
 
         if self.musicMuted: pygame.mixer.music.set_volume(0)
 
-        events = Event() # Initialize events
-        events.set(player) # Events manipulate player cooldowns
-        lasers = pygame.sprite.Group() # Laser group
-        enemyLasers = pygame.sprite.Group() # Enemy laser group
-        obstacles = pygame.sprite.Group() # Obstacle group
+        self.events = Event() # Initialize events
+        self.events.set(player) # Events manipulate player cooldowns
+        self.lasers = pygame.sprite.Group() # Laser group
+        self.enemyLasers = pygame.sprite.Group() # Enemy laser group
+        self.obstacles = pygame.sprite.Group() # Obstacle group
 
         # GAME LOOP
-        while True: self.update(player,obstacles,self.menu,events,lasers,enemyLasers)
+        while True: self.update(player)
 
 
     # MAIN GAME LOOP
-    def update(self,player,obstacles,menu,events,lasers,enemyLasers):
+    def update(self,player):
         for event in pygame.event.get():
 
             # EXIT GAME
             if event.type == pygame.QUIT: self.quitGame()
 
             # BACK TO MENU
-            if (event.type == pygame.KEYDOWN and event.key in settings.escapeInput) or (self.gamePad is not None and self.gamePad.get_button(self.controller.controllerExit) == 1): menu.gameOver(self,player,obstacles)
+            if (event.type == pygame.KEYDOWN and event.key in settings.escapeInput) or (self.gamePad is not None and self.gamePad.get_button(self.controller.controllerExit) == 1): self.menu.gameOver(self,player,self.obstacles)
 
             # MUTE
             if (event.type == pygame.KEYDOWN and event.key in settings.muteInput) or (self.gamePad is not None and self.gamePad.get_button(self.controller.controllerMute) == 1): self.toggleMusic()
@@ -127,28 +126,28 @@ class Game:
             # PAUSE GAME
             if self.pauseCount < settings.pauseMax and ( (event.type == pygame.KEYDOWN and event.key in settings.pauseInput) or (self.gamePad is not None and event.type == pygame.JOYBUTTONDOWN and self.gamePad.get_button(self.controller.controllerPause)==1) ):
                 self.pauseCount += 1
-                menu.pause(self,player,obstacles,lasers,enemyLasers)
+                self.menu.pause(self,player,self.obstacles,self.lasers,self.enemyLasers)
 
             # INCREMENT TIMER
-            if event.type == events.timerEvent: self.gameClock +=1
+            if event.type == self.events.timerEvent: self.gameClock +=1
 
             # FUEL REPLENISH
-            if event.type == events.fuelReplenish and player.fuel < player.maxFuel: player.fuel += player.fuelRegenNum
+            if event.type == self.events.fuelReplenish and player.fuel < player.maxFuel: player.fuel += player.fuelRegenNum
 
             # EXHAUST UPDATE
-            if event.type == events.exhaustUpdate: player.updateExhaust(self)
+            if event.type == self.events.exhaustUpdate: player.updateExhaust(self)
 
             # GUN COOLDOWN
-            if event.type == events.laserCooldown: player.laserReady = True
+            if event.type == self.events.laserCooldown: player.laserReady = True
 
             # BOOST COOLDOWN
-            if event.type == events.boostCooldown: player.boostReady = True
+            if event.type == self.events.boostCooldown: player.boostReady = True
 
             # SHIELD VISUAL
-            if event.type == events.shieldVisualDuration: player.showShield = False
+            if event.type == self.events.shieldVisualDuration: player.showShield = False
 
             # NEAR MISS VISUAL
-            if event.type == events.nearMissIndicator and self.nearMissCount > 0: self.nearMissCount = 0
+            if event.type == self.events.nearMissIndicator and self.nearMissCount > 0: self.nearMissCount = 0
 
         # BACKGROUND
         self.screen.fill(settings.screenColor)
@@ -196,17 +195,17 @@ class Game:
 
                 # COLLISION DETECTION
                 if pygame.sprite.collide_mask(self.cave,player):
-                    if player.shields > 0: player.shieldDown(events)
+                    if player.shields > 0: player.shieldDown(self.events)
                     else:
-                        player.explode(self,obstacles) # explosion
+                        player.explode(self,self.obstacles) # explosion
                         if not self.musicMuted: self.assets.explosionNoise.play()
-                        menu.gameOver(self,player,obstacles) # Game over
-                enemyLasersCollided = pygame.sprite.spritecollide(self.cave,enemyLasers,True,pygame.sprite.collide_mask) # Enemy lasers/cave
-                lasersCollided = pygame.sprite.spritecollide(self.cave,lasers,True,pygame.sprite.collide_mask) # Lasers/cave
+                        self.menu.gameOver(self,player,self.obstacles) # Game over
+                enemyLasersCollided = pygame.sprite.spritecollide(self.cave,self.enemyLasers,True,pygame.sprite.collide_mask) # Enemy lasers/cave
+                lasersCollided = pygame.sprite.spritecollide(self.cave,self.lasers,True,pygame.sprite.collide_mask) # Lasers/cave
                 for laser in lasersCollided: self.explosions.append(Explosion(self,laser,None))
                 for laser in enemyLasersCollided: self.explosions.append(Explosion(self,laser,None))
-                enemyLasers.remove(enemyLasersCollided)
-                lasers.remove(lasersCollided)
+                self.enemyLasers.remove(enemyLasersCollided)
+                self.lasers.remove(lasersCollided)
 
         # HUD
         if settings.showHUD: self.showHUD(player)
@@ -246,8 +245,8 @@ class Game:
 
         # UPDATE PLAYER
         player.movement(self)
-        player.shoot(self,lasers,events,obstacles)
-        player.boost(self,events)
+        player.shoot(self,self.lasers,self.events,self.obstacles)
+        player.boost(self,self.events)
         player.wrapping()
         player.updateAnimation(self)
 
@@ -269,29 +268,29 @@ class Game:
             self.screen.blit(shieldImg,shieldImgRect)
 
         # PLAYER/LASER COLLISION DETECTION
-        if pygame.sprite.spritecollide(player,enemyLasers,True,pygame.sprite.collide_mask):
-            if player.shields > 0:player.shieldDown(events)
+        if pygame.sprite.spritecollide(player,self.enemyLasers,True,pygame.sprite.collide_mask):
+            if player.shields > 0:player.shieldDown(self.events)
             else:
-                player.explode(self,obstacles) # Animation
+                player.explode(self,self.obstacles) # Animation
                 if not self.musicMuted: self.assets.explosionNoise.play()
-                menu.gameOver(self,player,obstacles) # Game over
+                self.menu.gameOver(self,player,self.obstacles) # Game over
 
         # DRAW LASERS
-        self.laserUpdate(lasers,enemyLasers,player,obstacles)
+        self.laserUpdate(self.lasers,self.enemyLasers,player,self.obstacles)
 
         # UPDATE OBSTACLES
-        if len(obstacles) > 0:
+        if len(self.obstacles) > 0:
             # OBSTACLE/PLAYER COLLISION DETECTION
-            if pygame.sprite.spritecollide(player,obstacles,True,pygame.sprite.collide_mask):
-                if player.shields > 0:player.shieldDown(events)
+            if pygame.sprite.spritecollide(player,self.obstacles,True,pygame.sprite.collide_mask):
+                if player.shields > 0:player.shieldDown(self.events)
                 else:
-                    player.explode(self,obstacles) # Animation
+                    player.explode(self,self.obstacles) # Animation
                     if not self.musicMuted: self.assets.explosionNoise.play()
-                    menu.gameOver(self,player,obstacles) # Game over
+                    self.menu.gameOver(self,player,self.obstacles) # Game over
 
             # OBSTACLE MOVEMENT
-            for obs in obstacles:
-                obs.move(self,player,enemyLasers)
+            for obs in self.obstacles:
+                obs.move(self,player,self.enemyLasers)
                 obs.activate() # Activate if on screen
                 if obs.active:
 
@@ -301,11 +300,11 @@ class Game:
                         if nearDist <= settings.nearMissDist: self.nearObsList.append(obs)
 
                     # OBSTACLE/LASER COLLISION DETECTION
-                    if pygame.sprite.spritecollide(obs,lasers,not player.laserCollat,pygame.sprite.collide_mask):
+                    if pygame.sprite.spritecollide(obs,self.lasers,not player.laserCollat,pygame.sprite.collide_mask):
                         if obs.health - player.damage > 0: obs.health -= player.damage
                         else:
                             obs.kill()
-                            obstacles.remove(obs)
+                            self.obstacles.remove(obs)
                             if not self.musicMuted: self.assets.impactNoise.play()
                             self.explosions.append(Explosion(self,obs,None))
 
@@ -331,7 +330,7 @@ class Game:
                     self.screen.blit(newBlit[0],newBlit[1]) # Blit obstacles
 
                     # OBSTACLE BOUNDARY HANDLING
-                    obs.bound(obstacles)
+                    obs.bound(self.obstacles)
 
 
             # DRAW EXPLOSIONS
@@ -339,11 +338,11 @@ class Game:
                 if debris.finished: self.explosions.remove(debris)
                 else: debris.update(self)
 
-        if settings.nearMisses: self.nearMisses(player,events) # NEAR MISS CALCULATION
+        if settings.nearMisses: self.nearMisses(player,self.events) # NEAR MISS CALCULATION
 
         if self.gameClock > self.sessionLongRun: self.sessionLongRun = self.gameClock # UPDATE HIGH SCORE
-        if not self.endlessModeStarted: self.levelUpdater(player,obstacles,events) # LEVEL UP
-        if "OBS" in self.levelType or self.endlessModeStarted: self.spawner(obstacles,player) # SPAWN OBSTACLES
+        if not self.endlessModeStarted: self.levelUpdater(player,self.obstacles,self.events) # LEVEL UP
+        if "OBS" in self.levelType or self.endlessModeStarted: self.spawner(self.obstacles,player) # SPAWN OBSTACLES
 
         # UPDATE SCREEN
         player.lastAngle = player.angle # Save recent player orientation

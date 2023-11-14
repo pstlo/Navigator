@@ -160,7 +160,7 @@ devMode = False # Default = False
 showSpawnArea = False # Default = False / show powerup spawn area
 showCursorPath = False # Default = False / Draw line from cursor to ship
 rawCursorMode = False # Default = False / sets player position to cursor position
-#aiTest = False
+aiPlayer = False # Default = False / Autoplay 
 
 # ARGS
 if useArgs:
