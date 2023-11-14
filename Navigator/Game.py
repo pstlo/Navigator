@@ -82,7 +82,12 @@ class Game:
     def gameLoop(self):
 
         self.resetGameConstants() # Reset level settings
-        player = Player(self) # Initialize player
+        
+        #if settings.aiTest: player = AI(self) # Initialize player as AI
+        #else: 
+        
+        player = Player(self) # Initialize player as user
+        
         if self.mainMenu:
             self.assets.loadMenuMusic()
             pygame.mixer.music.play(-1)
