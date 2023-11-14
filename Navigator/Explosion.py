@@ -1,5 +1,4 @@
 import pygame
-
 import Settings as settings
 
 # EXPLOSIONS

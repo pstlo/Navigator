@@ -1,16 +1,16 @@
 import sys,random,math,pygame
 
-# GAME
 import Settings as settings
+from Menu import Menu
+from Player import Player
+from Obstacles import Obstacle, Cave
 from Unlocks import Unlocks
 from Point import Point
-from Explosion import Explosion
-from Obstacles import Obstacle, Cave
-from Player import Player
 from Event import Event
-from Menu import Menu
+from Explosion import Explosion
 
 
+# GAME
 class Game:
     def __init__(self,assets,screen,controller):
 
@@ -527,7 +527,6 @@ class Game:
             if player.shields > 0: shieldRectWidth = barBorder.width*0.99
             shieldRect = pygame.Rect(settings.screenSize[0]/3, 5, shieldRectWidth, 5)
             shieldRect.centerx = barBorder.centerx
-            fullShieldRectWidth = settings.shieldChunkSize * player.shieldPiecesNeeded
             if player.shields > 0: pygame.draw.rect(self.screen,settings.fullShieldColor,shieldRect)
             elif player.shieldPieces > 0: pygame.draw.rect(self.screen,settings.shieldColor,shieldRect)
 
@@ -592,7 +591,7 @@ class Game:
 
     # Update all lasers
     def laserUpdate(self,lasers,enemyLasers,player,obstacles):
-        lasers.update(self,player,lasers,obstacles)
+        lasers.update(self,player,obstacles)
         enemyLasers.update(self,player)
         for laser in lasers: self.screen.blit(laser.image,laser.rect)
         for laser in enemyLasers: self.screen.blit(laser.image,laser.rect)

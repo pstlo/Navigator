@@ -4,7 +4,7 @@ from Explosion import Explosion
 
 # LASERS
 class Laser(pygame.sprite.Sprite):
-    def __init__(self,game,player,obstacles):
+    def __init__(self,game,player):
         super().__init__()
         self.laserType = player.laserType
         self.speed = player.laserSpeed
@@ -17,16 +17,16 @@ class Laser(pygame.sprite.Sprite):
 
 
     # MOVE LASERS
-    def update(self,game,player,lasers,obstacles):
+    def update(self,game,player,obstacles):
         # Remove offscreen lasers
         if self.rect.centerx > settings.screenSize[0] or self.rect.centery > settings.screenSize[1] or self.rect.centerx < 0 or self.rect.centery < 0: self.kill()
-        elif self.laserType == "NORMAL": self.normalMove(player)
-        elif self.laserType == "HOME": self.homingMove(game,player,lasers,obstacles)
+        elif self.laserType == "NORMAL": self.normalMove()
+        elif self.laserType == "HOME": self.homingMove(game,obstacles)
         else: self.normalMove(player)
 
 
     # Simple movement
-    def normalMove(self,player):
+    def normalMove(self):
         angle = math.radians( (self.angle-90))
         velX = 1.414 * self.speed * math.cos(angle)
         velY = 1.414 * self.speed * math.sin(angle)
@@ -34,10 +34,10 @@ class Laser(pygame.sprite.Sprite):
         self.rect.centery += velY
 
 
-    def homingMove(self,game,player,lasers,obstacles):
+    def homingMove(self,game,obstacles):
         if self.seekWaitTime < settings.heatSeekDelay:
             self.seekWaitTime += 1
-            self.normalMove(player)
+            self.normalMove()
         elif self.seek == False: self.target, self.seek = self.getClosestPoint(obstacles), True # Get target
         else:
             if self.target is None or not obstacles.has(self.target):
@@ -59,11 +59,10 @@ class Laser(pygame.sprite.Sprite):
 
     # Get closest target out of a group
     def getClosestPoint(self, points):
-        closest,shortest = None,None
+        closest = None
         for pt in points:
             if pt.active:
-                if closest is None or math.dist(self.rect.center,closest.rect.center) > math.dist(self.rect.center,pt.rect.center):
-                    closest,shortest = pt, math.dist(self.rect.center,pt.rect.center)
+                if closest is None or math.dist(self.rect.center,closest.rect.center) > math.dist(self.rect.center,pt.rect.center): closest = pt
         return closest
 
 

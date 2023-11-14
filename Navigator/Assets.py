@@ -1,8 +1,7 @@
-import Settings as settings
-import os,sys,platform,json,base64
+import os,sys,platform,json,base64,pygame
 from cryptography.fernet import Fernet
 from dotenv import load_dotenv
-import pygame
+import Settings as settings
 import Presence
 
 # ASSETS

@@ -158,7 +158,7 @@ class Player(pygame.sprite.Sprite):
                 if (game.gamePad is None or not game.usingController) and (not game.usingCursor):
                     key = pygame.key.get_pressed()
                     if any(key[bind] for bind in settings.shootInput) and self.fuel - self.laserCost > 0:
-                        lasers.add(Laser(game,self,obstacles))
+                        lasers.add(Laser(game,self))
                         if not game.musicMuted: game.assets.laserNoise.play()
                         self.fuel -= self.laserCost
                         events.laserCharge(self)
@@ -166,7 +166,7 @@ class Player(pygame.sprite.Sprite):
                 # CONTROLLER
                 elif game.usingController and not game.usingCursor:
                     if game.gamePad.get_axis(self.controller.controllerShoot) > 0.5 and self.fuel - self.laserCost > 0:
-                        lasers.add(Laser(game,self,obstacles))
+                        lasers.add(Laser(game,self))
                         if not game.musicMuted: game.assets.laserNoise.play()
                         self.fuel -= self.laserCost
                         events.laserCharge(self)
@@ -174,7 +174,7 @@ class Player(pygame.sprite.Sprite):
                 # CURSOR
                 elif game.usingCursor:
                     if pygame.mouse.get_pressed()[0]== 1 and self.fuel - self.laserCost > 0:
-                        lasers.add(Laser(game,self,obstacles))
+                        lasers.add(Laser(game,self))
                         if not game.musicMuted: game.assets.laserNoise.play()
                         self.fuel -= self.laserCost
                         events.laserCharge(self)
