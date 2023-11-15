@@ -70,6 +70,8 @@ primaryFontColor = [0,255,0] # Default = [0,255,0] / Green
 secondaryFontColor = [255,255,255] # Default = [255,255,255] / White
 
 # START MENU
+titleSize = 320
+mainLogoSize = 500
 maxFgIcons = 1 # Default = 1 / foreground icons
 maxBgIcons = 5 # Default = 5 / background icons
 maxCgIcons = 1 # Default = 1 / colliding icons
@@ -144,6 +146,7 @@ caveStartPos = screenSize[1]*-2 # Default = -1600 / Cave start Y coordinate
 caveSpeed = 20 # Default = 20 / Cave flyby speed
 
 # SAVING
+saveRecords = True # record save
 encryptGameRecords = True # Default = True / Hide game records from user to prevent manual unlocks
 invalidKeyMessage = "Invalid key, could not save records." # Saved to game records file if settings.encryptGameRecords == True and key is invalid
 
@@ -162,6 +165,7 @@ showCursorPath = False # Default = False / Draw line from cursor to ship
 rawCursorMode = False # Default = False / sets player position to cursor position
 aiPlayer = False # Default = False / Autoplay 
 
+
 # ARGS
 if useArgs:
     arguments = sys.argv[1:]
@@ -172,7 +176,11 @@ else: arguments = None
 if arguments is not None:
     if "debug" in arguments: debugging = True
     if "devmode" in arguments: devMode = True
-    if "aiplayer" in arguments: aiPlayer = True
+    if "aiplayer" in arguments: 
+        aiPlayer = True
+        saveRecords = False
+        connectToLeaderboard = False
+        
 
 # CONTROLLER BINDS
 controllerBinds = {

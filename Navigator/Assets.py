@@ -114,7 +114,7 @@ class Assets:
 
         # PLANET ASSETS
         self.planets = []
-        self.planetSizes = [400,500] # Planet sizes for corresponding index
+        self.planetSizes = [400] # Planet sizes for corresponding index
         planetIndex = 0
         for filename in sorted(os.listdir(planetDirectory)):
             if filename.endswith('.png'):
@@ -217,7 +217,8 @@ class Assets:
         self.playerShield = pygame.transform.scale(pygame.image.load(self.resources(os.path.join(assetDirectory,"Shield.png"))),(settings.playerShieldSize,settings.playerShieldSize))
 
         # MAIN MENU ASSETS
-        self.titleText = pygame.image.load(self.resources(os.path.join(menuDirectory,'Title.png'))).convert_alpha()
+        self.titleText = pygame.transform.scale(pygame.image.load(self.resources(os.path.join(menuDirectory,'Title.png'))), (settings.titleSize, settings.titleSize)).convert_alpha()
+        self.mainLogo = pygame.transform.scale(pygame.image.load(self.resources(os.path.join(menuDirectory,'Main.png'))), (settings.mainLogoSize,settings.mainLogoSize)).convert_alpha()
         self.menuList = []
         menuMeteorDir = os.path.join(menuDirectory,'FlyingObjects')
         for objPath in sorted(os.listdir(menuMeteorDir)): self.menuList.append(pygame.image.load(self.resources(os.path.join(menuMeteorDir,objPath))).convert_alpha())
@@ -311,10 +312,15 @@ class Assets:
 
     # STORE GAME RECORDS
     def storeRecords(self,records):
-        # No encryption
+        # Skip saving
         if settings.devMode: 
             settings.debug("Devmode does not store records") # Debug
             return
+        elif settings.aiPlayer:
+            settings.debug("You didn't earn this!") # Debug
+            return
+
+        # No encryption    
         if not settings.encryptGameRecords:
             try:
                 with open(self.recordsPath, 'w') as file: file.write(json.dumps(records))

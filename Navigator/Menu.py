@@ -8,14 +8,40 @@ from Point import Point
 # MENUS
 class Menu:
 
+    
+    # LOGO SCREEN
+    def logoScreen(self,game):
+        game.showLogoScreen = False
+        game.screen.blit(game.assets.bgList[game.currentStage - 1][0],(0,0))
+        logoRect = game.assets.mainLogo.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/2))
+        game.screen.blit(game.assets.mainLogo,logoRect)
+        
+        
+        startText = game.assets.mediumFont.render("PRESS ANY BUTTON", True, settings.primaryFontColor)
+        startTextRect = startText.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1] * 0.9))
+        game.screen.blit(startText,startTextRect)
+        game.displayUpdate()
+        
+        
+        
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE: game.quitGame()
+                if (event.type == pygame.KEYDOWN) or (game.gamePad is not None and game.gamePad.get_button(game.controller.controllerSelect) == 1) or (event.type == pygame.MOUSEBUTTONDOWN): return
+            
+        
+    
     # START MENU
     def home(self,game,player):
 
+        if game.showLogoScreen: self.logoScreen(game)
+        
         # TITLE TEXT
-        startRect = game.assets.titleText.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/3))
+        startRect = game.assets.titleText.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/3 +30))
 
         # Foreground icons
         fgIcons = []
+        
         for icon in range(settings.maxFgIcons): fgIcons.append(Icon(game,"FG"))
 
         # Background icons
@@ -43,7 +69,7 @@ class Menu:
             controlDisplays = self.getControlLabels(game,player,True)
 
         versionDisplay = game.assets.versionFont.render(game.version,True,settings.primaryFontColor)
-        versionRect = versionDisplay.get_rect(center = (startRect.right-120,startRect.bottom-20))
+        versionRect = versionDisplay.get_rect(center = (startRect.right - 45,startRect.bottom-100))
 
         # Coin Display
         coinDisplay = game.assets.mediumFont.render(str(game.records['coins']), True, settings.secondaryFontColor)

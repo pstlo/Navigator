@@ -1,4 +1,4 @@
-import math,pygame
+import math,random,pygame
 from Player import Player
 import Settings as settings
 
@@ -7,57 +7,31 @@ class AIPlayer(Player):
         super().__init__(game)
         self.maxObsConsidered = 3
         self.target = []
-        self.mode = 0
         self.futureDistance = 50 # OBS Path length
-        self.imminentDangerThreshold = 10
-        self.nextCollision = None # Next OBS collision
-        self.drawThreats = True
-        self.drawPaths = True
+        self.dangerZone = 100
+        
+        self.drawThreats = False
+        self.drawPaths = False
 
 
-    def getClosestOBS(self,game,threats):
-        closest = None
-        for obs in game.obstacles:
-            if threats is None or (obs.active and not obs in threats):
-                if closest is None or math.dist(self.rect.center,closest.rect.center) > math.dist(self.rect.center,obs.rect.center): closest = obs
-        return closest
 
 
     def movement(self, game):
         playerPath = [self.rect.center,game.thisPoint.rect.center] # Path to point
 
-        if (self.target is None or len(self.target) == 0) or self.mode == 0: self.target = game.thisPoint.rect.center # Go to point
-        elif self.mode == 1: # Avoid collision
-
-            if self.nextCollision is not None:
-                danger = self.getFutureCollision(playerPath,[self.nextCollision.rect.center,self.getFutureRect(game,self.nextCollision.rect,self.nextCollision.speed * self.futureDistance, self.nextCollision.direction).center])
-                if danger is None:
-                    self.nextCollision = None
-                    self.mode = 0
-                    self.target = game.thisPoint.rect.center
-
-                else:
-                    settings.debug("Incoming collision")
-                    pass
-
-
-            else:
-                self.mode = 0
-                self.target = game.thisPoint.rect.center
+        self.target = game.thisPoint.rect.center # Go to point
 
 
         dirX = (self.target[0] - self.rect.centerx + settings.screenSize[0]/2) % settings.screenSize[0]-settings.screenSize[0]/2 # Shortest horizontal path to target
         dirY = (self.target[1] - self.rect.centery + settings.screenSize[1]/2) % settings.screenSize[1]-settings.screenSize[1]/2 # Shortest vetical path to target
         direction = math.atan2(dirY,dirX) # Angle to shortest path to target
-        self.angle = -math.degrees(direction) - 90 # Rotate
+        
 
         newRect = self.getNextRect(game,self.rect,self.speed,direction) # Rect at next frame
 
 
         if self.drawPaths: pygame.draw.line(game.screen,[0,255,0],playerPath[0],playerPath[1])
 
-        willCollide = False # Eventual collision
-        imminentDanger = False # Collision next frame
 
         count = 0
         threats = [] # Closest obstacles
@@ -69,27 +43,36 @@ class AIPlayer(Player):
             else: break
             count += 1
 
-        for i in threats: # Stop for obstacles
+        for i in threats:
             if self.drawPaths: self.drawPath(game,i)
 
             if newRect.colliderect(i.rect):
-                imminentDanger = True
-                break
+                if not self.rect.colliderect(i.rect): newRect = self.rect # Avoidable by braking
+                else: # Going to collide at current path
+                    negRect = self.getNextRect(game,self.rect,self.speed,direction - 180) # Rect at prev frame
+                    rightRect = self.getNextRect(game,self.rect,self.speed,direction-90)
+                    leftRect = self.getNextRect(game,self.rect,self.speed,direction+90)
+                    
+                    if not negRect.colliderect(i.rect): newRect = negRect # Avoidable by reversing 
+                    elif not leftRect.colliderect(i.rect): newRect = leftRect # Avoidable by turning left 
+                    elif not rightRect.colliderect(i.rect): newRect = rightRect # Avoidable by turning right 
+                    #else: settings.debug("Collision incoming")
+                    
 
-            danger = self.getFutureCollision(playerPath,[i.rect.center,self.getFutureRect(game,i.rect,i.speed * self.futureDistance, i.direction).center])
-            if danger is not None:
-                willCollide = True
-                dangers.append(danger)
-                if self.drawThreats: pygame.draw.circle(game.screen,[255,0,0], danger, 10)
+            danger = self.getFutureCollision(playerPath,[i.rect.center,self.getFutureRect(game,i.rect,i.speed * self.futureDistance, i.direction).center]) # Check if this obstacle path intersects with current path
+            if danger is not None and self.drawThreats: pygame.draw.circle(game.screen,[255,0,0], danger, 7)
 
-                if math.dist(self.rect.center,danger) < self.imminentDangerThreshold:
-                    self.nextCollision = i
-                    self.imminentDanger = True
 
-            #newObsRect = self.getFutureRect(game,i.rect,i.speed,i.direction)
+        self.angle = -math.degrees(direction) - 90 # Rotate
+        self.rect = newRect
 
-        if not imminentDanger: self.rect = newRect
-        else: self.mode = 1
+
+    def getClosestOBS(self,game,threats):
+        closest = None
+        for obs in game.obstacles:
+            if threats is None or (obs.active and not obs in threats):
+                if closest is None or math.dist(self.rect.center,closest.rect.center) > math.dist(self.rect.center,obs.rect.center): closest = obs
+        return closest
 
 
     def getNextRect(self,game,oldRect,speed,direction): # Get rect at next position in path

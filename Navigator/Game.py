@@ -21,6 +21,7 @@ class Game:
         self.menu = Menu()
         self.gamePad = controller.gamePad # Joystick 
         self.controller = controller # Gamepad object
+        self.showLogoScreen = True
         
         # GAME RECORDS
         self.records = self.assets.loadRecords()
