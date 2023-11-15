@@ -243,18 +243,19 @@ class Menu:
             game.screen.blit(game.assets.bgList[game.currentStage - 1][0], (0,0) )
             game.showPlanet()
             game.showBackgroundCloud()
+
             if game.cave is not None:
                 game.screen.blit(game.cave.background,game.cave.rect)
                 game.screen.blit(game.cave.image,game.cave.rect) # Draw cave
 
-            if settings.showHUD: game.showHUD(player)
+            if settings.showHUD: game.showHUD(player) # Draw HUD
+
             game.screen.blit(game.thisPoint.image, game.thisPoint.rect)
             game.screen.blit(playerBlit[0],playerBlit[1])
 
-            if player.showShield:
+            if player.showShield: # Draw shield
                 shieldImg,shieldImgRect = game.rotateImage(game.assets.playerShield, player.rect, player.angle)
                 game.screen.blit(shieldImg,shieldImgRect)
-
 
             for obs in obstacles: # Draw obstacles
                 newBlit = game.rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
