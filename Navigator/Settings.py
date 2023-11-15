@@ -172,6 +172,7 @@ else: arguments = None
 if arguments is not None:
     if "debug" in arguments: debugging = True
     if "devmode" in arguments: devMode = True
+    if "aiplayer" in arguments: aiPlayer = True
 
 # CONTROLLER BINDS
 controllerBinds = {
