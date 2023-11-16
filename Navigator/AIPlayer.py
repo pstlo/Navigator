@@ -5,66 +5,128 @@ import Settings as settings
 class AIPlayer(Player):
     def __init__(self,game):
         super().__init__(game)
+
         self.maxObsConsidered = 3
         self.target = []
         self.futureDistance = 50 # OBS Path length
-        self.dangerZone = 100
-        
+        self.dangerZone = 100 # Dist at which OBS are considered danger
+        self.leapDistance = 50
+        self.destinationDistance = 5
+
         self.drawThreats = False
         self.drawPaths = False
 
 
-
-
     def movement(self, game):
-        playerPath = [self.rect.center,game.thisPoint.rect.center] # Path to point
 
-        self.target = game.thisPoint.rect.center # Go to point
+        pointPath = [self.rect.center, game.thisPoint.rect.center] # Path to point
+        if self.target is not None and len(self.target) == 2:
+            targetPath = [self.rect.center, self.target] # Path to target
+            prevTarget = [self.target[0],self.target[1]]
+        else: targetPath = None
 
-
-        dirX = (self.target[0] - self.rect.centerx + settings.screenSize[0]/2) % settings.screenSize[0]-settings.screenSize[0]/2 # Shortest horizontal path to target
-        dirY = (self.target[1] - self.rect.centery + settings.screenSize[1]/2) % settings.screenSize[1]-settings.screenSize[1]/2 # Shortest vetical path to target
-        direction = math.atan2(dirY,dirX) # Angle to shortest path to target
-        
-
-        newRect = self.getNextRect(game,self.rect,self.speed,direction) # Rect at next frame
-
-
-        if self.drawPaths: pygame.draw.line(game.screen,[0,255,0],playerPath[0],playerPath[1])
-
+        if self.drawPaths:
+            pygame.draw.line(game.screen,[0,255,0],pointPath[0],pointPath[1])
+            if targetPath is not None: pygame.draw.line(game.screen,[0,255,255],targetPath[0],targetPath[1])
 
         count = 0
         threats = [] # Closest obstacles
-        dangers = [] # Upcoming collisions
-        for i in game.obstacles:
+        for i in range(len(game.obstacles)):
             if count < self.maxObsConsidered:
                 threat = self.getClosestOBS(game,threats)
                 if threat is not None: threats.append(threat)
             else: break
             count += 1
 
-        for i in threats:
-            if self.drawPaths: self.drawPath(game,i)
+        if threats is not None and len(threats) > 0: closestThreatDist = math.dist(threats[0].rect.center,self.rect.center)
+        else: closestThreatDist = None
 
-            if newRect.colliderect(i.rect):
-                if not self.rect.colliderect(i.rect): newRect = self.rect # Avoidable by braking
-                else: # Going to collide at current path
-                    negRect = self.getNextRect(game,self.rect,self.speed,direction - 180) # Rect at prev frame
-                    rightRect = self.getNextRect(game,self.rect,self.speed,direction-90)
-                    leftRect = self.getNextRect(game,self.rect,self.speed,direction+90)
+        if closestThreatDist is not None and closestThreatDist < self.dangerZone:
+
+            dirX = (self.target[0] - self.rect.centerx + settings.screenSize[0]/2) % settings.screenSize[0]-settings.screenSize[0]/2 # Shortest horizontal path to target
+            dirY = (self.target[1] - self.rect.centery + settings.screenSize[1]/2) % settings.screenSize[1]-settings.screenSize[1]/2 # Shortest vetical path to target
+            direction = math.atan2(dirY,dirX) # Angle to shortest path to target
+
+            options = {
+                'next' : {
+                    "target" : self.getNextRect(game,self.speed,direction),
+                    "aim" : self.getNextRect(game,self.leapDistance,direction),
+                    "invalid" : False
+                    },
+
+                'back' : {
+                    "target" : self.getNextRect(game,self.speed,direction + 180),
+                    "aim" : self.getNextRect(game,self.leapDistance,direction + 180),
+                    "invalid" : False
+                    },
+
+                'left' : {
+                    "target" : self.getNextRect(game,self.speed,direction +90),
+                    "aim" : self.getNextRect(game,self.leapDistance,direction +90),
+                    "invalid" : False
+                    },
+
+                'right' : {
+                    "target" : self.getNextRect(game,self.speed,direction -90),
+                    "aim" : self.getNextRect(game,self.leapDistance,direction -90),
+                    "invalid" : False
+                    },
+
+                'stop' : {
+                    "target" : self.rect,
+                    "aim" : self.rect,
+                    "invalid" : False
+                    }
+            }
+            
+            
+            num = 15
+            while num < 360:
+                
+                newDict = {
+                    "target" : self.getNextRect(game,self.speed,num),
+                    "aim" : self.getNextRect(game,self.leapDistance,num),
+                    "invalid" : False
+                }
+                
+                options.update({'angle'+str(num): newDict})
+                
+                num += 15
+            
+
+            for threat in threats:
+                i = self.getFutureRect(game,threat.rect,threat.speed,threat.direction)
+                if self.drawPaths: self.drawPath(game,threat)
+
+                for k in options:
+                    if not options[k]['invalid'] and options[k]['target'].colliderect(i): options[k]['invalid'] = True
+
+                danger = self.getFutureCollision(pointPath,[threat.rect.center,self.getFutureRect(game,threat.rect,threat.speed * self.futureDistance, threat.direction).center]) # Check if this obstacle path intersects with current path
+                if danger is not None and self.drawThreats: pygame.draw.circle(game.screen,[255,0,0], danger, 7)
+    
+    
+            validPath = None
+            for k in options: # Pick first valid path
+                if not options[k]['invalid']:
+                    settings.debug("Avoiding: " + k)
+                    validPath = options[k]['aim'].center
                     
-                    if not negRect.colliderect(i.rect): newRect = negRect # Avoidable by reversing 
-                    elif not leftRect.colliderect(i.rect): newRect = leftRect # Avoidable by turning left 
-                    elif not rightRect.colliderect(i.rect): newRect = rightRect # Avoidable by turning right 
-                    #else: settings.debug("Collision incoming")
-                    
-
-            danger = self.getFutureCollision(playerPath,[i.rect.center,self.getFutureRect(game,i.rect,i.speed * self.futureDistance, i.direction).center]) # Check if this obstacle path intersects with current path
-            if danger is not None and self.drawThreats: pygame.draw.circle(game.screen,[255,0,0], danger, 7)
+            if validPath is not None: self.target = validPath
+            else: 
+                settings.debug("Cannot avoid obstacle with current algorithm")
+            
 
 
-        self.angle = -math.degrees(direction) - 90 # Rotate
-        self.rect = newRect
+        else: self.target = game.thisPoint.rect.center # Go to point
+
+        if math.dist(self.target,self.rect.center) > self.destinationDistance:
+            dirX = (self.target[0] - self.rect.centerx + settings.screenSize[0]/2) % settings.screenSize[0]-settings.screenSize[0]/2 # Shortest horizontal path to target
+            dirY = (self.target[1] - self.rect.centery + settings.screenSize[1]/2) % settings.screenSize[1]-settings.screenSize[1]/2 # Shortest vetical path to target
+            direction = math.atan2(dirY,dirX) # Angle to shortest path to target
+            newRect = self.getNextRect(game,self.speed,direction) # Rect at next frame
+            self.angle = -math.degrees(direction) - 90  # Rotate
+            self.rect = newRect
+
 
 
     def getClosestOBS(self,game,threats):
@@ -75,10 +137,10 @@ class AIPlayer(Player):
         return closest
 
 
-    def getNextRect(self,game,oldRect,speed,direction): # Get rect at next position in path
+    def getNextRect(self,game,speed,direction): # Get rect at next position in path
         validDirection = direction
         if type(validDirection) == str: validDirection = game.getAngle(validDirection) # Will revisit obstacle nonsense direction mechanic
-        newRect = oldRect.copy()
+        newRect = self.rect.copy()
         newRect.centerx += (speed) * math.cos(validDirection) # Horizontal movement
         newRect.centery += (speed) * math.sin(validDirection) # Vertical movement
         return newRect
