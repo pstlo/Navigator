@@ -7,25 +7,42 @@ class AIPlayer(Player):
     def __init__(self,game):
         super().__init__(game)
 
-        self.dangerZoneStart = 50 # Dist at which OBS are considered dangerous
-        self.safeZoneStart = 60 # Dist at which obs are considered safe
-        self.maxObsConsidered = 3 # maximum obstacles considered per frame
-        self.futureDistance = 50 # OBS Path length
+        # AI Config
+        self.pointSafetyThreshold = 400 # Dist from nearest obs at which it is considered safe to go to point
+        self.dangerZoneStart = 70 # Dist at which OBS are considered dangerous
+        self.safeZoneStart = 80 # Dist at which obs are considered safe
+        self.maxObsConsidered = 5 # maximum obstacles considered per frame
+        self.futureDistance = 50 # OBS Path length for future collision detection
         self.leapDistance = 80 # Target distance from player
-        self.destinationDistance = 2 # Destination size
-        self.precision = 5 # must be positive, lower value = higher precision angle
-        self.returnToCenter = False # True -> find path back to center / False -> find path away from danger
+
+        # Path finding
+        self.returnToCenter = False # True -> find path back to center
+        self.straightToPoint = False # True -> find path straight to point
+        self.continueToTarget = False # True -> find path straight to target
+        self.avoidObstacles = True # True -> find path out of danger
+
+        # Looping around screen
         self.loopForAvoid = False # Find path out of danger including looping around screen
         self.loopForFollow = False # Find path to point including looping around screen
-        self.useVectors = True
-        self.boostByDefault = not self.hasGuns
+
+        # Other logic
+        self.considerCenterSafe = False # Consider center of screen safest area
+        self.restrictedPointFollowing = False # Only follow point if closer than nearest obstacle
+        self.useVectors = False # Use pygame.Vector2 to calculate angles
+        self.bogoPath = False # Pick random path method every time
+        self.boostByDefault = not self.hasGuns # Always boost when able
+        self.destinationDistance = 2 # Destination size
+        self.precision = 5 # must be positive, lower value = higher precision angle
+
+        # Visualize
+        self.drawThreats = False
+        self.drawPaths = True
 
         self.target = []
         self.direction = None
         self.dangerZone = self.dangerZoneStart
         self.safeZone = self.safeZoneStart
-        self.drawThreats = True
-        self.drawPaths = True
+
 
 
 
@@ -33,21 +50,21 @@ class AIPlayer(Player):
         pointPath = [self.rect.center, game.thisPoint.rect.center] # Path to point
         if self.target is not None and len(self.target) == 2:
             targetPath = [self.rect.center, self.target] # Path to target
-            prevTarget = [self.target[0],self.target[1]]
-
+            if self.drawPaths: pygame.draw.line(game.screen,[0,255,255],targetPath[0],targetPath[1]) # Draw path to target
         else: targetPath = None
 
-        if self.drawPaths:
-            pygame.draw.line(game.screen,[0,255,0],pointPath[0],pointPath[1])
-            if targetPath is not None: pygame.draw.line(game.screen,[0,255,255],targetPath[0],targetPath[1])
 
         if self.drawThreats:
             pygame.draw.circle(game.screen,[255,0,0], self.rect.center, self.dangerZone, 3) # Draw danger zone
 
         # Threat detection
         threats = self.getThreats(game)
-        if threats is not None and len(threats) > 0: closestThreatDist = math.dist(threats[0].rect.center,self.rect.center)
-        else: closestThreatDist = None
+        if threats is not None and len(threats) > 0:
+            closestThreatDist = math.dist(threats[0].rect.center,self.rect.center)
+            closestThreatPos = [threats[0].rect.centerx,threats[0].rect.centery]
+        else: closestThreatDist,closestThreatPos = None,None
+
+        threatsPos = self.getObstaclesPos(threats)
 
         # First call
         if closestThreatDist is None or self.direction is None:
@@ -55,23 +72,38 @@ class AIPlayer(Player):
             self.getDirection(self.loopForFollow)
 
         # In danger
-        elif closestThreatDist < self.dangerZone: 
+        elif closestThreatDist < self.dangerZone:
             self.getTarget(game,threats,self.direction)
             self.getDirection(self.loopForAvoid)
 
         # No longer in danger
         elif closestThreatDist > self.safeZone:
-            self.target = game.thisPoint.rect.center # Go to point
+            self.chooseTarget(game,threatsPos)
             self.getDirection(self.loopForFollow)
 
-
+        # Move
         if self.direction is not None and math.dist(self.target,self.rect.center) > self.destinationDistance:
             newRect = self.getNextRect(game,self.speed,self.direction) # Rect at next frame
             self.angle = round(-math.degrees(self.direction) - 90)  # ROTATE PLAYER
             self.rect = newRect
 
 
-    
+
+    def chooseTarget(self,game,threats):
+        closestObstacle = self.getClosestOBS(game,None)
+        closestObsDist = math.dist(self.rect.center,closestObstacle.rect.center)
+        closestObsPos = closestObstacle.rect.center
+        if closestObsDist < self.pointSafetyThreshold and (not self.restrictedPointFollowing or math.dist(self.rect.center,game.thisPoint.rect.center) < math.dist(self.rect.center,closestObsPos)):
+            settings.debug("Go to target")
+            chosenTarget = game.thisPoint.rect.center # Go to point
+
+        else:
+            settings.debug("Finding empty space")
+            chosenTarget = self.findSafeArea(threats,closestObsPos) # Find empty space
+        self.target = chosenTarget
+
+
+
     def getTarget(self,game,threats,direction):
         options = {
                 'next' : {
@@ -95,7 +127,6 @@ class AIPlayer(Player):
             num += self.precision
 
         centers = []
-        screenCenter = [settings.screenSize[0]/2,settings.screenSize[1]/2]
         for threat in threats:
             i = self.getFutureRect(game,threat.rect,threat.speed,threat.direction)
             centers.append(i.center)
@@ -103,21 +134,7 @@ class AIPlayer(Player):
             for k in options:
                 if not options[k]['invalid'] and options[k]['target'].colliderect(i): options[k]['invalid'] = True
 
-            danger = self.getFutureCollision([self.rect.center, game.thisPoint.rect.center],[threat.rect.center,self.getFutureRect(game,threat.rect,threat.speed * self.futureDistance, threat.direction).center]) # Check if this obstacle path intersects with current path
-            if danger is not None:
-                if self.drawThreats: pygame.draw.circle(game.screen,[255,0,0], danger, 3) # Draw collision point
-
-        avgX, avgY = 0,0
-        for x,y in centers:
-            avgX += x
-            avgY += y
-        centersLen = len(centers)
-        if centersLen > 0:
-            avgX /= centersLen
-            avgY /= centersLen
-            avgCenter = [avgX, avgY]
-        else: avgCenter = screenCenter
-
+        avgCenter = self.getDangerArea(centers,centers[0])
         closest,closestDist = None,None # shortest distance to center
         longest, longestDist= None,None # longest avg dist from danger
         targ,targDist = None,None # shortest distance to target
@@ -131,7 +148,7 @@ class AIPlayer(Player):
                     longest = k # Farthest from danger
                     longestDist = tempDist
 
-                tempDist = math.dist(options[k]['target'].center,screenCenter)
+                tempDist = math.dist(options[k]['target'].center,[settings.screenSize[0]/2,settings.screenSize[1]/2])
                 if (closest is None or closestDist is None) or tempDist < closestDist:
                     closest = k # Closest to center
                     closestDist = tempDist
@@ -146,29 +163,49 @@ class AIPlayer(Player):
                     pt = k # Closest to point
                     ptDist = tempDist
 
+        self.choosePath(game,options,longest,closest,targ,pt)
 
+
+
+    def choosePath(self, game, options, longest, closest, targ, pt):
         if self.drawPaths:
             if longest is not None: pygame.draw.circle(game.screen,[0,255,255], options[longest]['aim'].center, 4)
             if closest is not None: pygame.draw.circle(game.screen,[255,255,0], options[closest]['aim'].center, 4)
             if targ is not None: pygame.draw.circle(game.screen,[0,0,255], options[targ]['aim'].center, 4)
             if pt is not None: pygame.draw.circle(game.screen,[255,0,255], options[pt]['aim'].center, 4)
 
+        choices = [longest,closest,pt,targ]
+        if self.bogoPath and None not in choices:
+            choice = random.choice(choices)
+            pathChoice = options[choice]['aim'].center
 
-        if self.returnToCenter:
-            if closest is not None:
-                settings.debug("Avoiding: " + closest) # Debug
-                self.target = options[closest]['aim'].center
+        elif self.returnToCenter and closest is not None:
+            choice = closest
+            pathChoice = options[closest]['aim'].center
 
-        elif longest is not None:
-            settings.debug("Avoiding: " + longest) # Debug
-            self.target = options[longest]['aim'].center
+        elif self.avoidObstacles and longest is not None:
+            choice = longest
+            pathChoice = options[longest]['aim'].center
+
+        elif self.straightToPoint and pt is not None:
+            choice = pt
+            pathChoice = options[pt]['aim'].center
+
+        elif self.continueToTarget and targ is not None:
+            choice = targ
+            pathChoice = options[targ]['aim'].center
 
         else:
+            for choice in choices: # Pick first valid option
+                if choice is not None:
+                    pathChoice = options[choice]['aim'].center
+                    break
             settings.debug("Cannot avoid obstacle with current algorithm") # Debug
             return
 
+        settings.debug("Avoiding: " + choice) # Debug
+        self.target = pathChoice
 
-    
 
 
     def getDirection(self,looping):
@@ -219,14 +256,15 @@ class AIPlayer(Player):
 
 
     def drawPath(self,game,obj):
-        newRect = self.getFutureRect(game,obj.rect,obj.speed * 400,obj.direction)
-        pygame.draw.line(game.screen,[0,0,255],obj.rect.center,newRect.center)
-        if self.drawThreats:pygame.draw.line(game.screen,[255,0,0],self.rect.center,obj.rect.center)
-        pygame.draw.rect(game.screen,[0,0,255],newRect)
+        if self.drawThreats:
+            newRect = self.getFutureRect(game,obj.rect,obj.speed * 400,obj.direction)
+            pygame.draw.line(game.screen,[0,0,255],obj.rect.center,newRect.center)
+            pygame.draw.line(game.screen,[255,0,0],self.rect.center,obj.rect.center)
+            pygame.draw.rect(game.screen,[0,0,255],newRect)
 
 
 
-    def getFutureCollision(self, line1, line2):
+    def getFutureCollisions(self, line1, line2):
         def orientation(x1, y1, x2, y2, x3, y3): return (y2 - y1) * (x3 - x2) - (x2 - x1) * (y3 - y2)
 
         x1, y1 = line1[0]
@@ -246,7 +284,15 @@ class AIPlayer(Player):
         else: return None
 
 
-    
+
+    def getFutureCollision(self,threat):
+        danger = self.getFutureCollisions([self.rect.center, selt.target],[threat.rect.center,self.getFutureRect(game,threat.rect,threat.speed * self.futureDistance, threat.direction).center]) # Check if this obstacle path intersects with current path
+        if danger is not None:
+            if self.drawThreats: pygame.draw.circle(game.screen,[255,0,0], danger, 3) # Draw collision point
+            return danger
+
+
+
     def getThreats(self,game):
         # Detect Danger
         count = 0
@@ -261,8 +307,8 @@ class AIPlayer(Player):
             else: break
             count += 1
         return threats
-    
-    
+
+
 
     def shoot(self,game,lasers,events,obstacles):
         if self.hasGuns and self.laserReady:
@@ -291,5 +337,44 @@ class AIPlayer(Player):
                 if self.speed != self.baseSpeed: self.speed = self.baseSpeed
                 if self.boosting: self.boosting = False
                 events.boostCharge(self)
+
+
+
+    def getObstaclesPos(self, obstacles):
+        poss = []
+        for obs in obstacles: poss.append(obs.rect.center)
+        return poss
+
+
+
+    def getDangerArea(self,threats,closest):
+        avgX, avgY = 0,0
+        for threat in threats:
+            x = threat[0]
+            y = threat[1]
+            avgX += x
+            avgY += y
+        centersLen = len(threats)
+        if centersLen > 0:
+            avgX /= centersLen
+            avgY /= centersLen
+            return [avgX, avgY]
+        else:
+            if closest is not None: return closest
+            else:
+                # BOGO for now
+                x = random.choice([0,settings.screenSize[0]])
+                y = random.choice([0,settings.screenSize[1]])
+                return [x,y]
+
+
+
+    def findSafeArea(self,threats,closest):
+        if self.considerCenterSafe: return [settings.screenSize[0]/2,settings.screenSize[1]/2]
+        else:
+            danger = self.getDangerArea(threats,closest)
+            x = settings.screenSize[0] - danger[0]
+            y = settings.screenSize[1] - danger[1]
+            return [x,y]
 
 
