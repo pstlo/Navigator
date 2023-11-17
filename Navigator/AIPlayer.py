@@ -7,8 +7,8 @@ class AIPlayer(Player):
     def __init__(self,game):
         super().__init__(game)
 
-        self.dangerZoneStart = 80 # Dist at which OBS are considered dangerous
-        self.safeZoneStart = 90 # Dist at which obs are considered safe
+        self.dangerZoneStart = 50 # Dist at which OBS are considered dangerous
+        self.safeZoneStart = 60 # Dist at which obs are considered safe
         self.maxObsConsidered = 3 # maximum obstacles considered per frame
         self.futureDistance = 50 # OBS Path length
         self.leapDistance = 80 # Target distance from player
@@ -34,8 +34,7 @@ class AIPlayer(Player):
         if self.target is not None and len(self.target) == 2:
             targetPath = [self.rect.center, self.target] # Path to target
             prevTarget = [self.target[0],self.target[1]]
-            if self.drawPaths:
-                pygame.draw.circle(game.screen,[0,255,0], self.target, 6)
+
         else: targetPath = None
 
         if self.drawPaths:
@@ -43,7 +42,7 @@ class AIPlayer(Player):
             if targetPath is not None: pygame.draw.line(game.screen,[0,255,255],targetPath[0],targetPath[1])
 
         if self.drawThreats:
-            pygame.draw.circle(game.screen,[255,0,0], self.rect.center, self.dangerZone, 3)
+            pygame.draw.circle(game.screen,[255,0,0], self.rect.center, self.dangerZone, 3) # Draw danger zone
 
         # Threat detection
         threats = self.getThreats(game)
@@ -106,7 +105,7 @@ class AIPlayer(Player):
 
             danger = self.getFutureCollision([self.rect.center, game.thisPoint.rect.center],[threat.rect.center,self.getFutureRect(game,threat.rect,threat.speed * self.futureDistance, threat.direction).center]) # Check if this obstacle path intersects with current path
             if danger is not None:
-                if self.drawThreats: pygame.draw.circle(game.screen,[255,0,0], danger, 3)
+                if self.drawThreats: pygame.draw.circle(game.screen,[255,0,0], danger, 3) # Draw collision point
 
         avgX, avgY = 0,0
         for x,y in centers:
@@ -149,8 +148,10 @@ class AIPlayer(Player):
 
 
         if self.drawPaths:
-            if longest is not None: pygame.draw.circle(game.screen,[0,255,255], options[longest]['aim'].center, 3)
-            if closest is not None: pygame.draw.circle(game.screen,[255,255,0], options[closest]['aim'].center, 3)
+            if longest is not None: pygame.draw.circle(game.screen,[0,255,255], options[longest]['aim'].center, 4)
+            if closest is not None: pygame.draw.circle(game.screen,[255,255,0], options[closest]['aim'].center, 4)
+            if targ is not None: pygame.draw.circle(game.screen,[0,0,255], options[targ]['aim'].center, 4)
+            if pt is not None: pygame.draw.circle(game.screen,[255,0,255], options[pt]['aim'].center, 4)
 
 
         if self.returnToCenter:
