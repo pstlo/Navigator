@@ -1,4 +1,4 @@
-import math,random,pygame
+import math,random,pygame,heapq
 from Player import Player
 import Settings as settings
 from Lasers import Laser
@@ -10,7 +10,12 @@ class AIPlayer(Player):
         # AI Config
         self.pointSafetyThreshold = 400 # Dist from nearest obs at which it is considered safe to go to point
         self.dangerZoneStart = 70 # Dist at which OBS are considered dangerous
+        self.minDangerZone = 50 # Min danger zone for adapting
+        self.maxDangerZone = 140 # Max danger zone for adapting
         self.safeZoneStart = 80 # Dist at which obs are considered safe
+        self.minSafeZone = 55 # Min safe zone for adapting
+        self.maxSafeZone = 150 # Max safe zone for adapting
+
         self.maxObsConsidered = 5 # maximum obstacles considered per frame
         self.futureDistance = 50 # OBS Path length for future collision detection
         self.leapDistance = 80 # Target distance from player
@@ -26,6 +31,9 @@ class AIPlayer(Player):
         self.loopForFollow = False # Find path to point including looping around screen
 
         # Other logic
+        self.zoneAdapt = False # Increment and decrement zone
+        self.zoneIncrementer = 1
+        self.zoneDecrementer = 1
         self.considerCenterSafe = False # Consider center of screen safest area
         self.restrictedPointFollowing = False # Only follow point if closer than nearest obstacle
         self.useVectors = False # Use pygame.Vector2 to calculate angles
@@ -35,7 +43,7 @@ class AIPlayer(Player):
         self.precision = 5 # must be positive, lower value = higher precision angle
 
         # Visualize
-        self.drawThreats = False
+        self.drawThreats = True
         self.drawPaths = True
 
         self.target = []
@@ -94,14 +102,22 @@ class AIPlayer(Player):
         closestObsDist = math.dist(self.rect.center,closestObstacle.rect.center)
         closestObsPos = closestObstacle.rect.center
         if closestObsDist < self.pointSafetyThreshold and (not self.restrictedPointFollowing or math.dist(self.rect.center,game.thisPoint.rect.center) < math.dist(self.rect.center,closestObsPos)):
-            settings.debug("Go to target")
             chosenTarget = game.thisPoint.rect.center # Go to point
 
         else:
-            settings.debug("Finding empty space")
             chosenTarget = self.findSafeArea(threats,closestObsPos) # Find empty space
         self.target = chosenTarget
 
+
+
+    def adapt(self,game,avgDist): # WIP
+        if self.zoneAdapt:
+            if avgDist < self.dangerZone and self.dangerZone - self.zoneDecrementer > self.minDangerZone:
+                self.dangerZone -= self.zoneDecrementer
+                self.safeZone -= self.zoneDecrementer
+            elif avgDist > self.dangerZone and self.dangerZone + self.zoneIncrementer < self.maxDangerZone:
+                self.dangerZone += self.zoneIncrementer
+                self.safeZone += self.zoneIncrementer
 
 
     def getTarget(self,game,threats,direction):
@@ -134,13 +150,17 @@ class AIPlayer(Player):
             for k in options:
                 if not options[k]['invalid'] and options[k]['target'].colliderect(i): options[k]['invalid'] = True
 
-        avgCenter = self.getDangerArea(centers,centers[0])
+        avgCenter = self.getDangerArea(centers,centers[0]) # Average threat position
+        avgDist = math.dist(self.rect.center,avgCenter) # Average dist from threat
+
+        self.adapt(game,avgDist)
+
         closest,closestDist = None,None # shortest distance to center
         longest, longestDist= None,None # longest avg dist from danger
         targ,targDist = None,None # shortest distance to target
         pt,ptDist= None,None # shortest distance to point
 
-        for k in options: # Find safe paths
+        for k in options: # Find safest paths
             if not options[k]['invalid']:
 
                 tempDist = math.dist(options[k]['target'].center, avgCenter)
@@ -200,10 +220,8 @@ class AIPlayer(Player):
                 if choice is not None:
                     pathChoice = options[choice]['aim'].center
                     break
-            settings.debug("Cannot avoid obstacle with current algorithm") # Debug
             return
 
-        settings.debug("Avoiding: " + choice) # Debug
         self.target = pathChoice
 
 
@@ -310,36 +328,6 @@ class AIPlayer(Player):
 
 
 
-    def shoot(self,game,lasers,events,obstacles):
-        if self.hasGuns and self.laserReady:
-            if self.fuel - self.laserCost > 0:
-                lasers.add(Laser(game,self))
-                self.fuel -= self.laserCost
-                if not game.musicMuted: game.assets.laserNoise.play()
-                events.laserCharge(self)
-
-
-
-    def boost(self,game,events):
-        if self.boostByDefault: self.autoBoost(game,events)
-
-
-
-    def autoBoost(self,game,events):
-        if self.boostReady:
-            if self.fuel - self.boostDrain > self.boostDrain:
-                self.speed = self.boostSpeed
-                self.fuel -= self.boostDrain
-                if not self.boosting: self.boosting = True
-                if self.boostState + 1 < len(game.assets.spaceShipList[game.savedShipLevel]['boost']): self.boostState += 1
-                else: self.boostState = 0
-            else:
-                if self.speed != self.baseSpeed: self.speed = self.baseSpeed
-                if self.boosting: self.boosting = False
-                events.boostCharge(self)
-
-
-
     def getObstaclesPos(self, obstacles):
         poss = []
         for obs in obstacles: poss.append(obs.rect.center)
@@ -376,5 +364,37 @@ class AIPlayer(Player):
             x = settings.screenSize[0] - danger[0]
             y = settings.screenSize[1] - danger[1]
             return [x,y]
+
+
+
+
+    def shoot(self,game,lasers,events,obstacles):
+        if self.hasGuns and self.laserReady:
+            if self.fuel - self.laserCost > 0:
+                lasers.add(Laser(game,self))
+                self.fuel -= self.laserCost
+                if not game.musicMuted: game.assets.laserNoise.play()
+                events.laserCharge(self)
+
+
+
+    def boost(self,game,events):
+        if self.boostByDefault: self.autoBoost(game,events)
+
+
+
+    def autoBoost(self,game,events):
+        if self.boostReady:
+            if self.fuel - self.boostDrain > self.boostDrain:
+                self.speed = self.boostSpeed
+                self.fuel -= self.boostDrain
+                if not self.boosting: self.boosting = True
+                if self.boostState + 1 < len(game.assets.spaceShipList[game.savedShipLevel]['boost']): self.boostState += 1
+                else: self.boostState = 0
+            else:
+                if self.speed != self.baseSpeed: self.speed = self.baseSpeed
+                if self.boosting: self.boosting = False
+                events.boostCharge(self)
+
 
 
