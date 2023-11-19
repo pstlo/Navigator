@@ -1,4 +1,4 @@
-import math,random,pygame,heapq
+import math,random,pygame
 from Player import Player
 import Settings as settings
 from Lasers import Laser

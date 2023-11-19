@@ -5,12 +5,8 @@
 import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
-
 import Settings
 from Game import Game
-from Assets import Assets
-from Menu import Menu
-from Gamepad import Gamepad
 
 pygame.display.init()
 pygame.font.init()
@@ -23,7 +19,7 @@ else: screen = pygame.display.set_mode(Settings.screenSize, pygame.SCALED, depth
 
 # LOADING SCREEN
 loadingDisplay = pygame.font.SysFont("None", 30).render("Loading...", True, (0, 255, 0))
-screen.blit(loadingDisplay, loadingDisplay.get_rect(midleft=(370, 400)))
+screen.blit(loadingDisplay, loadingDisplay.get_rect(midleft=(Settings.screenSize[0]/2 -30, Settings.screenSize[1]/2)))
 pygame.display.update()
 
 # CURSOR
@@ -35,10 +31,8 @@ pygame.mouse.set_cursor(cursor)
 pygame.mouse.set_visible(Settings.cursorMode)
 Settings.debug("Initialized cursor") # Debug
 
-assets = Assets()
-gamePad = Gamepad()
-menu = Menu() 
-game = Game(assets,screen,gamePad) 
+
+game = Game(screen) 
 Settings.debug("Game started") # Debug
 
 

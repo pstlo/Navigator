@@ -1,26 +1,29 @@
 import sys,random,math,pygame
-
 import Settings as settings
 from Menu import Menu
 from Player import Player
 from AIPlayer import AIPlayer
-from Obstacles import Obstacle, Cave
+from Obstacles import Obstacle,Cave
 from Unlocks import Unlocks
 from Point import Point
 from Event import Event
 from Explosion import Explosion
+from Assets import Assets
+from Menu import Menu
+from Gamepad import Gamepad
 
 
 # GAME
 class Game:
-    def __init__(self,assets,screen,controller):
-
-        self.version = assets.version
-        self.assets = assets
+    def __init__(self,screen):
+       
+        self.assets = Assets() 
+        self.version = self.assets.version
         self.screen = screen
         self.menu = Menu()
-        self.gamePad = controller.gamePad # Joystick 
-        self.controller = controller # Gamepad object
+        self.controller = Gamepad() # Gamepad object
+        self.gamePad = self.controller.gamePad # Joystick 
+        
         self.showLogoScreen = True
         
         # GAME RECORDS
