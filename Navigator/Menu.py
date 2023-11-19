@@ -666,7 +666,7 @@ class Menu:
                 elif event.type == pygame.KEYDOWN and event.key in settings.startInput:
                     # switch to selected ship and return to menu
                     if unlocked[selectedShip][selectedSkin] or settings.devMode:
-                        player.getShip(selectedShip)
+                        player.getShip(game,selectedShip)
                         player.getSkin(game,selectedSkin)
                         if not game.musicMuted: game.assets.pointNoise.play()
                         showHanger = False
