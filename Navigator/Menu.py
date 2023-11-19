@@ -1,47 +1,41 @@
 import pygame,random
-
 import Settings as settings
 from Explosion import Explosion
 from Point import Point
+import Leaderboard
 
 
 # MENUS
 class Menu:
-
-    
     # LOGO SCREEN
     def logoScreen(self,game):
         game.showLogoScreen = False
         game.screen.blit(game.assets.bgList[game.currentStage - 1][0],(0,0))
         logoRect = game.assets.mainLogo.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/2))
         game.screen.blit(game.assets.mainLogo,logoRect)
-        
-        
+
         startText = game.assets.mediumFont.render("PRESS ANY BUTTON", True, settings.primaryFontColor)
         startTextRect = startText.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1] * 0.9))
         game.screen.blit(startText,startTextRect)
         game.displayUpdate()
-        
-        
-        
+
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE: game.quitGame()
                 if (event.type == pygame.KEYDOWN) or (game.gamePad is not None and game.gamePad.get_button(game.controller.controllerSelect) == 1) or (event.type == pygame.MOUSEBUTTONDOWN): return
-            
-        
-    
+
+
     # START MENU
     def home(self,game,player):
 
         if game.showLogoScreen: self.logoScreen(game)
-        
+
         # TITLE TEXT
         startRect = game.assets.titleText.get_rect(center = (settings.screenSize[0]/2,settings.screenSize[1]/3 +30))
 
         # Foreground icons
         fgIcons = []
-        
+
         for icon in range(settings.maxFgIcons): fgIcons.append(Icon(game,"FG"))
 
         # Background icons
@@ -93,7 +87,6 @@ class Menu:
         elif game.skipAutoSkinSelect: player.getSkin(game,game.savedSkin)
 
         shipAttributes = self.shipStatsDisplay(game) # Ship stats display
-
         iconPosition = 100 # Icon position at game start (offset from original)
 
         while game.mainMenu:
@@ -343,7 +336,7 @@ class Menu:
             newRecordRect = newRecordDisplay.get_rect(center = player.rect.center)
             game.screen.blit(newRecordDisplay,newRecordRect)
             pygame.display.update()
-            game.assets.uploadRecords(game.records) # upload to database
+            Leaderboard.uploadRecords(game.records,game.assets.userName) # upload to database
 
         statsOffsetY = settings.screenSize[1]/10
         statsSpacingY = settings.screenSize[1]/20
@@ -514,7 +507,7 @@ class Menu:
     def leaderboard(self,game):
         if settings.connectToLeaderboard:
             self.loadingScreen(game)
-            game.assets.leaderboard = game.assets.getLeaders()
+            game.assets.leaderboard = Leaderboard.getLeaders()
             if game.assets.leaderboard is None: showLeaderboard = False
             else: showLeaderboard = True
             titleDisplay = game.assets.leaderboardTitleFont.render("LEADER BOARD", True, settings.primaryFontColor)

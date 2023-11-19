@@ -2,7 +2,7 @@ import os,sys,platform,json,base64,pygame
 from cryptography.fernet import Fernet
 from dotenv import load_dotenv
 import Settings as settings
-import Presence
+import Presence,Leaderboard
 
 # ASSETS
 class Assets:
@@ -11,8 +11,10 @@ class Assets:
         assetDirectory = self.resources('Assets') # ASSET DIRECTORY
         envPath = os.path.join(assetDirectory,'.env')
 
+        plat = platform.system().lower()
+
         # RECORD AND PREFERENCE PATHS
-        if platform.system().lower() == 'windows':
+        if plat == 'windows':
             settings.debug("OS: Windows") # DEBUG
 
             # SAVE TO APPDATA
@@ -21,7 +23,6 @@ class Assets:
             if not os.path.exists(navPath):
                 settings.debug("Directory not found. Attempting to create " + navPath)
                 os.mkdir(navPath)
-
                 if os.path.exists(envPath): os.rename(envPath,os.path.join(navPath,'.env'))
                 settings.debug("Successfully created directory") # DEBUG
 
@@ -34,12 +35,31 @@ class Assets:
             envPath = newEnvPath
             self.recordsPath, self.preferencesPath = os.path.join(navPath,'Records'), os.path.join(navPath,'Preferences')
 
-        elif platform.system().lower() == 'linux':
+        elif plat == 'linux':
             settings.debug("OS: Linux") # DEBUG
-            self.recordsPath,self.preferencesPath = './gameRecords.txt','./gamePreferences.txt'  # For windows and linux
-        else:
+            self.recordsPath,self.preferencesPath = './gameRecords.txt','./gamePreferences.txt'
+
+        elif plat == 'darwin':
             settings.debug("OS: Mac") # DEBUG
-            self.recordsPath,self.preferencesPath = self.resources('gameRecords.txt'), self.resources('gamePreferences.txt') # For MacOS
+            navPath = os.path.join(os.path.expanduser('~'),'Navigator')
+            if not os.path.exists(navPath):
+                settings.debug("Directory not found. Attempting to create " + navPath)
+                os.mkdir(navPath)
+                if os.path.exists(envPath): os.rename(envPath,os.path.join(navPath,'.env'))
+                settings.debug("Successfully created directory") # DEBUG
+
+            newEnvPath = os.path.join(navPath,'.env')
+            if os.path.exists(envPath) and not os.path.exists(newEnvPath):
+                os.rename(envPath,newEnvPath)
+                settings.debug("Moved ENV to ~") # DEBUG
+
+            envPath = newEnvPath
+            self.recordsPath, self.preferencesPath = os.path.join(navPath,'Records'), os.path.join(navPath,'Preferences')
+
+        else:
+            settings.debug("OS: Unknown")
+            self.recordsPath,self.preferencesPath = self.resources('gameRecords.txt'), self.resources('gamePreferences.txt')
+
 
         # ASSET PATHS
         load_dotenv(envPath) # LOAD ENV VARS
@@ -293,7 +313,7 @@ class Assets:
         settings.debug("Loaded fonts") # Debug
 
         self.userName = os.getlogin() # Leaderboard username
-        self.leaderboard = self.getLeaders()
+        self.leaderboard = Leaderboard.getLeaders()
         self.presence = Presence.start()
 
 
@@ -313,14 +333,14 @@ class Assets:
     # STORE GAME RECORDS
     def storeRecords(self,records):
         # Skip saving
-        if settings.devMode: 
+        if settings.devMode:
             settings.debug("Devmode does not store records") # Debug
             return
         elif settings.aiPlayer:
             settings.debug("You didn't earn this!") # Debug
             return
 
-        # No encryption    
+        # No encryption
         if not settings.encryptGameRecords:
             try:
                 with open(self.recordsPath, 'w') as file: file.write(json.dumps(records))
@@ -399,100 +419,7 @@ class Assets:
         return ships
 
 
-    # CONNECT TO LEADERBOARD CLIENT
-    def getLeaderboardClient(self):
-        if settings.connectToLeaderboard:
-            # LOAD MODULES
-            try:
-                settings.debug("Loading leaderboard drivers") # Debug
-                from pymongo.mongo_client import MongoClient
-                import dns,certifi
-            except:
-                settings.debug("Failed to initialize leaderboard. Make sure pymongo, dnspython, and certifi are installed") # Debug
-                settings.connectToLeaderboard = False
-                return None
 
-            # START CONNECTION
-            try:
-                database = MongoClient((Fernet(base64.b64decode(os.getenv('DBKEY'))).decrypt(os.getenv('DBTOKEN'))).decode(), connectTimeoutMS=3000, socketTimeoutMS=3000, tlsCAFile=certifi.where())
-                settings.debug("Connected to leaderboard database")
-                return database
-            except:
-                settings.debug("Could not connect to leaderboard database. Scores will not be uploaded") # Debug
-                settings.connectToLeaderboard = False
-                return None
-        else: return None
-
-
-    # GET LEADERBOARD FROM DATABASE
-    def getLeaders(self):
-        if settings.connectToLeaderboard:
-            try:
-                database = self.getLeaderboardClient()
-                collection = database["navigator"]["leaderboard"]
-                leaders = list(collection.find().sort('longestRun', -1).limit(settings.leaderboardSize))
-                settings.debug("Refreshed leaderboard") # Debug
-                database.close()
-                settings.debug("Disconnected from leaderboard client") # Debug
-                leaderBoard = []
-                for leaderIndex in range(len(leaders)):
-                    leader = leaders[leaderIndex]
-                    leaderBoard.append( {'id': leader['_id'], 'name':leader['name'], 'time':leader['longestRun'], 'score':leader['highScore']} )
-                return leaderBoard
-            except:
-                settings.debug("Could not get leaderboard") # Debug
-                settings.connectToLeaderboard = False
-                return None
-        else: return None
-
-
-    # UPLOAD RECORDS TO LEADERBOARD
-    def uploadRecords(self,records):
-        if settings.connectToLeaderboard and not settings.devMode:
-            database = self.getLeaderboardClient()
-
-            # UPLOAD RECORDS
-            try:
-                collection = database["navigator"]["leaderboard"]
-                uploadData = {'_id':records['id'], 'name':self.userName, 'highScore': records['highScore'], 'longestRun':records['longestRun']} # Data for upload
-
-                # Check if already exists in leaderboard
-                settings.debug("Checking for previous records on leaderboard") # Debug
-                data = collection.find_one({'_id':records['id']}) # Previous record
-                repeat = collection.find_one({'name':self.userName}) # Repeat usernames
-
-                repeatFound = False
-                if repeat is not None:
-                    if (data is None) or ( (data is not None) and (repeat != data or repeat['_id'] != data['_id']) ) :
-                        if records['longestRun'] < repeat['longestRun']: repeatFound = True
-
-                if not repeatFound and data is not None:
-                    settings.debug("Records found") # Debug
-                    longestRun = data.get('longestRun')
-                    highScore = data.get('highScore')
-
-                    if (uploadData['highScore'] > highScore or uploadData['longestRun'] > longestRun) and (uploadData['longestRun'] > 0):
-                        uploadData['highScore'] = max(highScore,uploadData['highScore'])
-                        uploadData['longestRun'] = max(longestRun,uploadData['longestRun'])
-                        settings.debug("Updating leaderboard records") # Debug
-                        collection.update_one({'_id': records['id']}, {'$set': uploadData}, upsert=True)
-                        settings.debug("Successfully updated scores in database") # Debug
-                    else: settings.debug("Skipped leaderboard update, scores unchanged") # Debug
-
-                else: # Insert new data
-                    if repeatFound: settings.debug("Repeat username found on leaderboard")
-                    else:
-                        settings.debug("Adding record to leaderboard") # Debug
-                        collection.insert_one(uploadData)
-                        settings.debug("Successfully inserted high score in database") # Debug
-
-                database.close()
-                settings.debug("Disconnected from leaderboard database") # Debug
-
-            except:
-                settings.debug("Failed to upload records to database") # Debug
-                settings.connectToLeaderboard = False
-                return
 
 
     # GET RECORDS ID

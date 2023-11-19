@@ -11,6 +11,7 @@ from Explosion import Explosion
 from Assets import Assets
 from Menu import Menu
 from Gamepad import Gamepad
+import Leaderboard
 
 
 # GAME
@@ -730,7 +731,7 @@ class Game:
     # QUIT GAME
     def quitGame(self):
         pygame.quit() # UNINITIALIZE PYGAME
-        self.assets.uploadRecords(self.records) # UPLOAD TO LEADERBOARD
+        Leaderboard.uploadRecords(self.records,self.assets.userName) # UPLOAD TO LEADERBOARD
         sys.exit() # EXIT NAVIGATOR
 
 
