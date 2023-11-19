@@ -118,7 +118,7 @@ jobs:
 
 
   build-macos-apple-silicon:
-    runs-on: macos-latest-xlarge
+    runs-on: macos-latest-large
     name: Build Navigator for MacOS (Apple Silicon)
 
     steps:
@@ -165,7 +165,7 @@ jobs:
 
 
   build-macos-apple-silicon-c:
-    runs-on: macos-latest-xlarge
+    runs-on: macos-latest-large
     name: Build Navigator for MacOS C (Apple Silicon)
 
     steps:
