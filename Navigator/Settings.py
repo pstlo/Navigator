@@ -59,7 +59,7 @@ playerShieldSize = 48 # Default = 48 / Shield visual size
 shieldVisualDuration = 250 # Default = 250 / Shield visual duration
 minDistanceToPoint = (screenSize[0] + screenSize[1]) / 16 # Default = 100
 maxRandomAttempts = 100 # Default = 100 / For random generator distances / max random attempts at finding a valid point
-shieldIconSize = 20 
+shieldIconSize = 20
 
 # BACKGROUND CLOUD
 showBackgroundCloud = True # Default = True
@@ -166,31 +166,58 @@ devMode = False # Default = False
 showSpawnArea = False # Default = False / show powerup spawn area
 showCursorPath = False # Default = False / Draw line from cursor to ship
 rawCursorMode = False # Default = False / sets player position to cursor position
-aiPlayer = False # Default = False / Autoplay 
+aiPlayer = False # Default = False / Autoplay
+oneLevel = False # Stay on same level
+devPauses = 100
 
 # ARGS
-parser = argparse.ArgumentParser(description = "Navigator " + version)
-parser.add_argument('-debug', action='store_true', help='Print debug messages to terminal')
-parser.add_argument('-devmode', type=int, nargs= '?', const=True, default= False, help='Enable developer mode and optionally start from a specified time', metavar = 'StartTime')
-parser.add_argument('-aiplayer', action='store_true', help='Enable auto player')
+parser = argparse.ArgumentParser(description = "Navigator " + version, epilog = "created by Mike Pistolesi", allow_abbrev = False)
+parser.add_argument('-d','--debug', action='store_true', help='print debug messages to terminal')
+parser.add_argument('--showfps', action='store_true', help='show fps counter')
+parser.add_argument('--nohud', action='store_true', help='disable HUD')
+parser.add_argument('--autoplayer', action='store_true', help='enable auto player')
+parser.add_argument('--devmode', action='store_true', help='enable developer mode')
+parser.add_argument('--starttime', type=int, help='start from a specified time', metavar = 'seconds')
+parser.add_argument('--onelevel', action='store_true', help='stay on same level')
+parser.add_argument('--rawcursor', action='store_true', help='use raw cursor position')
 args = parser.parse_args()
 
 # APPLY ARGS
 if useArgs:
     if args.debug: debugging = True
-    
-    if args.devmode is not None: 
+    if args.devmode:
         devMode = True
+        pauseMax = devPauses
         saveRecords = False
         connectToLeaderboard = False
-        startTime = args.devmode
-        if type(startTime) is int and startTime >= 0: gameStartTime = startTime
-    
-    if args.aiplayer:
+        showPresence = False
+
+    if args.starttime is not None:
+        startTime = args.starttime
+        saveRecords = False
+        connectToLeaderboard = False
+        if type(startTime) == int and startTime >= 0: gameStartTime = startTime
+
+    if args.autoplayer:
         aiPlayer = True
         saveRecords = False
         connectToLeaderboard = False
-        
+        showPresence = False
+
+    if args.onelevel:
+        saveRecords = False
+        connectToLeaderboard = False
+        showPresence = False
+        oneLevel = True
+
+    if args.showfps: showFPS = True
+    if args.nohud: showHUD = False
+
+    if args.rawcursor:
+        saveRecords = False
+        connectToLeaderboard = False
+        rawCursorMode = True
+
 
 # CONTROLLER BINDS
 controllerBinds = {
@@ -263,7 +290,7 @@ controllerBinds = {
         'credits':2
         }
     }
-    
+
 # POINT SPAWN AREA
 spawnWidth = int(screenSize[0] * (spawnRange[1] - spawnRange[0]))
 spawnHeight = int(screenSize[1] * (spawnRange[1] - spawnRange[0]))

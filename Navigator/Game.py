@@ -433,8 +433,8 @@ class Game:
 
     # UPDATE GAME CONSTANTS
     def levelUpdater(self,player,obstacles,events):
-
         # UPDATES STAGE
+        if settings.oneLevel: return
         if self.currentStage < len(self.assets.stageList): # Make sure there is a next stage
             if self.gameClock == self.assets.stageList[self.currentStage][0]["startTime"]  and not self.assets.stageList[self.currentStage][0]["START"]: # Next stage's first level's activation time reached
                 self.assets.stageList[self.currentStage][0]["START"] = True # Mark as activated
