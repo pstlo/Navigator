@@ -15,7 +15,8 @@ extensions = [Extension("Navigator", ["Navigator/Navigator.py"]),
         Extension("Player",["Navigator/Player.py"]),
         Extension("Point",["Navigator/Point.py"]),
         Extension("Presence",["Navigator/Presence.py"]),
-        Extension("Unlocks",["Navigator/Unlocks.py"])
+        Extension("Unlocks",["Navigator/Unlocks.py"]),
+        Extension("Leaderboard",["Navigator/Leaderboard.py"])
     ]
     
 
