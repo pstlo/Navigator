@@ -7,7 +7,7 @@ import Presence,Leaderboard
 # ASSETS
 class Assets:
     def __init__(self):
-        self.version = "v0.5.1"
+        self.version = settings.version
         assetDirectory = self.resources('Assets') # ASSET DIRECTORY
         envPath = os.path.join(assetDirectory,'.env')
 
@@ -338,7 +338,7 @@ class Assets:
             settings.debug("Devmode does not store records") # Debug
             return
         elif settings.aiPlayer:
-            settings.debug("You didn't earn this!") # Debug
+            settings.debug("Autoplayer does not store records") # Debug
             return
 
         # No encryption
@@ -418,9 +418,6 @@ class Assets:
             ships.append(skins)
         ships[0][0] = True # default ship starts unlocked
         return ships
-
-
-
 
 
     # GET RECORDS ID

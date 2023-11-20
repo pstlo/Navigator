@@ -43,7 +43,7 @@ class Game:
 
         self.thisPoint = Point(self,None,None) # Currently active point (starts with default)
         self.lastPointPos = self.thisPoint.rect.center # Last point's position for spacing
-        self.gameClock = 0
+        self.gameClock = settings.gameStartTime
         self.pauseCount = 0
         self.attemptNumber = 1
         self.showLogoScreen = True
@@ -626,7 +626,7 @@ class Game:
 
     # RESTART GAME
     def reset(self,player,obstacles):
-        self.gameClock = 0
+        self.gameClock = settings.gameStartTime
         self.currentLevel = 1
         self.currentStage = 1
         self.endlessModeStarted = False
@@ -644,7 +644,6 @@ class Game:
         pygame.mixer.music.play()
         if self.musicMuted: pygame.mixer.music.set_volume(0)
         player.kill()
-
 
 
 

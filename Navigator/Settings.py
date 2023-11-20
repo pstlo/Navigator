@@ -1,4 +1,4 @@
-import sys,math,pygame
+import sys,argparse,math,pygame
 
 debugging = False # Default = False / show status messages
 
@@ -6,6 +6,7 @@ debugging = False # Default = False / show status messages
 def debug(text):
     if debugging:print(text)
 
+version = "v0.5.1"
 screenSize = [800,800] # Default = [800,800]
 screenColor = [0,0,0] # Screen fill color
 fps = 60 # Default = 60
@@ -119,6 +120,7 @@ heatSeekNeedsTarget = False # Default = False / projectile will explode if targe
 skinAnimationDelay = 5 # Default = 5 / Delay between skin animation frame updates
 
 # LEVELS
+gameStartTime = 0 # Default = 0
 levelUpCloudSpeed = 25 # Default = 25 / Only affects levels preceded by wipe
 
 # PLANETS
@@ -166,18 +168,25 @@ showCursorPath = False # Default = False / Draw line from cursor to ship
 rawCursorMode = False # Default = False / sets player position to cursor position
 aiPlayer = False # Default = False / Autoplay 
 
-
 # ARGS
-if useArgs:
-    arguments = sys.argv[1:]
-    for arg in arguments: arg = arg.lower()
-else: arguments = None
+parser = argparse.ArgumentParser(description = "Navigator " + version)
+parser.add_argument('-debug', action='store_true', help='Print debug messages to terminal')
+parser.add_argument('-devmode', type=int, nargs= '?', const=True, default= False, help='Enable developer mode and optionally start from a specified time', metavar = 'StartTime')
+parser.add_argument('-aiplayer', action='store_true', help='Enable auto player')
+args = parser.parse_args()
 
 # APPLY ARGS
-if arguments is not None:
-    if "debug" in arguments: debugging = True
-    if "devmode" in arguments: devMode = True
-    if "aiplayer" in arguments: 
+if useArgs:
+    if args.debug: debugging = True
+    
+    if args.devmode is not None: 
+        devMode = True
+        saveRecords = False
+        connectToLeaderboard = False
+        startTime = args.devmode
+        if type(startTime) is int and startTime >= 0: gameStartTime = startTime
+    
+    if args.aiplayer:
         aiPlayer = True
         saveRecords = False
         connectToLeaderboard = False
