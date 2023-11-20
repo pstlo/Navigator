@@ -885,7 +885,7 @@ class Menu:
                 ship.move()
                 if ship.active:
                     if len(game.assets.donations) == 0: ship.draw(game,False,settings.showSupporterNames)
-                    else: ship.draw(settings.showBackgroundShips,settings.showSupporterNames)
+                    else: ship.draw(game,settings.showBackgroundShips,settings.showSupporterNames)
                     # off screen, add name back to pool and remove
                     if ship.offScreen():
                         pygame.time.set_timer(backGroundShipSpawnEvent, random.randint(settings.minBackgroundShipSpawnDelay,settings.maxBackgroundShipSpawnDelay))
@@ -906,7 +906,7 @@ class Menu:
                 elif len(game.assets.donations) == 1:
                     if len(bgShips) == 0:
                         name,value = list(game.assets.donations.items())[0]
-                        bgShips.append(BackgroundShip(name,value))
+                        bgShips.append(BackgroundShip(game,name,value))
                         waitToSpawn = True
                         pygame.time.set_timer(backGroundShipSpawnEvent, random.randint(settings.minBackgroundShipSpawnDelay,settings.maxBackgroundShipSpawnDelay))
 
