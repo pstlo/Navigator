@@ -36,4 +36,4 @@ game = Game(screen)
 Settings.debug("Game started") # Debug
 
 
-if __name__ == '__main__': game.gameLoop()
+if __name__ == '__main__': game.start()

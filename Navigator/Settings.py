@@ -58,6 +58,7 @@ playerShieldSize = 48 # Default = 48 / Shield visual size
 shieldVisualDuration = 250 # Default = 250 / Shield visual duration
 minDistanceToPoint = (screenSize[0] + screenSize[1]) / 16 # Default = 100
 maxRandomAttempts = 100 # Default = 100 / For random generator distances / max random attempts at finding a valid point
+shieldIconSize = 20 
 
 # BACKGROUND CLOUD
 showBackgroundCloud = True # Default = True

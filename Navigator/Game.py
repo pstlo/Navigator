@@ -17,16 +17,14 @@ import Leaderboard
 # GAME
 class Game:
     def __init__(self,screen):
-       
-        self.assets = Assets() 
+
+        self.assets = Assets()
         self.version = self.assets.version
         self.screen = screen
         self.menu = Menu()
         self.controller = Gamepad() # Gamepad object
-        self.gamePad = self.controller.gamePad # Joystick 
-        
-        self.showLogoScreen = True
-        
+        self.gamePad = self.controller.gamePad # Joystick
+
         # GAME RECORDS
         self.records = self.assets.loadRecords()
         self.unlocks = Unlocks(self.records['unlocks']) # UNLOCKS
@@ -48,6 +46,7 @@ class Game:
         self.gameClock = 0
         self.pauseCount = 0
         self.attemptNumber = 1
+        self.showLogoScreen = True
         self.mainMenu = True # Assures start menu only runs when called
         self.sessionLongRun = 0 # Longest run this session
 
@@ -82,16 +81,16 @@ class Game:
         # SET VOLUME
         if not self.musicMuted: pygame.mixer.music.set_volume(settings.musicVolume / 100)
         else: pygame.mixer.music.set_volume(0)
-    
-    
+
+
     # START GAME LOOP
-    def gameLoop(self):
+    def start(self):
 
         self.resetGameConstants() # Reset level settings
-        
+
         if settings.aiPlayer: player = AIPlayer(self) # Initialize player as AI
         else: player = Player(self) # Initialize player as user
-        
+
         if self.mainMenu:
             self.assets.loadMenuMusic()
             pygame.mixer.music.play(-1)
@@ -531,13 +530,22 @@ class Game:
 
         # SHIELDS DISPLAY
         if player.hasShields:
-            currentShieldPieces = player.shieldPieces/player.shieldPiecesNeeded
-            shieldRectWidth = (0.9*barBorder.width) * currentShieldPieces
-            if player.shields > 0: shieldRectWidth = barBorder.width*0.99
-            shieldRect = pygame.Rect(settings.screenSize[0]/3, 5, shieldRectWidth, 5)
-            shieldRect.centerx = barBorder.centerx
-            if player.shields > 0: pygame.draw.rect(self.screen,settings.fullShieldColor,shieldRect)
-            elif player.shieldPieces > 0: pygame.draw.rect(self.screen,settings.shieldColor,shieldRect)
+
+            if player.shields > 0:
+                hasShieldRect,hasShieldRect.centerx = pygame.Rect(settings.screenSize[0]/3,5, barBorder.width*0.99, 5), barBorder.centerx
+                pygame.draw.rect(self.screen,settings.fullShieldColor,hasShieldRect)
+                shieldsCount = self.assets.labelFont.render(str(player.shields), True, settings.secondaryFontColor)
+                shieldsCountRect = shieldsCount.get_rect(center = (barBorder.right + 5, barBorder.center[1] + 5))
+                self.screen.blit(self.assets.shieldIcon,(shieldsCountRect.centerx + 2, shieldsCountRect.centery - 10))
+                self.screen.blit(shieldsCount,shieldsCountRect)
+
+            if player.shieldPieces > 0:
+                currentShieldPieces = player.shieldPieces/player.shieldPiecesNeeded
+                shieldRectWidth = (0.9*barBorder.width) * currentShieldPieces
+                shieldRect = pygame.Rect(settings.screenSize[0]/3, 5, shieldRectWidth, 5)
+                shieldRect.centerx = barBorder.centerx
+                pygame.draw.rect(self.screen,settings.shieldColor,shieldRect)
+
 
         # FUEL DISPLAY
         if player.boostDrain > 0 or player.laserCost > 0:
@@ -636,10 +644,10 @@ class Game:
         pygame.mixer.music.play()
         if self.musicMuted: pygame.mixer.music.set_volume(0)
         player.kill()
-        
-        
-        
-    
+
+
+
+
     # MOVEMENT AND POSITION GENERATION
     def getMovement(self,spawnPattern):
         top,bottom,left,right = [],[],[],[]
@@ -672,7 +680,7 @@ class Game:
         move = [position,direction]
 
         return move
-        
+
     # GET ANGLE FOR CORRESPONDING DIRECTION
     def getAngle(self,direction):
         if direction == "N": return 0
@@ -684,7 +692,7 @@ class Game:
         elif direction == "SE": return -135
         elif direction == "SW": return 135
 
-    
+
     # GET SCREEN
     def getScreen(self):
         if settings.fullScreen: return pygame.display.set_mode(settings.screenSize,pygame.FULLSCREEN | pygame.SCALED, depth = 0)
@@ -705,19 +713,19 @@ class Game:
         if pygame.mixer.music.get_volume() == 0: pygame.mixer.music.set_volume(settings.musicVolume/100)
         else: pygame.mixer.music.set_volume(0)
 
-    
+
     # UPDATE DISPLAY
     def displayUpdate(self):
         pygame.display.update()
         if self.clk is not None: self.clk.tick(settings.fps)
-    
-    
+
+
     # ROTATE IMAGES
     def rotateImage(self,image, rect, angle):
         rotated = pygame.transform.rotate(image, angle)
         rotatedRect = rotated.get_rect(center=rect.center)
         return rotated,rotatedRect
-        
+
 
     # KEEP CURSOR ON SCREEN (Cursor mode only)
     def resetCursor(self):
@@ -727,7 +735,7 @@ class Game:
             if pos[0] >= settings.screenSize[0]-2: pygame.mouse.set_pos(settings.screenSize[0]-5,pos[1])
             if pos[1] <= 1: pygame.mouse.set_pos(pos[0],5)
             if pos[1] >= settings.screenSize[1]-1: pygame.mouse.set_pos(pos[0],settings.screenSize[1]-5)
-    
+
     # QUIT GAME
     def quitGame(self):
         pygame.quit() # UNINITIALIZE PYGAME

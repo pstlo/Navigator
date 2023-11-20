@@ -440,7 +440,7 @@ class Menu:
                     game.reset(player,obstacles)
                     game.mainMenu = True
                     game.skipAutoSkinSelect = True
-                    game.gameLoop()
+                    game.start()
 
                 # RESTART GAME
                 elif (event.type == pygame.KEYDOWN and event.key in settings.startInput) or (game.gamePad is not None and game.gamePad.get_button(game.controller.controllerSelect) == 1) or (event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] == 1):
@@ -450,7 +450,7 @@ class Menu:
                     pygame.mouse.set_visible(game.usingCursor and not settings.rawCursorMode)
                     game.reset(player,obstacles)
                     player.updatePlayerConstants(game)
-                    game.gameLoop()
+                    game.start()
 
 
     # GET LABEL

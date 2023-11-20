@@ -234,7 +234,8 @@ class Assets:
         settings.debug("Loaded ships") # Debug
 
         # PLAYER SHIELD ASSET
-        self.playerShield = pygame.transform.scale(pygame.image.load(self.resources(os.path.join(assetDirectory,"Shield.png"))),(settings.playerShieldSize,settings.playerShieldSize))
+        self.playerShield = pygame.transform.scale(pygame.image.load(self.resources(os.path.join(assetDirectory,"Shield.png"))),(settings.playerShieldSize,settings.playerShieldSize)).convert_alpha()
+        self.shieldIcon = pygame.transform.rotate(pygame.transform.scale(pygame.image.load(self.resources(os.path.join(assetDirectory,"Shield.png"))),(settings.shieldIconSize,settings.shieldIconSize)),180).convert_alpha()
 
         # MAIN MENU ASSETS
         self.titleText = pygame.transform.scale(pygame.image.load(self.resources(os.path.join(menuDirectory,'Title.png'))), (settings.titleSize, settings.titleSize)).convert_alpha()
