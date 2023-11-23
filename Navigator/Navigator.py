@@ -22,18 +22,6 @@ loadingDisplay = pygame.font.SysFont("None", 30).render("Loading...", True, (0, 
 screen.blit(loadingDisplay, loadingDisplay.get_rect(midleft=(Settings.screenSize[0]/2 -30, Settings.screenSize[1]/2)))
 pygame.display.update()
 
-# CURSOR
-curSurf = pygame.Surface((40, 40), pygame.SRCALPHA)
-pygame.draw.line(curSurf, (0, 255, 0), (10, 20), (30, 20), Settings.cursorThickness)
-pygame.draw.line(curSurf, (0, 255, 0), (20, 10), (20, 30), Settings.cursorThickness)
-cursor = pygame.cursors.Cursor((20, 20), curSurf)
-pygame.mouse.set_cursor(cursor)
-pygame.mouse.set_visible(Settings.cursorMode)
-Settings.debug("Initialized cursor") # Debug
-
-
 game = Game(screen) 
-Settings.debug("Game started") # Debug
-
 
 if __name__ == '__main__': game.start()

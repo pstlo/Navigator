@@ -18,6 +18,14 @@ import Leaderboard
 class Game:
     def __init__(self,screen):
 
+        # CURSOR
+        curSurf = pygame.Surface((40, 40), pygame.SRCALPHA)
+        pygame.draw.line(curSurf, (0, 255, 0), (10, 20), (30, 20), settings.cursorThickness)
+        pygame.draw.line(curSurf, (0, 255, 0), (20, 10), (20, 30), settings.cursorThickness)
+        cursor = pygame.cursors.Cursor((20, 20), curSurf)
+        pygame.mouse.set_cursor(cursor)
+        pygame.mouse.set_visible(settings.cursorMode)
+
         self.assets = Assets()
         self.version = self.assets.version
         self.screen = screen
