@@ -128,7 +128,6 @@ planetMoveDelay = 2 # Default = 2
 unlimitedPlanets = True # Temporary until more planets added
 
 # OBSTACLES
-slowerDiagonalObstacles = True # Default = True / use the hypotenuse or whatever
 spawnDistance = 0 # Default = 0 / Distance past screen border required before new obstacle spawned
 obsLaserDelay = 10 # Default = 10 / delay before obstacle fires another laser
 obsLaserDamage = 1 # Default = 1

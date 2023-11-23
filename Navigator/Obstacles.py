@@ -29,7 +29,6 @@ class Obstacle(pygame.sprite.Sprite):
         self.angle = random.randint(0,360) # Image rotation
         self.spinDirection = random.choice([-1,1])
         self.active = False
-        self.slowerDiagonal = settings.slowerDiagonalObstacles
         self.laserDelay, self.lasersShot, self.maxLasers = 0, 0, settings.maxObsLasers
 
 
