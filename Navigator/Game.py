@@ -64,7 +64,7 @@ class Game:
 
         self.cloudPos = settings.cloudStart # Background cloud position
         self.explosions = [] # Obstacle explosions
-        self.collidingExplosions = [] # Explosions with hitboxes
+
         self.cave,self.caveIndex = None, 0 # For cave levels
         self.musicMuted = settings.musicMuted
         self.clk = pygame.time.Clock() # Gameclock
@@ -93,9 +93,7 @@ class Game:
 
     # START GAME LOOP
     def start(self):
-
         self.resetGameConstants() # Reset level settings
-
         if settings.aiPlayer: player = AIPlayer(self) # Initialize player as AI
         else: player = Player(self) # Initialize player as user
 
@@ -117,6 +115,7 @@ class Game:
         self.lasers = pygame.sprite.Group() # Laser group
         self.enemyLasers = pygame.sprite.Group() # Enemy laser group
         self.obstacles = pygame.sprite.Group() # Obstacle group
+        self.collidingExplosions = pygame.sprite.Group() # Explosions with hitboxes
 
         # GAME LOOP
         while True: self.update(player)
@@ -196,7 +195,7 @@ class Game:
             # IN CAVE
             else:
                 if self.cave is None: # SPAWN A CAVE
-                    self.cave = Cave(self.caveIndex)
+                    self.cave = Cave(self,self.caveIndex)
                     if self.caveIndex + 1 < len(self.assets.caveList): self.caveIndex+=1
                 self.cave.update()
 
@@ -212,6 +211,7 @@ class Game:
                         player.explode(self,self.obstacles) # explosion
                         if not self.musicMuted: self.assets.explosionNoise.play()
                         self.menu.gameOver(self,player,self.obstacles) # Game over
+
                 enemyLasersCollided = pygame.sprite.spritecollide(self.cave,self.enemyLasers,True,pygame.sprite.collide_mask) # Enemy lasers/cave
                 lasersCollided = pygame.sprite.spritecollide(self.cave,self.lasers,True,pygame.sprite.collide_mask) # Lasers/cave
                 for laser in lasersCollided: self.explosions.append(Explosion(self,laser,None))
@@ -239,21 +239,15 @@ class Game:
                 if not self.musicMuted: self.assets.coinNoise.play()
 
             elif self.thisPoint.powerUp == "Nuke":
-                self.collidingExplosions.append(Explosion(self,self.thisPoint,settings.nukeSize))
+                self.collidingExplosions.add(Explosion(self,self.thisPoint,settings.nukeSize))
                 if not self.musicMuted: self.assets.explosionNoise.play()
 
-            else:
-                if not self.musicMuted: self.assets.pointNoise.play()
+            elif not self.musicMuted: self.assets.pointNoise.play()
 
             self.score += 1
             self.thisPoint.kill()
             self.lastPointPos = self.thisPoint.rect.center # Save last points position
             self.thisPoint = Point(self,player,self.lastPointPos) # spawn new point
-
-        # DRAW COLLIDING EXPLOSIONS
-        for debris in self.collidingExplosions:
-            if debris.finished: self.collidingExplosions.remove(debris)
-            else: debris.update(self)
 
         # UPDATE PLAYER
         player.movement(self)
@@ -290,68 +284,68 @@ class Game:
         # DRAW LASERS
         self.laserUpdate(self.lasers,self.enemyLasers,player,self.obstacles)
 
-        # UPDATE OBSTACLES
-        if len(self.obstacles) > 0:
-            # OBSTACLE/PLAYER COLLISION DETECTION
-            if pygame.sprite.spritecollide(player,self.obstacles,True,pygame.sprite.collide_mask):
-                if player.shields > 0:player.shieldDown(self.events)
-                else:
-                    player.explode(self,self.obstacles) # Animation
-                    if not self.musicMuted: self.assets.explosionNoise.play()
-                    self.menu.gameOver(self,player,self.obstacles) # Game over
+        # OBSTACLE/PLAYER COLLISION DETECTION
+        if pygame.sprite.spritecollide(player,self.obstacles,True,pygame.sprite.collide_mask):
+            if player.shields > 0:player.shieldDown(self.events)
+            else:
+                player.explode(self,self.obstacles) # Animation
+                if not self.musicMuted: self.assets.explosionNoise.play()
+                self.menu.gameOver(self,player,self.obstacles) # Game over
 
-            # OBSTACLE MOVEMENT
-            for obs in self.obstacles:
-                obs.move(self,player,self.enemyLasers)
-                obs.activate() # Activate if on screen
-                if obs.active:
+        # OBSTACLE/LASER COLLISION DETECTION
+        for obs in pygame.sprite.groupcollide(self.obstacles,self.lasers,False,not player.laserCollat,pygame.sprite.collide_mask):
+            if obs.health - player.damage > 0: obs.health -= player.damage
+            else:
+                obs.kill()
+                self.obstacles.remove(obs)
+                if not self.musicMuted: self.assets.impactNoise.play()
+                self.explosions.append(Explosion(self,obs,None))
 
-                    # NEAR MISSES
-                    if settings.nearMisses and obs not in self.nearObsList:
-                        nearDist = math.dist(player.rect,obs.rect)
-                        if nearDist <= settings.nearMissDist: self.nearObsList.append(obs)
+        # OBSTACLE/CAVE COLLISION DETECTION
+        if self.cave is not None:
+            for obs in pygame.sprite.spritecollide(self.cave,self.obstacles,True,pygame.sprite.collide_mask):
+                if not self.musicMuted: self.assets.impactNoise.play()
+                self.explosions.append(Explosion(self,obs,None))
+                obs.kill()
 
-                    # OBSTACLE/LASER COLLISION DETECTION
-                    if pygame.sprite.spritecollide(obs,self.lasers,not player.laserCollat,pygame.sprite.collide_mask):
-                        if obs.health - player.damage > 0: obs.health -= player.damage
-                        else:
-                            obs.kill()
-                            self.obstacles.remove(obs)
-                            if not self.musicMuted: self.assets.impactNoise.play()
-                            self.explosions.append(Explosion(self,obs,None))
+        # OBSTACLE/EXPLOSION COLLISION DETECTION
+        for obs in pygame.sprite.groupcollide(self.obstacles,self.collidingExplosions,False,False,pygame.sprite.collide_mask):
+            if not self.musicMuted: self.assets.impactNoise.play()
+            self.explosions.append(Explosion(self,obs,None))
+            obs.kill()
 
-                    # OBSTACLE/CAVE COLLISION DETECTION
-                    elif self.cave is not None and pygame.sprite.collide_mask(obs,self.cave):
-                        if not self.musicMuted: self.assets.impactNoise.play()
-                        self.explosions.append(Explosion(self,obs,None))
-                        obs.kill()
+        # OBSTACLE MOVEMENT
+        for obs in self.obstacles:
+            obs.move(self,player,self.enemyLasers)
+            obs.activate() # Activate if on screen
+            if obs.active:
 
-                    # OBSTACLE/EXPLOSION COLLISION DETECTION
-                    elif len(self.collidingExplosions) > 0:
-                        for explosion in self.collidingExplosions:
-                            if pygame.sprite.collide_mask(obs,explosion):
-                                if not self.musicMuted: self.assets.impactNoise.play()
-                                self.explosions.append(Explosion(self,obs,None))
-                                obs.kill()
+                # NEAR MISSES
+                if settings.nearMisses and obs not in self.nearObsList:
+                    nearDist = math.dist(player.rect,obs.rect)
+                    if nearDist <= settings.nearMissDist: self.nearObsList.append(obs)
 
-                    # ROTATE AND DRAW OBSTACLE
-                    obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle
-                    if obs.angle >= 360: obs.angle = -360
-                    if obs.angle < 0: obs.angle +=360
-                    newBlit = self.rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
-                    self.screen.blit(newBlit[0],newBlit[1]) # Blit obstacles
+                # ROTATE AND DRAW OBSTACLE
+                obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle
+                if obs.angle >= 360: obs.angle = -360
+                if obs.angle < 0: obs.angle +=360
+                newBlit = self.rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
+                self.screen.blit(newBlit[0],newBlit[1]) # Blit obstacles
 
-                    # OBSTACLE BOUNDARY HANDLING
-                    obs.bound(self.obstacles)
+                # OBSTACLE BOUNDARY HANDLING
+                obs.bound(self.obstacles)
 
+        # DRAW EXPLOSIONS
+        for debris in self.explosions:
+            if debris.finished: self.explosions.remove(debris)
+            else: debris.update(self)
 
-            # DRAW EXPLOSIONS
-            for debris in self.explosions:
-                if debris.finished: self.explosions.remove(debris)
-                else: debris.update(self)
+        # DRAW COLLIDING EXPLOSIONS
+        for debris in self.collidingExplosions:
+            if debris.finished: self.collidingExplosions.remove(debris)
+            else: debris.update(self)
 
         if settings.nearMisses: self.nearMisses(player,self.events) # NEAR MISS CALCULATION
-
         if self.gameClock > self.sessionLongRun: self.sessionLongRun = self.gameClock # UPDATE HIGH SCORE
         if not self.endlessModeStarted: self.levelUpdater(player,self.obstacles,self.events) # LEVEL UP
         if "OBS" in self.levelType or self.endlessModeStarted: self.spawner(self.obstacles,player) # SPAWN OBSTACLES
