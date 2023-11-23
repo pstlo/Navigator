@@ -73,7 +73,6 @@ class EnemyLaser(pygame.sprite.Sprite):
         super().__init__()
         self.speed = obs.speed * 1.5
         self.angle = obs.angle
-        if type(self.angle) == str: self.angle = game.getAngle(self.angle)  # Convert to degrees
         self.laserType = obs.laserType
         newBlit = game.rotateImage(game.assets.enemyLaserImage, game.assets.enemyLaserImage.get_rect(center=obs.rect.center), self.angle)
         self.image = newBlit[0]

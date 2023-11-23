@@ -10,7 +10,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.attributeIndex = None
         self.spawnPattern = kwargs.get('spawn', self.getAttributes(game.assets.stageList[game.currentStage-1][game.currentLevel-1]["obstacleSpawn"]))
         self.target = kwargs.get('target', self.getAttributes(game.assets.stageList[game.currentStage-1][game.currentLevel-1]["obstacleTarget"]))
-        self.movement = game.getMovement(self.spawnPattern)
+        movement = game.getMovement(self.spawnPattern)
         self.speed = int(kwargs.get('speed', self.getAttributes(game.assets.stageList[game.currentStage-1][game.currentLevel-1]["obstacleSpeed"])))
         self.size = int(kwargs.get('size', self.getAttributes(game.assets.stageList[game.currentStage-1][game.currentLevel-1]["obstacleSize"])))
         self.spinSpeed = int(kwargs.get('spin', self.getAttributes(game.assets.stageList[game.currentStage-1][game.currentLevel-1]["obstacleSpin"])))
@@ -22,8 +22,10 @@ class Obstacle(pygame.sprite.Sprite):
         except: self.image = game.assets.obstacleImages[0][random.randint(0,len(game.assets.obstacleImages[0])-1)] # Not enough assets for this level yet
 
         self.image = pygame.transform.scale(self.image, (self.size, self.size)).convert_alpha()
-        self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
-        self.getDirection(playerPos)
+        self.rect = self.image.get_rect(center = (movement[0][0],movement[0][1]))
+        if self.target == "NONE": self.direction = movement[1]
+        else: self.direction = math.atan2(playerPos[1] - self.rect.centery, playerPos[0] - self.rect.centerx) # Get angle representation
+
         self.angle = random.randint(0,360) # Image rotation
         self.spinDirection = random.choice([-1,1])
         self.active = False
@@ -40,40 +42,14 @@ class Obstacle(pygame.sprite.Sprite):
         else: return attribute
 
 
-    # Get correct type representation of angle
-    def getDirection(self,playerPos):
-        if self.target == "NONE": self.direction = self.movement[1] # Get a string representation of the direction
-        else: self.direction = math.atan2(playerPos[1] - self.rect.centery, playerPos[0] - self.rect.centerx) # Get angle representation
-
-
     # Call corresponding movement function
     def move(self,game,player,enemyLasers):
-        if self.target == "NONE": self.basicMove()
-        elif self.target == "LOCK": self.targetMove()
-        elif self.target == "HOME": self.homingMove(game,player)
+        if self.target == "HOME": self.homingMove(game,player)
+        else: self.targetMove()
         if self.laserType != "NONE": self.shoot(game,player,enemyLasers)
 
 
-    # BASIC MOVEMENT (8-direction) -> direction is a string
-    def basicMove(self):
-        if self.slowerDiagonal: # Use sqrt(2) for correct diagonal movement
-            if self.direction == "N": self.rect.centery -= self.speed
-            elif self.direction == "S": self.rect.centery += self.speed
-            elif self.direction == "E": self.rect.centerx += self.speed
-            elif self.direction == "W": self.rect.centerx -= self.speed
-            else:
-                if "N" in self.direction: self.rect.centery -= self.speed / 1.414
-                if "S" in self.direction: self.rect.centery += self.speed / 1.414
-                if "E" in self.direction: self.rect.centerx += self.speed / 1.414
-                if "W" in self.direction: self.rect.centerx -= self.speed / 1.414
-        else:
-            if "N" in self.direction: self.rect.centery -= self.speed
-            if "S" in self.direction: self.rect.centery += self.speed
-            if "E" in self.direction: self.rect.centerx += self.speed
-            if "W" in self.direction: self.rect.centerx -= self.speed
-
-
-    # AIMED AT PLAYER -> direction is an angle
+    # AIMED AT PLAYER
     def targetMove(self):
         self.rect.centerx +=self.speed * math.cos(self.direction)
         self.rect.centery +=self.speed * math.sin(self.direction)
@@ -100,23 +76,19 @@ class Obstacle(pygame.sprite.Sprite):
 
         elif self.bounds == "BOUNCE": # Bounce off walls
             if self.rect.left < 0:
-                if self.target == "NONE": self.movementReverse()
-                else: self.direction = math.atan2(math.sin(self.direction + math.pi), math.cos(self.direction + math.pi))
+                self.direction = math.atan2(math.sin(self.direction + math.pi), math.cos(self.direction + math.pi))
                 self.rect.left = 1
 
             elif self.rect.right > settings.screenSize[0]:
-                if self.target == "NONE": self.movementReverse()
-                else: self.direction = math.atan2(math.sin(self.direction + math.pi), math.cos(self.direction + math.pi))
+                self.direction = math.atan2(math.sin(self.direction + math.pi), math.cos(self.direction + math.pi))
                 self.rect.right = settings.screenSize[0] - 1
 
             elif self.rect.top < 0:
-                if self.target == "NONE": self.movementReverse()
-                else: self.direction = math.atan2(math.sin(self.direction + math.pi), math.cos(self.direction + math.pi))
+                self.direction = math.atan2(math.sin(self.direction + math.pi), math.cos(self.direction + math.pi))
                 self.rect.top = 1
 
             elif self.rect.bottom > settings.screenSize[1]:
-                if self.target == "NONE": self.movementReverse()
-                else: self.direction = math.atan2(math.sin(self.direction + math.pi), math.cos(self.direction + math.pi))
+                self.direction = math.atan2(math.sin(self.direction + math.pi), math.cos(self.direction + math.pi))
                 self.rect.bottom = settings.screenSize[1]-1
 
         elif self.bounds == "WRAP": # Wrap around screen
@@ -130,18 +102,6 @@ class Obstacle(pygame.sprite.Sprite):
     def activate(self):
         if not self.active:
             if self.rect.right > 0 and self.rect.left < settings.screenSize[0] and self.rect.bottom > 0 and self.rect.top < settings.screenSize[1]: self.active = True
-
-
-    # GET INVERSE MOVEMENT DIRECTION
-    def movementReverse(self):
-        if self.direction == "N": self.direction = "S"
-        elif self.direction == "S": self.direction = "N"
-        elif self.direction == "E": self.direction = "W"
-        elif self.direction == "W": self.direction = "E"
-        elif self.direction == "NW": self.direction = "SE"
-        elif self.direction == "NE": self.direction = "SW"
-        elif self.direction == "SE": self.direction = "NW"
-        elif self.direction == "SW": self.direction = "NE"
 
 
     # Shoot lasers

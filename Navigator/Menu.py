@@ -1,4 +1,4 @@
-import pygame,random
+import pygame,random,math
 import Settings as settings
 from Explosion import Explosion
 from Point import Point
@@ -1143,10 +1143,8 @@ class Icon(pygame.sprite.Sprite):
 
 
     def move(self,game):
-        if "N" in self.direction: self.rect.centery -= self.speed
-        if "S" in self.direction: self.rect.centery += self.speed
-        if "E" in self.direction: self.rect.centerx += self.speed
-        if "W" in self.direction: self.rect.centerx -= self.speed
+        self.rect.centerx +=self.speed * math.cos(self.direction)
+        self.rect.centery +=self.speed * math.sin(self.direction)
         self.activate()
 
         if self.angle >= 360 or self.angle <= -360: self.angle = 0
@@ -1165,7 +1163,7 @@ class Icon(pygame.sprite.Sprite):
 
     def activate(self):
         if not self.active:
-            if ("W" in self.direction and self.rect.right >= 0) or ("E" in self.direction and self.rect.left <= settings.screenSize[0]) or ("N" in self.direction and self.rect.top <= settings.screenSize[1]) or ("S" in self.direction and self.rect.bottom >= 0): self.active = True
+            if self.rect.right > 0 and self.rect.left < settings.screenSize[0] and self.rect.bottom > 0 and self.rect.top < settings.screenSize[1]: self.active = True
 
 
     def draw(self,game):
@@ -1241,7 +1239,6 @@ class BackgroundShip:
         elif self.speed < settings.minBackgroundShipSpeed: self.speed = settings.minBackgroundShipSpeed
         self.movement = game.getMovement(None)
         self.direction = self.movement[1]
-        self.angle = game.getAngle(self.direction)
         self.text = text
         self.image = pygame.transform.scale(game.assets.donationShips[random.randint(0, len(game.assets.donationShips) - 1)], (self.size, self.size) ).convert_alpha()
         self.rect = self.image.get_rect(center = (self.movement[0][0],self.movement[0][1]))
@@ -1252,10 +1249,8 @@ class BackgroundShip:
 
 
     def move(self):
-        if "N" in self.direction: self.rect.centery -= self.speed
-        if "S" in self.direction: self.rect.centery += self.speed
-        if "E" in self.direction: self.rect.centerx += self.speed
-        if "W" in self.direction: self.rect.centerx -= self.speed
+        self.rect.centerx +=self.speed * math.cos(self.direction)
+        self.rect.centery +=self.speed * math.sin(self.direction)
         self.displayRect.center = self.rect.center
         self.activate()
 
@@ -1264,7 +1259,7 @@ class BackgroundShip:
         if self.active:
             if not showImage and not showText: return
             else:
-                drawing, drawee = game.rotateImage(self.image,self.rect,self.angle)
+                drawing, drawee = game.rotateImage(self.image,self.rect,self.direction)
                 supporterRect = self.display.get_rect(center = drawee.center)
                 if showImage: game.screen.blit(drawing,drawee)
                 if showText: game.screen.blit(self.display,supporterRect)

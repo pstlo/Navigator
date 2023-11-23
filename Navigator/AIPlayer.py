@@ -263,12 +263,9 @@ class AIPlayer(Player):
 
 
     def getFutureRect(self,game,oldRect,dist,angle):
-        validDirection = angle
-        if type(validDirection) == str: validDirection = game.getAngle(validDirection) # Will revisit obstacle nonsense direction mechanic
-        validDirection = math.radians(-validDirection - 90)
         newRect = oldRect.copy()
-        newRect.centerx += (dist) * math.cos(validDirection) # Horizontal movement
-        newRect.centery += (dist) * math.sin(validDirection) # Vertical movement
+        newRect.centerx += (dist) * math.cos(angle) # Horizontal movement
+        newRect.centery += (dist) * math.sin(angle) # Vertical movement
         return newRect
 
 
@@ -303,8 +300,8 @@ class AIPlayer(Player):
 
 
 
-    def getFutureCollision(self,threat):
-        danger = self.getFutureCollisions([self.rect.center, selt.target],[threat.rect.center,self.getFutureRect(game,threat.rect,threat.speed * self.futureDistance, threat.direction).center]) # Check if this obstacle path intersects with current path
+    def getFutureCollision(self,game,threat):
+        danger = self.getFutureCollisions([self.rect.center, self.target],[threat.rect.center,self.getFutureRect(game,threat.rect,threat.speed * self.futureDistance, threat.direction).center]) # Check if this obstacle path intersects with current path
         if danger is not None:
             if self.drawThreats: pygame.draw.circle(game.screen,[255,0,0], danger, 3) # Draw collision point
             return danger

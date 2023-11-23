@@ -650,14 +650,14 @@ class Game:
     # MOVEMENT AND POSITION GENERATION
     def getMovement(self,spawnPattern):
         top,bottom,left,right = [],[],[],[]
-        if spawnPattern == "TOP": top = ["SE", "SW", "S"] # Top to bottom
-        elif spawnPattern == "BOTTOM": bottom = ["N","NE","NW"] # Bottom to top
-        elif spawnPattern == "LEFT":left = ["E","NE","SE"] # Left to right
-        elif spawnPattern == "RIGHT":right = ["W","NW","SW"] # Right to left
-        elif spawnPattern == "VERT": top, bottom = ["SE", "SW", "S"], ["N", "NE", "NW"]
-        elif spawnPattern == "HORI": left, right = ["E","NE","SE"], ["W","NW","SW"]
-        elif spawnPattern == "DIAG": top, bottom, left, right = ["SE", "SW"], ["NE", "NW"], ["NE", "SE"], ["NW", "SW"]
-        else: top, bottom, left, right = ["SE", "SW", "S"], ["N", "NE", "NW"], ["E", "NE", "SE"], ["NW", "SW", "W"]
+        if spawnPattern == "TOP": top = [45, 135, 90] # Top to bottom
+        elif spawnPattern == "BOTTOM": bottom = [270,315,225] # Bottom to top
+        elif spawnPattern == "LEFT":left = [0,315,45] # Left to right
+        elif spawnPattern == "RIGHT":right = [180,225,135] # Right to left
+        elif spawnPattern == "VERT": top, bottom = [45, 135, 90], [270, 315, 225]
+        elif spawnPattern == "HORI": left, right = [0,315,45], [180,225,135]
+        elif spawnPattern == "DIAG": top, bottom, left, right = [45, 135], [315, 225], [315, 45], [225, 135]
+        else: top, bottom, left, right = [45, 135, 90], [270, 315, 225], [0, 315, 45], [225, 135,180]
 
         X = random.randint(int(settings.screenSize[0] * 0.02), int(settings.screenSize[0] * 0.98))
         Y = random.randint(int(settings.screenSize[1] * 0.02), int(settings.screenSize[1] * 0.98))
@@ -674,22 +674,7 @@ class Game:
         if len(right) != 0: possible.append([upperX, Y, random.choice(right)])
 
         movement = random.choice(possible)
-        position = [movement[0], movement[1]]
-        direction = movement[2]
-        move = [position,direction]
-
-        return move
-
-    # GET ANGLE FOR CORRESPONDING DIRECTION
-    def getAngle(self,direction):
-        if direction == "N": return 0
-        elif direction == "S": return 180
-        elif direction == "E": return -90
-        elif direction == "W": return 90
-        elif direction == "NW": return 45
-        elif direction == "NE": return -45
-        elif direction == "SE": return -135
-        elif direction == "SW": return 135
+        return [[movement[0], movement[1]],math.radians(movement[2])]
 
 
     # GET SCREEN
