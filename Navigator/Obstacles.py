@@ -71,13 +71,13 @@ class Obstacle(pygame.sprite.Sprite):
         if self.laserType != "NONE": self.shoot(game,player,game.enemyLasers)
 
 
-    # AIMED AT PLAYER
+    # MOVE IN DIRECTION
     def targetMove(self):
         self.rect.centerx +=self.speed * math.cos(self.direction)
         self.rect.centery +=self.speed * math.sin(self.direction)
 
 
-    # HEAT SEEKING -> direction is an angle, updated every frame
+    # HEAT SEEKING
     def homingMove(self,player):
         dirX = (player.rect.centerx - self.rect.centerx + settings.screenSize[0]/2) % settings.screenSize[0]-settings.screenSize[0]/2 # Shortest horizontal path
         dirY = (player.rect.centery - self.rect.centery + settings.screenSize[1]/2) % settings.screenSize[1]-settings.screenSize[1]/2 # Shortest vetical path
