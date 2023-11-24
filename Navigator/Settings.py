@@ -154,7 +154,7 @@ invalidKeyMessage = "Invalid key, could not save records." # Saved to game recor
 
 # LEADERBOARD
 connectToLeaderboard = True # Default = True
-leaderboardSize = 10 # Number of players shown on leaderboard
+leaderboardSize = 10 # Default = 10 / Number of players shown on leaderboard
 
 # DISCORD
 showPresence = True # Default = True / Discord presence using pypresence
@@ -166,8 +166,8 @@ showSpawnArea = False # Default = False / show powerup spawn area
 showCursorPath = False # Default = False / Draw line from cursor to ship
 rawCursorMode = False # Default = False / sets player position to cursor position
 aiPlayer = False # Default = False / Autoplay
-oneLevel = False # Stay on same level
-devPauses = 100
+oneLevel = False # Default = False /  Stay on same level
+devPauses = 9999 # Number of pauses in developer mode
 
 # ARGS
 parser = argparse.ArgumentParser(description = "Navigator " + version, epilog = "created by Mike Pistolesi", allow_abbrev = False)

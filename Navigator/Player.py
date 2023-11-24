@@ -198,7 +198,7 @@ class Player(pygame.sprite.Sprite):
                 else:
                     if self.currentImageNum +1 < len(game.assets.spaceShipList[game.savedShipLevel]['skins']): self.getSkin(game,self.currentImageNum+1)
                     elif len(game.assets.spaceShipList[game.savedShipLevel]['skins'])-1 != 0: self.getSkin(game,0)
-            else: # Last skin
+            else: # Previous skin
                 if self.currentImageNum >= 1:
                     if not settings.devMode: skin = game.unlocks.lastUnlockedSkin(game.savedShipLevel,self.currentImageNum) # previous skin
                     else: skin = self.currentImageNum - 1
@@ -228,7 +228,7 @@ class Player(pygame.sprite.Sprite):
 
 
         # SWITCH SHIP TYPE
-        def toggleSpaceShip(self,game,toggleDirection): # toggleDirection == True -> next ship / False -> last ship
+        def toggleSpaceShip(self,game,toggleDirection): # toggleDirection is True -> next ship / False -> last ship
             if toggleDirection:
                 if not settings.devMode:
                     ship = game.unlocks.nextUnlockedShip(game.savedShipLevel)
@@ -315,11 +315,8 @@ class Player(pygame.sprite.Sprite):
                     game.screen.blit(game.cave.image,game.cave.rect) # Draw cave
 
                 # Draw obstacles during explosion
-                for obs in obstacles:
-                    obs.move(game,self,None)
-                    obs.activate()
-                    newBlit = game.rotateImage(obs.image,obs.rect,obs.angle)
-                    game.screen.blit(newBlit[0],newBlit[1])
+                game.obstacles.update(game,self)
+                game.obstacles.draw(game.screen)
 
                 img = pygame.transform.scale(game.assets.explosionList[self.explosionState], (height * self.explosionState, width * self.explosionState)) # Blow up explosion
                 img, imgRect = game.rotateImage(img, self.rect, self.lastAngle) # Rotate

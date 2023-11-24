@@ -21,7 +21,9 @@ class Obstacle(pygame.sprite.Sprite):
         try: self.image = kwargs.get('image', self.getAttributes(game.assets.obstacleImages[game.currentStage - 1][game.currentLevel-1]))
         except: self.image = game.assets.obstacleImages[0][random.randint(0,len(game.assets.obstacleImages[0])-1)] # Not enough assets for this level yet
 
+
         self.image = pygame.transform.scale(self.image, (self.size, self.size)).convert_alpha()
+        self.originalImage = self.image.copy()
         self.rect = self.image.get_rect(center = (movement[0][0],movement[0][1]))
         if self.target == "NONE": self.direction = movement[1]
         else: self.direction = math.atan2(playerPos[1] - self.rect.centery, playerPos[0] - self.rect.centerx) # Get angle representation
@@ -41,11 +43,32 @@ class Obstacle(pygame.sprite.Sprite):
         else: return attribute
 
 
+    def update(self,game,player):
+        self.move(game,player)
+        self.activate() # Activate if on screen
+        if self.active:
+
+            # NEAR MISSES
+            if settings.nearMisses and self not in game.nearObsList:
+                nearDist = math.dist(player.rect,self.rect)
+                if nearDist <= settings.nearMissDist: game.nearObsList.append(self)
+
+            # ROTATE
+            self.angle += (self.spinSpeed * self.spinDirection) # Update angle
+            if self.angle >= 360: self.angle = -360
+            if self.angle < 0: self.angle +=360
+            newBlit = game.rotateImage(self.originalImage,self.rect,self.angle) # Obstacle rotation
+            self.image,self.rect = newBlit # Blit obstacles
+
+            # BOUNDARY HANDLING
+            self.bound()
+
+
     # Call corresponding movement function
-    def move(self,game,player,enemyLasers):
+    def move(self,game,player):
         if self.target == "HOME": self.homingMove(game,player)
         else: self.targetMove()
-        if self.laserType != "NONE": self.shoot(game,player,enemyLasers)
+        if self.laserType != "NONE": self.shoot(game,player,game.enemyLasers)
 
 
     # AIMED AT PLAYER
@@ -64,14 +87,10 @@ class Obstacle(pygame.sprite.Sprite):
 
 
     # BOUNDARY HANDLING
-    def bound(self,obstacles):
+    def bound(self):
         if self.bounds == "KILL": # Remove obstacle
-            if self.rect.left > settings.screenSize[0] + settings.spawnDistance or self.rect.right < -settings.spawnDistance:
-                obstacles.remove(self)
-                self.kill()
-            elif self.rect.top > settings.screenSize[1] + settings.spawnDistance or self.rect.bottom < 0 - settings.spawnDistance:
-                obstacles.remove(self)
-                self.kill()
+            if self.rect.left > settings.screenSize[0] + settings.spawnDistance or self.rect.right < -settings.spawnDistance: self.kill()
+            elif self.rect.top > settings.screenSize[1] + settings.spawnDistance or self.rect.bottom < 0 - settings.spawnDistance: self.kill()
 
         elif self.bounds == "BOUNCE": # Bounce off walls
             if self.rect.left < 0:
@@ -104,10 +123,10 @@ class Obstacle(pygame.sprite.Sprite):
 
 
     # Shoot lasers
-    def shoot(self,game,player,enemyLasers):
-        if enemyLasers is not None:
+    def shoot(self,game,player):
+        if game.enemyLasers is not None:
             if self.lasersShot < self.maxLasers and self.laserDelay >= settings.obsLaserDelay:
-                enemyLasers.add(EnemyLaser(game,self,player))
+                game.enemyLasers.add(EnemyLaser(game,self,player))
                 self.lasersShot += 1
                 self.laserDelay = 0
             else: self.laserDelay += 1

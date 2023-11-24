@@ -276,9 +276,7 @@ class Menu:
                 shieldImg,shieldImgRect = game.rotateImage(game.assets.playerShield, player.rect, player.angle)
                 game.screen.blit(shieldImg,shieldImgRect)
 
-            for obs in obstacles: # Draw obstacles
-                newBlit = game.rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
-                game.screen.blit(newBlit[0],newBlit[1])
+            game.obstacles.draw(game.screen)
 
             lasers.draw(game.screen)
             enemyLasers.draw(game.screen)

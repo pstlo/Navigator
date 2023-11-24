@@ -274,8 +274,11 @@ class Game:
             self.screen.blit(shieldImg,shieldImgRect)
 
         # PLAYER/LASER COLLISION DETECTION
-        if pygame.sprite.spritecollide(player,self.enemyLasers,True,pygame.sprite.collide_mask):
-            if player.shields > 0:player.shieldDown(self.events)
+        collides = pygame.sprite.spritecollide(player,self.enemyLasers,False,pygame.sprite.collide_mask)
+        for laser in collides:
+            if player.shields > 0:
+                player.shieldDown(self.events)
+                laser.kill()
             else:
                 player.explode(self,self.obstacles) # Animation
                 if not self.musicMuted: self.assets.explosionNoise.play()
@@ -283,9 +286,13 @@ class Game:
 
         # DRAW LASERS
         self.laserUpdate(self.lasers,self.enemyLasers,player,self.obstacles)
-
+        
+        # OBSTACLE MOVEMENT
+        self.obstacles.update(self,player)
+        self.obstacles.draw(self.screen)
+        
         # OBSTACLE/PLAYER COLLISION DETECTION
-        if pygame.sprite.spritecollide(player,self.obstacles,True,pygame.sprite.collide_mask):
+        if pygame.sprite.spritecollide(player,self.obstacles,False,pygame.sprite.collide_mask):
             if player.shields > 0:player.shieldDown(self.events)
             else:
                 player.explode(self,self.obstacles) # Animation
@@ -312,28 +319,7 @@ class Game:
         for obs in pygame.sprite.groupcollide(self.obstacles,self.collidingExplosions,False,False,pygame.sprite.collide_mask):
             if not self.musicMuted: self.assets.impactNoise.play()
             self.explosions.append(Explosion(self,obs,None))
-            obs.kill()
-
-        # OBSTACLE MOVEMENT
-        for obs in self.obstacles:
-            obs.move(self,player,self.enemyLasers)
-            obs.activate() # Activate if on screen
-            if obs.active:
-
-                # NEAR MISSES
-                if settings.nearMisses and obs not in self.nearObsList:
-                    nearDist = math.dist(player.rect,obs.rect)
-                    if nearDist <= settings.nearMissDist: self.nearObsList.append(obs)
-
-                # ROTATE AND DRAW OBSTACLE
-                obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle
-                if obs.angle >= 360: obs.angle = -360
-                if obs.angle < 0: obs.angle +=360
-                newBlit = self.rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
-                self.screen.blit(newBlit[0],newBlit[1]) # Blit obstacles
-
-                # OBSTACLE BOUNDARY HANDLING
-                obs.bound(self.obstacles)
+            obs.kill()        
 
         # DRAW EXPLOSIONS
         for debris in self.explosions:
@@ -423,12 +409,8 @@ class Game:
             self.cave.update()
             if self.cave.rect.top <= settings.screenSize[1] and self.cave.rect.bottom >= 0: self.screen.blit(self.cave.image,self.cave.rect) # DRAW CAVE
 
-        for obs in obstacles:
-            obs.move(self,player,None)
-            obs.activate()
-            newBlit = self.rotateImage(obs.image,obs.rect,obs.angle) # Obstacle rotation
-            self.screen.blit(newBlit[0],newBlit[1])
-            obs.angle += (obs.spinSpeed * obs.spinDirection) # Update angle
+        self.obstacles.update(self,player)
+        self.obstacles.draw(self.screen)
 
         if settings.showFPS: pygame.display.set_caption("Navigator {} FPS".format(int(self.clk.get_fps())))
 
