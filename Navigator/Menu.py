@@ -21,7 +21,7 @@ class Menu:
 
         while True:
             for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE: game.quitGame()
+                if (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE) or event.type == pygame.QUIT: game.quitGame()
                 if (event.type == pygame.KEYDOWN) or (game.gamePad is not None and game.gamePad.get_button(game.controller.controllerSelect) == 1) or (event.type == pygame.MOUSEBUTTONDOWN): return
 
 
